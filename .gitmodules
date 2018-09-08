@@ -1,0 +1,3 @@
+[submodule "tools/klh10"]
+	path = tools/klh10
+	url = https://github.com/PDP-10/klh10.git
