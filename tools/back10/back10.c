@@ -2249,7 +2249,7 @@ void copy2tape(u_int offset)
       w |= (w36) (diskbuffer[i++] & 0x7f) << 15;
       w |= (w36) (diskbuffer[i++] & 0x7f) << 8;
       w |= (w36) (diskbuffer[i++] & 0x7f) << 1;
-      if (diskbuffer[i+4] & 0x80) {
+      if (diskbuffer[i - 1] & 0x80) {
 	w |= 1;
       }
       break;
