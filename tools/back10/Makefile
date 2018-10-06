@@ -12,3 +12,6 @@ back10: $(BACK10)
 
 tar:
 	tar -cf back10.tar Makefile back10.c back10.h
+
+clean:
+	$(RM) back10.o back10
