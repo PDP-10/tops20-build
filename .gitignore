@@ -1,0 +1,8 @@
+*~
+\#*
+.\#*
+pexpect-venv/
+bin/
+build/
+phase0/
+__pycache__/
