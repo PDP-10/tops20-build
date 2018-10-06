@@ -1,4 +1,4 @@
-all:
+all: phase1/phase1.tap
 
 TOPS20_7:=	BB-H137F-BM:install \
 		BB-EV83B-BM:tcpip \
