@@ -132,7 +132,7 @@ MONITOR_SRC = \
 	stg.mac swpalc.mac syserr.mac sysflg.mac systap.ctl tape.mac \
 	timer.mac tops.mac ttydef.mac ttysrv.mac vedit.mac versio.mac
 
-src/monitor.tap: $(addprefix src/monitor/,$(MONITOR_SRC))
+src/monitor.tap: $(addprefix src/monitor/,$(MONITOR_SRC)) tools/back10/back10
 	(cd src/monitor; ../../tools/back10/back10 -c -f ../monitor.tap -i $(MONITOR_SRC))
 
 clean::

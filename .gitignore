@@ -5,4 +5,5 @@ pexpect-venv/
 bin/
 build/
 phase0/
+phase1/
 __pycache__/
