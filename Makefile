@@ -46,7 +46,7 @@ pexpect-venv/bin/python3:
 pexpect-venv: pexpect-venv/bin/python3
 
 clean::
-	$(RM) -r pexpect-venv
+	$(RM) -r pexpect-venv __pycache__
 
 bin:
 	mkdir bin
