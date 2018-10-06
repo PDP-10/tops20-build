@@ -30,3 +30,7 @@ The vision (possibly hallucination) that ```src/```xxx might
 eventually replaced by submodules pointing into repositories with more
 complete history.
 
+## Requirements
+
+Needs Python 3 and enough access to get a copy of pexpect.
+
