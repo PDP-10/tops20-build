@@ -44,15 +44,15 @@ def install():
 
     kl = tops20.KLH10()
     kl.install('PHASE1')
-    tops20.shutdown(kl)
+    kl.shutdown()
 
 
 def monbuild():
     kl = tops20.KLH10()
     kl.boot()
     kl.login()
-    tops20.build(kl, '<src>', maximum_subdirectories=262143)
-    tops20.build(kl, '<src.monitor>')
+    kl.build('<src>', maximum_subdirectories=262143)
+    kl.build('<src.monitor>')
     kl.expect('\$')
     kl.send('connect <src.monitor>\r')
     kl.mttape('../src/monitor.tap')
@@ -86,11 +86,11 @@ def monbuild():
         print('monitor not built')
         kl.expect('\$')
         kl.send('type ln2070.log')
-        tops20.shutdown(kl)
+        kl.shutdown()
         sys.exit(1)
     kl.expect('\$')
     kl.send('copy 2060-monmax.exe <system>monitr.exe\r')
-    tops20.shutdown(kl)
+    kl.shutdown()
 
     # now boot it and see if it worked, if so, build an install tape
     kl = tops20.KLH10()
@@ -177,7 +177,7 @@ def monbuild():
     kl.expect('\$')
     kl.send('deassign mta0:\r')
 
-    tops20.shutdown(kl)
+    kl.shutdown()
 
 
 if __name__ == '__main__':

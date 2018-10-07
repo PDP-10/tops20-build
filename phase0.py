@@ -64,7 +64,7 @@ def install():
     kl.send('rename 7-conf.cmd 7-config.cmd\r')
     kl.expect('\$')
     kl.send('rename 7-ptyc.ato 7-ptycon.ato\r')
-    tops20.shutdown(kl)
+    kl.shutdown()
 
 
 def makestrap():
@@ -145,7 +145,7 @@ def makestrap():
     kl.expect('\$')
     kl.send('deassign mta0:\r')
 
-    tops20.shutdown(kl)
+    kl.shutdown()
 
 
 if __name__ == '__main__':
