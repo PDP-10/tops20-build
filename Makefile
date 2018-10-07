@@ -68,11 +68,14 @@ build/klh10:: build
 clean::
 	$(RM) -r build/klh10
 
-build/klh10/bld-kl/kn10-kl:
+build/klh10/bld-kl/kn10-kl: tools/klh10/autogen.sh
 	mkdir -p build/klh10
 	(cd tools/klh10; ./autogen.sh)
 	(cd build/klh10; ../../tools/klh10/configure --bindir=$(CURDIR)/bin)
 	make -C build/klh10/bld-kl
+
+tools/klh10/autogen.sh:
+	git submodule update --init tools/klh10
 
 bin/kn10-kl: bin build/klh10/bld-kl/kn10-kl
 	make -C build/klh10/bld-kl install
