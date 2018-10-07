@@ -43,7 +43,7 @@ BOOTSTRAP = '../tapes/bootstrap.tap'
 class KLH10:
     def __init__(self):
         self.ex =  pexpect.spawn('../bin/kn10-kl ../klt20.ini', encoding='iso8859-1')
-        self.ex.logfile_read = sys.stdout
+        self.ex.logfile_read = open(sys.stdout.fileno(), mode='w', encoding='utf8', buffering=1)
         self.expect('ipaddr=')
 
     def send(self, *args, **kw):
