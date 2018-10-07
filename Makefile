@@ -16,7 +16,7 @@ TOPS20_7:=	BB-H137F-BM:install \
 # complete than bitsavers
 TOPS20_BASE:=http://pdp-10.trailing-edge.com/tapes/
 
-dec-7.0-tapes:
+dec-7.0-tapes: tapes/dec
 	for tape_name in $(TOPS20_7); do \
 		oIFS="$$IFS" ;\
 		IFS=: ;\
@@ -34,9 +34,11 @@ dec-7.0-tapes:
 
 tapes/dev/install.tap: dec-7.0-tapes
 
+tapes/dec:
+	mkdir -p tapes/dec
+
 clean::
-	true
-#	$(RM) -r tapes/dec
+	$(RM) -r tapes/dec
 
 pexpect-venv/bin/python3:
 	python3 -m venv pexpect-venv
