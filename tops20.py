@@ -39,11 +39,13 @@ import sys
 DISKFILE = 'RH20.RP07.1'
 BOOTSTRAP = '../tapes/bootstrap.tap'
 
+_output = open(sys.stdout.fileno(), mode='w', encoding='utf8', buffering=1)
+
 
 class KLH10:
     def __init__(self):
         self.ex =  pexpect.spawn('../bin/kn10-kl ../klt20.ini', encoding='iso8859-1')
-        self.ex.logfile_read = open(sys.stdout.fileno(), mode='w', encoding='utf8', buffering=1)
+        self.ex.logfile_read = _output
         self.expect('ipaddr=')
 
     def send(self, *args, **kw):
