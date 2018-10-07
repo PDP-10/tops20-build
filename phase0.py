@@ -42,16 +42,12 @@ def install():
 
     kl = tops20.KLH10()
     kl.install_dec('PHASE0')
-    kl.expect('\$')
-    kl.cmd('connect <system>')
-    kl.expect('\$')
-    kl.cmd('copy 2060-monmax.exe.* monitr.exe')
+    kl.cl('connect <system>')
+    kl.cl('copy 2060-monmax.exe.* monitr.exe')
     kl.restore_interchange('../config/config.tap')
     # *sigh*
-    kl.expect('\$')
-    kl.cmd('rename 7-conf.cmd 7-config.cmd')
-    kl.expect('\$')
-    kl.cmd('rename 7-ptyc.ato 7-ptycon.ato')
+    kl.cl('rename 7-conf.cmd 7-config.cmd')
+    kl.cl('rename 7-ptyc.ato 7-ptycon.ato')
     kl.shutdown()
 
 
@@ -63,7 +59,7 @@ def makestrap():
 
     kl.login()
 
-    kl.systape(tops20.BOOTSTRAP)
+    kl.systape(tops20.BOOTSTRAP, 'PHASE0')
 
     kl.shutdown()
 
