@@ -27,8 +27,8 @@ it's currently based on the original unpatched 7.0 distribution (but
 that might be superceded by the source code).
 
 At the moment, ```src/``` contains only a copy of the unpatched 7.0
-monitor code; this is expected to be rolled forward and expanded over
-time (EXEC is obviously the next step).
+monitor and EXEC code; this is expected to be rolled forward and
+expanded over time.
 
 The vision (possibly hallucination) that ```src/```xxx might
 eventually replaced by submodules pointing into repositories with more

@@ -99,7 +99,7 @@ clean-phase1:
 
 clean:: clean-phase1
 
-phase1/phase1.tap: phase1 pexpect-venv/bin/python3 tapes/bootstrap.tap bin/kn10-kl phase1.py src/monitor.tap
+phase1/phase1.tap: phase1 pexpect-venv/bin/python3 tapes/bootstrap.tap bin/kn10-kl phase1.py src/monitor.tap src/exec.tap
 	(cd phase1; ../pexpect-venv/bin/python3 ../phase1.py)
 
 tools/back10/back10:
@@ -142,5 +142,17 @@ src/monitor.tap: $(addprefix src/monitor/,$(MONITOR_SRC)) tools/back10/back10
 
 clean::
 	$(RM) src/monitor.tap
+
+EXEC_SRC = \
+	edexec.mac excsrc.cmd exec.ctl exec0.mac exec1.mac exec2.mac \
+	exec3.mac exec4.mac execca.mac execcs.mac execde.mac execed.mac \
+	execf0.mac execgl.mac execin.mac execmt.mac execp.mac execpr.mac \
+	execqu.mac execse.mac execsu.mac execvr.mac loexec.ccl mkexec.cmd
+
+src/exec.tap: $(addprefix src/exec/,$(EXEC_SRC)) tools/back10/back10
+	(cd src/exec; ../../tools/back10/back10 -c -f ../exec.tap -i $(EXEC_SRC))
+
+clean::
+	$(RM) src/exec.tap
 
 .PHONEY: dec-7.0-tapes clean clean-phase0 clean-phase1

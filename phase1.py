@@ -47,11 +47,12 @@ def install():
     kl.shutdown()
 
 
-def monbuild():
+def build():
     kl = tops20.KLH10()
     kl.boot()
     kl.login()
     kl.build('<src>', maximum_subdirectories=262143)
+
     kl.build('<src.monitor>')
     kl.cl('connect <src.monitor>')
     kl.restore_interchange('../src/monitor.tap')
@@ -71,6 +72,26 @@ def monbuild():
         kl.shutdown()
         sys.exit(1)
     kl.cl('copy 2060-monmax.exe <system>monitr.exe')
+
+    kl.build('<src.exec>')
+    kl.cl('connect <src.exec>')
+    kl.restore_interchange('../src/exec.tap')
+    kl.cl('del *.exe')
+    kl.cl('copy tty: batch.cmd')
+    kl.line('enable')
+    kl.send('\032')
+    kl.cl('submit exec/time/notify')
+    kl.expect('From SYSTEM: Job EXEC request #[0-9]* finished executing at', timeout=3600)
+    kl.line('')
+    kl.cl('type exec.log')
+    kl.cl('dir exec.exe')
+    index = kl.expect(['EXEC.EXE', 'File not found'])
+    if index != 0:
+        print('exec not built')
+        kl.shutdown()
+        sys.exit(1)
+    kl.cl('copy exec.exe <system>exec.exe')
+
     kl.shutdown()
 
     # now boot it and see if it worked, if so, build an install tape
@@ -88,4 +109,4 @@ def monbuild():
 
 if __name__ == '__main__':
     install()
-    monbuild()
+    build()
