@@ -135,7 +135,8 @@ MONITOR_SRC = \
 	ptr.mac router.mac rp2.mac rsxsrv.mac scampi.mac scapar.mac sched.mac \
 	scjsys.mac sclink.mac scpar.mac scsjsy.mac sercod.mac sources.cmd \
 	stg.mac swpalc.mac syserr.mac sysflg.mac systap.ctl tape.mac \
-	timer.mac tops.mac ttydef.mac ttysrv.mac vedit.mac versio.mac
+	timer.mac tops.mac ttydef.mac ttysrv.mac vedit.mac versio.mac \
+	batch.cmd
 
 src/monitor.tap: $(addprefix src/monitor/,$(MONITOR_SRC)) tools/back10/back10
 	(cd src/monitor; ../../tools/back10/back10 -c -f ../monitor.tap -i $(MONITOR_SRC))
@@ -147,7 +148,8 @@ EXEC_SRC = \
 	edexec.mac excsrc.cmd exec.ctl exec0.mac exec1.mac exec2.mac \
 	exec3.mac exec4.mac execca.mac execcs.mac execde.mac execed.mac \
 	execf0.mac execgl.mac execin.mac execmt.mac execp.mac execpr.mac \
-	execqu.mac execse.mac execsu.mac execvr.mac loexec.ccl mkexec.cmd
+	execqu.mac execse.mac execsu.mac execvr.mac loexec.ccl mkexec.cmd \
+	batch.cmd
 
 src/exec.tap: $(addprefix src/exec/,$(EXEC_SRC)) tools/back10/back10
 	(cd src/exec; ../../tools/back10/back10 -c -f ../exec.tap -i $(EXEC_SRC))
