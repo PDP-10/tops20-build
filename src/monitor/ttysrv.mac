@@ -1,3 +1,5 @@
+; [GH0](9180) Tue Oct  9 02:30:07 EDT 2018 kcr
+; default terminal type is vt300 for everything, and terminal size set to 0
 ; Edit= 9146 to TTYSRV.MAC on 9-Feb-90 by GSCOTT
 ;Turning off TT%PGM didn't really work on LAT terminals because the LAT server
 ;was not being told to turn off flow control in both directions, which makes
@@ -504,13 +506,13 @@ DEVTT0:: DVXTT0
 
 
 ;USUAL DEVICE FLAGS AND STATUS
-; 66 LINES/PAGE, 75 CHARS/LINE
+; 0 LINES/PAGE, 0 CHARS/LINE    ; [GH0]
 ; WAKEUP ON ALL, ECHO MODE 2 (DEFERRED OR IMMED), Refuse Links
 ; DATA MODE ASCII, 'RAISE' LC INPUT (ALSO CONVERTS OLD-STYLE ALT-MODES)
 
-NORMTF::^D66B10+^D72B17+17B23+2B25+1B29+1B31+TT%PGM ;[9041]
-NORMTY::.TTDEF			;[7.1230] Non-CTY terminal type
-CTYTY:: .TT120			;[7.1230] CTY terminal type defaults to LA120
+NORMTF::0B10+0B17+17B23+2B25+TT%ALK+1B29+1B31+TT%PGM ;[9041]
+NORMTY::			;same as CTY
+CTYTY:: .TT300			;an xterm by any other name
 
 TAB81::	EXP 1B0+1B8+1B16+1B24+1B32
 TAB82::	EXP 1B4+1B12+1B20+1B28
