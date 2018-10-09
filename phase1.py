@@ -55,6 +55,7 @@ def build():
 
     kl.build('<src.monitor>')
     kl.cl('connect <src.monitor>')
+    kl.cl('del *.*.*')
     kl.restore_interchange('../src/monitor.tap')
     kl.cl('del *.exe')
     kl.cl('submit ln2070.ctl/time/notify')
@@ -71,6 +72,7 @@ def build():
 
     kl.build('<src.exec>')
     kl.cl('connect <src.exec>')
+    kl.cl('del *.*.*')
     kl.restore_interchange('../src/exec.tap')
     kl.cl('del *.exe')
     kl.cl('submit exec/time/notify')
