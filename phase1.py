@@ -97,6 +97,8 @@ def build():
 
     kl.systape('phase1.tap', 'PHASE1')
 
+    kl.cl('information version')
+
     kl.shutdown()
 
 
