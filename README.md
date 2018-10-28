@@ -8,8 +8,9 @@ This is the beginning of a builder for TOPS-20.  At the moment,
 make phase1/phase1.tap
 ```
 
-should build an installer tape image based on the monitor sources in
-```src/monitor``` and ```tapes/bootstrap.tap```.
+should build an installer tape image based on the monitor and exec
+sources in ```src/{monitor,exec}``` and the bootstrap OS installer
+in ```tapes/bootstrap.tap```.
 
 This is not necessary, but if you're feeling like keeping me honest, 
 ```tapes/bootstrap``` can be rebuilt from the DEC distribution tapes
@@ -39,6 +40,6 @@ an expected consequence of the virtual networking not being hooked up.
 
 ## Requirements
 
-Needs Python 3 (with a functional venv modeul) and enough network
+Needs Python 3 (with a functional venv module) and enough network
 access to get a copy of pexpect.
 
