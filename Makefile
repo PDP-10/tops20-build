@@ -170,4 +170,7 @@ clean::
 src/midas.tap: src/midas tools/back10/back10
 	(cd src/midas; ../../tools/back10/back10 -c -f ../midas.tap -i $(notdir $(wildcard src/midas/*.mid)))
 
+clean::
+	$(RM) src/midas.tap
+
 .PHONEY: dec-7.0-tapes clean clean-phase0 clean-phase1
