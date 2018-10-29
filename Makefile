@@ -99,7 +99,7 @@ clean-phase1:
 
 clean:: clean-phase1
 
-phase1/phase1.tap: phase1 pexpect-venv/bin/python3 tapes/bootstrap.tap bin/kn10-kl phase1.py src/monitor.tap src/exec.tap
+phase1/phase1.tap: phase1 pexpect-venv/bin/python3 tapes/bootstrap.tap bin/kn10-kl phase1.py src/monitor.tap src/exec.tap src/midas.tap
 	(cd phase1; ../pexpect-venv/bin/python3 ../phase1.py)
 
 tools/back10/back10:
@@ -156,5 +156,18 @@ src/exec.tap: $(addprefix src/exec/,$(EXEC_SRC)) tools/back10/back10
 
 clean::
 	$(RM) src/exec.tap
+
+src/midas: $(wildcard ref/its/midas/*)
+	$(RM) -r src/midas src/-midas
+	mkdir src/-midas
+	for i in ref/its/src/midas/*; do echo $$i | sed -Ee 's;(.*/)([^.]*)\.(.*);perl -p -e '\''s/\\000//g'\'' \1\2.\3 | perl -p -e '\''s/$$/\\r/'\'' > src/-midas/\2.mid;'  | sh -x; done
+	ls src/-midas
+	mv src/-midas src/midas
+
+clean::
+	$(RM) -r src/midas src/-midas
+
+src/midas.tap: src/midas tools/back10/back10
+	(cd src/midas; ../../tools/back10/back10 -c -f ../midas.tap -i $(notdir $(wildcard src/midas/*.mid)))
 
 .PHONEY: dec-7.0-tapes clean clean-phase0 clean-phase1

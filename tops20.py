@@ -194,14 +194,18 @@ class KLH10:
             self.cl(command, '\$\$')
         self.cl('', '\$\$')
 
-    def restore_interchange(self, tape):
+    def restore(self, tape, interchange=False):
         self.mttape(tape)
         self.cl('dumper')
         self.cl('files', 'DUMPER>')
-        self.cl('interchange', 'DUMPER>')
+        if interchange:
+            self.cl('interchange', 'DUMPER>')
         self.cl('tape mta0:', 'DUMPER>')
         self.cl('restore <*>*.*.*', 'DUMPER>')
         self.cl('exit', 'DUMPER>')
+
+    def restore_interchange(self, tape):
+        self.restore(tape, interchange=True)
 
     def systape(self, tape, structure='PS'):
         self.mttape('%s create' % (tape,))

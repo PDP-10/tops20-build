@@ -1,3 +1,6 @@
 [submodule "tools/klh10"]
 	path = tools/klh10
 	url = https://github.com/PDP-10/klh10.git
+[submodule "ref/its"]
+	path = ref/its
+	url = https://github.com/PDP-10/its.git

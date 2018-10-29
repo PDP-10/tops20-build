@@ -87,6 +87,16 @@ def build():
         sys.exit(1)
     kl.cl('copy exec.exe <system>exec.exe')
 
+    kl.build('<src.midas>')
+    kl.cl('connect <src.midas>')
+    kl.cl('del *.*.*')
+    kl.restore_interchange('../src/midas.tap')
+    kl.cl('del *.exe')
+    kl.cl('midas cvtunv')
+    kl.cl('dsk:cvtunv')
+    kl.cl('midas midas')
+    kl.cl('copy *.exe <third>')
+
     kl.shutdown()
 
     # now boot it and see if it worked, if so, build an install tape

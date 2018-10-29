@@ -48,6 +48,8 @@ def install():
     # *sigh*
     kl.cl('rename 7-conf.cmd 7-config.cmd')
     kl.cl('rename 7-ptyc.ato 7-ptycon.ato')
+    kl.build('<third>')
+    kl.restore('../tapes/third.tap')
     kl.shutdown()
 
 
