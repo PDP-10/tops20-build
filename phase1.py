@@ -95,6 +95,8 @@ def build():
     kl.cl('midas cvtunv')
     kl.cl('dsk:cvtunv')
     kl.cl('midas midas')
+    # should purify but our exec doesn't know how to do that
+    # see the top of MIDAS.MID
     kl.cl('copy *.exe <third>')
 
     kl.shutdown()
