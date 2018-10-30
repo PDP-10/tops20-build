@@ -61,7 +61,6 @@ def build():
     kl.cl('submit ln2070.ctl/time/notify')
     kl.expect('From SYSTEM: Job LN2070 request #[0-9]* finished executing at', timeout=3600)
     kl.line('')
-    kl.cl('type ln2070.log')
     kl.cl('dir 2060-monmax.exe')
     index = kl.expect(['2060-MONMAX.EXE', 'File not found'])
     if index != 0:
@@ -78,14 +77,26 @@ def build():
     kl.cl('submit exec/time/notify')
     kl.expect('From SYSTEM: Job EXEC request #[0-9]* finished executing at', timeout=3600)
     kl.line('')
-    kl.cl('type exec.log')
     kl.cl('dir exec.exe')
     index = kl.expect(['EXEC.EXE', 'File not found'])
     if index != 0:
         print('exec not built')
         kl.shutdown()
         sys.exit(1)
+
     kl.cl('copy exec.exe <system>exec.exe')
+    kl.expect('OK')
+
+    kl.cl('info version')
+
+    kl.build('<src.iddt>')
+    kl.cl('connect <src.iddt>')
+    kl.cl('del *.*.*')
+    kl.restore_interchange('../src/iddt.tap')
+    kl.cl('exec iddt')
+    kl.cl('<third>iddt.exe', 'Output IDDT to ')
+    kl.expect('IDDT 9.1\r\n')
+    kl.send('\032')
 
     kl.build('<src.midas>')
     kl.cl('connect <src.midas>')
@@ -95,6 +106,13 @@ def build():
     kl.cl('midas cvtunv')
     kl.cl('dsk:cvtunv')
     kl.cl('midas midas')
+    kl.cl('iddt')
+    kl.expect('IDDT 9.1\r\n')
+    kl.line(';ymidas.exe')
+    kl.send('purify\033g')
+    kl.expect('IDDT\r\n')
+    kl.line(';umidas.exe')
+    kl.send('\032')
     # should purify but our exec doesn't know how to do that
     # see the top of MIDAS.MID
     kl.cl('copy *.exe <third>')

@@ -274,7 +274,11 @@
 
 	TITLE		IDDT
 	SUBTTL	W.W.PLUMMER, NOVEMBER 71
-	SEARCH	CPUNUM
+;	SEARCH	CPUNUM
+; The following were presumably from the above
+        KA10F==0
+        KI10F==0
+        KL20F==1
 
 	SEARCH	MONSYM
 

@@ -99,7 +99,7 @@ clean-phase1:
 
 clean:: clean-phase1
 
-phase1/phase1.tap: phase1 pexpect-venv/bin/python3 tapes/bootstrap.tap bin/kn10-kl phase1.py src/monitor.tap src/exec.tap src/midas.tap
+phase1/phase1.tap: phase1 pexpect-venv/bin/python3 tapes/bootstrap.tap bin/kn10-kl phase1.py src/monitor.tap src/exec.tap src/midas.tap src/iddt.tap
 	(cd phase1; ../pexpect-venv/bin/python3 ../phase1.py)
 
 tools/back10/back10:
@@ -172,5 +172,11 @@ src/midas.tap: src/midas tools/back10/back10
 
 clean::
 	$(RM) src/midas.tap
+
+src/iddt.tap: $(wildcard src/iddt/*.mac)
+	(cd src/iddt; ../../tools/back10/back10 -c -f ../iddt.tap -i $(notdir $(wildcard src/iddt/*.mac)))
+
+clean::
+	$(RM) src/iddt.tap
 
 .PHONEY: dec-7.0-tapes clean clean-phase0 clean-phase1
