@@ -210,6 +210,10 @@ int debug = 0;			/* (-D) debugging flag. */
 
 char* tapename = NULL;		/* (-f) tape file name. */
 
+int dumper_pages;               /* number of pages left in a dumper file */
+int dumper_bytes;               /* number bytes left in a dumper file */
+int dumper_bytesize;            /* the notional width of said bytes */
+
 /*
  *  Parameters we use when writing tapes:
  */
@@ -2305,7 +2309,10 @@ void copy2disk(u_int offset, u_int len, u_int eofflag)
       break;
     case DT_DUMPER:
       /* select format from byte size, default to seven-bit bytes. */
-      format = DF_BINARY;
+      if (dumper_bytesize == 36)
+        format = DF_BINARY;
+      else
+        format = DF_ASCII;
       break;
     default:
       format = DF_ASCII;
@@ -3177,6 +3184,9 @@ void dmp_flhd(w36* data)
     printf(" %s\n", cname);
     break;
   case ACT_EXTRACT:
+    dumper_pages = pcount;
+    dumper_bytes = bcount;
+    dumper_bytesize = bsize;
     if (checkarg()) {
       if (openwrite()) {
 	extracting = 1;
@@ -3197,8 +3207,21 @@ void dmp_flhd(w36* data)
 
 void dmp_data(w36* data)
 {
+  int eof = dumper_pages <= 1;
+  int words = 512;
   if (extracting) {
-    copy2disk((data - tapebuffer), 512, 0);
+    if (eof) {
+      if (dumper_bytesize == 36) {
+        words = dumper_bytes;
+      } else {
+        words = dumper_bytes / 5;
+        if ((words * 5) < dumper_bytes)
+          words++;
+      }
+    }
+    copy2disk((data - tapebuffer), words, eof);
+    dumper_pages--;
+    dumper_bytes -= dumper_bytesize == 36 ? 512 : 2560;
   }
 }
 
