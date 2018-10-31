@@ -87,7 +87,7 @@ def build():
     kl.cl('copy exec.exe <system>exec.exe')
     kl.expect('OK')
 
-    kl.cl('info version')
+    kl.build('<third>')
 
     kl.build('<src.iddt>')
     kl.cl('connect <src.iddt>')
@@ -95,7 +95,7 @@ def build():
     kl.restore_interchange('../src/iddt.tap')
     kl.cl('exec iddt')
     kl.cl('<third>iddt.exe', 'Output IDDT to ')
-    kl.expect('IDDT 9.1\r\n')
+    kl.expect('IDDT 9.1')
     kl.send('\032')
 
     kl.build('<src.midas>')
@@ -107,16 +107,34 @@ def build():
     kl.cl('dsk:cvtunv')
     kl.cl('midas midas')
     kl.cl('iddt')
-    kl.expect('IDDT 9.1\r\n')
+    kl.expect('IDDT 9.1')
     kl.line(';ymidas.exe')
     kl.send('purify\033g')
-    kl.expect('IDDT\r\n')
+    kl.expect('IDDT')
     kl.line(';umidas.exe')
     kl.send('\032')
     # should purify but our exec doesn't know how to do that
     # see the top of MIDAS.MID
     kl.cl('copy *.exe <third>')
 
+    kl.build('<info>')
+    kl.cl('del <info>*.*.*')
+    kl.build('<emacs>')
+    kl.cl('del <emacs>*.*.*')
+    kl.restore('../ref/emacs/emacs.tap', ['toed: ps:', 'info: ps:'])
+    kl.cl('connect <emacs>')
+    kl.cl('del *.exe')
+    kl.cl('edit/unsequence teco.mid')
+    kl.cl('f.symtab\033', '\*')
+    kl.cl('s13997\03324571\033.', '\*')  # ;SHOULD BE PLENTY (and yet)
+    kl.cl('e', '\*')
+    kl.cl('edit emacs.ctl')
+    kl.cl('sinfo:emacs.init\033info:info.init\033^:*,10000', '\*')
+    kl.cl('e', '\*')
+    kl.cl('submit emacs/time/notify')
+    kl.expect('From SYSTEM: Job EMACS request #[0-9]* finished executing at', timeout=3600)
+    kl.line('')
+    kl.cl('rename nemacs.exe emacs.exe')
     kl.shutdown()
 
     # now boot it and see if it worked, if so, build an install tape

@@ -4,3 +4,6 @@
 [submodule "ref/its"]
 	path = ref/its
 	url = https://github.com/PDP-10/its.git
+[submodule "ref/emacs"]
+	path = ref/emacs
+	url = https://github.com/PDP-10/emacs.git

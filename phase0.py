@@ -50,6 +50,7 @@ def install():
     kl.cl('rename 7-ptyc.ato 7-ptycon.ato')
     kl.build('<third>')
     kl.restore('../tapes/third.tap')
+    kl.cl('set file protection <third>*.*.* 777752')
     kl.shutdown()
 
 

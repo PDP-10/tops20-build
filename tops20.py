@@ -159,7 +159,7 @@ class KLH10:
 
     def build(self, name, **kw):
         subcommands = {
-            'protection': None,
+            'protection': '777740',
             'ipcf': None,
             'operator': None,
             'number': None,
@@ -172,7 +172,7 @@ class KLH10:
             'number': None,
             'user-of-group': None,
             'directory-group': None,
-            'default-file-protection': None,
+            'default-file-protection': '777752',
             'generations': None,
             'maximum-subdirectories': None,
             }
@@ -194,18 +194,19 @@ class KLH10:
             self.cl(command, '\$\$')
         self.cl('', '\$\$')
 
-    def restore(self, tape, interchange=False):
+    def restore(self, tape, dirs=['<*>*.*.*'], interchange=False):
         self.mttape(tape)
         self.cl('dumper')
         self.cl('files', 'DUMPER>')
         if interchange:
             self.cl('interchange', 'DUMPER>')
         self.cl('tape mta0:', 'DUMPER>')
-        self.cl('restore <*>*.*.*', 'DUMPER>')
+        for ds in dirs:
+            self.cl('restore ' + ds, 'DUMPER>')
         self.cl('exit', 'DUMPER>')
 
     def restore_interchange(self, tape):
-        self.restore(tape, interchange=True)
+        self.restore(tape, ['<*>*.*.*'], interchange=True)
 
     def systape(self, tape, structure='PS'):
         self.mttape('%s create' % (tape,))
