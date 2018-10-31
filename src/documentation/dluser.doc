@@ -1,0 +1,155 @@
+
+
+
+DLUSER.DOC -- Changes from V4(4) to V5(4)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1976,1979,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+DLU5.DOC                                                        Page 2
+
+
+DLUSER.DOC -- Changes from V4(4) to V5(4)
+October 1981
+
+
+
+1.0  SUMMARY
+
+DLUSER is a program which obtains identifying information  about  each
+directory  on  a system and places it in a file.  The program can then
+use this file to create the same directories later, in the event of  a
+system rebuild.
+
+DLUSER version 5(4) runs on Release 5 of TOPS-20.
+
+DLUSER does not depend on any other software during its execution.
+
+DLUSER is documented in  the  TOPS-20  Operator's  Guide  and  TOPS-20
+System Manager's Guide.
+
+
+
+2.0  EXTERNAL CHANGES
+
+None.
+
+
+
+3.0  KNOWN BUGS AND DEFICIENCIES
+
+None.
+
+
+
+4.0  INSTALLATION INSTRUCTIONS
+
+
+4.1  Files Needed to Run DLUSER
+
+DLUSER consists of one file, DLUSER.EXE.
+
+
+4.2  Instructions for Loading and Installing DLUSER
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>DLUSER.EXE (TO) SYS:*.*.-1
+     REWIND
+DLU5.DOC                                                        Page 3
+
+
+4.3  Files Needed to Build DLUSER
+
+DLUSER is built from the following file:
+
+     DLUSER.MAC
+
+In addition, the following files must be in SYS:
+
+     MACREL.REL
+     MACSYM.UNV
+     MONSYM.UNV
+
+
+4.4  Instructions for Building DLUSER
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.*.* (TO) <self>*.*.*
+     REWIND
+     ^C
+     SUBMIT DLUSER.CTL/TIME/UNIQ:0/REST
+
+
+
+5.0  INTERNAL changes
+
+Refer to DLUSER.TCO for detailed information of changes to DLUSER.
+
+
+
+6.0  SUGGESTIONS
+
+None.
+
+
+
+[End of DLU5.DOC]

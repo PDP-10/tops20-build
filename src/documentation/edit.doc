@@ -1,0 +1,156 @@
+
+
+
+EDIT.DOC -- Changes from V4(51) to V5(51)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1976,1979,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+EDI5.DOC                                                        Page 2
+
+
+EDIT.DOC -- Changes from V4(51) to V5(51)
+October 1981
+
+
+
+1.0  SUMMARY
+
+EDIT is a line-oriented editor which is used to create and  edit  text
+files.   It  resembles  the TOPS-10 editor SOS in function and command
+structure.
+
+EDIT version 5(51) runs on TOPS-20 Release 5.
+
+EDIT does not depend on any other software during its execution.
+
+EDIT is documented in the DECSYSTEM-20 Edit User's Guide.
+
+
+
+2.0  EXTERNAL CHANGES
+
+New command EK exists, which removes line sequence  numbers  and  also
+page marks (form feeds).  This is very similar to EU, but is even more
+complete.
+
+Line sequence files now have byte sizes of 36 bits.  This was done  to
+make the EXEC APPEND command work correctly.
+
+
+
+3.0  KNOWN BUGS AND DEFICIENCIES
+
+None.
+
+
+
+4.0  INSTALLATION INSTRUCTIONS
+
+
+4.1  Files Needed to Run EDIT
+
+EDIT consists of one file, EDIT.EXE.
+EDI5.DOC                                                        Page 3
+
+
+4.2  Instructions for Loading and Installing EDIT
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>EDIT.EXE (TO) SYS:*.*.-1
+     REWIND
+
+
+4.3  Files Needed to Build EDIT
+
+EDIT is built from the following files:
+
+     EDIT.MAC
+
+In addition, the following files must be in SYS:
+
+     MONSYM.UNV
+
+
+4.4 Instructions for Building EDIT
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.*.* (TO) <self>*.*.*
+     REWIND
+     ^C
+     SUBMIT EDIT.CTL/TIME/UNIQ:0/REST
+EDI5.DOC                                                        Page 4
+
+
+5.0  INTERNAL CHANGES
+
+Refer to EDIT.TCO for detailed information about changes.
+
+
+
+6.0  SUGGESTIONS
+
+None.
+
+
+
+[End of EDI5.DOC]

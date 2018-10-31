@@ -1,0 +1,166 @@
+
+
+
+SETSPD.DOC -- Changes from V4(15) to V5(25)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1978,1980,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+STP5.DOC                                                        Page 2
+
+
+SETSPD.DOC -- Changes from V4(15) to V5(25)
+October 1981
+
+
+
+1.0  SUMMARY
+
+5-SETSPD  is  a  privileged  system  program   which   processes   the
+5-CONFIG.CMD file and, in so doing, sets many initial parameters about
+the system such as:  initial line speeds, system  logical  names,  and
+magtape logical to physical correspondences.
+
+5-SETSPD version 5(15) runs only on Release 5 of TOPS-20.
+
+5-SETSPD depends on the file PS:<SYSTEM>5-CONFIG.CMD.
+
+
+
+2.0  EXTERNAL CHANGES
+
+None.
+
+
+
+3.0  KNOWN BUGS AND DEFICIENCIES
+
+None.
+
+
+
+4.0  INSTALLATION INSTRUCTIONS
+
+
+4.1  Files Needed to Run 5-SETSPD
+
+5-SETSPD consists of one file, 5-SETSPD.EXE and it reads  the  command
+file PS:<SYSTEM>5-CONFIG.CMD.
+
+
+4.2  Instructions for Loading and Installing SETSPD
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     RESTORE <*>5-SETSPD.EXE (TO) SYSTEM:*.*.-1
+     REWIND
+     ^C
+STP5.DOC                                                        Page 3
+
+
+4.3  Files Needed to Build SETSPD
+
+5-SETSPD is built from the following files:
+
+     SETSPD.MAC
+     SERCOD.UNV
+     SERCOD.REL
+
+In addition, the following files must be on SYS:
+
+     MACREL.REL
+     MACSYM.UNV
+     MONSYM.UNV
+
+
+4.4  Instructions for Building SETSPD
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.*.* (TO) <self>*.*.*
+     REWIND
+     ^C
+     SUBMIT SETSPD.CTL/TIME/UNIQ:0/REST
+
+The command file PS:<SYSTEM>5-CONFIG.CMD is produced by using EDIT and
+typing in the appropriate commands.
+
+
+4.5  Special Considerations
+
+SETSPD is run automatically by the monitor  when  it  is  started  and
+whenever  one  of  the  front  end  PDP11's  is reloaded.  It need not
+however be run under timesharing.
+
+
+
+5.0  INTERNAL CHANGES
+
+Refer to SETSPD.TCO for detailed information about changes.
+
+
+
+6.0  SUGGESTIONS
+
+None.
+
+
+
+[End of STP5.DOC]
+

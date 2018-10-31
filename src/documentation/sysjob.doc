@@ -1,0 +1,185 @@
+
+
+
+SYSJOB.DOC -- Changes from V4(10) to V5(10)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1976,1979,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+SYJ5.DOC                                                        Page 2
+
+
+SYSJOB.DOC -- Changes from V4(10) to V5(10)
+October 1981
+
+
+
+1.0  SUMMARY
+
+SYSJOB is a program for controlling system background programs.  It is
+normally  started  only  by job 0, and it creates additional processes
+and jobs as necessary.  An operator or other privileged job  may  pass
+commands  to  SYSJOB  via an EXEC command (Ctrl-E) SPEAK to affect the
+status of the background programs.
+
+SYSJOB Version 5(10) runs on TOPS20 Release 5.
+
+SYSJOB  does  not  require  any  other  software  modules  for  normal
+execution.
+
+SYSJOB is  documented  in  the  TOPS-20  Operator's  Guide  under  the
+(Ctrl-E)SPEAK command.
+
+
+
+2.0  EXTERNAL CHANGES
+
+A new command, "DUMP" has been added to dump a fork's contents.
+
+
+
+3.0  KNOWN BUGS AND DEFICIENCIES
+
+None.
+
+
+
+4.0  INSTALLATION INSTRUCTIONS
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     RESTORE <*>SYSJOB.EXE TO: <SYSTEM>*.*.-1
+     REWIND
+SYJ5.DOC                                                        Page 3
+
+
+4.1  Files Needed to Run SYSJOB
+
+The monitor expects to find SYSJOB.EXE in SYSTEM:  at startup.  SYSJOB
+in  turn  expects  to  find the file SYSJOB.RUN in SYSTEM:.  This file
+contains the initial set of commands to  start  the  usual  background
+programs  and  the  operator  job.  If the monitor is started in debug
+mode, (DBUGSW=2), SYSJOB  will  look  for  the  file  SYSJOB.DEBUG  in
+SYSTEM:   instead  of  SYSJOB.RUN.   This allows a different (possibly
+null) set of background programs to be started when debugging.   While
+SYSJOB  is running it periodically looks for a file in SYSTEM:  called
+SYSJOB.COMMANDS.  If such a file exists, SYSJOB executes the  commands
+in the file and deletes the file.
+
+
+4.2  Instructions for Loading and Installing SYSJOB
+
+SYSJOB.EXE and SYSJOB.RUN are loaded into  SYSTEM:   as  part  of  the
+normal  installation  and disk refresh procedure.  New versions may be
+installed by copying the .EXE file to SYSTEM:.  The new  version  will
+be  used  the  next  time  the monitor is started, or a command may be
+given to SYSJOB to cause an immediate reload.
+
+
+4.3  Files Needed to Build SYSJOB
+
+SYSJOB is built from the following file:
+
+     SYSJOB.MAC
+
+In addition, the following files must be on SYS:
+
+     MACSYM.UNV
+     MONSYM.UNV
+
+
+4.4  Instructions for Building SYSJOB
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.*.* (TO) <self>*.*.*
+     REWIND
+     ^C
+     SUBMIT SYSJOB.CTL/TIME/UNIQ:0/REST
+SYJ5.DOC                                                        Page 4
+
+
+4.5  Special Considerations
+
+SYSJOB must be available in SYSTEM:.  Copies in other directories  are
+not required.  SYSJOB should not be started manually if the job 0 copy
+is running normally, since this would  automatically  start  redundant
+copies  of  the  background  programs  and conflicts would occur.  For
+debugging purposes, an internal flag may be set which causes SYSJOB to
+use  an  initial command file other than SYSJOB.RUN.  Consult a source
+listing for details.
+
+Commands may be given to SYSJOB during normal system operation by  use
+of the (Ctrl-E)SPEAK command.  See the Operator's Guide for details.
+
+
+
+5.0  INTERNAL CHANGES
+
+Refer to SYSJOB.TCO for detailed information about changes.
+
+
+
+6.0  SUGGESTIONS
+
+None.
+
+
+
+[End of SYJ5.DOC]

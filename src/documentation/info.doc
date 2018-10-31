@@ -1,0 +1,157 @@
+
+
+
+INFO.DOC -- Changes from V4(6) to V5(6)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1976,1979,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+INF5.DOC                                                        Page 2
+
+
+INFO.DOC -- Changes from V4(5) to V5(6)
+October 1981
+
+
+
+1.0  SUMMARY
+
+INFO is the central information facility of IPCF.  INFO remembers name
+to PID associations and makes these associations available to programs
+running on the systems.
+
+INFO version 5(6) runs only on Release 5 of TOPS-20.
+
+INFO does not depend on any other software during execution.
+
+INFO is documented in the TOPS-20 Monitor Calls Manual.
+
+
+
+2.0  EXTERNAL CHANGES
+
+None.
+
+
+
+3.0  KNOWN BUGS AND DEFICIENCIES
+
+None.
+
+
+
+4.0  INSTALLATION INSTRUCTURES
+
+
+4.1  Files Needed to Run INFO
+
+INFO consists of one file, INFO.EXE.
+
+
+4.2  Instructions for Loading and Installing INFO
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>INFO.EXE (TO) SYS:*.*.-1
+     REWIND
+INF5.DOC                                                        Page 3
+
+
+4.3  Files Needed to Build INFO
+
+INFO is built from the following file:
+
+     INFO.MAC
+
+In addition, the following files must be in SYS:
+
+     MACSYM.UNV
+     MONSYM.MAC
+
+
+4.4  Instructions for Building INFO
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.*.* (TO) <self>*.*.*
+     REWIND
+     ^C
+     SUBMIT INFO.CTL/TIME/UNIQ:0/REST
+
+
+4.5  Special Considerations
+
+None.
+
+
+
+5.0  INTERNAL CHANGES
+
+Refer to INFO.TCO for detailed information to INFO.
+
+
+
+6.0  SUGGESTIONS
+
+None.
+
+
+
+[End of INF5.DOC]

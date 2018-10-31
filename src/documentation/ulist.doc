@@ -1,0 +1,158 @@
+
+
+
+ULIST.DOC -- Changes from V4(10) to V5(10)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1976,1979,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+ULT5.DOC                                                        Page 2
+
+
+ULIST.DOC -- Changes from V4(10) to V5(10)
+October 1981
+
+
+
+1.0  SUMMARY
+
+ULIST provides a mechanism for listing user and directory information.
+The listing may be directed to the printer, the user's terminal, or to
+a file.  ULIST will provide information on user and directory  groups,
+directory  numbers,  quotas,  and  protections,  and  will  list  user
+passwords if desired.
+
+ULIST version 5(10) run on Release 5 of TOPS-20.
+
+ULIST is documented in the TOPS-20 Operator's Guide.
+
+
+
+2.0  EXTERNAL CHANGES
+
+None.
+
+
+
+3.0  KNOWN BUGS AND DEFICIENCIES
+
+None.
+
+
+
+4.0  INSTALLATION INSTRUCTIONS
+
+
+4.1  Files Needed to Run ULIST
+
+ULIST consists of one file, ULIST.EXE.
+
+
+4.2  Instructions for Loading and Installing ULIST
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>ULIST.EXE (TO) SYS:*.*.-1
+     REWIND
+ULT5.DOC                                                        Page 3
+
+
+4.3  Files Needed to Build ULIST
+
+ULIST is built from the following files:
+
+     ULIST.MAC
+
+In addition, the following files must be in SYS:
+
+     MACREL.REL
+     MACSYM.UNV
+     MONSYM.UNV
+
+
+4.4  Instructions for Building ULIST
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.*.* (TO) <self>*.*.*
+     REWIND
+     ^C
+     SUBMIT ULIST.CTL/TIME/UNIQ:0/REST
+
+
+4.5  Special Considerations
+
+WHEEL or OPERATOR priviledges are required to print passwords.
+
+
+
+5.0  INTERNAL CHANGES
+
+Refer to ULIST.TCO for detailed information about changes.
+
+
+
+6.0  SUGGESTIONS
+
+None.
+
+
+
+[End of ULT5.DOC]

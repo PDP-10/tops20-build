@@ -1,0 +1,177 @@
+
+
+
+MAKVFU.DOC -- Changes from V4(3) to V5(3)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1976,1979,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+VFU5.DOC                                                        Page 2
+
+
+MAKVFU.DOC -- Changes from V4(3) to V5(3)
+October 1981
+
+
+
+1.0  SUMMARY
+
+MAKVFU is a utility program to generate LP05/LP07/LP14  Direct  Access
+Vertical Format files.  MAKVFU commands are described in MAKVFU.HLP.
+
+MAKVFU runs on all releases of TOPS-20.
+
+
+
+2.0  EXTERNAL CHANGES
+
+The LINES-PER-INCH command  was  added  for  LP07  printers,  and  the
+INFORMATION command will report the setting.
+
+
+
+3.0  KNOWN BUGS AND DEFICIENCIES
+
+None.
+
+
+
+4.0  INSTALLATION INSTRUCTIONS
+
+
+4.1  Files Needed to Run MAKVFU
+
+MAKVFU consists of two files, MAKVFU.EXE and MAKVFU.HLP.
+
+
+4.2  Instructions for Installing MAKVFU
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>MAKVFU.EXE,<*>MAKVFU.HLP (TO) SYS:*.*.-1
+     REWIND
+VFU5.DOC                                                        Page 3
+
+
+4.3  Files Needed to Build MAKVFU
+
+MAKVFU is built from the following files:
+
+     MAKVFU.MAC
+
+In addition the following files must be on SYS:
+
+     MONSYM.UNV
+     MACSYM.UNV
+     MACREL.REL
+
+
+
+4.4  Instructions for Building MAKVFU
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.*.* (TO) <self>*.*.*
+     REWIND
+     ^C
+     SUBMIT MAKVFU.CTL/TIME/UNIQ:0/REST
+
+
+4.5  Special Considerations
+
+None.
+
+
+
+5.0  INTERNAL CHANGES
+
+Refer to MAKVFU.TCO for changes to MAKVFU.
+
+
+
+6.0  SUGGESTIONS
+
+None.
+VFU5.DOC                                                        Page 4
+
+
+7.0  EXAMPLES
+
+The following sequence of commands  to  MAKVFU  will  produce  a  file
+equivalent to the standard VFU file NORMAL.VFU which is distributed by
+DEC.  It is possible that other sequences of input  will  produce  the
+same VFU file.
+
+     LENGTH 66
+     PAGE-SIZE 60
+     CHANNEL 1 EVERY 60
+     CHANNEL 2 EVERY 30
+     CHANNEL 3 EVERY 2
+     CHANNEL 4 EVERY 3
+     CHANNEL 5 ALL
+     FORMS-BREAK 5
+     CHANNEL 6 EVERY 10
+     CHANNEL 7 EVERY 20
+     CHANNEL 8 ALL
+     CHANNEL 12 BOTTOM
+
+
+
+[End of VFU5.DOC]

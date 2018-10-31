@@ -1,0 +1,180 @@
+
+
+
+CHECKD.DOC -- Changes from V4(30) to V5(33)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1976,1979,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+CKD5.DOC                                                        Page 2
+
+
+CHECKD.DOC -- Changes from V4(30) to V5(33)
+October 1981
+
+
+
+1.0  SUMMARY
+
+CHECKD  checks  TOPS-20  disk  file   structure   and   bittable   for
+consistency.   In  the  process  of  checking the directory structure,
+CHECKD finds all disk space which is in use;  this  allows  CHECKD  to
+compute  the disk pages lost.  CHECKD can optionally release this lost
+space.  CHECKD can  also  be  used  to  completely  rebuild  the  disk
+bittable  or  to  scan  the  directory  structure for a specified disk
+address.  CHECKD may also be used to create new file structures.
+
+CHECKD provides the ability for initializing  labeled  magnetic  tapes
+and for displaying label information on magnetic tapes.
+
+CHECKD version 5(33) runs ONLY on TOPS-20 Release 5.
+
+CHECKD is documented in the TOPS-20 Operator's Guide.
+
+
+
+2.0  EXTERNAL CHANGES
+
+CHECKD includes support for RP07 and BAD BLOCK file editing.
+
+
+
+3.0  KNOWN BUGS AND DEFICIENCIES
+
+None.
+
+
+
+4.0  INSTALLATION INSTRUCTIONS
+
+
+4.1  Files Needed to Run CHECKD
+
+CHECKD consists of one file, CHECKD.EXE.  CHECKD should  be  installed
+on both SYS:  and SYSTEM:
+CKD5.DOC                                                        Page 3
+
+
+4.2  Instructions for Loading and Installing CHECKD
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>CHECKD.EXE (TO) SYS:*.*.-1
+     REWIND
+     EXIT
+     COPY SYS:CHECKD.EXE SYSTEM:CHECKD.EXE
+
+
+
+4.3  Files Needed to Build CHECKD
+
+CHECKD is built from the following file:
+
+     CHECKD.MAC
+
+In addition, the following files must be in SYS:
+
+     MACREL.REL
+     MACSYM.UNV
+     MONSYM.UNV
+     GLXMAC.UNV
+     QSRMAC.UNV
+
+
+4.4  Instructions for Building CHECKD
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.*.* (TO) <self>*.*.*
+     REWIND
+     ^C
+     SUBMIT CHECKD.CTL/TIME/UNIQ:0/REST
+CKD5.DOC                                                        Page 4
+
+
+4.5  Special Considerations
+
+CHECKD must be run with WHEEL  or  OPERATOR  enabled,  since  it  does
+physical disk accesses.  As with most privileged programs, CHECKD must
+be used with caution.  Rebuilding the  bittable  under  any  condition
+except  stand  alone  will  very  likely  result  in  a  mangled  file
+structure.
+
+Care shoud be taken when initializing labeled tapes, since CHECKD will
+unconditionally   destroy   any  existing  data  on  a  tape  when  it
+initializes it.
+
+
+
+5.0  INTERNAL CHANGES
+
+CHECKD can now accomodate RP20/RP07 disk drives.
+
+The help text for CHECKD is now embedded in the code.
+
+
+
+6.0  SUGGESTIONS
+
+Use extreme caution.
+
+
+
+[End of CKD5.DOC]

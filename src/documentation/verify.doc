@@ -1,0 +1,168 @@
+
+
+
+VERIFY.DOC -- Changes from V4(2) to V5(2)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1976,1979,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+VRY5.DOC                                                        Page 2
+
+
+VERIFY.DOC -- Changes from V4(2) to V5(2)
+October 1981
+
+
+
+1.0  SUMMARY
+
+VERIFY is a file/program checksum and version number  comparator.   It
+allows  a  user  to  provide a list of files to be verified.  The file
+contains the file checksum and (if an .EXE)  a  version  number.   The
+verification  that  all  compared software is the intended (or proper)
+software is the sole purpose of this program.
+
+VERIFY version 5(2) runs on all releases of TOPS-20.
+
+VERIFY can depend on other software during its execution.
+
+VERIFY will, if requested, connect to the UETP (User  Enviroment  Test
+Package) and notify it whenever mismatches occur.
+
+VERIFY is not documented.
+
+
+
+2.0  EXTERNAL CHANGES
+
+None.
+
+
+
+3.0  KNOWN BUGS AND DEFICIENCIES
+
+None.
+
+
+
+4.0  INSTALLATION INSTRUCTIONS
+
+
+4.1  Files Needed to Run VERIFY
+
+VERIFY consists of one file, VERIFY.EXE.
+
+
+VRY5.DOC                                                        Page 3
+
+
+4.2  Instructions for Loading and Installing VERIFY
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MAT0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>VERIFY.EXE (TO) SYS:*.*.-1
+     REWIND
+
+
+4.3  Files Needed to Build VERIFY
+
+VERIFY is built from the following file:
+
+     VERIFY.MAC
+
+In addition, the following files must be in SYS:
+
+     MACREL.REL
+     MACSYM.UNV
+     MONSYM.UNV
+
+
+4.4  Instructions for Building VERIFY
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.*.* (TO) <self>*.*.*
+     REWIND
+     ^C
+     SUBMIT VERIFY.CTL/TIME/UNIQ:0/RESET
+
+
+VRY5.DOC                                                        Page 4
+
+
+4.5  Special Considerations
+
+None.
+
+
+
+5.0  INTERNAL CHANGES
+
+None.
+
+
+
+6.0  SUGGESTIONS
+
+None.
+
+
+
+[End of VRY5.DOC]

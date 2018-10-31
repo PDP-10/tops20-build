@@ -1,0 +1,153 @@
+
+
+
+WATCH.DOC -- Changes from V4(7) to V5(7)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1976,1979,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+WTH5.DOC                                                        Page 2
+
+
+WATCH.DOC -- Changes from V4(7) to V5(7)
+October 1981
+
+
+
+1.0  SUMMARY
+
+WATCH is a system program which provides  a  list  of  various  system
+statistics   and  job  run  times  upon  request.   A  user  can  thus
+periodically check system performance with this utility.
+
+WATCH version 5(7) runs on Release 5 of TOPS-20.
+
+WATCH is documented in the TOPS-20 User's Guide.
+
+
+
+2.0  EXTERNAL CHANGES
+
+WATCH version 5 creates a series of data records that can be processed
+by a user-written application program.
+
+
+3.0  KNOWN BUGS AND DEFICIENCIES
+
+None.
+
+
+
+4.0  INSTALLATION INSTRUCTIONS
+
+
+4.1  Files Needed to Run WATCH
+
+WATCH consists of one file, WATCH.EXE.
+
+
+4.2  Instructions for Loading and Installing WATCH
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>WATCH.EXE (TO) SYS:*.*.-1
+     REWIND
+WTH5.DOC                                                        Page 3
+
+
+4.3  Files Needed to Build WATCH
+
+WATCH is built from the following files:
+
+     WATCH.MAC
+     WATMAI.MAC
+     WATDAT.MAC
+
+In addition, the following files must be in SYS:
+
+     MACREL.REL
+     MACSYM.UNV
+     MONSYM.UNV
+
+
+4.4  Instructions for Building WATCH
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.*.* (TO) <self>*.*.*
+     REWIND
+     ^C
+     SUBMIT WATCH.CTL/TIME/UNIQ:0/REST
+
+
+
+5.0  INTERNAL CHANGES
+
+There are no changes to WATCH for Release 5.
+
+
+
+6.0  SUGGESTIONS
+
+None.
+
+
+
+[End of WTH5.DOC]

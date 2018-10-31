@@ -1,0 +1,149 @@
+
+
+
+ACTGEN.DOC -- Changes from V4(3) to V5(3)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1976,1979,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+ATG5.DOC                                                        Page 2
+
+
+ACTGEN.DOC -- Changes from V4(3) to V5(3)
+October 1981
+
+
+
+1.0  SUMMARY
+
+ACTGEN is an account generator program used to create and  install  an
+account  validation  data  base  for  use  by  TOPS-20  in  validating
+accounts.  It is intended primarily for use by the system manager  and
+operator.
+
+ACTGEN runs on TOPS-20 Release 5.
+
+Wheel or operator capabilities must be enabled to run ACTGEN.
+
+ACTGEN is documented in the TOPS-20 System Manager's Guide.
+
+
+
+2.0  EXTERNAL CHANGES
+
+None.
+
+
+
+3.0  RESTRICTIONS AND DEFICIENCIES
+
+There are no known  restrictions  or  deficiencies  in  ACTGEN  as  of
+September 1, 1981.
+
+
+
+4.0  INSTALLATION AND BUILD PROCEDURES
+
+
+4.1  Files Needed to Run ACTGEN
+
+ACTGEN consists of one file, ACTGEN.EXE.
+
+
+4.2  Instructions for Loading and Installing ACTGEN
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>ACTGEN.EXE (TO) SYS:*.*.-1
+     REWIND
+ATG5.DOC                                                        Page 3
+
+
+4.3  Files Needed to Build ACTGEN
+
+ACTGEN is built from the following files:
+
+     ACTGEN.MAC
+
+In addition, the following files must be on SYS::
+
+     MACREL.REL
+     MACSYM.UNV
+     MONSYM.UNV
+
+
+4.4  Instructions for Building ACTGEN
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.*.* (TO) <self>*.*.*
+     REWIND
+     ^C
+     SUBMIT ACTGEN.CTL/TIME/UNIQ:0/REST
+
+
+
+5.0  INTERNAL CHANGES
+
+Refer to ACTGEN.TCO for detailed information about changes.
+
+
+
+[End of ATG5.DOC]

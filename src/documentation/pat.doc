@@ -1,0 +1,160 @@
+
+
+
+PAT.DOC -- Changes from V4(315) to V5(350)
+October 1981
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+COPYRIGHT (C) 1976,1979,1982 BY
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+
+
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND  COPIED
+ONLY  IN  ACCORDANCE  WITH  THE  TERMS  OF  SUCH  LICENSE AND WITH THE
+INCLUSION OF THE ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE OR  ANY  OTHER
+COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY
+OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE  SOFTWARE  IS  HEREBY
+TRANSFERRED.
+
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE  WITHOUT  NOTICE
+AND  SHOULD  NOT  BE  CONSTRUED  AS  A COMMITMENT BY DIGITAL EQUIPMENT
+CORPORATION.
+
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF  ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+PAT5.DOC                                                        Page 2
+
+
+PAT.DOC -- Changes from V4(315) to V5(350)
+October 1981
+
+
+
+1.0  SUMMARY
+
+PA1050 version 5(350) is the TOPS-10 UUO simulator produced  from  the
+file  PAT.MAC.   It  gets mapped into the address space of any program
+that executes a TOPS-10 UUO.  Its function is to intercept all TOPS-10
+UUO's and simulate them with the appropriate TOPS-20 JSYS's.
+
+PA1050 version 5(350) runs under the TOPS-20 Release 5 monitor.
+
+
+
+2.0  EXTERNAL CHANGES
+
+Magtape OPEN byte size  adjusted  to  correspond  to  OPEN  conditions
+(Labeled/Unlabeled,Format,Hardware data mode).  See code for details.
+
+FILOPS implemented (0 -> 15).
+
+
+
+3.0  KNOWN BUGS AND DEFICIENCIES
+
+PA1050 is intended to be used to support  only  the  standard  TOPS-20
+software  (FORTRAN,  COBOL,  etc.).   PA1050  reflects TOPS-10 version
+5.06.
+
+
+
+4.0  INSTALLATION INSTRUCTIONS
+
+
+4.1  Files Needed to Run PA1050
+
+PA1050 consists of one file, PA1050.EXE.
+
+
+4.2  Instructions for Loading and Installing
+
+Mount the tape labeled  Installation  Tape  on  MTA0:   and  type  the
+following commands:
+
+     SKIP MTA0:5 FILES
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>PA1050.EXE (TO) SYS:*.*.-1
+     REWIND
+PAT5.DOC                                                        Page 3
+
+
+4.3  Files Needed to Build PA1050
+
+PA1050 is built from the following file:
+
+     PAT.MAC
+
+In addition, the following files must be on SYS:
+
+     MACREL.REL
+     MACSYM.UNV
+     MONSYM.UNV
+
+
+4.4  Instructions for Building PA1050
+
+Mount the tape labeled  Distribution  Tape  on  MTA0:   and  type  the
+following commands:
+
+     R DUMPER
+     TAPE MTA0:
+     REWIND
+     DENSITY 1600-BPI
+     SKIP 1
+     RESTORE <*>*.* (TO) <self>*.*
+     REWIND
+     ^C
+     SUBMIT PAT/TIME:1:0:0
+
+
+4.5  Special Considerations
+
+None.
+
+
+
+5.0  INTERNAL CHANGES
+
+Refer to PAT.TCO for detailed information about internal changes.
+
+
+
+6.0  SUGGESTIONS
+
+None.
+
+
+
+[End of PAT5.DOC]
