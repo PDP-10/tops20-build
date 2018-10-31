@@ -122,6 +122,7 @@ def build():
     kl.build('<emacs>')
     kl.cl('del <emacs>*.*.*')
     kl.restore('../ref/emacs/emacs.tap', ['toed: ps:', 'info: ps:'])
+    kl.cl('del <info>*.exe.*')
     kl.cl('connect <emacs>')
     kl.cl('del *.exe')
     kl.cl('edit/unsequence teco.mid')
@@ -135,6 +136,11 @@ def build():
     kl.expect('From SYSTEM: Job EMACS request #[0-9]* finished executing at', timeout=3600)
     kl.line('')
     kl.cl('rename nemacs.exe emacs.exe')
+
+    # make clean by any other name
+    kl.cl('del <src.*>*.exe')
+    kl.cl('del <src.*>*.rel')
+
     kl.shutdown()
 
     # now boot it and see if it worked, if so, build an install tape
