@@ -1,0 +1,333 @@
+! UPD ID= 196, SNARK:<6.1.NML>NMUPAG.B36.3,  10-Dec-84 14:59:03 by HALPIN
+! Get MONSYM Library file out of default directory, not BLI:
+!
+! UPD ID= 101, SLICE:<6.1.NML>NMUPAG.B36.2,  18-Sep-84 15:28:54 by GUNN
+! WORK:<GUNN.NML>NMUPAG.B36.2 21-Aug-84 11:55:04, Edit by GUNN
+!
+! Change to accomodate new LIBRARY conventions. MONSYM.L36 and JLNKG.L36
+! are now explicity declared here rather than in NMULIB.
+!
+! NET:<GROSSMAN.NML-SOURCES>NMUPAG.B36.2  8-Mar-82 16:35:54, Edit by GROSSMAN
+!
+! Rewrite NMU$PAGE_GET so that the Tops-10 stuff is ALL under one conditional.
+! This will reduce confusion due to feature tests.
+!
+! 1-Dec-81 15:31:41, Edit by GROSSMAN, Ident = X00.03
+!
+! Change a conditional so that WRITE_PROTECT is not used under Tops-10
+!
+! 14-Nov-81 23:33:33, Edit by GROSSMAN
+!
+! Fix previous edit so that it can work under Tops-10.
+!
+! NET:<DECNET20-V3P1.BASELEVEL-2.SOURCES>NMUPAG.B36.7  6-Aug-81 08:55:28, Edit by JENNESS
+!
+!    Ident 03.
+!    Add page write access protection when a page is in the free queue.
+!
+! NET:<DECNET20-V3P1.BASELEVEL-2.SOURCES>NMUPAG.B36.4  5-Aug-81 13:20:02, Edit by JENNESS
+!
+!    Ident 02.
+!    Add tracing code to aid in debugging.
+!    Update copyright notice.
+!
+
+module NMUPAG (				! TOPS (36 bit) page memory allocator
+		ident = 'X00.03',
+		language (bliss36)
+		) =
+begin
+!
+!                         COPYRIGHT (C) 1981
+!    DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASSACHUSETTS  01754
+!
+! THIS SOFTWARE IS FURNISHED  UNDER A LICENSE FOR USE ONLY ON A SINGLE
+! COMPUTER  SYSTEM AND  MAY BE  COPIED ONLY WITH  THE INCLUSION OF THE
+! ABOVE COPYRIGHT NOTICE.  THIS SOFTWARE, OR ANY OTHER COPIES  THEREOF
+! MAY NOT BE PROVIDED OR  OTHERWISE MADE AVAILABLE TO ANY OTHER PERSON
+! EXCEPT FOR USE ON SUCH SYSTEM AND TO ONE WHO AGREES TO THESE LICENSE
+! TERMS.  TITLE TO AND  OWNERSHIP OF THE  SOFTWARE  SHALL AT ALL TIMES
+! REMAIN IN DEC.
+!
+! THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE WITHOUT NOTICE
+! AND SHOULD  NOT BE CONSTRUED  AS A COMMITMENT  BY DIGITAL  EQUIPMENT
+! CORPORATION.
+!
+! DEC ASSUMES  NO  RESPONSIBILITY  FOR  THE USE OR  RELIABILITY OF ITS
+! SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DEC.
+!
+
+!++
+! Facility: LSG DECnet Network Management
+!
+! Abstract: This module contains the routines needed to handle
+!           "page" (512 36 bit word) allocations.
+!
+! Environment: TOPS10/TOPS20 user mode, MCB RSX user task
+!
+! Author: Steven M. Jenness, Creation date: 16-Sep-80
+!
+!--
+
+!
+! Include files
+!
+
+library 'MXNLIB';			! All required definitions
+
+%if $TOPS20
+    %then
+	library 'MONSYM';			! Monitor symbols
+
+	library 'MXJLNK';			! JSYS linkage definitions
+    %fi
+
+!
+! Global routines
+!
+
+forward routine
+    NMU$PAGE_ALLOCATOR;				! Define global entry points
+
+!
+! Data base for page allocator
+!
+
+literal
+    LOW_PAGE = %O'610000',			! Lowest page number to allocate
+    HIGH_PAGE = %O'677000',			! Highest page number to allocate
+    PAGE_LENGTH = %O'1000';			! Number of words in a page
+
+own
+    NEXT_PAGE : INITIAL (LOW_PAGE),		! Next page to be allocated
+    PAGE_QUEUE : Q_HEADER;			! Queue of available pages
+
+!
+! Macros
+!
+
+%if $TOPS20 %then
+macro
+     WRITE_ENABLE (ADDR) =
+           begin
+           DECLARE_JSYS (SPACS);
+           if not $$SPACS ((($FHSLF ^ 18) or (ADDR ^ -9)), (PA_WR or PA_RD))
+           then TASK_ERROR ('Failed to write enable a page');
+           end %,
+
+     WRITE_PROTECT (ADDR) =
+           begin
+           DECLARE_JSYS (SPACS);
+           if not $$SPACS ((($FHSLF ^ 18) or (ADDR ^ -9)), (PA_RD))
+           then TASK_ERROR ('Failed to write protect a page');
+           end %;
+%fi
+
+!
+! External references
+!
+
+external routine
+    NMU$QUEUE_MANAGER;			! Queue management routines
+
+external
+    %debug_data_base;
+
+%global_routine ('NMU$PAGE_INITIALIZE') : novalue =
+
+!++
+! Functional description:
+!
+!       This routine initializes the page allocation data
+!       base.
+!
+! Formal parameters: none
+!
+! Routine value: none
+! Side effects:
+!
+!       NEXT_PAGE is set to LOW_PAGE
+!       PAGE_QUEUE is cleared
+!
+!--
+
+    begin
+    NEXT_PAGE = LOW_PAGE;
+    NMU$QUEUE_RESET (PAGE_QUEUE);
+
+    %debug (PAGE_TRACE,
+            (TRACE_INFO ('Page allocator initialized')));
+
+    end;					! End of NMU$PAGE_INITIALIZE
+%global_routine ('NMU$PAGE_GET') =
+
+!++
+! Functional description:
+!
+!       This routine allocates a page (512 words) on TOPS10 and
+!       TOPS20 systems.  This is useful for IPCF transactions.
+!
+! Formal parameters: none
+!
+! Routine value:
+!
+!       Page number allocated.
+!
+! Side effects: none
+!
+!--
+
+    begin
+
+    local
+	PAGE_ADDRESS;
+
+    builtin
+	LSH;
+
+    %if $TOPS20 %then
+    %debug (always,
+            (begin
+
+             if (PAGE_ADDRESS = .PAGE_QUEUE <0,18,0>) neq PAGE_QUEUE
+             then WRITE_ENABLE (.PAGE_ADDRESS);
+
+             if (PAGE_ADDRESS = .(.PAGE_ADDRESS) <0,18,0>) neq PAGE_QUEUE
+             then WRITE_ENABLE (.PAGE_ADDRESS);
+             
+             end));
+
+    PAGE_ADDRESS = NMU$QUEUE_REMOVE (PAGE_QUEUE);
+
+    if .PAGE_ADDRESS eql 0 then NEXT_PAGE = (PAGE_ADDRESS = .NEXT_PAGE) + PAGE_LENGTH;
+
+    if (.PAGE_ADDRESS lss LOW_PAGE) or (.PAGE_ADDRESS gtr HIGH_PAGE)
+    then TASK_ERROR ('No pages available to be allocated');
+
+    begin
+	register T1, T2;
+	builtin MACHOP;
+	MACHOP (HRLI, T1, .PAGE_ADDRESS);
+	MACHOP (HRRI, T1, .PAGE_ADDRESS + 1);
+	MACHOP (MOVEI, T2, .PAGE_ADDRESS + PAGE_LENGTH - 1);
+	MACHOP (SETZM, 0, .PAGE_ADDRESS);
+	MACHOP (BLT, T1, 0, T2);
+    end;
+
+    %debug (PAGE_TRACE,
+            (TRACE_INFO ('Page %O allocated', LSH (.PAGE_ADDRESS, -9))));
+
+    %debug (always,
+            (begin
+             local
+                  FIRST_PAGE;
+
+             if (FIRST_PAGE = .PAGE_QUEUE <0,18,0>) neq PAGE_QUEUE
+             then WRITE_PROTECT (.FIRST_PAGE);
+
+             end));
+    %fi ! End of %if $TOPS20
+    %if $TOPS10 %then
+
+    if (PAGE_ADDRESS = NMU$QUEUE_REMOVE (PAGE_QUEUE)) eql 0 then
+    begin
+	builtin UUO;
+	register T1;
+	local ARGLST : vector [2];
+
+	PAGE_ADDRESS = .NEXT_PAGE;
+	NEXT_PAGE = .NEXT_PAGE + PAGE_LENGTH;
+
+	if .PAGE_ADDRESS lss LOW_PAGE or .PAGE_ADDRESS gtr HIGH_PAGE
+	then TASK_ERROR ('No pages available to be allocated');
+
+	T1 = $PAGCD ^ 18 + ARGLST;
+	ARGLST [0] = 1;
+	ARGLST [1] = LSH (.PAGE_ADDRESS, -9) ;
+	UUO (1, PAGE$(T1));
+    end
+    else
+    begin
+	register T1;
+	builtin MACHOP;
+	literal HRLZ = %o '514';
+
+	MACHOP	(SETZM, 0, .PAGE_ADDRESS);
+	MACHOP	(HRLZ, T1, PAGE_ADDRESS);
+	MACHOP	(HRRI, T1, .PAGE_ADDRESS + 1);
+	MACHOP	(BLT, T1, .PAGE_ADDRESS + PAGE_LENGTH - 1);
+    end;
+    %fi
+
+    LSH (.PAGE_ADDRESS, -9)
+    end;					! End of NMU$PAGE_GET
+%global_routine ('NMU$PAGE_RELEASE', PAGE) : novalue =
+
+!++
+! Functional description:
+!
+!       This routine releases a page that has been allocated
+!       using either the NMU$PAGE_GET calls.
+!
+! Formal parameters:
+!
+!       PAGE   Page number
+!
+! Routine value: none
+! Side effects: none
+!
+!--
+
+    begin
+
+    local
+         PAGE_ADDRESS;
+
+    builtin
+	LSH;
+
+    PAGE_ADDRESS = LSH (.PAGE, 9);
+
+    %if $TOPS20 %then
+    %debug (always,
+            (begin
+             local
+                  LAST_PAGE;
+
+             if (LAST_PAGE = .PAGE_QUEUE <18,18,0>) neq PAGE_QUEUE
+             then WRITE_ENABLE (.LAST_PAGE);
+             end));
+    %fi
+
+    %debug (PAGE_TRACE,
+            (TRACE_INFO ('Page %O released', .PAGE)));
+
+
+    if (.PAGE_ADDRESS lss LOW_PAGE) or (.PAGE_ADDRESS gtr HIGH_PAGE)
+    then TASK_ERROR ('Attempt to release invalid page');
+
+    NMU$QUEUE_INSERT (PAGE_QUEUE, .PAGE_ADDRESS);
+
+    %if $TOPS20 %then
+    %debug (always,
+            (begin
+
+             WRITE_PROTECT (.PAGE_ADDRESS);
+
+             if (PAGE_ADDRESS = .(.PAGE_ADDRESS) <18,18,0>) neq PAGE_QUEUE
+             then WRITE_PROTECT (.PAGE_ADDRESS);
+             
+             end));
+    %fi
+
+    end;					! End of NMU$PAGE_RELEASE
+
+end						! End of module NMUPAG
+
+eludom
+! Local Modes:
+! Mode:BLISS
+! Auto Save Mode:0
+! Comment Column:40
+! Comment Rounding:+1
+! End:

@@ -1,0 +1,106 @@
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+
+%title 'L O D T O P -- Top of RMSLOD'
+!<BLF/REQUIRE 'RMSBLF.REQ'>
+! GREEN:<NEW-RMS>LODTOP.B36.3 22-Mar-88 15:42:15, Edit by PUCHRIK
+!  Give RMSLOD a version number
+!LANG:<PUCHRIK.FU>LODTOP.B36.3 20-Sep-85 12:56:51, Edit by PUCHRIK
+!              Add Ron Lusk's pieces to get working RMSLOD.
+MODULE lodtop (MAIN = driver,
+		ENVIRONMENT (STACK = mystack),
+                VERSION = '1(0)'
+		) =
+BEGIN
+
+LIBRARY 'rmsint';
+
+LIBRARY 'bli:tops20';
+
+EXTERNAL ROUTINE
+    mapit : NOVALUE,				! Map to section 1
+    demap : NOVALUE,				! Return to section 0
+    freexabs,					! Free our memory
+    lodcmd,					! Command processor
+    lodcpy,					! Sequential load
+    lodlod,					! Fast indexed load
+    lodreo,					! Reorganize a file
+    lodunl;					! Sequential unload
+
+LITERAL
+    !
+    !   Operation values (keep in sync with those in LODCMD)
+    !
+    lod$k_load = 1,				! Load a file
+    lod$k_reorg = 2,				! Reorganize a file
+    lod$k_unload = 3;				! Unload a file
+
+OWN
+    mystack : VECTOR [%O'12000'],		! Huge stack
+    status,
+    operation,
+    infab : $fab_decl,
+    outfab : $fab_decl,
+    intyp : $typ_decl,
+    outtyp : $typ_decl;
+
+ROUTINE driver : NOVALUE =
+    BEGIN
+    $fab_init (fab = infab, fac = nil, shr = nil, typ=intyp);
+    $fab_init (fab = outfab, fac=<get,put>, shr=nil, fop=sup, typ=outtyp);
+    $typ_init (typ = intyp);
+    $typ_init (typ = outtyp);
+
+    operation = lodcmd (infab, outfab);
+
+    CASE .operation				! Choose what to do
+    FROM lod$k_load TO lod$k_unload OF 		! ...
+	SET
+
+	[lod$k_load] :
+	    BEGIN
+
+	    IF .outfab [fab$v_org] EQL fab$k_idx	! Indexed load?
+	    THEN
+		BEGIN				! Use fast load routines
+		status = lodlod (infab, outfab);	! Load the file
+		END				! Whew!
+	    ELSE
+		BEGIN				! Just read and write file
+		status = lodcpy (infab, outfab);
+		END;
+
+	    END;
+
+	[lod$k_reorg] :
+	    BEGIN
+	    status = lodreo (infab, outfab);	! Copy file characteristics
+	    END;
+
+	[lod$k_unload] :
+	    BEGIN
+	    status = lodunl (infab, outfab);
+	    END;
+	TES;
+
+    RETURN .status;
+    END;					! End of DRIVER
+END
+
+ELUDOM

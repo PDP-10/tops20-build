@@ -1,0 +1,75 @@
+	TITLE	RMS		; RMS entry vector definition
+
+;
+;	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1983, 1986.
+;	ALL RIGHTS RESERVED.
+;
+;	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+;	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+;	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+;	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+;	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+;	SOFTWARE IS HEREBY TRANSFERRED.
+;
+;	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+;	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+;	EQUIPMENT CORPORATION.
+;
+;	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+;	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+;
+
+;++
+; FACILITY:	RMS
+;
+; ABSTRACT:
+;
+;	RMSEVC provides an entry vector definition for RMS.EXE
+;	and RMSCOB.EXE.  This is necessary for linking the 
+;	RMS201.REL library into an .EXE file, because LINK v5.1
+;	no longer defines entry vectors with the /START switch.
+;	
+;	Note:  The length of the RMS entry vector (normally 5)
+;	is here hardcoded rather than defined as an external.
+;	This is to work around a MACRO bug wherein MACRO refuses
+;	to make a proper entry vector definition when the left
+;	halfword is an external symbol.
+;
+; ENVIRONMENT:	User mode, interrupts disabled, called by JSYS.
+;
+; AUTHOR: Ron Lusk , CREATION DATE: 14-Feb-83
+;
+; MODIFIED BY:
+;	Ron Lusk, 1-Jun-83
+; 01	- Change global names
+;	Andy Nourse 5-aug-83
+; 71	- Add copyright notice.
+;	Andy Nourse, 20-Sep-83
+; 424	- Put copyright notice in never-neverland lowsegment.
+;	  The high segment already has one.
+;--
+;
+; EQUATED SYMBOLS:
+;
+	VCLENG==5		; Work around MACRO bug
+;
+; EXTERNAL REFERENCES:
+
+	EXTERN	RMS$EV		; Location defined in RMSDSP
+
+ ;   Add a copyright notice to .REL file
+ ;   It will go in the low segment, so it will go away.		;D424
+ ;
+ 
+ SMNCPY:ASCIZ\
+ 
+	COPYRIGHT  (C)  DIGITAL  EQUIPMENT  CORPORATION  1983, 1986.
+	ALL RIGHTS RESERVED.
+
+ \ ;[71]
+ ;
+;
+;   Define the entry vector
+;
+	END	VCLENG,,RMS$EV	; End of Module RMS
+

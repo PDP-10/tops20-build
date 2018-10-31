@@ -1,0 +1,291 @@
+
+%TITLE 'FFFOPN -- $OPEN service routines for non-RMS file types'
+!<BLF/REQUIRE 'BLI:BLF.REQ'>
+MODULE fffopn (IDENT = 'Open'
+		) =
+BEGIN
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1985, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!
+!
+!
+!    ********** TABLE OF CONTENTS **********
+!
+!
+!
+!    ROUTINE                    FUNCTION
+!    -------                    --------
+!
+!    F$Open
+!
+!+
+!  Need a require file similar to RMSREQ.R36
+!  which contains library of all FGNLIB
+!  routines.
+!-
+
+REQUIRE 'fffreq';
+
+REQUIRE 'rmsosd';				! [Lusk] For JSYSes
+
+COMPILETIME
+    Load_with_RMS = ((%Variant AND 1) NEQ 0);
+
+EXTERNAL ROUTINE
+    uaddr,
+    uapointer,
+    tgupointer,
+    uclass,
+    raddr,
+    openisam;
+
+FORWARD ROUTINE
+!
+!   $OPEN processor
+!
+    f$open,
+!
+!   $OPEN routines for foreign file types
+!
+    opensix,
+    openebc,
+    openfbin;
+
+!
+! Global Data
+!
+
+%IF Load_with_RMS                                                         !m572
+%THEN
+
+EXTERNAL				! Use same locations as RMS
+
+%ELSE
+
+GLOBAL					! Create our own copy
+
+%FI
+    fab : REF $fab_decl,
+    rab : REF $rab_decl,
+    fst : REF $rms_fst,
+    rst : REF $rms_rst,
+    kdb : REF $rms_kdb,
+    cbd : REF $rms_bucket_descriptor,
+    adb : REF $rms_adb [8],
+    fpt : REF $rms_fpt,
+    rmssec,					! RMS's section
+    blksec;					! User's xAB section
+
+GLOBAL                                                              !m572
+    uab : BLOCK [15],				! $UTLINT argument block
+    stksec,					! Section of stack locals
+    fffsec;					! Our section
+
+%SBTTL 'F$OPEN -- $OPEN dispatcher'
+
+GLOBAL ROUTINE f$open (usrfab : REF $fab_decl) =
+    BEGIN
+
+    BUILTIN
+	machop;
+
+    REGISTER
+	sec_ac;
+
+    LOCAL
+	rsec_addr;
+
+    !+
+    !   This gets the section we were called from.
+    !   It relies on the fact that the Return addr
+    !   follows the args on the stack.
+    !   We can't use the RMS entry vector,
+    !   it may point to the RMS stub!
+    !-
+
+!    BIND ReturnAddress = UsrFab + %UPVAL;	! Reach around stack
+    $xmovei (sec_ac, usrfab);
+    stksec = .sec_ac AND fff$m_section;		! Set stack's section
+    rsec_addr = .sec_ac + 1;			! Point at return PC
+    BEGIN
+
+    BIND
+	returnaddress = .rsec_addr;
+
+    rmssec = .returnaddress AND fff$m_section;	! Get section of RMS
+    END;
+    !
+    !	This gets our section number.
+    !
+    $xmovei (sec_ac, %O'20');			! Will get our section number
+    fffsec = .sec_ac AND fff$m_section;		! Get our section number
+
+    !+
+    !   Save the Fab address away
+    !-
+
+    fab = .usrfab;				! Address must be global
+
+    !+
+    !   Now get the section the Fab is in
+    !-
+
+    blksec = .usrfab AND fff$m_section;		! Save Section Fab came from
+    fst = raddr (.fab [fab$a_ifi]);		! Fst has already been created
+
+    !+
+    !    Dispatch to the proper "OPEN" routine for this file class
+    !-
+
+    (CASE (fst [fst$h_file_class] = uclass (.fab)) FROM typ$k_fff_class_min TO
+	typ$k_fff_class_max OF
+	SET
+	[typ$k_sixbit] : opensix ();		! COBOL SIXBIT
+	[typ$k_ebcdic] : openebc ();		! COBOL EBCDIC
+	[typ$k_fortran_binary] : openfbin ();	! FORTRAN BINARY
+	[typ$k_isam] : openisam ();
+	TES);
+    RETURN true;
+    END;
+
+%SBTTL 'Opensix'
+
+GLOBAL ROUTINE opensix =
+    BEGIN
+
+%IF %SWITCHES(TOPS20)
+%THEN
+
+    STACKLOCAL
+	!
+	!   These must be explicitly on the stack in order
+	!   to pass their address to the monitor correctly.
+	!
+	file_bytes,				! Size of file in FDB bytes
+	file_words;				! Size of file in words
+
+    LOCAL
+	bytes_per_word,				! For calculation
+	file_bytsiz : monword;			! Byte size from FDB
+
+    !
+
+    !	Get the size of the file in bytes
+    !
+    gtfdb (.fst [fst$h_jfn], xwd (1, $fbsiz), .stksec OR file_bytes);
+    gtfdb (.fst [fst$h_jfn], xwd (1, $fbbyv), .stksec OR file_bytsiz);
+
+    IF .file_bytsiz [fb_bsz] EQL rms$k_six_size	! Real 6-bit bytes? (Unlikely!)
+    THEN
+	fst [fst$g_sof] = .file_bytes		! Yes - use real count
+    ELSE
+	BEGIN					! No - use approximation
+	bytes_per_word = %BPVAL/.file_bytsiz [fb_bsz];
+	file_words = (.file_bytes + .bytes_per_word - 1)/.bytes_per_word;
+	fst [fst$g_sof] = .file_words*rms$k_six_bpw;
+	END;
+
+%ELSE	! TOPS-10
+
+    fst[fst$g_sof] = .fst[fst$g_sof_words] * rms$k_six_bpw;
+
+%FI
+    fst [fst$h_bsz] = 6;
+    RETURN true;
+    END;
+
+%SBTTL 'OpenEbc - $OPEN for EBCDIC files'
+
+GLOBAL ROUTINE openebc =
+    BEGIN
+
+%IF %SWITCHES(TOPS20)
+%THEN
+
+    STACKLOCAL
+	!
+	!   These must be explicitly on the stack in order
+	!   to pass their address to the monitor correctly.
+	!
+	file_bytes,				! Size of file in FDB bytes
+	file_words;				! Size of file in words
+
+    LOCAL
+	bytes_per_word,				! For calculation
+	file_bytsiz : monword;			! Byte size from FDB
+
+    !
+
+    !	Get the size of the file in bytes
+    !
+    gtfdb (.fst [fst$h_jfn], xwd (1, $fbsiz), .stksec OR file_bytes);
+    gtfdb (.fst [fst$h_jfn], xwd (1, $fbbyv), .stksec OR file_bytsiz);
+
+    IF .file_bytsiz [fb_bsz] EQL rms$k_ebc_size	! Real 9-bit bytes? (Unlikely!)
+    THEN
+	fst [fst$g_sof] = .file_bytes		! Yes - use real count
+    ELSE
+	BEGIN					! No - use approximation
+	bytes_per_word = %BPVAL/.file_bytsiz [fb_bsz];
+	file_words = (.file_bytes + .bytes_per_word - 1)/.bytes_per_word;
+	fst [fst$g_sof] = .file_words*rms$k_ebc_bpw;
+	END;
+
+%ELSE	! TOPS-10
+
+    fst[fst$g_sof] = .fst[fst$g_sof_words] * rms$k_ebc_bpw;
+
+%FI
+
+    RETURN true;
+    END;
+
+GLOBAL ROUTINE openfbin =
+    BEGIN
+
+    STACKLOCAL
+	!
+	!   These must be explicitly on the stack in order
+	!   to pass their address to the monitor correctly.
+	!
+	file_bytes,				! Size of file in FDB bytes
+	file_words;				! Size of file in words
+
+    fst [fst$h_bsz] = 36;
+    !
+    !	Get the size of the file in bytes
+    !
+%IF %SWITCHES(TOPS20)
+%THEN
+
+    gtfdb (.fst [fst$h_jfn], xwd (1, $fbsiz), .stksec OR file_bytes);
+    fst [fst$g_sof] = .file_bytes;		! Use real count
+
+%ELSE	! TOPS-10
+
+    fst[fst$g_sof] = .fst[fst$g_sof_words];
+
+%FI
+
+    RETURN true;
+    END;
+
+END
+
+ELUDOM

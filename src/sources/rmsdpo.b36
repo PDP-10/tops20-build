@@ -1,0 +1,137 @@
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+
+MODULE Dispos =
+BEGIN
+
+!
+! INCLUDE FILES
+!
+
+REQUIRE 'RMSREQ';
+REQUIRE 'RMSOSD';
+
+!
+! EQUATED SYMBOLS
+!
+
+LITERAL
+    Rms$k_Max_Filespec_Length = 6+1+1+39+1+39+1+39+1+6;
+
+LITERAL QVector_Len = $QuArg + ( ( $QaDat + 1 ) * 2 );  ! 2 argument blocks
+
+!
+! MACROS AND FIELD DEFINITIONS
+!
+
+MACRO MONBIT(msk) = 35-FIRSTONE(msk) , 1 , 0 %;
+
+FIELD Q$R_Fields =
+SET
+Q$v_Flags   = [$QaTyp,28,8,0],
+ Q$v_Immediate = [$QaTyp,MonBit(Qa_Imm)],
+Q$b_Length  = [$QaTyp,18,10,0],
+Q$h_Code    = [$QaTyp, 0,18,0],
+Q$a_Address = [$QaDat, 0,36,0],
+
+! Header Block Definitions
+Q$v_No_Response      = [0,$QuFnc,MonBit(QU_NRS)],
+Q$v_Debug_Pid        = [0,$QuFnc,MonBit(QU_DBG)],
+Q$h_Function_Code    = [0,%FIELDEXPAND(Q$h_Code)],
+Q$b_Response_Length  = [0,%FIELDEXPAND(Q$b_Length)],
+Q$a_Response_Address = [0,%FIELDEXPAND(Q$a_Address)]
+TES;
+
+!
+! OWN STORAGE
+!
+
+OWN QResponse: VECTOR[512];
+OWN FileBuff:  VECTOR[CH$ALLOCATION(Rms$k_Max_Filespec_Length)];
+
+PSECT OWN=$HIGH$;
+
+OWN FileDesc: $Str_Descriptor( STRING = (Rms$k_Max_Filespec_Length,
+                                         CH$PTR(Filebuff)          )  );
+
+PSECT OWN = $LOW$;
+
+OWN QVector: BLOCKVECTOR[3,2] FIELD(Q$r_Fields)
+             PRESET( [Q$b_Response_Length]  = 512,
+                     [Q$a_Response_Address] = QResponse,
+                     [1,Q$a_Address] = Filebuff,
+                     [1,Q$h_Code] = $QbFil,
+
+                     [2,Q$h_Code] = $QbOdp,
+                     [2,Q$b_Length] = 1,
+                     [2,Q$v_Immediate] = 1 );
+!
+! EXTERNALS
+!
+EXTERNAL ROUTINE S$Jfn_Str;
+
+
+
+GLOBAL ROUTINE DisposeFile : NOVALUE =
+BEGIN
+IF .Fst[Fst$v_Spl] OR .Fst[Fst$v_Scf]
+THEN
+    BEGIN
+%(    Arg block is (mostly) static-initialized
+    ! Set up the argument block
+    QVector[Q$b_Response_Length]  = 512;
+    QVector[Q$a_Response_Address] = QResponse;
+    QVector[1,Q$a_Address] = FileBuff;
+    QVector[1,Q$h_Code] = $QbFil;
+
+    QVector[2,Q$h_Code] = $QbOdp;
+    QVector[2,Q$b_Length] = 1;
+    QVector[2,Q$v_Immediate] = 1;
+)%
+
+    ! Get the filespec into the filespec buffer,
+    ! and the length of the filespec in the argument block
+    QVector[1,Q$b_Length] = S$Jfn_Str( .Fst[Fst$h_Jfn], FileDesc, 0 );
+
+    IF .Fst[Fst$v_Dlt]
+    THEN QVector[2,Q$a_Address] = 1
+    ELSE QVector[2,Q$a_Address] = 0;
+
+    IF .Fst[Fst$v_Spl]
+    THEN
+        BEGIN
+        QVector[Q$h_Function_Code] = $QuPrt;
+        Queue_( QVector_Len, QVector );
+        END;
+
+    IF .Fst[Fst$v_Scf]
+    THEN
+        BEGIN
+        QVector[Q$h_Function_Code] = $QuBat;
+        Queue_( QVector_Len, QVector );
+        END;
+
+    END
+ELSE
+    BEGIN                                        ! Not queueing
+    IF .Fst[Fst$v_Dlt]                           ! Delete-on-close?
+    THEN DelF( .Fst[Fst$h_Jfn] );                ! Yes. make it go away
+    END;
+END;
+END ELUDOM

@@ -1,0 +1,223 @@
+%TITLE 'U T L E X T  - RMSUTL external declarations'
+!<BLF/REQUIRE 'RMSBLF'>
+! UTLEXT.R36 - External declarations for RMSUTL
+!
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1984, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!
+
+!++
+! FACILITY:	RMS
+!
+! ABSTRACT:
+!
+!	UTLEXT contains external declarations specific to
+!	RMSUTL.
+!
+! ENVIRONMENT:
+!
+! AUTHOR: Ron Lusk , CREATION DATE:  6-Jul-83
+!
+! MODIFIED BY:
+!
+!	Ron Lusk, 3-Feb-84 : VERSION 2.0
+! 455	-	Declare output routines TX$OUT, TX$RPT, TX$SET from
+!		RMSM2 as external routines.  Declare BYTYPE and KTYPE
+!		(needed for RMSM2 use) as external variables.
+!--
+
+!
+! TABLE OF CONTENTS
+!
+%SBTTL 'Linkage definitions'
+
+LINKAGE
+!+
+!   Linkage for call of MACRO subroutine
+!-
+    macrosub = PUSHJ : LINKAGE_REGS (15, 13, 1)
+    PRESERVE (6, 7, 8, 9, 10, 11, 12)
+    NOPRESERVE (0, 2, 3, 4, 5, 14),
+!+
+!   Linkage for call of routine that doesn't return
+!-
+    exitsub = PUSHJ : LINKAGE_REGS (15, 13, 0)
+    PRESERVE (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14);
+
+%SBTTL 'External routine declarations'
+
+!++
+!   Routine definitions
+!--
+
+EXTERNAL ROUTINE
+    !
+    !	From RMSMES
+    !
+    tx$app : macrosub,
+    %NAME ('TRAP.U') : exitsub,
+    !
+    !	From UTLIO
+    !
+    bk$adb,					! Get area descriptor
+    bk$chk,					! Check bucket validity
+    bk$data,					! Get leftmost data bucket
+    bk$dent,					! Expunge entry from bucket
+    bk$down,					! Get bucket specified by entry
+    bk$ent,					! Return address of entry
+    bk$get,					! Get a bucket, success if
+    						! bucket is clobbered
+    bk$gok,					! Get a bucket, success if
+    						! bucket is OK
+    bk$gqi,					! Get a bucket, don't check it
+    bk$gc,					! Map a bucket, return address
+    bk$id,					! Return entry given ID
+    bk$idb,					! Return IDB address
+    bk$next,					! Get next bucket at this level
+    bk$put : NOVALUE,				! Release current bucket
+    bk$prol,					! Return prologue "bucket"
+    bk$root,					! Maps root bucket
+    bk$type,					! Return bucket type
+    bk$up,					! Return previous bucket
+    bd$get,					! Call RMS GETBKT
+    bd$put : NOVALUE,				! Call RMS PUTBKT
+    !
+    !	In UTLMSC.B36
+    !
+    fremem : NOVALUE,				! Free memory
+    getmem,					! Allocate memory
+    rc$find,					! Find record using RAB
+    rc$get,					! Read record using RAB
+    rc$rfa,					! Find entry using RFA
+    rc$rel,					! Position by relative
+    						! record number
+    m$erms,					! Type message after RMS fails
+    m$kdb,					! Set up for proper index
+    m$kloc,					! Locate entry's key-value
+    m$kudr,					! Copy record key to buffer
+    m$uset : NOVALUE,				! Set environment for $UTLINT
+    m$rstcop : NOVALUE,				! Copy NRP data between RSTs
+    !
+    !	In UTLVFY.B36
+    !
+    vr$clean : NOVALUE,				! Clean things up
+    vr$scan : NOVALUE,				! Initiate data bucket scan
+    scansp : NOVALUE,				! Loop for SPACE scan
+    scanver : NOVALUE,				! Loop for VERIFY scan
+    scanbkt : NOVALUE,				! Scan entries in a bucket
+    acckey : NOVALUE,				! Access UDR by alternate keys
+    accrrv : NOVALUE,				! Verify RRV points at UDR
+    accudr : NOVALUE,				! Compare SIDR key with UDR
+    delent : NOVALUE,				! Delete a bucket entry
+    sidradj : NOVALUE,				! Reset SIDR RFAs
+    sidrput : NOVALUE,				! Create a missing SIDR entry
+    sidrscan,					! Check SIDR for record's RFA
+    !
+    !	In RMSM2.MAC
+    !
+    tx$out : macrosub,
+    tx$rpt : macrosub,				! Change over 		!A455
+    tx$set : macrosub,				! ...			!A455
+    !
+    !	In UTLTOP
+    !
+    bugerr,					! Checks for RMS bug
+    						! error & exits if one
+    interr : exitsub,				! Routine to handle errors
+    rp$put : macrosub;				! Write report buffer
+
+						! detected by RMS
+!
+! EQUATED SYMBOLS:
+!
+
+LITERAL
+    true=-1,
+    false=0;
+
+EXTERNAL LITERAL
+    bbm_err,					! Defined in UTLIO
+    bbm_info,					! ...
+    bbm_none;					! For BD$GET to let VERIFY
+
+						!   handle bad bucket
+!
+! OWN STORAGE:
+!
+!
+! EXTERNAL REFERENCES:
+!
+
+EXTERNAL
+    utlflg,					! Found in UTLIO
+    ut_dbad;					! Ditto
+
+!	Error Messages UTLxxx Defined in UTLTOP.
+
+EXTERNAL
+    bty_clob,					! Found in UTLTOP
+    bty_idx,					! ...
+    bty_prim,					! ...
+    bty_sec;					! ...
+
+						! ...
+
+EXTERNAL
+    buf$k1,					! Buffer for key
+    buf$k2,					! Space for another key
+    bytype,					! File byte datatype	!A455
+    cu$ent,					! Last entry returned by
+    						! BK$ENT or BK$ID
+    cu$type,					! Type of last bucket gotten
+    						! by BK$GC
+    fab,					! FAB of RMSUTL's current
+    						! RMS file
+    fst : REF BLOCK,				! RMS's internal File
+    						! Status Table
+    ksizb,					! Number of bytes in
+    						! this KRF's key
+    ksizw,					! Ditto, in words
+    kdb : REF BLOCK,				! Pointer to RMS's internal
+    						!   descriptor for current key
+    ktype,					! Key output datatype	!A455
+    nrp$ad,
+    outrab : REF BLOCK,				! Report file RAB
+    path : REF BLOCK,				! RMS path vector
+    rab : REF BLOCK,				! RAB of file currently
+    						!   open in RMSUTL
+    rmevec : VECTOR,				! RMS errors name-vector
+    rst : REF BLOCK,				! RMS's internal stream data
+    sc$case,					! Control type of scan
+    sc_space,					! SPACE command
+    sc_uncl,					! UNCLUTTER command
+    sc_ver,					! VERIFY command
+    stcina,					! Pointer to MOVST
+    						! conversion table
+    stript,					! String pointer with
+    						! bytesize data in it
+    textbp,					! Byte pointer into
+    						! report file buffer
+    v$acc,					! True if accessing 2ndary keys
+    v$err,					! Count of VERIFY
+    						! errors detected
+    v$fix,					! True if flaws should be fixed
+    v$preq;					! Display frequency for
+
+						! progress-report
+! End UTLEXT.R36

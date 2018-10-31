@@ -1,0 +1,233 @@
+%title 'F L U S H   -- process $FLUSH call'
+!<BLF/REQUIRE 'RMSBLF.REQ'>
+MODULE flush (IDENT = '3.0'
+		) =
+BEGIN
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1984, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!++
+! FACILITY:	RMS
+!
+! ABSTRACT:
+!
+!	FLUSH contains all routines which
+!	process the $FLUSH call in RMS-20.
+!
+! ENVIRONMENT:	User mode, top level
+!
+! AUTHOR: Ron Lusk , CREATION DATE:  1-Apr-83
+!
+! MODIFIED BY:
+!
+!	, : VERSION
+! 01	-
+! 660	-	Network $FLUSH
+!--
+
+!
+! TABLE OF CONTENTS
+!
+!
+!	$FLUSH	-   processor for $FLUSH
+!	FLUBUF	-   write buffers to disk
+!
+!
+! INCLUDE FILES:
+!
+
+REQUIRE 'rmsreq';
+
+!
+! MACROS:
+!
+!   None.
+!
+! EQUATED SYMBOLS:
+!
+!   None.
+!
+! OWN STORAGE:
+!
+!   None.
+!
+
+EXTERNAL ROUTINE
+  Dap$Free_Flush;				! 660
+
+GLOBAL ROUTINE $flush (rabblock, errorreturn) =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!	$FLUSH flushes all current buffers for a record
+!	stream.  This operation is valid for all file
+!	organizations, but has important use primarily for
+!	sequential files with ASCII or LSA record formats,
+!	or for files on sequential devices.  This operation
+!	can be done to an indexed file, but unless
+!	Write-Behind is being used, there is no advantage in
+!	doing so.
+!
+! FORMAL PARAMETERS
+!
+!	RABBLOCK	-   Record Access Block address
+!	ERRORRETURN	-   user error return address
+!
+! IMPLICIT INPUTS
+!
+!	?
+!
+! ROUTINE VALUE:
+!
+!	None, yet not novalue.
+!
+! SIDE EFFECTS:
+!
+!	?
+!
+!--
+
+    BEGIN
+    rmsentry ($flush);
+!+
+!   Fetch the address of the user's RAB and his
+!   error-processing routine, if any.
+!-
+    rab = .rabblock;				! Fetch RAB address
+    erradr = .errorreturn;			!   and user error address
+!+
+!   Set up all system-wide pointers, etc., and allow him to
+!   perform this operation no matter what his FAB value was
+!   when he opened the file.
+!-
+    rsetup (true);				! Set up all stuff
+
+    IF .Fst[Fst$v_Remote]			! 660
+    THEN
+       BEGIN
+       Dap$Free_Flush (.Rab, .erradr, Dap$k_Flush);
+       UsrRet();
+       END;
+
+    flubuf ();					! Clear all buffers
+!+
+!   Exit to the user.
+!-
+    usrret ()
+    END;					!End of $FLUSH
+
+GLOBAL ROUTINE flubuf : NOVALUE =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!	FLUBUF insures that all updated buffers are written
+!	to disk.
+!
+! FORMAL PARAMETERS
+!
+!	None.
+!
+! IMPLICIT INPUTS
+!
+!	FST	-   File Status Table
+!	RST	-   Record Status Table
+!
+! ROUTINE VALUE:
+!
+!	NONE.
+!
+! SIDE EFFECTS:
+!
+!	None.
+!
+!--
+
+    BEGIN
+
+    REGISTER
+	bdptr : ref block;
+
+    TRACE ('FLUBUF');
+!+
+!   Note that this routine performs its function primarily
+!   for stream or LSA records, or for sequential devices.
+!   Also, the file must be currently in output mode for this
+!   operation to have any effect.
+!-
+
+    IF ((mta) OR (asciifile)) 			! Magtape (?) or ASCII files
+    AND ( NOT inputmode)			! We must be writing the file
+    THEN                                        ! Flush buffers?        !m577
+	IF .rst[rst$v_last_sequential]		! If last operation was
+        AND .rst[rst$v_last_operation] EQL C$Put! sequential $Put
+	THEN
+	    BEGIN				! Yes
+	    writebuffer ();			! Output current buffer
+
+            IF (dasd)                                                   !m577
+	    THEN pagout (.fst [fstjfn], 	! JFN
+		         .currentfilepage, 	! Page to output
+                         -1, 			! Just verify to disk
+                         asciibktsize);         ! Number of pages
+	    END;
+
+!+
+!   For disk files, we can cycle through the RST buffers and
+!   update all the buffers in this stream.
+!-
+
+    IF dasd
+    THEN
+	BEGIN
+	bdptr = bfdoffset;			! First buffer descriptor
+!+
+!   Loop over all buffers and update them to the disk.
+!-
+
+	INCR j FROM 1 TO .rst [rstbfdcount] DO
+	    BEGIN
+!+
+!   If the buffer empty or have old data in it?  If the
+!   buffer size is non-zero and the update flag is set, then
+!   we have a full buffer that must be updated.
+!-
+
+	    IF (.bdptr [bfdbktsiz] neq 0) AND bfdupd (bdptr)
+	    THEN
+		pagout (.fst [fstjfn], 		! JFN
+		    .bdptr [bfdfpage], 		! Page
+		    .bdptr [bfdbpage], 		! Memory page
+		    .bdptr [bfdbktsiz]);	! Count of pages
+
+	    clearbfdupd (bdptr);
+!+
+!   Bump the buffer descriptor pointer
+!-
+	    bdptr = .bdptr + 1;
+	    END
+
+	END;
+
+    RETURN;
+    END;					!End of FLUBUF
+
+END						!End of Module FLUSH
+
+ELUDOM

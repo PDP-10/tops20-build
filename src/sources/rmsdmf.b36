@@ -1,0 +1,126 @@
+MODULE DUMMY (	!
+		IDENT = '2'
+		) =
+BEGIN
+
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1984, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+
+!++
+! FACILITY: Dummy routines for unimplemented RMS verbs
+!
+! ABSTRACT:
+!
+! ENVIRONMENT: DIU/FFF/RMS-20
+!
+! AUTHOR:	Andrew Nourse, CREATION DATE: 17-May-84
+!
+! 01	- Write this module
+!--
+
+!
+! LINKAGES:
+!
+
+LINKAGE FFVerb = PUSHJ:
+                 PRESERVE (3,4,5,6,7,8,9,10,11,12,14)
+                 LINKAGE_REGS (15,13,2);
+
+!
+! TABLE OF CONTENTS:
+!
+FORWARD ROUTINE
+    Unimpl: FFVerb,
+    NullRoutine: FFVerb;
+
+
+!
+! MACROS:
+!
+MACRO notimplemented [ verb_ ] =
+      GLOBAL BIND ROUTINE verb_ = Unimpl : FFVerb %;
+
+MACRO noop [ verb_ ] =
+      GLOBAL BIND ROUTINE verb_ = NullRoutine : FFVerb %;
+
+!
+! LIBRARY REFERENCES
+! 
+LIBRARY 'RMSINT';
+
+!
+! EQUATED SYMBOLS:
+!
+noop
+  (
+   F$display,
+   F$erase,
+   F$parse,
+   F$search,
+   F$rename,
+   F$read,
+   F$write
+  );
+
+notimplemented
+  ( 
+    F$OPEN,
+    F$CONNECT,
+    F$FIND,
+    F$GET,
+    F$CLOSE,
+    F$DISCONNECT,
+    F$create,
+    F$put,
+    F$update,
+    F$delete,
+    F$release,
+    F$free,
+    F$flush,
+    F$message,
+    F$nomessage,
+    F$truncate,
+    F$nxtvol,
+    F$rewind,
+    F$wait,
+    F$space,
+    F$enter,
+    F$extend,
+    F$remove,
+    F$UtlInt,
+    F$debug
+    );
+
+!
+! Unimplemented JSYSes come here
+!
+
+ROUTINE Unimpl( blk: REF $Fab_decl ): FFVerb =
+    BEGIN
+    Blk[Fab$h_Sts] = Rms$_Ons           ! Unsupported
+    END;
+
+ROUTINE NullRoutine : FFVerb =
+    BEGIN
+    0
+    END;
+
+END				!End of module
+ELUDOM
+

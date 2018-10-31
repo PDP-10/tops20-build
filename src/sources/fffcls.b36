@@ -1,0 +1,108 @@
+%TITLE 'FFFCls -- $CLOSE service routines for non-RMS file types'
+!<BLF/REQUIRE 'BLI:BLF.REQ'>
+MODULE FFFCls (IDENT = 'CLOSE'
+		) =
+BEGIN
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1985, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!
+!
+!
+!    ********** TABLE OF CONTENTS **********
+!
+!
+!
+!    ROUTINE                    FUNCTION
+!    -------                    --------
+!
+!    GETFOR
+!    GETISAM
+
+
+!+
+!  Need a require file similar to RMSREQ.R36
+!  which contains library of all FGNLIB
+!  routines.
+!-
+
+REQUIRE 'fffreq';
+
+
+
+EXTERNAL ROUTINE
+    UAddr,
+    UAPointer,
+    TGUPointer,
+    UClass,
+    RAddr,
+    ClsIsam;
+
+
+FORWARD ROUTINE
+!
+!   $CLOSE processor
+!
+    F$CLOSE,
+!
+!   $CLOSE routines for foreign file types
+!
+    Clssix,
+    ClsEbc,
+    ClsFBin;
+
+%SBTTL 'F$CLOSE -- $CLOSE dispatcher'
+
+GLOBAL ROUTINE F$CLOSE ( UsrFab: REF $Fab_decl ) =
+    BEGIN
+    Fab = .UsrFab;
+    Fst = RAddr( .Fab[Fab$a_Ifi] );
+
+    !+
+    !    Dispatch to the proper "CLOSE" routine for this file class
+    !-
+       (CASE ( Fst[Fst$h_File_Class] = UClass( .Fab ) )
+        FROM Typ$k_FFF_Class_Min TO Typ$k_FFF_Class_Max OF
+        SET
+        [Typ$k_Sixbit]:  Clssix ();		! COBOL SIXBIT
+        [Typ$k_Ebcdic]:  Clsebc ();		! COBOL EBCDIC
+        [Typ$k_Fortran_Binary]: Clsfbin ();		! FORTRAN BINARY
+        [Typ$k_Isam]: Clsisam ();
+        TES);
+
+    RETURN true;
+    END;
+
+GLOBAL ROUTINE Clssix =
+    BEGIN
+    RETURN true;
+    END;
+
+GLOBAL ROUTINE ClsEbc =
+    BEGIN
+    RETURN true;
+    END;
+
+GLOBAL ROUTINE ClsFbin =
+    BEGIN
+    RETURN true;
+    END;
+
+END
+
+ELUDOM

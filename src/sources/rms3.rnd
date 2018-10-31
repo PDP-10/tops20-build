@@ -1,0 +1,61 @@
+.comment This .RND file produces the .DOC file for RMS-20 V3
+.; 8-Jul-86
+.LM0.RM70.F.J.SP1.TS5
+RMS3.DOC -- RMS-20 V3 _.DOC file
+.BR
+July 1986
+.FG30
+COPYRIGHT (C) 1986 BY
+.BR
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+.B 2
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND COPIED
+ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH THE INCLUSION
+OF THE ABOVE COPYRIGHT NOTICE. THIS SOFTWARE OR ANY OTHER COPIES
+THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY OTHER
+PERSON. NO TITLE TO AND OWNERSHIP OF THE SOFTWARE IS HEREBY TRANSFERRED.
+.B 1
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE WITHOUT
+NOTICE AND SHOULD NOT BE CONSTRUED AS A COMMITMENT BY DIGITAL
+EQUIPMENT CORPORATION.
+.B 1
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR RELIABILITY OF ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+.PG
+.hl 1 SUMMARY
+RMS-20 V3 is a file- and record-handling subsystem of the TOPS-20
+Operating System.  Program interfaces are provided for using
+RMS-20 from MACRO and BLISS-36; RMS may also be used from COBOL,
+PASCAL-20, and BASIC_+2. Detailed information on RMS and use of
+RMS is in the TOPS-20 RMS User's Guide. 
+.hl2 Monitors
+RMS-20 V3 requires TOPS-20 Release 6.1 or later and KL microcode
+version 2(Edit 407) or later. 
+.hl 2 Required System Software
+None.
+.hl 1 EXTERNAL CHANGES
+.ls
+.le
+In addition to ASCII, SIXBIT, and EBCDIC keys, RMS indexed files 
+may now have integer, floating-point, and packed-decimal keys.  
+See the User's Guide for details.
+.le
+RMS-20 V3 may be called into a nonzero section.  If the $INIT
+macro is executed from a nonzero section, SYS:XRMS.EXE will be
+loaded into the first available nonzero section.  This requires
+the user program to be loaded with SYS:RMSINI.REL. 
+.le
+RMS-20 V3 supports RFA access to stream and LSA files.
+.le
+RMS-20 V3 includes documentation on use of RMS and user
+interfaces to RMS for MACRO and BLISS programs. 
+.els
+.hl 1 KNOWN BUGS AND DEFICIENCIES
+None.
+.hl 1 INSTALLATION INSTRUCTIONS
+See the RMS-20 Installation Guide for installation instructions. 
+.b
+See the enclosed file RMSFAL.HLP for information on starting RMSFAL jobs
+with NETJOB.EXE.
+.b 3
+[End of RMS3.DOC]

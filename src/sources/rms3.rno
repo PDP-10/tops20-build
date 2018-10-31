@@ -1,0 +1,51 @@
+.comment This .RNO file produces the .BWR file for RMS-20 V3
+.; 8-Jul-86
+.LM0.RM70.F.J.SP1.TS5
+RMS3.BWR - RMS-20 V3
+.BR
+July 1986
+.FG30
+COPYRIGHT (C) 1986 BY
+.BR
+DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+.B 2
+THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY BE USED AND COPIED
+ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH THE INCLUSION
+OF THE ABOVE COPYRIGHT NOTICE. THIS SOFTWARE OR ANY OTHER COPIES
+THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE AVAILABLE TO ANY OTHER
+PERSON. NO TITLE TO AND OWNERSHIP OF THE SOFTWARE IS HEREBY TRANSFERRED.
+.B 1
+THE INFORMATION IN THIS SOFTWARE IS SUBJECT TO CHANGE WITHOUT
+NOTICE AND SHOULD NOT BE CONSTRUED AS A COMMITMENT BY DIGITAL
+EQUIPMENT CORPORATION.
+.B 1
+DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR RELIABILITY OF ITS
+SOFTWARE ON EQUIPMENT WHICH IS NOT SUPPLIED BY DIGITAL.
+.t Warnings About RMS-20 V3
+.hl 1 KNOWN BUGS AND DEFICIENCIES
+.ls
+.le
+RMSDEB, the RMS debugger is not supported, but is distributed as an aid
+for developing RMS applications.
+.le
+RMS-20 $CREATEs of remote TOPS-20 indexed files will not work for SIXBIT
+or EBCDIC files.  This is a restriction of DAP V7.0.  Local $CREATEs of
+SIXBIT/EBCDIC indexed files work fine.
+.le
+There is a problem with renames from the 10 of files on the 20.  The -10's NFT
+says "Invalid access complete code".  This is because the NFT on the 10 uses a
+ACCESS COMPLETE RENAME function to rename files; this should be fixed in a
+future version of NFT-10.
+.le
+Names for the IN4 and IN8 key datatypes were chosen 
+for compatibility with VAX naming conventions, and would (if 
+anything) refer to 9-bit bytes.  When declaring these or floating-point
+datatypes, the SIZ field of the XAB may be set to 0, as these keys have 
+defined lengths.
+.els
+.hl 1 MANDATORY PATCHES FOR RELATED PRODUCTS
+None.
+.hl 1 KNOWN BUGS IN RELATED PRODUCTS
+None.
+.B 3
+[End of RMS3.BWR]

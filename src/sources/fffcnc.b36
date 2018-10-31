@@ -1,0 +1,212 @@
+%TITLE 'FFFCNC -- $CONNECT service routines for non-RMS file types'
+!<BLF/REQUIRE 'BLI:BLF.REQ'>
+MODULE fffcnc (IDENT = 'CONNECT'
+		) =
+BEGIN
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1985, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!
+!
+!
+!    ********** TABLE OF CONTENTS **********
+!
+!
+!
+!    ROUTINE                    FUNCTION
+!    -------                    --------
+!
+!    F$Connect
+!
+!+
+!  Need a require file similar to RMSREQ.R36
+!  which contains library of all FGNLIB
+!  routines.
+!-
+
+REQUIRE 'fffreq';
+
+EXTERNAL
+    stksec;					! Stack's section
+
+EXTERNAL ROUTINE
+    uaddr,
+    raddr,
+    uapointer,
+    tgupointer,
+    uclass,
+    getwindow,
+    g_byte,					! Get a specific byte
+    ebc_rd_hdr,					! Read an EBCDIC header
+    cncisam;
+
+FORWARD ROUTINE
+!
+!   $CONNECT processor
+!
+    f$connect,
+!
+!   $CONNECT routines for foreign file types
+!
+    cncsix,
+    cncebc,
+    cncfbin;
+
+%SBTTL 'F$CONNECT -- $CONNECT dispatcher'
+
+GLOBAL ROUTINE f$connect (usrrab : REF $rab_decl) =
+    BEGIN
+    rab = .usrrab;
+    fab = uaddr (.rab [rab$a_fab]);
+    rst = raddr (.rab [rab$a_isi]);
+    fst = raddr (.rst [rst$a_fst]);
+    cbd = raddr (rst [rst$z_current_bucket]);
+
+    !+
+    !    Dispatch to the proper "CONNECT" routine for this file class
+    !-
+
+    (CASE (fst [fst$h_file_class] = uclass (.fab)) FROM typ$k_fff_class_min TO
+	typ$k_fff_class_max OF
+	SET
+	[typ$k_sixbit] : cncsix ();		! COBOL SIXBIT
+	[typ$k_ebcdic] : cncebc ();		! COBOL EBCDIC
+	[typ$k_fortran_binary] : cncfbin ();	! FORTRAN BINARY
+	[typ$k_isam] : cncisam ();
+	TES);
+    RETURN true;
+    END;
+
+%SBTTL 'CncSix'
+
+GLOBAL ROUTINE cncsix =
+    BEGIN
+    !
+    !	Set Next Record Pointer appropriately
+    !
+    rst [rst$g_next_record_pointer] = rms$k_initial_nrp;	! Byte 0
+    !
+    !	Get the first buffer set up.
+    !
+    cbd [bkt$a_address] = 0;			! Ensure first bucket in file
+
+    IF NOT g_byte (rms$k_initial_nrp)		! First byte
+    THEN
+	RETURN false;
+
+    rst [rst$v_rec_header_size] = 6;		! Header size in bytes
+    rst [rst$v_last_operation] = op$k_connect;	! Set operation code
+    RETURN true;
+    END;
+
+%SBTTL 'CncEbc - $CONNECT for EBCDIC files'
+
+GLOBAL ROUTINE cncebc =
+    BEGIN
+    !
+    !	Set Next Record Pointer appropriately
+    !
+    rst [rst$g_next_record_pointer] = rms$k_initial_nrp;	! Byte 0
+    !
+    !	Get the first buffer set up.
+    !
+    cbd [bkt$a_address] = 0;			! Ensure first bucket in file
+
+    IF NOT g_byte (rms$k_initial_nrp)		! First byte
+    THEN
+	RETURN false;
+
+    !+
+    !	Set up things according to the
+    !	file format and blocking.
+    !-
+
+    IF .fab [fab$v_rfm] EQL fab$k_var
+    THEN
+	BEGIN
+	!
+	!   Set header size to 4 bytes
+	!
+	rst [rst$v_rec_header_size] = rms$k_header_ebc;
+
+	!+
+	!   If file is blocked, then read the first
+	!   block header.
+	!-
+
+	IF .fab [fab$v_bls] NEQ 0		! Blocked?
+	THEN
+	    BEGIN
+
+	    STACKLOCAL
+		block_length;
+
+	    IF NOT ebc_rd_hdr (.stksec OR block_length)	! Get header
+	    THEN
+		RETURN false;
+
+	    rst [rst$g_blkbyt] = .block_length;	! Set block length
+	    rst [rst$g_next_record_pointer] = 	! Skip block header
+	    .rst [rst$g_next_record_pointer] + rms$k_header_ebc;
+	    END;
+
+	END
+    ELSE
+	BEGIN
+	!
+	!   Clear header size
+	!
+	rst [rst$v_rec_header_size] = 0;
+
+	IF .fab [fab$v_bls] NEQ 0		! Blocked?
+	THEN
+	    BEGIN
+	    !
+	    !	Set block size
+	    !
+	    rst [rst$g_blkbyt] = .fst [fst$h_mrs]*.fab [fab$v_bls];
+	    END;
+
+	END;
+
+    rst [rst$v_last_operation] = op$k_connect;	! Set operation code
+    RETURN true;
+    END;
+
+GLOBAL ROUTINE cncfbin =
+    BEGIN
+    !
+    !	Set Next Record Pointer appropriately
+    !
+    rst [rst$g_next_record_pointer] = rms$k_initial_nrp;	! Byte 0
+    !
+    !	Get the first buffer set up.
+    !
+    cbd [bkt$a_address] = 0;			! Ensure first bucket in file
+
+    IF NOT g_byte (rms$k_initial_nrp)		! First byte
+    THEN
+	RETURN false;
+
+    rst [rst$v_last_operation] = op$k_connect;	! Set operation code
+    RETURN true;
+    END;
+
+END
+
+ELUDOM

@@ -1,0 +1,93 @@
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+
+!STSDEF.R36
+
+!+
+!	Condition value macros
+!
+!	These macros are found on pages 17-24 and 17-25 of the BLISS
+!	Language Guide, Second Edition, January 1980.
+!-
+
+FIELD
+    sts$r_fields = 				! Condition fields	!A04
+	SET
+	sts$v_severity = [0, 0, 3, 0],		! severity field
+	sts$v_success = [0, 0, 1, 0],		! success field
+						! (subfield of severity)
+	sts$v_cond_id = [0, 3, 29, 0],		! identity field
+	sts$v_msg_no = [0, 3, 15, 0],		! message number field
+	sts$v_fac_sp = [0, 17, 1, 0],		! facility specific flag
+	sts$v_code = [0, 3, 14, 0],		! code for condition only
+	sts$v_fac_no = [0, 18, 14, 0],		! facility code
+	sts$v_cust_def = [0, 31, 1, 0]		! customer definition flag
+	TES;
+
+LITERAL
+    sts$k_bln = 1;
+
+MACRO
+    $condition_value =
+ BLOCK[sts$k_bln] FIELD(sts$r_fields) %;
+
+LITERAL
+    sts$k_warning = 0,				! warning
+    sts$k_success = 1,				! successful completion
+    sts$k_error = 2,				! error
+    sts$k_info = 3,				! information
+    sts$k_severe = 4;				! severe error
+
+KEYWORDMACRO
+    sts$value (					! create a status value
+	    severity = severe,			! default is severe error
+	    CODE,				! no default code
+	    fac_sp = 1 ^ 17,			! default is facility specific
+	    fac_no = 0,				! arbitrary default
+	    cust_def = 1 ^ 31 			! default is user definition
+	    ) =
+	    (%name ('sts$k_', severity) AND %O'7') OR
+	    (CODE AND %O'37777')^3 OR
+	    (IF fac_sp NEQ 0
+		THEN 1^17
+		ELSE 0 ) OR
+	    (fac_no AND %O'37777')^18 OR
+	    (IF cust_def NEQ 0
+		THEN 1^31
+		ELSE 0 )
+	    %;
+
+
+MACRO
+    sts$match (a, b) =
+	BEGIN
+	LOCAL
+	    qqqqa: $condition_value,
+	    qqqqb: $condition_value;
+	qqqqa = (a);
+	qqqqb = (b);
+	IF NOT (.qqqqa[sts$v_fac_sp] OR .qqqqb[sts$v_fac_sp])
+	THEN
+	    .qqqqa[sts$v_code] EQL .qqqqb[sts$v_code]	    !M10
+	ELSE
+	    .qqqqa[sts$v_cond_id] EQL .qqqqb[sts$v_cond_id]
+	END %;
+
+! End STSDEF.R36
+

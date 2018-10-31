@@ -1,0 +1,188 @@
+%TITLE 'R E L E A S   -- $RELEASE service'
+!<BLF/REQUIRE 'RMSBLF.REQ'>
+MODULE releas (IDENT = '2.0'
+		) =
+BEGIN
+
+GLOBAL BIND
+    relsv = 2^24 + 0^18 + 400;			! Edit date: 22-Apr-83
+
+!+
+!
+!
+!    FUNCTION:	THIS MODULE CONTAINS ALL ROUTINES WHICH PROCESS
+!    THE $RELEASE MACRO .
+!
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1977, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!
+!
+!    AUTHOR:	S. BLOUNT
+!
+!
+!    **********	TABLE OF CONTENTS	**************
+!
+!
+!
+!
+!    ROUTINE			FUNCTION
+!    =======			========
+!
+!    $RELEASE		PROCESSOR FOR $RELEASE MACRO
+!
+!
+!    REVISION HISTORY:
+!
+!    EDIT	DATE		WHO		PURPOSE
+!    ====	====		===		=========
+!
+!    1	12-JAN-76	SB		DISABLE $RELEASE (USE $FREE INSEAD)
+!
+!    *************************************************
+!    *						*
+!    *		NEW REVISION HISTORY		*
+!    *						*
+!    *************************************************
+!
+!    PRODUCT	MODULE	 SPR
+!    EDIT	 EDIT	 QAR		DESCRIPTION
+!    ======	======	=====		===========
+!
+!	**  Begin RMS v2 Development
+!
+!	400	400	xxxxx	    Clean up BLISS code (RL,22-Apr-83)
+!
+!    ***** END OF REVISION HISTORY *****
+!
+!
+!
+!
+!
+!-
+
+REQUIRE 'rmsreq';
+
+%SBTTL '$RELEASE - $RELEASE processor'
+
+GLOBAL ROUTINE $release (rabblock, errorreturn) : NOVALUE =
+! $RELEASE
+! ========
+! PROCESSOR FOR $RELEASE MACRO
+!	THIS ROUTINE UNLOCKS THE CURRENT RECORD, IF ANY.
+!	FOR INDEXED FILES, THIS INVOLVES RELEASING THE CURRENT
+!	BUCKET. FOR SEQUENTIAL AND RELATIVE FILES, THE CURRENT
+!	RECORD IS UNLOCKED.
+!
+! FORMAT OF THE $RELEASE MACRO:
+!
+!		$RELEASE	<RAB-NAME> [,<ERROR-ADDRESS>]
+!
+! RAB FIELDS USED AS INPUT TO $RELEASE:
+!
+!	ISI		INTERNAL STREAM IDENTIFIER
+!
+! RAB FIELDS RETURNED BY $RELEASE:
+!
+!	STS		COMPLETION STATUS CODE
+!	STV		ADDITIONAL STATUS INFORMATION
+!
+
+    !+
+    !    *** NOTE: THE $RELEASE MACRO IS CURRENTLY DISABLED***
+    !-
+
+! INPUT:
+!	ADDRESS OF USER RAB
+!	ADDRESS OF USER ERROR ROUTINE
+! OUTPUT:
+!	<NONE>
+! GLOBALS USED:
+!	LOCKIT
+    BEGIN
+
+    LOCAL
+	userrfa;
+
+    !+
+    !    ****DISABLE THE $RELEASE MACRO TEMPORARILY****
+    !-
+
+    usererror (er$iop);
+
+%IF 0
+%THEN
+    TRACE ('$RELEASE');
+
+    !+
+    !   Get ISI and file JFN.
+    !-
+
+    rab = .rabblock;				! Get RAB
+    erradr = .errorreturn;			!   and user address
+
+    !+
+    !   Establish system-wide pointers and don't worry
+    !   about the contents of the FAC field.
+    !-
+
+    rsetup (true);				! Just set up global pointers
+
+    !+
+    !   Unlock this record.
+    !-
+
+    IF (userrfa = .rab [rabrfa, 0]) LEQ 0	! Must be positive RFA
+    THEN
+	error (er$rfa);				! Don't allow bad RFAs
+
+    !+
+    !   Get RFA
+    !-
+
+    IF .userrfa EQL .rst [rstdatarfa]
+    THEN 					! Remember it's unlocked
+	clrflag (rst [rstflags], flgdlock);
+
+    !+
+    !   Don't unlock anything if we aren't locking.
+    !-
+
+    IF locking
+    THEN
+	BEGIN
+
+	IF lockit (deqcall, 			! JSYS to use
+		deqdr, 				! Function
+		.userrfa, 			! ID
+		0, 				! Access
+		ltyperec) EQL false		! Lock type
+	THEN
+	    error (er$rnl)
+
+	END;
+
+    rab [rabrfa, 0] = 0;			! For safety
+%FI						! END UNCOMPILED CODE
+
+    usrret ()
+    END;					! End routine $RELEASE
+
+END
+
+ELUDOM

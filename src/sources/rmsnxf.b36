@@ -1,0 +1,97 @@
+MODULE NXTFIL(                          ! Get next file from list of files
+              IDENT='2'
+              %BLISS36(,
+                  ENTRY(DAP$NEXTFILE)
+                      )
+              ) =
+BEGIN
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1981, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!++
+! FACILITY:  DAP
+!
+! ABSTRACT:  Routines to transfer records or blocks of file data.
+!
+!
+! ENVIRONMENT:  RMS, BLISSNET, XPORT, Transportable code.
+!
+! AUTHOR:	Andrew Nourse, CREATION DATE:  14-Sep-82
+!
+! 03    - RMSify
+! 02    - Filespec components (except node) should not be sticky
+! 01	- Write code to handle multiple local input filespecs
+!--
+!
+! INCLUDE FILES:
+!
+
+REQUIRE 'RMSREQ';
+
+!
+! Table of Contents
+!
+
+FORWARD ROUTINE
+    Dap$Nextfile;
+
+!
+! Externals
+!
+EXTERNAL ROUTINE Dap$Merge,
+                 Dap$Close,
+                 R$Null,
+                 Dap$Openfile;
+
+GLOBAL ROUTINE Dap$Nextfile (P_Fab: REF $Fab_decl, Err)=
+BEGIN
+BIND Fab=.P_Fab: $Fab_decl;
+BIND Nam=UAddr(.Fab[Fab$a_Nam]): $Nam_decl;
+BIND Fst=.Fab[Fab$a_Ifi]: $Rms_Fst;
+LOCAL begptr;
+
+IF Nam EQL 0 THEN RETURN 0;             ! Cannot do without name block
+
+!+
+! Point to filespec delimiter
+!-
+Begptr = UAPointer( CH$PLUS(.Fab[Fab$a_Fna],.Nam[Nam$h_Wcc_Next]) );
+
+
+SELECT CH$RCHAR_A(Begptr) OF
+SET
+[%C',', %C'+']:
+     BEGIN
+     LOCAL Function;
+     LOCAL Newfab;
+
+     Function=.Fst[Fst$b_Operation];
+!     Newfab=.Fst[Fst$a_New_Fab];
+     Newfab=0;
+
+     NAM[NAM$H_WCC_NEXT]=.NAM[NAM$H_WCC_NEXT]+1;
+
+     Dap$Merge( Fab, Merge$m_Expanded+Merge$m_Point, .Err);
+     Dap$Close( Fab, Dap$k_Accomp_Purge, R$Null); ![2] Close old access if any
+     Dap$Openfile( Fab, .Function, .Newfab, .Err );
+     (.Fab[Fab$h_Sts] EQL Rms$_Suc)
+     END;
+[OTHERWISE]: 0;
+TES
+END;
+END ELUDOM

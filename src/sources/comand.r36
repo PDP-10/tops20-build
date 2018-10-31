@@ -1,0 +1,214 @@
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+
+%TITLE 'COMAND.R36 - Macros to support BLISS interface to COMND JSYS'
+
+%if %variant  ! must be for RMS
+%then
+
+MACRO
+    $comand_states (i) =
+	VECTOR [%LENGTH]INITIAL(i $comand$comma(%REMAINING)) %,
+    $comand_state (i) =
+	i %,
+    $comand_key (i) =
+	VECTOR [%LENGTH + 1]INITIAL(%LENGTH^18 + 0, i $comand$comma(%REMAINING))
+    %,
+    $comand$comma [] =
+	, %REMAINING %;
+
+KEYWORDMACRO
+    $comand_flddb (
+	    function,
+	    flags = 0,
+	    more = 0,
+	    data,
+	    help,
+	    break,					! Break mask	!A01
+	    default,
+	    action = 0,
+	    next = 0,
+	    context = 0 ) =
+	UPLIT ((function^27) OR flags OR (more)
+
+	%IF NOT %NULL (break) %THEN OR cm_brk %FI	!
+	%IF NOT %NULL (help) %THEN OR cm_hpp %FI 	!
+	%IF NOT %NULL (default) %THEN OR cm_dpp %FI,	!
+	%IF %NULL(data) %THEN 0 %ELSE %IF %ISSTRING (data) %THEN
+	CH$PTR (UPLIT (%ASCIZ data)) %ELSE data %FI %FI,
+	%IF %NULL(help) %THEN 0 %ELSE %IF %ISSTRING (help) %THEN
+	CH$PTR (UPLIT (%ASCIZ help)) %ELSE help %FI %FI,
+	%IF %NULL(default) %THEN 0 %ELSE %IF %ISSTRING (default) %THEN
+	CH$PTR (UPLIT (%ASCIZ default)) %ELSE default %FI %FI,
+	%IF %NULL(break) %THEN 0 %ELSE break %FI,
+	next^18 + action, context) %,
+    $comand_option (
+	    opt,
+	    action = 0,
+	    next = 0,
+	    context = 0,
+	    visible = yes,			!
+	    recognize = yes ) =
+	UPLIT (1^28				!
+            %IF %IDENTICAL(visible,no) %THEN OR cm_inv %FI !
+	    %IF %IDENTICAL(recognize,no) %THEN OR cm_nor %FI, !
+            %ASCIZ opt)^18 + UPLIT (next^18 + action, context) %;
+
+EXTERNAL
+    cmdsta,
+    cmderr,
+    cmderp,
+    cmdrpt;
+
+EXTERNAL ROUTINE
+    rcline,
+    comand;
+
+%else    ! must be for DIU
+
+MACRO
+
+    $COMAND_STATES ( I ) =
+        VECTOR [%LENGTH] INITIAL ( I $COMAND$COMMA(%REMAINING)) %,
+
+    $COMAND_STATE ( I ) =
+        I %,
+
+    $COMAND_KEY ( I ) =
+        VECTOR [%LENGTH + 1] INITIAL (%LENGTH^18+0, I
+            $COMAND$COMMA(%REMAINING)) %,
+
+    $COMAND$COMMA [] = , %REMAINING %;
+
+KEYWORDMACRO
+
+    $COMAND_FLDDB (FUNCTION, FLAGS=0, MORE=0, DATA=0, HELP,
+        DEFAULT, ACTION=0, NEXT=0, CONTEXT=0, BREAK) =
+
+        UPLIT ((
+
+	    ! *** first word of FLDDB:  $CMFNP
+
+		(FUNCTION^27)		! Function code (CM_FNC)
+
+		OR FLAGS		! Function flags (CM_FFL)
+
+		    ! set other flags as needed:
+
+		    %IF NOT %NULL (DEFAULT) ! If default text supplied
+		    %THEN                   !  then
+		    OR CM_DPP               !  light bit saying it's there
+		    %FI
+
+		    %IF NOT %NULL (HELP)    ! If help text supplied
+		    %THEN                   !  then
+		    OR CM_HPP		    !  light bit saying it's there
+		    %FI
+
+		    %IF NOT %NULL (BREAK)   ! If break mask supplied
+		    %THEN                   !  then
+		    OR CM_BRK               !  light bit saying it's there
+		    %FI
+
+		OR (MORE)),		! Pointer to next function block
+
+	    ! *** second word of FLDDB:  $CMDAT
+
+		DATA,                    ! Datum for FLDDB
+
+	    ! *** third word of FLDDB:  $CMHLP
+
+		%IF NOT %NULL (HELP)     ! If help text supplied
+		%THEN                    !  then
+		HELP                     !  pointer to it
+		%ELSE                    !  else
+		0                        !  zero
+		%FI ,
+
+	    ! *** fourth word of FLDDB:  $CMDEF
+
+		%IF NOT %NULL (DEFAULT)  ! If default text supplied
+		%THEN                    !  then
+		DEFAULT                  !  pointer to it
+		%ELSE                    !  else
+		0                        !  zero
+		%FI ,
+
+	    ! *** fifth word of FLDDB:  $CMBRK
+
+		%IF NOT %NULL (BREAK)    ! If break mask supplied
+		%THEN                    !  then
+		BREAK                    !  pointer to it
+		%ELSE                    !  else
+		0                        !  zero
+		%FI ,
+
+	    ! *** first "extra" word of FLDDB used by COMAND:
+
+		NEXT^18 + ACTION,	! <pointer to next state>,,
+					! <address of action routine>
+
+	    ! *** second "extra" word of FLDDB used by COMAND:
+
+		CONTEXT			! Data to be passed to action routine.
+
+		) %,
+
+    $comand_option (opt, action=0, next=0, context=0, flags=0, related=) =
+
+	UPLIT (			! pointer to argument block for TBLUK JSYS
+
+		%IF flags NEQ 0 %THEN		! If any flags are specified,
+		    (flags OR CM_FW), %FI	! set them and also set CM_FW
+						! to indicate that their there.
+
+		%ASCIZ opt)^18 +		! ptr. to ASCIZ string of
+						!  switch or keyword
+
+	%IF (flags AND CM_ABR) EQL 0 %THEN
+	  UPLIT(		! pointer to data used by COMAND routine
+
+	  %IF %NULL(next) %THEN -2^18 %ELSE next^18 %FI
+	  + %IF %NULL(action) %THEN %O'777776' %ELSE action %FI ,
+		context)
+	%ELSE
+
+	  %IF %NULL(related) %THEN 
+	    %ERROR
+	      ('In COMAND_OPTION for OPT: ',opt,' required RELATED is missing')
+	    0
+	  %ELSE
+	    related
+	  %FI
+
+	%FI%;
+
+    EXTERNAL
+        CMDSTA,
+        CMDERR,
+        CMDERP,
+        CMDRPT,
+        CMDRPR,
+        CMDNPT;
+
+    EXTERNAL ROUTINE
+        RCLINE,
+        COMAND;
+
+%fi     ! end of Variant

@@ -1,0 +1,145 @@
+	TITLE	LODMAP
+	SEARCH MONSYM
+	ENTRY MAPIT,DEMAP
+;
+;
+;
+;	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1982, 1986.
+;	ALL RIGHTS RESERVED.
+;
+;	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+;	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+;	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+;	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+;	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+;	SOFTWARE IS HEREBY TRANSFERRED.
+;
+;	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+;	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+;	EQUIPMENT CORPORATION.
+;
+;	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+;	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+;
+;
+;
+;
+; REVISION HISTORY:
+;
+;
+; END OF REVISION HISTORY
+;
+;
+;
+;				FUNCTION
+; This sub-module is used to copy all the pages from section 0
+; to section 1.  If DDT is present, MAPIT  will make it run in a non-zero
+; section.  MAPIT is called from section 0; it runs in section 0 until
+; all the mapping has been done. Finally, it jumps to section 1 and arranges
+; to return in section 1.
+;
+; Please note that this module was taken from the chapter on
+; "DECSYSTEM-20 ASSEMBLY LANGUAGE PROGRAMMING".
+;
+; DEMAP (which is not from the book mentioned above) returns the code
+; to section 0, and then resets the stack pointer and the return PC 
+; on the stack, so that calls within section 0 may proceed normally.
+;
+;			General Usage Notes:
+;
+; The MAPIT routine should be called shortly after starting a program.
+;
+; The DEMAP routine is for use primarily in BLISS programs.
+; DEMAP should be called from the same routine which
+; called MAPIT, just before that routine returns.  Thus, if
+; MAPIT is called in the first line of a MAIN routine, DEMAP
+; should be the last routine call, just before the routine returns
+; or ends.
+
+	AC1=1
+	AC2=2
+	AC3=3
+	AC4=4
+	AC5=5
+	SP=17
+
+	TWOSEG
+	RELOC	0
+SPLH:	0			;Left half of Stack Pointer
+STKLH:	0			;Left half of Stack
+	RELOC	400000
+
+MAPIT:
+	HLLZ	AC1,SP		;Fetch left half of stack ptr
+	HLLM	AC1,SPLH	;Store it away
+	HLLZ	AC1,(SP)	;Left half of return address
+	HLLM	AC1,STKLH	;Store away return LH
+	MOVEI	AC1,0		;Make a private section
+	MOVE	AC2,[.FHSLF,,1]	;Section 1
+	MOVE 	AC3,[PM%CNT!PM%RD!PM%WR!PM%EX!1] ;One section with all access
+	SMAP%
+	ERJMP	.+1		;Shouldn't fail if SMAP% exists
+	MOVE	AC4,[.FHSLF,,0]	;Initial fork page pointer
+MAP1:	MOVE 	AC1,AC4		;Fork,,page #
+	RMAP			;Read fork's map
+	CAMN	AC1,[-1]	;-1 means no access
+	JRST	MAP2		;No work for no page
+	MOVE 	AC3,AC2		;Access bits from RMAP
+	MOVE	AC2,AC4		;Fork,,source page #
+	IORI	AC2,1000	;Fork,,destination page #
+	PMAP			;Copy map from sect 0 to 1
+	ERJMP	.+1		;Unexpected failure
+MAP2:	ADDI	AC4,1		;Increment fork page pointer
+	TRNN	AC4,1000	;Done yet?
+	JRST	MAP1
+
+;Now unmap UDDT from section 0
+;+
+;  IGNORE DDT FOR NOW - WITH THE NEW DDT, WE MAY NOT NEED THIS
+;-
+	JRST	MAP5		;FORGET DDT TWIDDLING
+	SETO	AC1,		;Unmap process page
+	MOVE	AC2,[.FHSLF,,771] ;Unmap UDDT from section 0
+	MOVE	AC3,[PM%CNT!7]	;Remove pages 771 through 777
+	PMAP
+	ERJMP	.+1		;Ignore errors
+	MOVE	AC1,[.FHSLF,,770] ;Is UDDT present?
+	RMAP
+	CAMN	AC1,[-1]
+	JRST	MAP5		;No DDT at all.
+
+;Make section 0 UDDT jump to section 1.
+;We can't write this page 770, so we discard it.
+
+	PUSH	SP,770000	;Save 770000,1,2
+	PUSH	SP,770001
+	PUSH	SP,770002
+	SETO	AC1,
+	MOVE 	AC2,[.FHSLF,,770] ;Unmap page 770
+	MOVEI	AC3,0
+	PMAP
+	ERJMP .+1
+	POP	SP,770002	;Put back 3 words.
+	POP	SP,770001
+	POP	SP,770000
+	MOVE	AC1,[XJRSTF 770004] ;The starting instruction
+	MOVEM	AC1,770003	;for UDDT goes into 770003
+	SETZM	770004		;new PC flags for XJRSTF
+	MOVE	AC1,[1,,770000]	;new PC for XJRSTF
+	MOVEM	AC1,770005
+MAP5:	XJRSTF	[0		;Now jump to section 1
+		 1,,.+1]
+	MOVSI	AC1,1		;Section 1 in return address
+	HLLM	AC1,SP		;Set left half to section 1
+	HLLM	AC1,(SP)	;Set left half to section 1
+	POPJ	SP,		;return in section 1
+
+DEMAP:	XJRSTF	[0		;Return to section 0
+		 0,,.+1]
+	HLLZ	AC1,SPLH	;Reset stack pointer
+	HLLM	AC1,SP		;...
+	HLLZ	AC1,STKLH	;Reset return address
+	HLLM	AC1,(SP)	;...
+	POPJ	SP,		;Return in section 0
+
+	END

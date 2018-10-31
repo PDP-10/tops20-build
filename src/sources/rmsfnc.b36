@@ -1,0 +1,206 @@
+MODULE FUNCT (	!
+		IDENT = '1'
+		) =
+BEGIN
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1984, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+
+!++
+! FACILITY: Memory management for RMS-20 functions that use XPORT.
+!
+! ABSTRACT:
+!
+!         XPORT calls FUNCT. to manage memory.
+!         RMS-20 has its own memory manager.
+!         DYNLIB/RTL has its own memory manager
+!         This is a FUNCT. that calls the RMS-20 memory manager for section 0
+!         and the DYNLIB/RTL memory manager for other sections
+!
+!
+!         Note: The RMS storage manager is in RMSFSM
+!
+!
+! ENVIRONMENT: RMS-20, XPORT
+!
+! AUTHOR:	Andrew Nourse, CREATION DATE: 11-May-84
+!
+! 01	- Write this module
+!--
+!
+! TABLE OF CONTENTS:
+!
+
+FORWARD ROUTINE
+	%NAME('FUNCT.'): FORTRAN_SUB,   ! FUNCT. (for memory mgt only)
+        ALLOCATE,                       ! Get a page
+        FREE;                           ! Give back a page
+
+!
+! INCLUDE FILES:
+!
+REQUIRE 'RMSREQ';
+
+!
+! MACROS:
+!
+
+
+!
+! EQUATED SYMBOLS:
+!
+
+!      All The FUNCT. Function codes.
+!      This module only implements memory management calls needed by XPORT,
+!      Most of the following are NOT IMPLEMENTED in this routine
+LITERAL
+       Funct$k_GAd = 1,     ! Get specific block of  memory for overlay
+       Funct$k_Cor = 2,     ! Get memory for overlay
+       Funct$k_RAd = 3,     ! Return specific block of overlay memory
+       Funct$k_GCh = 4,     ! Get an I/O channel
+       Funct$k_RCh = 5,     ! Return an I/O channel
+       Funct$k_GOt = 6,     ! Get memory for use by OTS
+       Funct$k_ROt = 7,     ! Return memory from OTS
+       Funct$k_RnT = 8,     ! Return runtime when this application started
+       Funct$k_IFs = 9,     ! Return filespec of our .EXE (TOPS-10 only)
+       Funct$k_CBC = 10,    ! Give memory back to O/S if possible
+       Funct$k_RRS = 11,    ! Read Retain Status (Reserved for DBMS)
+       Funct$k_WRS = 12,    ! Write Retain Status (Reserved for DBMS)
+       Funct$k_GPg = 13,    ! Get a Page
+       Funct$k_RPg = 14,    ! Return a Page
+       Funct$k_GPsi= 15,    ! Get a PSI channel
+       Funct$k_RPsi= 16,    ! Return a PSI channel
+
+       Funct$k_Function_Code_Maximum = 17;
+
+! Probably not needed if we use the FORTRAN_SUB linkage
+FIELD Funct$r_Arg_list_fields =
+      SET
+      Funct$z_Function_code_Addr = [ 0, 0, 22, 0 ],
+      Funct$z_Error_code_Addr    = [ 1, 0, 22, 0 ],
+      Funct$z_Status_code_Addr   = [ 2, 0, 22, 0 ],
+      Funct$z_Argument_1_Addr    = [ 3, 0, 22, 0 ],
+      Funct$z_Argument_2_Addr    = [ 4, 0, 22, 0 ],
+      Funct$z_Argument_3_Addr    = [ 5, 0, 22, 0 ]
+      TES;
+
+LITERAL w_to_p = 9 ;                    ! Shift 9 bits to change word to page #
+
+!
+! OWN STORAGE:
+!
+
+!
+! EXTERNAL REFERENCES:
+!
+
+GLOBAL ROUTINE %NAME ( 'FUNCT.' ) ( Function_Code,
+                                      Error_Code,
+                                      Status_Code,
+                                      Arg1,
+                                      Arg2,
+                                      Arg3 ) : FORTRAN_SUB =
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!       This is a partial implementation of FUNCT.
+!       supporting the memory management features only.
+!       It calls the RMS memory manager if in section 0.
+!       It calls the RTL/DYNLIB memory manager if in a non-0 section
+!
+! FORMAL PARAMETERS:
+!
+!        Function_Code:  FUNCT. Function Code (see above)
+!        Error_Code:     3-letter error code returned here if error
+!        Status_Code:    Status code returned here (see below)
+!        Arg1,Arg2,Arg3: Arguments to the function requested
+!
+! COMPLETION CODES:
+!
+!	-1: Not implemented
+!        0: Success
+!        1: Not Available to Get |  Not yours to Return
+!        2: Memory Not Available at Specified Address
+!        3: Illegal Argument
+!
+!--
+
+BEGIN
+CASE ..Function_Code
+FROM 0 TO Funct$k_Function_Code_Maximum OF
+SET
+[Funct$k_GOt]:
+     BEGIN
+     .Arg1 = Allocate ( ..Arg2 );       ! Get a chunk of memory
+     .Status_Code = 0;                  ! Successfully
+     END;
+[Funct$k_ROt]:
+     BEGIN
+     Free ( ..Arg1, ..Arg2 );           ! Release a chunk of memory
+     .Status_Code = 0;                  ! Successfully
+     END;
+[INRANGE,
+ OUTRANGE]:
+     .Status_Code = -1;                 ! Not Implemented
+TES
+END;			!End of FUNCT.
+ROUTINE Allocate ( NumberofWords )  =	!
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!       Allocate an arbitrary-size chunk of memory
+!       If running in section 0 round up to next page if more than 1 page
+!
+! FORMAL PARAMETERS:
+!
+!	NumberofWords: Number of Words of memory to allocate
+!
+! ROUTINE VALUE:
+!
+!	Address of block of memory
+!--
+
+BEGIN
+IF .NumberofWords GEQ PageSize
+THEN Gpage ( ( .NumberofWords + Pagesize - 1 ) ^ - w_to_p  ) ^ w_to_p
+ELSE GMem ( .NumberofWords )
+END;			!End of Allocate
+ROUTINE Free ( ChunkAddr, NumberofWords )  =	!
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!       Give back some memory
+!       If running in section 0 round up to next page if more than 1 page
+!
+! FORMAL PARAMETERS:
+!
+!	ChunkAddr:     Address of the block of memory
+!       NumberofWords: Number of Words to give back
+!
+!--
+
+BEGIN
+IF .NumberofWords GEQ Pagesize
+THEN PPage ( .ChunkAddr ^- w_to_p, (.NumberofWords + Pagesize-1) ^- w_to_p, 1 )
+ELSE PMem ( .NumberofWords, ChunkAddr )
+END;			!End of Free
+END				!End of module
+ELUDOM
+

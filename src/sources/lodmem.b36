@@ -1,0 +1,475 @@
+%TITLE 'L O D M E M -- RMSLOD memory manager'
+!<BLF/REQUIRE 'BLI:BLF.REQ'>
+MODULE lodmem (IDENT = '1'
+		) =
+BEGIN
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1984, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!++
+! FACILITY:	LOD
+!
+! ABSTRACT:
+!
+!	LODMEM contains the memory management routines for RMSLOD.
+!
+! ENVIRONMENT:	User mode, from RMSLOD
+!
+! AUTHOR: Ron Lusk , CREATION DATE:  9-Jul-84
+!
+! MODIFIED BY:
+!
+!	, : VERSION
+! 01	-
+!--
+
+!
+! TABLE OF CONTENTS
+!
+
+FORWARD ROUTINE
+    getmem,
+    fremem,
+    inimem,
+    scneql,
+    scngtr,
+    garbge,
+    split,
+    remove;
+
+!
+! INCLUDE FILES:
+!
+!
+! MACROS:
+!
+
+FIELD
+    mem$r_fields =
+	SET
+	mem$a_next = [0, 0, 18, 0],		! Address of next block header
+	mem$h_size = [0, 18, 18, 0]		! Size of this block
+	TES;
+
+LITERAL
+    mem$k_bln = 2;
+
+MACRO
+    $memory_block =
+ BLOCK [mem$k_bln] FIELD (mem$r_fields) %;
+
+!
+! EQUATED SYMBOLS:
+!
+
+LITERAL
+    number_of_pages = %O'20',
+    high_address = %O'377777';
+
+!
+! OWN STORAGE:
+!
+
+OWN
+    memory_lane : REF $memory_block INITIAL (0),
+    last_block : REF $memory_block,
+    current_block : REF $memory_block;
+
+!
+! EXTERNAL REFERENCES:
+!
+! None
+
+GLOBAL ROUTINE getmem (size) =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!
+! FORMAL PARAMETERS
+!
+!	NONE.
+!
+! IMPLICIT INPUTS
+!
+!	NONE.
+!
+! ROUTINE VALUE:
+! COMPLETION CODES:
+!
+!	NONE.
+!
+! SIDE EFFECTS:
+!
+!	NONE.
+!
+!--
+
+    BEGIN
+
+    LOCAL
+	block_address;				! Address of memory block
+
+    IF .memory_lane EQL 0			! First time through
+    THEN
+	inimem ();
+
+    IF scneql (.size) NEQ 0			! Found exact match
+    THEN
+	BEGIN
+	RETURN remove (.size);
+	END
+    ELSE
+	BEGIN
+
+	IF scngtr (.size) NEQ 0			! Found one big enough
+	THEN
+	    BEGIN
+	    RETURN split (.size);
+	    END
+	ELSE
+	    BEGIN
+	    garbge ();
+
+	    IF scneql (.size) NEQ 0		! Found exact match
+	    THEN
+		BEGIN
+		RETURN remove (.size);
+		END
+	    ELSE
+		BEGIN
+
+		IF scngtr (.size) NEQ 0		! Found one big enough
+		THEN
+		    BEGIN
+		    RETURN split (.size);
+		    END
+		ELSE
+		    RETURN SIGNAL (0 %( ss$_dynamic_memory_exhausted )%);
+
+		END;
+
+	    END;
+
+	END;
+
+    END;					!End of GETMEM
+
+GLOBAL ROUTINE fremem (address, size) =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!
+! FORMAL PARAMETERS
+!
+!	NONE.
+!
+! IMPLICIT INPUTS
+!
+!	NONE.
+!
+! ROUTINE VALUE:
+! COMPLETION CODES:
+!
+!	NONE.
+!
+! SIDE EFFECTS:
+!
+!	NONE.
+!
+!--
+
+    BEGIN
+
+    LOCAL
+	ret_block : REF $memory_block;
+
+    ret_block = .address + .size - 1;
+    ret_block [mem$h_size] = .size;
+    current_block = memory_lane;
+
+    UNTIL .current_block [mem$a_next] LSSA .ret_block DO 	!
+	BEGIN
+	current_block = .current_block [mem$a_next];
+	END;
+
+    ret_block [mem$a_next] = .current_block [mem$a_next];
+    current_block [mem$a_next] = .ret_block;
+    RETURN 1;
+    END;					!End of FREMEM
+
+ROUTINE inimem =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!
+! FORMAL PARAMETERS
+!
+!	NONE.
+!
+! IMPLICIT INPUTS
+!
+!	NONE.
+!
+! ROUTINE VALUE:
+! COMPLETION CODES:
+!
+!	NONE.
+!
+! SIDE EFFECTS:
+!
+!	NONE.
+!
+!--
+
+    BEGIN
+    memory_lane = high_address;
+    memory_lane [mem$a_next] = 0;		! No next block
+    memory_lane [mem$h_size] = number_of_pages*%O'1000';
+    RETURN 1;
+    END;					!End of INIMEM
+ROUTINE scneql (size) =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!
+! FORMAL PARAMETERS
+!
+!	NONE.
+!
+! IMPLICIT INPUTS
+!
+!	NONE.
+!
+! ROUTINE VALUE:
+! COMPLETION CODES:
+!
+!	NONE.
+!
+! SIDE EFFECTS:
+!
+!	NONE.
+!
+!--
+
+    BEGIN
+    !
+    !   Initialize the pointers
+    !
+    last_block = memory_lane;
+    current_block = .memory_lane;
+    !
+    !   Look for the right sized block
+    !
+
+    UNTIL .current_block EQL 0 DO
+	BEGIN
+
+	IF .current_block [mem$h_size] EQL .size	! Right size?
+	THEN
+	    EXITLOOP
+	ELSE
+	    BEGIN
+	    last_block = .current_block;
+	    current_block = .current_block [mem$a_next];
+	    END;
+
+	END;
+
+    !
+    !   Return the current block.  If this is zero, then
+    !   we didn't find any memory blocks of the size
+    !   requested.  If it contains an address, then it is the
+    !   address of the header of a block which is the same
+    !   size as that requested by the caller.
+    !
+    RETURN .current_block;
+    END;					!End of SCNEQL
+ROUTINE scngtr (size) =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!
+! FORMAL PARAMETERS
+!
+!	NONE.
+!
+! IMPLICIT INPUTS
+!
+!	NONE.
+!
+! ROUTINE VALUE:
+! COMPLETION CODES:
+!
+!	NONE.
+!
+! SIDE EFFECTS:
+!
+!	NONE.
+!
+!--
+
+    BEGIN
+    !
+    !   Initialize the pointers
+    !
+    last_block = memory_lane;
+    current_block = .memory_lane;
+    !
+    !   Look for a block big enough to hold our size block
+    !
+
+    UNTIL .current_block EQL 0 DO
+	BEGIN
+
+	IF .current_block [mem$h_size] GTR .size	! Right size?
+	THEN
+	    EXITLOOP
+	ELSE
+	    BEGIN
+	    last_block = .current_block;
+	    current_block = .current_block [mem$a_next];
+	    END;
+
+	END;
+
+    !
+    !   Return the current block.  If this is zero, then
+    !   we didn't find any memory blocks of the size
+    !   requested.  If it contains an address, then it is the
+    !   address of the header of a block which is the same
+    !   size as that requested by the caller.
+    !
+    RETURN .current_block;
+    END;					!End of SCNGTR
+ROUTINE garbge =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!
+! FORMAL PARAMETERS
+!
+!	NONE.
+!
+! IMPLICIT INPUTS
+!
+!	NONE.
+!
+! ROUTINE VALUE:
+! COMPLETION CODES:
+!
+!	NONE.
+!
+! SIDE EFFECTS:
+!
+!	NONE.
+!
+!--
+
+    BEGIN
+    last_block = .memory_lane;
+    current_block = .last_block [mem$a_next];
+
+    UNTIL .current_block EQL 0 DO
+	BEGIN
+
+	IF .last_block - .last_block [mem$h_size] EQL .current_block	!
+	THEN
+	    BEGIN				! Coalesce the blocks
+	    last_block [mem$a_next] = .current_block [mem$a_next];
+	    last_block [mem$h_size] = .last_block [mem$h_size] + 	!
+	    .current_block [mem$h_size];
+	    current_block = .last_block [mem$a_next];
+	    END
+	ELSE
+	    BEGIN				! Move on to the next pair
+	    last_block = .current_block;
+	    current_block = .current_block [mem$a_next];
+	    END;
+
+	END;
+
+    RETURN 1;
+    END;					!End of GARBGE
+ROUTINE split (size) =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!
+! FORMAL PARAMETERS
+!
+!	NONE.
+!
+! IMPLICIT INPUTS
+!
+!	NONE.
+!
+! ROUTINE VALUE:
+! COMPLETION CODES:
+!
+!	NONE.
+!
+! SIDE EFFECTS:
+!
+!	NONE.
+!
+!--
+
+    BEGIN
+    current_block [mem$h_size] = .current_block [mem$h_size] - .size;
+    RETURN .current_block - .current_block [mem$h_size] - .size + 1;
+    END;					!End of SPLIT
+ROUTINE remove (size) =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!
+! FORMAL PARAMETERS
+!
+!	NONE.
+!
+! IMPLICIT INPUTS
+!
+!	CURRENT_BLOCK	- address of memory block to remove
+!	LAST_BLOCK	- address of memory block before current block
+!
+! ROUTINE VALUE:
+! COMPLETION CODES:
+!
+!	NONE.
+!
+! SIDE EFFECTS:
+!
+!	NONE.
+!
+!--
+
+    BEGIN
+    last_block [mem$a_next] = .current_block [mem$a_next];
+    RETURN .current_block - .size + 1;
+    END;					!End of REMOVE
+END						!End of Module LODMEM
+
+ELUDOM

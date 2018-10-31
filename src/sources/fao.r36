@@ -1,0 +1,64 @@
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+
+! FAO.R36 - $FAOL macro for interface to FAO
+
+MACRO $fao (                            ! added for DIU (RMS doesn't use)
+             ctrstr,
+             outlen,
+             outbuf) =
+
+        BEGIN
+        EXTERNAL ROUTINE
+            faol;
+        LOCAL
+		%IF %NULL (%REMAINING)
+		    %THEN fao$$items : VECTOR [%length+1] INITIAL (0);
+		    %ELSE fao$$items : VECTOR[%length+1] INITIAL(%remaining,0);
+		%FI
+
+        faol(ctrstr,outlen,outbuf,fao$$items);
+
+        END %;
+
+KEYWORDMACRO
+    $faol (
+	    ctrstr,
+	    outlen = 0,
+	    outbuf,
+	    prmlst) =
+	BEGIN
+	EXTERNAL ROUTINE 
+	    faol;
+	faol (ctrstr, outlen, outbuf, prmlst)
+	END %;
+
+macro
+    !
+    ! $FAO_CTL builds an FAO control string
+    !
+    $fao_ctl [] =
+ 
+UPLIT (	!
+	str$k_class_f^27 OR 	!
+	str$k_dtype_t^18 OR 	!
+	%CHARCOUNT (%STRING(%REMAINING)),	!
+	CH$PTR (UPLIT (%STRING (%REMAINING)))) %;
+
+! End of FAO.R36

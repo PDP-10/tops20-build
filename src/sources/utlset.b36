@@ -1,0 +1,300 @@
+!<BLF/REQUIRE 'RMSBLF.REQ'>
+MODULE utlset (IDENT = '3'
+		) =
+BEGIN
+!
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1985, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!
+
+!++
+! FACILITY:	RMSUTL
+!
+! ABSTRACT:
+!
+!	UTLSET initializes RMSUTL in one of two ways.  When the RMSUTL image
+!	is first run, UTLSET merges in RMS-SINGLE-SECTION.EXE, the RMS which
+!	is built to run in section 0.  UTLSET stores RMS's entry vector word
+!	for later use and builds some PDVs (to track version numbers of both
+!	RMSUTL and RMS).  The image should then be SAVEd (as RMSUTL).
+!
+!	In subsequent runs, UTLSET will set up the RMS entry vector.
+!
+! ENVIRONMENT:	RMS-SINGLE-SECTION should be on DSK: somewhere.
+!
+! AUTHOR: Ron Lusk , CREATION DATE:  5-Mar-85
+!
+! MODIFIED BY:
+!
+!	, : VERSION
+! 01	-
+!       24-Jan-86 asp - make PDV have TOPS-20 V6 symbol table vector
+!                     so DDT works on RMSUTL.
+!--
+
+!
+! TABLE OF CONTENTS
+!
+
+FORWARD ROUTINE
+    utlset : NOVALUE,				! Set up RMS
+    error : NOVALUE;				! Print error messages
+
+!
+! INCLUDE FILES:
+!
+
+LIBRARY 'tops20';				! System definitions
+
+!
+! MACROS:
+!
+MACRO
+    !
+    !	Equivalent of XWD directive
+    !
+    xwd (lh, rh) =
+	(lh^18 OR (rh AND %O'777777')) %,
+    !
+    !	Create pointer to literal string
+    !
+    st$ptr [] =
+	CH$PTR (UPLIT (%ASCIZ %STRING(%REMAINING))) %,
+    !
+    !	Return a CRLF as a string
+    !
+    crlf =
+	%CHAR (13, 10) %,
+    !
+    !	Create instruction word with JRST to address
+    !
+    jrst (address) =
+	xwd (%O'254000', (address)) %,
+    !
+    !	Define some BLISS names for JOBDAT addresses
+    !
+    $jbsym =
+	%NAME ('.JBSYM') %,			! Symbol table pointer
+    $jbsa =
+	%NAME ('.JBSA') %,			! Starting address of program
+    $jbver =
+	%NAME ('.JBVER') %,			! Version number of program
+    $jbren =
+	%NAME ('.JBREN') %;			! Re-entry address of program
+
+!
+! EQUATED SYMBOLS:
+!
+
+LITERAL
+    rh = %O'777777',				! Right-half mask
+    lh = rh^18,					! Left-half mask
+    wd = lh OR rh,				! Fullword mask
+    ev_len = 3,					! Length of entry vector
+    pdv_len = $pvsym + 1;			! Length of our PDVs
+
+!
+! OWN STORAGE:
+!
+
+OWN
+    first_time : INITIAL (1),			! Zeroed after first run
+    rmsjfn,					! JFN: RMS-SINGLE-SECTION.EXE
+    rms_ev_word,				! RMS entry vector word
+    utl_ev_word,				! RMSUTL entry vector word
+    utl_ev : VECTOR [ev_len],			! RMSUTL entry vector
+    utl_pdv : VECTOR [pdv_len],			! RMSUTL PDV
+    rms_pdv : VECTOR [pdv_len];			! RMS PDV
+
+!
+! EXTERNAL REFERENCES:
+!
+
+EXTERNAL
+    $jbsym,					! Symbol table pointer
+    $jbsa,					! Start address
+    $jbver,					! Version number
+    $jbren;					! Re-entry address
+
+GLOBAL ROUTINE utlset : NOVALUE =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!       UTLSET performs one-time initialization functions
+!       for RMSUTL; it does this in two different ways,
+!       however: the first time RMSUTL runs, UTLSET merges
+!       in RMS-SINGLE-SECTION.EXE and sets up some PDVs and
+!       entry vectors.  UTLSET executes a HALTF and RMSUTL
+!       is then SAVEd.
+!
+!       Henceforth, UTLSET will set the entry vector for RMS
+!       using SDVEC% and return to the caller.
+!
+!
+! FORMAL PARAMETERS
+!
+!	NONE.
+!
+! IMPLICIT INPUTS
+!
+!	FIRST_TIME	- determines whether to initialize RMS or set EV
+!	.JBSA, .JBREN	- these JOBDAT addresses are used for setting up
+!	.JBVER, .JBSYM	  the RMSUTL entry vector and PDV.
+!
+! COMPLETION CODES:
+!
+!	NONE.
+!
+! SIDE EFFECTS:
+!
+!       A TOPS-20 entry vector for RMSUTL is set up, as are
+!       PDVs for both RMSUTL and RMS.EXE (which gives
+!       version numbers for both).
+!
+!       RMS-SINGLE-SECTION.EXE is merged in from disk,
+!       increasing the size of the image from 57 to 141
+!       pages.  The program name is also changed using
+!       SETNM.
+!--
+
+    BEGIN
+
+    LOCAL
+	rmsev : REF monblock,			! Pointer to RMS entry vector
+	pdvdat : VECTOR [2],			! Data block for PDVOP%
+	pdvarg : VECTOR [$poade + 1];		! Arg block for PDVOP%
+
+    IF .first_time				! Initial set-up or not
+    THEN
+	BEGIN					! Set up for saving
+	first_time = 0;				! Don't do this ever again
+	gevec ($fhslf; utl_ev_word);		! Save our entry vector
+
+	!+
+	!   Try to get RMS-SINGLE-SECTION.EXE
+	!-
+
+	IF NOT gtjfn (gj_old OR gj_sht, 	! Get a JFN for the .EXE
+		st$ptr ('RMS-SINGLE-SECTION.EXE'); 	! ...
+		rmsjfn)				! ...
+	THEN
+	    error (st$ptr ('GTJFN%'));
+
+	IF NOT get (xwd ($fhslf, .rmsjfn))	! GET% RMS into memory
+	THEN
+	    error (st$ptr ('GET%'));
+
+	gevec ($fhslf; rms_ev_word);		! Store RMS's entry vector
+	!
+	!   Set up TOPS-20 style entry vector for RMSUTL
+	!
+	utl_ev [0] = jrst (.$jbsa);		! Get start address
+	utl_ev [1] = jrst (.$jbsa);		! Reentry address is same
+	utl_ev [2] = .$jbver;			! Version number
+	sevec ($fhslf, xwd (ev_len, utl_ev));	! Set new RMSUTL EV
+	!
+	!   Set up RMSUTL PDV
+	!
+	utl_pdv [$pvcnt] = pdv_len;		! Length of block
+	utl_pdv [$pvnam] = UPLIT ('RMSUTL');	! Program name
+	utl_pdv [$pvstr] = .$jbsa<0, 18>;	! Starting address
+	utl_pdv [$pvree] = .$jbsa<0, 18>;	! Reentry address (same thing)
+	utl_pdv [$pvver] = .$jbver;		! Version number
+	utl_pdv [$pvsym] = .$jbsym;		! Symbol table pointer
+	!
+	!   Set up RMS PDV
+	!
+	rmsev = .rms_ev_word<0, 18>;		! Address of RMS EV
+	rms_pdv [$pvcnt] = pdv_len;		! Length of block
+	rms_pdv [$pvnam] = UPLIT ('RMS');	! Program name
+	rms_pdv [$pvstr] = .rmsev [$sdine, rh];	! Starting address
+	rms_pdv [$pvree] = .rmsev [$sdead, rh];	! Reentry address
+	rms_pdv [$pvver] = .rmsev [$sdver, wd];	! Version number
+	rms_pdv [$pvsym] = 0;			! Symbol table pointer
+	!
+	!   Tell the monitor about the PDVs
+	!
+	pdvarg [$poct1] = $podat + 1;		! Length of arg block
+	pdvarg [$pophd] = $fhslf;		! This process
+	pdvarg [$poct2] = 2;			! Two PDVs
+	pdvarg [$podat] = pdvdat;		! Location of PDVAs
+	pdvdat [0] = MINA (utl_pdv, rms_pdv);	! Set addresses
+	pdvdat [1] = MAXA (utl_pdv, rms_pdv);	! ...
+
+	IF NOT pdvop_ ($poadd, pdvarg, 0)	! Set the PDVs
+	THEN
+	    error (st$ptr ('PDVOP%'));
+
+	!
+	!   Set our name
+	!
+	setnm (%SIXBIT'RMSUTL');		! Set this to be our name
+	psout (st$ptr ('[Enter SAVE command]', crlf));	! Inform user
+	haltf ();				! Quit and let user save RMSUTL
+	END					! End of initialization
+    ELSE
+	sdvec ($fhslf, .rms_ev_word);		! Set RMS entry vector
+
+    END;					! End UTLSET
+
+ROUTINE error (jname) : NOVALUE =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!       ERROR is called when a JSYS fails.  The name of the
+!       offending JSYS is printed (it is an argument) and
+!       then the TOPS-20 error message is printed.  ERROR
+!       does not return.
+!
+! FORMAL PARAMETERS
+!
+!	JNAME	- pointer to ASCIZ JSYS name
+!
+! IMPLICIT INPUTS
+!
+!	None.
+!
+! COMPLETION CODES:
+!
+!	None - the routine does not return.
+!
+! SIDE EFFECTS:
+!
+!	None.
+!
+!--
+
+    BEGIN
+    psout (st$ptr ('?Error in '));		! Print error prefix
+    psout (.jname);				! JSYS name
+    psout (st$ptr (' JSYS: '));			! Error intermediate string
+    erstr ($priou, xwd ($fhslf, -1), 0);	! Monitor error
+
+    WHILE 1 DO
+	BEGIN
+	haltf ();				! Loop forever
+	psout (st$ptr ('?Can''t continue', crlf));
+	END;
+
+    END;					! End ERROR
+END						! End of Module UTLSET
+
+ELUDOM

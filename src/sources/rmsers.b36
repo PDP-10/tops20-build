@@ -1,0 +1,211 @@
+%TITLE 'E R A S E   -- $ERASE routines'
+!<BLF/REQUIRE 'RMSBLF.REQ'>
+MODULE erase (IDENT = '2.0'
+		) =
+BEGIN
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1984, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+
+!++
+! FACILITY:	RMS
+!
+! ABSTRACT:
+!
+!	ERASE contains all routines which process
+!	the $ERASE macro in RMS-20.
+!
+! ENVIRONMENT:	User mode, top level of RMS
+!
+! AUTHOR: Ron Lusk , CREATION DATE: 31-Mar-83
+!
+! MODIFIED BY:
+!
+!	, : VERSION
+! 01	-
+!--
+
+!
+! TABLE OF CONTENTS
+!
+!
+!	$ERASE	-   processor for $ERASE call
+!
+!
+! INCLUDE FILES:
+!
+
+REQUIRE 'rmsreq';
+
+REQUIRE 'rmsosd';				! Monitor-dependent symbols
+
+!
+! MACROS:
+!
+!   None.
+!
+! EQUATED SYMBOLS:
+!
+
+BIND
+    !
+    !	Error-mapping tables defined for the $ERASE call.
+    !
+    delerrtab = $oserrmap (			! Error code map
+	    <er$jfn, desx3>, 			! JFN not assigned
+	    <er$prv, delfx1, whelx1>, 		! Delete access required
+	    <er$fnc, delfx2>);			! File not closed
+
+!
+! OWN STORAGE:
+!
+!   None.
+!
+! EXTERNAL REFERENCES:
+!
+EXTERNAL ROUTINE
+GetJfn,
+R$Null;
+
+%SBTTL '$ERASE -- delete a file'
+
+GLOBAL ROUTINE $erase (fabblock, errorreturn) : NOVALUE =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!	This routine performs the function of file
+!	deletions.  It will accept either a full name string
+!	or a JFN as input.  However, the file must be closed
+!	before the $ERASE is issued.  The JFN will always be
+!	released after the deletion unless the FB$DRJ bit is
+!	set in the FOP field of the FAB.
+!
+! FORMAL PARAMETERS
+!
+!	FABBLOCK    -	address of user file access block
+!	ERRORRETURN -	address of user error routine
+!
+! IMPLICIT INPUTS
+!
+!	?
+!
+! ROUTINE VALUE:
+!
+!	None.
+!
+! SIDE EFFECTS:
+!
+!	?
+!
+!--
+
+    BEGIN
+
+    LOCAL
+	result;					! Temporary for DELF result
+
+    rmsentry ('$ERASE');
+    fab = .fabblock;
+    erradr = .errorreturn;			! User error address
+    errorblock (fab);
+
+!+
+!   Allocate some core for File Status Table to set up three fields.
+!   If the fst is not already there, and this a open by nam block
+!-
+
+    IF .Fab[Fab$v_Nam] AND (.Fab[Fab$a_Ifi] NEQ 0)      ! If by NAM     !a544vv
+    THEN fst=.Fab[Fab$a_Ifi]                            ! then use this
+    ELSE                                                               
+        BEGIN
+        IF (fst = gmem (fst$k_bln)) EQL false   ! Room for FST?        
+        THEN
+            returnstatus (er$dme);      ! No - error
+
+        fst [fst$h_bln] = fst$k_bln;		! Set up blocklength   
+        fst [fst$h_bid] = fst$k_bid;		! Set up block id      
+        Fab [Fab$a_Ifi] = .Fst;         ! Point to it
+        setflag (oaflags, abrfst);			! Flush FST on aborting
+        END;                                                           !a544^^
+
+!+
+!   Get a JFN if we haven't been given one.
+!-
+
+    GetJfn( gj_old + gj_sht );                                           !m544 
+
+    IF .Fab[Fab$v_Remote]               ! If file is remote             !a544vv
+    THEN
+        BEGIN
+        IF .Fst[Fst$v_File_Open]        ! If file is open (due to $Parse)
+        THEN
+            BEGIN
+            Dap$OpenFile( .Fab, Dap$k_Open, 0, R$Null );
+            Fst[Fst$v_Dlt] = 1;         ! Set delete-on-close
+            Dap$Close( .Fab, R$Null );
+            END
+        ELSE Dap$OpenFile( .Fab, Dap$k_Erase, 0, R$Null );
+        END                                                             !a544^^
+    ELSE
+        BEGIN
+        !+
+        !   Try to delete the file
+        !-
+
+        IF NOT delf (df_nrj + .userjfn; result)		! Flags + JFN
+        THEN
+            mapcodes (.result, er$cef, delerrtab);
+
+        !+
+        !   Now, we must clear the JFN field and release the
+        !   JFN if he wanted us to do it.
+        !-
+
+        IF chkflag (fab [fabfop, 0], fopdrj) EQL 0
+        THEN
+            BEGIN
+            rljfn (.userjfn);
+            fab [fabjfn, 0] = 0;			! Clear his field
+            END;
+        END;     ! Local $Erase                                       ! a544
+
+    ! Flush the FST unless the link is being held open
+    IF ( .fst [fst$v_drj] EQL 0 )
+    AND ( .fst [fst$v_access_active] EQL 0 )
+    AND (.fab [Fab$a_Ifi] NEQ 0)
+    THEN
+        BEGIN
+        LOCAL lengthfield;
+
+        lengthfield = .fst [blocklength];   ! Get its size
+        pmem (.lengthfield, fst);           ! Release core
+
+        !
+        !   Finally, clear the user's file-ID field.
+        !
+        fab [Fab$a_Ifi] = 0;        ! Show no file is open    !m507
+        OaFlags = 0;                    ! Don't let it get freed twice !a547
+        END;
+
+    usrret ();					! Exit to user
+    END;					! End of $ERASE
+
+END						! End of Module ERASE
+
+ELUDOM

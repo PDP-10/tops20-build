@@ -1,0 +1,252 @@
+%TITLE 'T A B L  -- tables'
+!<BLF/REQUIRE 'RMSBLF.REQ'>
+MODULE tabl (IDENT = '2.0'
+		) =
+BEGIN
+
+GLOBAL BIND
+    tablv = 2^24 + 0^18 + 400;			! Edit date: 22-Apr-83
+
+!+
+!
+!
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1977, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!
+!
+!    AUTHOR:	S. BLOUNT
+!
+!
+!    THIS MODULE CONTAINS ALL RUN-TIME PURE TABLES
+!    WHICH ARE USED BY RMS-20. THESE TABLES ARE INCLUDED
+!    HERE (AS OPPOSED TO THE GLOBAL DECLARATION MODULE)
+!    SO THAT THEY CAN BE READ-ONLY WHEN RMS-20 IS LOADED
+!    INTO USER CORE.
+!
+!    THIS MODULE CURRENTLY CONTAINS TWO TABLES -- A DATA-TYPE
+!    TABLE WHICH DEFINES THE CHARACTERISTICS OF THE VARIOUS
+!    KEY DATA-TYPES, AND A TRANSLATION TABLE FOR PROCESSING
+!    OF ASCII RECORDS.
+!
+!    THE DATA-TYPE TABLE CONTAINS ALL ATTRIBUTES FOR EACH DEFINED
+!    KEY DATA-TYPE.  THE ONLY ATTRIBUTE OF A DATA-TYPE
+!    WHICH IS CURRENTLY DEFINED IS A BYTE SIZE. HOWEVER,
+!    AS ATTRIBUTES ARE ADDED IN THE FUTURE, IT WILL BECOME
+!    NECESSARY TO EXPAND THIS TABLE TO INCLUDE THESE NEW
+!    ATTRIBUTES. THUS, ALL INFORMATION WHICH DESCRIBES THE
+!    CHARACTERISTICS OF A KEY DATA-TYPE SHOULD BE INCLUDED
+!    IN THIS TABLE.
+!
+!
+!
+!
+!
+!    REVISION HISTORY:
+!
+!    PRODUCT	LOCAL
+!    EDIT	EDIT	DATE		WHO		PURPOSE
+!    ====	====	====		===		==========
+!
+!    1	1	18-OCT-77	SB	ADD ASCII TABLE, CHANGE NAME OF MODULE
+!    -	2	14-NOV-77	SB	CHANGE BIND OF TABLE1
+!    4	3	22-DEC-77	SB	ADD ABR TO ^Z,ESC
+!
+!    *************************************************
+!    *						*
+!    *		NEW REVISION HISTORY		*
+!    *						*
+!    *************************************************
+!
+!    PRODUCT	MODULE	 SPR
+!    EDIT	 EDIT	 QAR		DESCRIPTION
+!    ======	======	=====		===========
+!
+!    302	300	XXXXX		Delete ABR from ^Z, ESC to match
+!    					new DEC stream-file standard.
+!
+!    400	400	xxxxx	        Clean up BLISS code (RL,22-Apr-83)
+!
+!    411        ---     xxxxx           Implement new key datatypes
+!
+!    ***** END OF REVISION HISTORY *****
+!
+!
+!
+!
+!
+!-
+
+REQUIRE 'rmsreq';
+
+UNDECLARE
+    %QUOTE sflg,
+    %QUOTE abr;
+
+!+
+!    THIS MODULE CONTAINS A MAJOR ITEM: THE DATA-TYPE
+!    CHARACTERISTICS TABLE FOR USE IN INDEXED FILES.
+!    THIS TABLE CONTAINS ALL ATTRIBUTES OF EACH KEY
+!    DATA-TYPE WHICH ARE NECESSARY TO PROCESS THE KEY.
+!    THE TABLE IS CENTRALIZED HERE TO AVOID MULTIPLE
+!    CASE STATEMENTS THRUOUT THE CODE.
+!
+!    THE ACTUAL STRUCTURE MACROS FOR EACH FIELD IN THIS
+!    TABLE ARE CONTAINED IN THE FILE "XAB.REQ".
+!
+!    NOTE THAT THE ORDER OF THE ENTRIES IN THIS TABLE MUST
+!    CORRESPOND TO THE NUMERIC VALUES OF EACH KEY DATA-TYPE.
+!
+!    NOTE THAT IF THE FORMAT OF THE DATA-TYPE TABLE CHANGES,
+!    THIS BIND STATEMENT MUST ALSO BE MODIFIED
+!-
+
+!+
+!    Macro to define a new data-type
+!-
+
+MACRO
+    datatype (xname, xtype, xbsz) =
+		xtype ^ 35 + xbsz %;
+
+!+
+!    Values used for each data type
+!-
+
+LITERAL
+    typecharacter = 0,				! Character data type
+    typenumeric = 1;				! Numeric data type
+
+!+
+!    The actual table of key data-type characteristics
+!-
+
+BIND
+    xxxxxx = PLIT (
+	datatype (dtpstm, typecharacter, stringbytesize),	! Stream
+	datatype (dtpebc, typecharacter, ebcdicbytesize),	! EBCDIC
+	datatype (dtpsix, typecharacter, sixbitbytesize),	! SIXBIT
+        datatype (dtppac, typenumeric,   packedbytesize),       ! PACKED  !A411
+        datatype (dtpin4, typenumeric,   in4bytesize),          ! IN4     !A411
+        datatype (dtpfl1, typenumeric,   fl1bytesize),          ! FL1     !A411
+        datatype (dtpfl2, typenumeric,   fl2bytesize),          ! FL2     !A411
+        datatype (dtpgfl, typenumeric,   gflbytesize),          ! GFL     !A411
+        datatype (dtpin8, typenumeric,   in8bytesize),          ! IN8     !A411
+        datatype (dtpas8, typecharacter, as8bytesize),          ! AS8     !A411
+        datatype (dtpun4, typenumeric,   in4bytesize) );        ! UN4     !A411
+	
+
+GLOBAL BIND
+    dtptable = xxxxxx : BLOCK;
+
+!+
+!
+!    *****************************************************************
+!    *		TRANSLATION TABLE FOR READ ASCII RECORDS	     *
+!    *****************************************************************
+!
+!-
+
+LITERAL
+    sflg = bitn (18),				! Significance flag
+    abr = bitn (20);				! Abort flag
+
+MACRO
+    tbl (leftchar, rightchar) =
+		( sflg + leftchar ) ^ 18 + ( rightchar + sflg ) %;
+
+BIND
+    yyyyyy = PLIT (
+		0^18 + (1+sflg),		! Leading NULs not significant
+		tbl ( 2, 3 ),			! 
+		tbl ( 4, 5 ),			! 
+		tbl ( 6, 7 ),			! 
+		tbl ( 8, 9 ),			! 
+		tbl ( 10+abr, 11+abr ),		! LF, VT
+		tbl ( 12+abr, 13 ),		! FF,
+		tbl ( 14, 15 ),			! 
+		tbl ( 16, 17 ),			! 
+		tbl ( 18, 19 ),			! 
+		tbl ( 20, 21 ),			! 
+		tbl ( 22, 23 ),			! 
+		tbl ( 24, 25 ),			! 
+		tbl ( 26, 27 ),			! ^Z,,ESC
+		tbl ( 28, 29 ),			! 
+		tbl ( 30, 31 ),			! 
+		tbl ( 32, 33 ),			! 
+		tbl ( 34, 35 ),			! 
+		tbl ( 36, 37 ),			! 
+		tbl ( 38, 39 ),			! 
+		tbl ( 40, 41 ),			! 
+		tbl ( 42, 43 ),			! 
+		tbl ( 44, 45 ),			! 
+		tbl ( 46, 47 ),			! 
+		tbl ( 48, 49 ),			! 
+		tbl ( 50, 51 ),			! 
+		tbl ( 52, 53 ),			! 
+		tbl ( 54, 55 ),			! 
+		tbl ( 56, 57 ),			! 
+		tbl ( 58, 59 ),			! 
+		tbl ( 60, 61 ),			! 
+		tbl ( 62, 63  ),		! 
+		tbl ( 64, 65 ),			! 
+		tbl ( 66, 67 ),			! 
+		tbl ( 68, 69 ),			! 
+		tbl ( 70, 71 ),			! 
+		tbl ( 72, 73 ),			! 
+		tbl ( 74, 75 ),			! 
+		tbl ( 76, 77 ),			! 
+		tbl ( 78, 79 ),			! 
+		tbl ( 80, 81 ),			! 
+		tbl ( 82, 83 ),			! 
+		tbl ( 84, 85 ),			! 
+		tbl ( 86, 87 ),			! 
+		tbl ( 88, 89 ),			! 
+		tbl ( 90, 91 ),			! 
+		tbl ( 92, 93 ),			! 
+		tbl ( 94, 95 ),			! 
+		tbl ( 96, 97 ),			! 
+		tbl ( 98, 99 ),			! 
+		tbl ( 100, 101 ),		! 
+		tbl ( 102, 103 ),		! 
+		tbl ( 104, 105 ),		! 
+		tbl ( 106, 107 ),		! 
+		tbl ( 108, 109 ),		! 
+		tbl ( 110, 111 ),		! 
+		tbl ( 112, 113 ),		! 
+		tbl ( 114, 115 ),		! 
+		tbl ( 116, 117 ),		! 
+		tbl ( 118, 119 ),		! 
+		tbl ( 120, 121 ),		! 
+		tbl ( 122, 123 ),		! 
+		tbl ( 124, 125 ),		! 
+		tbl ( 126, 127 ) );		!
+
+GLOBAL BIND
+    table1 = yyyyyy;
+
+!+
+!
+!    *****************************************************************
+!    *			END OF RMSTAB				     *
+!    *****************************************************************
+!
+!-
+END
+
+ELUDOM

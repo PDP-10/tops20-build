@@ -1,0 +1,90 @@
+
+MODULE NXTF20(                          ! Get next file in list of local files
+              IDENT='2',
+              ENTRY(RL$NEXTFILE)
+              )=
+BEGIN
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1981, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!++
+! FACILITY:  DAP
+!
+! ABSTRACT:  Routines to transfer records or blocks of file data.
+!
+!
+! ENVIRONMENT:  RMS, BLISSNET, XPORT, Transportable code.
+!
+! AUTHOR:	Andrew Nourse, CREATION DATE:  14-Sep-82
+!
+! 01	- Write code to handle multiple local input filespecs
+! 02    - RMS'ify
+!--
+!
+! INCLUDE FILES:
+!
+
+REQUIRE 'RMSREQ';
+REQUIRE 'RMSOSD';
+
+!
+! Table of Contents
+!
+
+FORWARD ROUTINE
+Rl$Nextfile;
+
+!
+! Externals
+!
+EXTERNAL ROUTINE Rl$Merge;
+
+GLOBAL ROUTINE Rl$Nextfile (P_Fab: REF $Fab_Decl, Err)=
+BEGIN
+BIND UFab=.P_Fab: $Fab_decl;
+BIND UNam=UAddr(.UFab[Fab$a_Nam]): $Nam_decl;
+BIND ROUTINE $$Errrtn=.Err: Rms_ercal;
+LOCAL Begptr;
+
+IF UNam EQL 0 THEN RETURN 0;             ! Cannot do without name block
+
+Rljfn (.UserJfn);       ! Flush old JFN
+
+Begptr=CH$PLUS(UAPointer(.UFab[Fab$a_Fna]),
+               .UNam[Nam$h_Wcc_Next]); ! Point to spec delimiter
+
+SELECT CH$RCHAR_A(Begptr) OF
+SET
+[%C',', %C'+']:
+     BEGIN
+     UNam[Nam$h_Wcc_Count]=0;            ! No files on this spec yet
+     UNam[Nam$h_Wcc_Next]=.UNam[Nam$h_Wcc_Next]+1; ! Point to next filespec
+
+     Rl$Merge( UFab, Merge$m_Expanded+Merge$m_Point, .Err);  ! Merge & get JFN
+
+     (.UsrSts EQL RMS$_SUC)
+     END;
+[OTHERWISE]:
+     BEGIN
+     UsrSts=Rms$_Nmf;
+
+     $$Error(Open,Fab);
+     END;
+TES
+END;
+END ELUDOM

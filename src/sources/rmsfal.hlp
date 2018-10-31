@@ -1,0 +1,59 @@
+                         RMSFAL Installation Procedure
+
+RMSFAL is a  replacement for  the existing  FAL program.   RMSFAL provides  FAL
+(File Access Listener) functions for your system in a slightly different manner
+than the FAL program.
+
+The old FAL program  would create three server  processes to service  requests.
+These three  server processes  would run  as inferior  forks of  FAL.  The  FAL
+program was usually run from OPERATOR using PTYCON or SYSJOB to control it.
+
+The NETJOB program is used to start RMSFAL jobs.  
+
+The NETJOB program  controls jobs  which service DECnet  requests.  The  RMSFAL
+program requires that  it be logged  in as the  user, and not  as a  privileged
+OPERATOR job.  NETJOB makes  that possible by starting  copies of RMSFAL  which
+are not logged in until they receive a DECnet connection which includes a valid
+user-id and password.  After RMSFAL has  finished the request, it logs out  and
+NETJOB creates another not logged in job with a copy of RMSFAL.
+
+NETJOB can be used to control several different server programs.  NETJOB  reads
+the file SYSTEM:NETJOB.TXT to determine the server programs to run.  NETJOB.TXT
+contains the following for each server job to run:
+
+	* EXE filename of the server jobs to create,
+	* The minimum number of not logged in jobs created to accept
+	  incoming DECnet connections, and
+	* The maximum number of servers to allow on the system.
+
+It is suggested that  your site put only  the following into  SYSTEM:NETJOB.TXT
+(without the  quotes): "SYS:RMSFAL.EXE  2,6".  This  will cause  NETJOB to  run
+SYS:RMSFAL.EXE, with two not logged in  jobs ready to accept connections and  a
+maximum of six RMSFAL jobs total.
+
+To install RMSFAL and NETJOB on your system, perform the following steps:
+
+	1. Create a SYSTEM:NETJOB.TXT with a text editor.
+	2. Copy RMSFAL.EXE and NETJOB.EXE into PS:<SUBSYS>
+	3. Change your system startup procedure to  run  the  NETJOB  program
+	   instead of the FAL program (this will usually be in 6-1-PTYCON.ATO
+	   or 6-1-SYSJOB.RUN on SYSTEM:).
+	4. Reload the system.
+
+After your system is reloaded, NETJOB should be running under OPERATOR and
+there should be two not logged in jobs, detached and running RMSFAL.  This
+completes the installation procedure.
+
+If you want start NETJOB  and stop the old  FAL without reloading your  system,
+you will have to perform the following steps:
+
+	1. Create SYSTEM:NETJOB.TXT.
+	2. Copy RMSFAL.EXE and NETJOB.EXE to PS:<SUBSYS>.
+	3. Find the old FAL job using the SYSTAT command.
+	4. ADVISE the job that FAL is running on.
+	5. Control-C the FAL job, and run NETJOB.
+	6. Terminate the ADVISE command.
+	7. Check that there are two not logged in RMSFAL jobs running detached.
+
+If you need to drop back to the old FAL program, first stop the NETJOB program,
+then LOGOUT the jobs running RMSFAL, before rerunning the old FAL program.

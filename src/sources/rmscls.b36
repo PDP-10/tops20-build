@@ -1,0 +1,303 @@
+%TITLE 'C L O S E R   -- process $CLOSE macro'
+!<BLF/REQUIRE 'RMSBLF.REQ'>
+MODULE closer (IDENT = '3.0'
+		) =
+BEGIN
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1984, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+
+!++
+! FACILITY:	RMS
+!
+! ABSTRACT:
+!
+!	CLOSER contains all routines which process
+!	the $CLOSE macro in RMS-20.
+!
+! ENVIRONMENT:	User mode, interrupts deferred until JSYS return
+!
+! AUTHOR: Ron Lusk , CREATION DATE: 15-Mar-83
+!
+! MODIFIED BY: Ron Lusk, 5-Apr-85 : Version 3
+!
+! 646	- Clear RAB pointer after $Close
+! 501	- Implement remote file $Close
+! 502   - Change over to new standard names
+! 507   - Implement wildcard remote $Close
+! 565	- Return STV from FFF call
+!--
+
+!
+! TABLE OF CONTENTS
+!
+!	$CLOSE	--  the $CLOSE macro processor
+!
+!
+! INCLUDE FILES:
+!
+
+REQUIRE 'rmsreq';
+REQUIRE 'rmsosd';
+
+!
+! MACROS:
+!
+!   None.
+!
+! EQUATED SYMBOLS:
+!
+
+GLOBAL BIND
+    closv = 3^24 + 0^18 + 565;			! Version number
+
+!
+! OWN STORAGE:
+!
+!   None.
+!
+! EXTERNAL REFERENCES:
+!
+!   Dap$Close, F$Close
+!
+EXTERNAL ROUTINE
+    DisposeFile: NOVALUE,
+    F$Close;
+
+
+%SBTTL '$CLOSE -- process $CLOSE macro'
+GLOBAL ROUTINE $close (FABLOCK, errorreturn) =
+
+!++
+! FUNCTIONAL DESCRIPTION:
+!
+!	$CLOSE performs the following functions:
+!
+!	    1)	Check that the file is open;
+!	    2)	$DISCONNECT each record stream;
+!	    3)	Flush File Status Table.
+!
+! FORMAL PARAMETERS
+!
+!	FABLOCK	    -   File Access Block
+!	    FOP	    -   File options
+!	    IFI	    -   Internal File Identifier (points to FST)
+!	    XAB	    -   Pointer to XAB chain (for future use, as
+!			of March '83)
+!	    STS	    -   Completion status returned to user
+!	    STV	    -   Additional status information
+!
+!	ERRORRETURN -	User error-processing routine (not used)
+!
+! IMPLICIT INPUTS
+!
+!	FST	    -	File Status Table
+!
+! ROUTINE VALUE:
+!
+!	None, apparently, yet not NOVALUE.
+!
+! SIDE EFFECTS:
+!
+!	All RSTs for this file are flushed.
+!	File is closed (by CLOSEFILE).
+!	ADBs and KDBs are flushed.
+!	FST is flushed.
+!	User's FAB$H_IFI field is zeroed.
+!
+!--
+
+    BEGIN
+
+    LOCAL
+	lengthfield,
+	nextkdb,                        ! Used to point to next KDB in chain
+	temp;
+
+    rmsentry ($close);
+
+!+
+!   Fetch the user's FAB and error address.
+!-
+
+    fab = .FABLOCK;				! Set up FAB address
+    erradr = .errorreturn;			! And user error address
+    errorblock (fab);				! Errors go to FAB
+    fst = .fab [fabifi, 0];			! Get FST address
+    adb = .fst [fstadb];			! Get area desc address
+
+!+
+!   First, check that this is a valid, open file.
+!-
+
+    IF .fab [blocktype] neq fabcode		! Check that this is a FAB
+    THEN
+	usererror (er$fab);			! Bad block-type
+
+    fst = .fab [fabifi, 0];
+
+    IF (.fst [blocktype] neq fstcode)		! Check for a valid FST
+    THEN
+	usererror (er$ifi);			! Illegal file-ID
+
+    Fst[Fst$h_Fop] = .Fab[Fab$h_Fop];           ! Save the FOP in the FST !m507
+
+    IF .fst [ fst$v_remote ]
+    THEN
+        BEGIN
+        Dap$Close ( .fab, .erradr );
+
+        rst = .fst [flink];				! Get 1st RST on chain
+
+        !+
+        !   Perform this loop once for each "connected" record stream.
+        !-
+
+        WHILE (.rst neq .fst) DO        ! Until we complete chain
+            BEGIN                       ! To disconnect an RST
+            LOCAL rstlen;
+
+            !+
+            !   Remove RST from FST chain.
+            !-
+            delink (rst);               ! Unlink RST
+
+            !+
+            !   Release core used by RST
+            !-
+            lengthfield = .rst [blocklength];
+            pmem (.lengthfield,              ! Block size
+                   rst);                ! Block pointer
+
+            rst = .fst [flink]          ! Get next RAB on chain
+            END;
+
+        ! Flush the FST unless the link is being held open
+        IF ( .fst [fst$v_drj] EQL 0 )
+        AND ( .fst [fst$v_access_active] EQL 0 )
+        THEN
+            BEGIN
+            lengthfield = .fst [blocklength];   ! Get its size
+            pmem (.lengthfield, fst);           ! Release core
+
+            !
+            !   Finally, clear the user's file-ID field.
+            !
+            fab [Fab$a_Ifi] = 0;        ! Show no file is open         !m507
+
+            IF .fab [fab$h_jfn] NEQ 0
+            THEN
+                BEGIN
+		%IF %SWITCHES(TOPS20)
+		%THEN
+                     RlJfn( .fab [fab$h_jfn] );                           !m572
+		%FI
+                fab [fab$h_jfn]=0;
+                END;
+            END;
+        END                              ! End of Remote file $Close
+    ELSE
+        BEGIN
+        !+
+        !   Local File Close
+        !-
+
+        !+
+        !   Loop over all connected RSTs and disconnect each one.
+        !-
+
+        rst = .fst [flink];             ! Get 1st RST on chain
+
+        !+
+        !   Perform this loop once for each "connected" record stream.
+        !-
+
+        WHILE (.rst neq .fst) DO        ! Until we complete chain
+            BEGIN                       ! To disconnect an RST
+            dcntrab ();                 ! Flush this stream
+            rst = .fst [flink]          ! Get next RAB on chain
+            END;
+
+        userjfn = .fst [fstjfn];        ! Set current file's JFN
+
+        IF (filelocked)                 ! Unlock file if necessary
+        THEN
+            $callos (er$ccf, (loffall (.userjfn)));
+
+        IF chkflag (fab [fabfop, 0], fopdrj) eql 0	! Release JFN or not?
+        THEN
+            BEGIN
+            fab [fabjfn, 0] = 0;			! Clear the JFN too
+            END;
+
+
+        IF .Fst[Fst$h_File_Class] LSS 0                                 !a524vv
+        THEN
+            BEGIN
+            F$Close( .Fab );
+
+	    usrstv = .fab [fab$h_stv];		! Return STV		!A565
+            IF NOT $Rms_Status_Ok( .Fab )
+            THEN Usererror( .Fab[Fab$h_Sts] );
+            END;                                                        !a524^^
+
+        DisposeFile();                  ! Spool, Batch, delete on close?  !a546
+
+        $callos (er$ccf, (closefile (.userjfn, .fab); ));	! Close file
+
+        !+
+        !   For indexed files, we must now flush the chain of
+        !   key descriptor blocks and the area descriptor block.
+        !-
+
+        IF idxfile
+        THEN
+            BEGIN
+
+            !+
+            !   If the file should be re-organized, tell him.
+            !-
+
+            IF chkflag (fst [fstflags], flgreo) neq 0 	!
+            THEN
+                usrsts = su$reo;			! Reorganize file
+
+            lengthfield = .adb [adb$h_bln];	! Get size of ADB         !m502
+            pmem (.lengthfield, adb);		! Flush it
+            undokdbs ()				! Flush the KDB chain
+            END;
+
+        !+
+        !   We must now flush the FST.
+        !-
+
+        lengthfield = .fst [blocklength];		! Get its size
+        pmem (.lengthfield, fst);			! Release core
+
+        !
+        !   Finally, clear the user's file-ID field.
+        !
+        fab [Fab$a_Ifi] = 0;    		! Show no file is open    !m507
+        END;					! End of Local file $Close
+
+    Rab = 0;                                    ! 646
+    usrret ()					! Return to user
+    END;                                        ! End of $CLOSE
+END						! End of Module CLOSER
+
+ELUDOM

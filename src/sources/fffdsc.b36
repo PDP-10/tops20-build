@@ -1,0 +1,117 @@
+%TITLE 'FFFDsc -- $DISCONNECT service routines for non-RMS file types'
+!<BLF/REQUIRE 'BLI:BLF.REQ'>
+MODULE FFFDsc (IDENT = 'DISCONNECT'
+		) =
+BEGIN
+!
+!	COPYRIGHT (C) DIGITAL EQUIPMENT CORPORATION 1985, 1986.
+!	ALL RIGHTS RESERVED.
+!
+!	THIS SOFTWARE IS FURNISHED UNDER A LICENSE AND MAY  BE  USED  AND
+!	COPIED ONLY IN ACCORDANCE WITH THE TERMS OF SUCH LICENSE AND WITH
+!	THE INCLUSION OF THE ABOVE COPYRIGHT NOTICE.   THIS  SOFTWARE  OR
+!	ANY  OTHER  COPIES  THEREOF MAY NOT BE PROVIDED OR OTHERWISE MADE
+!	AVAILABLE TO ANY OTHER PERSON.  NO TITLE TO AND OWNERSHIP OF  THE
+!	SOFTWARE IS HEREBY TRANSFERRED.
+!
+!	THE INFORMATION IN THIS SOFTWARE IS  SUBJECT  TO  CHANGE  WITHOUT
+!	NOTICE  AND  SHOULD  NOT  BE CONSTRUED AS A COMMITMENT BY DIGITAL
+!	EQUIPMENT CORPORATION.
+!
+!	DIGITAL ASSUMES NO RESPONSIBILITY FOR THE USE OR  RELIABILITY  OF
+!	ITS SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
+!
+!
+!
+!
+!    ********** TABLE OF CONTENTS **********
+!
+!
+!
+!    ROUTINE                    FUNCTION
+!    -------                    --------
+!
+!    GETFOR
+!    GETISAM
+
+
+!+
+!  Need a require file similar to RMSREQ.R36
+!  which contains library of all FGNLIB
+!  routines.
+!-
+
+REQUIRE 'fffreq';
+
+GLOBAL
+!
+!   RMS data structures (from FGNFND)
+!
+    rmsfst : REF $rms_fst,
+    rmsrst : REF $rms_rst,
+    rmsbfd : REF $rms_buffer_descriptor,       ! Buffer descriptor
+    rmscbd : REF $rms_bucket_descriptor;       ! Current bucket descriptor
+
+
+EXTERNAL ROUTINE
+    UAddr,
+    Raddr,
+    UAPointer,
+    TGUPointer,
+    UClass,
+    DscIsam;
+
+
+FORWARD ROUTINE
+!
+!   $DISCONNECT processor
+!
+    F$DISCONNECT,
+!
+!   $DISCONNECT routines for foreign file types
+!
+    Dscsix,
+    DscEbc,
+    DscFBin;
+
+%SBTTL 'F$DISCONNECT -- $DISCONNECT dispatcher'
+
+GLOBAL ROUTINE F$DISCONNECT ( UsrRab: REF $Rab_decl ) =
+    BEGIN
+    Rab = .UsrRab;
+    Rst = RAddr( .Rab[Rab$a_Isi] );
+    Fst = RAddr( .Rst[Rst$a_Fst] );
+
+    !+
+    !    Dispatch to the proper "DISCONNECT" routine for this file class
+    !-
+       (CASE ( Fst[Fst$h_File_Class] = UClass( .Fab ) )
+        FROM Typ$k_FFF_Class_Min TO Typ$k_FFF_Class_Max OF
+        SET
+        [Typ$k_Sixbit]:  Dscsix ();		! COBOL SIXBIT
+        [Typ$k_Ebcdic]:  Dscebc ();		! COBOL EBCDIC
+        [Typ$k_Fortran_Binary]: Dscfbin ();		! FORTRAN BINARY
+        [Typ$k_Isam]: Dscisam ();
+        TES);
+
+    RETURN true;
+    END;
+
+GLOBAL ROUTINE Dscsix =
+    BEGIN
+    RETURN true;
+    END;
+
+GLOBAL ROUTINE DscEbc =
+    BEGIN
+    RETURN true;
+    END;
+
+GLOBAL ROUTINE DscFbin =
+    BEGIN
+    RETURN true;
+    END;
+
+END
+
+ELUDOM
