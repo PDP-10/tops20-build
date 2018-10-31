@@ -32,6 +32,7 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
+import os
 import pexpect
 import sys
 
@@ -209,6 +210,8 @@ class KLH10:
         self.restore(tape, ['<*>*.*.*'], interchange=True)
 
     def systape(self, tape, structure='PS'):
+        if os.path.exists(tape):
+            os.unlink(tape)
         self.mttape('%s create' % (tape,))
 
         self.cl('del <operator>*-lost-pages.bin.*')

@@ -55,14 +55,12 @@ def install():
 
 
 def makestrap():
-    if os.path.exists(tops20.BOOTSTRAP):
-        os.unlink(tops20.BOOTSTRAP)
     kl = tops20.KLH10()
     kl.boot()
 
     kl.login()
 
-    kl.systape(tops20.BOOTSTRAP, 'PHASE0')
+    kl.systape('phase0.tap', 'PHASE0')
 
     kl.shutdown()
 

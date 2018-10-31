@@ -88,8 +88,16 @@ clean-phase0:
 
 clean:: clean-phase0
 
-phase0/stamp: phase0 pexpect-venv/bin/python3 tapes/dec/install.tap bin/kn10-kl config/config.tap phase0.py
-	(cd phase0; ../pexpect-venv/bin/python3 ../phase0.py) && touch phase0/stamp
+phase0/phase0.tap: phase0 pexpect-venv/bin/python3 tapes/dec/install.tap bin/kn10-kl config/config.tap phase0.py
+	(cd phase0; ../pexpect-venv/bin/python3 ../phase0.py)
+	bzip2 -fk tapes/phase0.tap
+	cp -v tapes/phase0.tap.bz2 tapes/bootstrap.tap.bz2
+
+tapes/bootstrap.tap: tapes/bootstrap.tap.bz2
+	bunzip2 -k tapes/bootstrap.tap.bz2
+
+clean::
+	$(RM)
 
 phase1: clean-phase1
 	mkdir phase1
@@ -109,7 +117,7 @@ clean::
 	make -C tools/back10 clean
 
 CONFIG_SRC := 7-config.cmd 7-ptycon.ato
-CONFIG_DEP := $(addprefix config/ $(CONFIG_SRC)
+CONFIG_DEP := $(addprefix config/,$(CONFIG_SRC))
 
 config/config.tap: $(CONFIG_DEP) tools/back10/back10
 	(cd config; ../tools/back10/back10 -c -f config.tap -i $(CONFIG_SRC))
@@ -158,15 +166,3 @@ clean::
 	$(RM) src/iddt.tap
 
 .PHONEY: dec-7.0-tapes clean clean-phase0 clean-phase1
-
-
-
-
-
-
-
-
-
-
-
-
