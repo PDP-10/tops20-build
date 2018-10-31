@@ -114,31 +114,10 @@ config/config.tap: config/7-config.cmd config/7-ptycon.ato tools/back10/back10
 clean::
 	$(RM) config/config.tap
 
-MONITOR_SRC = \
-	append.cmd aprsrv.mac asembl.cmd bugs.mac cdkldv.mac cdpsrv.mac \
-	cdrsrv.mac cfspar.mac cfssrv.mac cfsusr.mac cidll.mac cludgr.mac \
-	clufrk.mac clupar.mac comnd.mac crypt.mac ctermd.mac cthsrv.mac \
-	d36com.mac d36par.mac datime.mac device.mac diag.mac direct.mac \
-	disc.mac dnadll.mac dob.mac dskalc.mac dtesrv.mac enq.mac enqpar.mac \
-	enqsrv.mac fesrv.mac filini.mac filmsc.mac filnft.mac fork.mac \
-	free.mac futili.mac getsav.mac globs.mac gtjfn.mac io.mac ipcf.mac \
-	jntman.mac jsysa.mac jsysf.mac jsysm.mac kddt.rel latsrv.mac \
-	ldinit.mac linepr.mac llinks.mac llmop.mac ln2070.ctl lnkini.ccl \
-	lnklbg.ccl lnklm0.ccl lnklmx.ccl lognam.mac lookup.mac lpfedv.mac \
-	magtap.mac mddt.rel mexec.mac mflin.mac mflout.mac monitr.cmd \
-	mscpar.mac mstr.mac n70big.mac n70max.mac namam0.mac nipar.mac \
-	nisrv.mac niusr.mac nrtsrv.mac ntman.mac p70big.mac p70max.mac \
-	pagem.mac pagutl.mac param0.mac params.mac parlbg.mac parlm0.mac \
-	parlmx.mac phyh11.mac phyh2.mac phyklp.mac phykni.mac phym2.mac \
-	phym78.mac phymsc.mac phymvr.mac phyp2.mac phyp4.mac phypar.mac \
-	physio.mac phyx2.mac plt.mac pmt.mac postld.mac prolog.mac ptp.mac \
-	ptr.mac router.mac rp2.mac rsxsrv.mac scampi.mac scapar.mac sched.mac \
-	scjsys.mac sclink.mac scpar.mac scsjsy.mac sercod.mac sources.cmd \
-	stg.mac swpalc.mac syserr.mac sysflg.mac systap.ctl tape.mac \
-	timer.mac tops.mac ttydef.mac ttysrv.mac vedit.mac versio.mac \
-	batch.cmd
+MONITOR_DEP := $(wildcard src/monitor/*)
+MONITOR_SRC := $(notdir $(MONITOR_DEP))
 
-src/monitor.tap: $(addprefix src/monitor/,$(MONITOR_SRC)) tools/back10/back10
+src/monitor.tap: $(MONITOR_DEP) tools/back10/back10
 	(cd src/monitor; ../../tools/back10/back10 -c -f ../monitor.tap -i $(MONITOR_SRC))
 
 clean::
@@ -173,10 +152,22 @@ src/midas.tap: src/midas tools/back10/back10
 clean::
 	$(RM) src/midas.tap
 
-src/iddt.tap: $(wildcard src/iddt/*.mac)
+src/iddt.tap: $(wildcard src/iddt/*.mac) tools/back10/back10
 	(cd src/iddt; ../../tools/back10/back10 -c -f ../iddt.tap -i $(notdir $(wildcard src/iddt/*.mac)))
 
 clean::
 	$(RM) src/iddt.tap
 
 .PHONEY: dec-7.0-tapes clean clean-phase0 clean-phase1
+
+
+
+
+
+
+
+
+
+
+
+
