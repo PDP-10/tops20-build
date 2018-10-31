@@ -108,8 +108,11 @@ tools/back10/back10:
 clean::
 	make -C tools/back10 clean
 
-config/config.tap: config/7-config.cmd config/7-ptycon.ato tools/back10/back10
-	(cd config; ../tools/back10/back10 -c -f config.tap -i 7-config.cmd 7-ptycon.ato)
+CONFIG_SRC := 7-config.cmd 7-ptycon.ato
+CONFIG_DEP := $(addprefix config/ $(CONFIG_SRC)
+
+config/config.tap: $(CONFIG_DEP) tools/back10/back10
+	(cd config; ../tools/back10/back10 -c -f config.tap -i $(CONFIG_SRC))
 
 clean::
 	$(RM) config/config.tap
@@ -123,14 +126,10 @@ src/monitor.tap: $(MONITOR_DEP) tools/back10/back10
 clean::
 	$(RM) src/monitor.tap
 
-EXEC_SRC = \
-	edexec.mac excsrc.cmd exec.ctl exec0.mac exec1.mac exec2.mac \
-	exec3.mac exec4.mac execca.mac execcs.mac execde.mac execed.mac \
-	execf0.mac execgl.mac execin.mac execmt.mac execp.mac execpr.mac \
-	execqu.mac execse.mac execsu.mac execvr.mac loexec.ccl mkexec.cmd \
-	batch.cmd
+EXEC_DEP := $(wildcard src/exec/*)
+EXEC_SRC := $(notdir $EXEC_DEP)
 
-src/exec.tap: $(addprefix src/exec/,$(EXEC_SRC)) tools/back10/back10
+src/exec.tap: $(EXEC_DEP) tools/back10/back10
 	(cd src/exec; ../../tools/back10/back10 -c -f ../exec.tap -i $(EXEC_SRC))
 
 clean::
