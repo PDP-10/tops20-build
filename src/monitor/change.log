@@ -422,3 +422,5 @@ Edit	SPR	  PCO		  Date	Module	Description
 .					GLOBS, PROLOG
 ; [GH0](9180) Tue Oct  9 02:30:07 EDT 2018 kcr
 ; default terminal type is vt300 for everything, and terminal size set to 0
+; [GH1][9181] Wed Oct 31 12:05:49 EDT 2018 kcr
+; assemble kddt and mddt
