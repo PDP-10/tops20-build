@@ -97,7 +97,7 @@ tapes/bootstrap.tap: tapes/bootstrap.tap.bz2
 	bunzip2 -k tapes/bootstrap.tap.bz2
 
 clean::
-	$(RM)
+	$(RM) tapes/bootstrap.tap
 
 phase1: clean-phase1
 	mkdir phase1
@@ -135,7 +135,7 @@ clean::
 	$(RM) src/monitor.tap
 
 EXEC_DEP := $(wildcard src/exec/*)
-EXEC_SRC := $(notdir $EXEC_DEP)
+EXEC_SRC := $(notdir $(EXEC_DEP))
 
 src/exec.tap: $(EXEC_DEP) tools/back10/back10
 	(cd src/exec; ../../tools/back10/back10 -c -f ../exec.tap -i $(EXEC_SRC))
