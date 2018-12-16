@@ -4140,10 +4140,6 @@ int main(int argc, char* argv[])
     do_read();
     break;
   case ACT_EXTRACT:
-    if (argcount == 0) {
-      fprintf(stderr, "No files to extract, nothing to do.\n");
-      break;
-    }
     do_read();
     break;
   default:
