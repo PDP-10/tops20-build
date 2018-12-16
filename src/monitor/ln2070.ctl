@@ -102,7 +102,7 @@ BEGIN::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! List all logical names
 
@@ -150,7 +150,7 @@ ALL::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! Get all logical names listed
 
@@ -193,7 +193,7 @@ MONBIG::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! Build STG and VERSIO
 
@@ -280,7 +280,7 @@ MONDEV::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! Assemble the sources
 
@@ -311,7 +311,7 @@ MONMAX::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! Build STG and VERSIO
 
@@ -407,7 +407,7 @@ SINGLE::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! Get logical name listing
 
