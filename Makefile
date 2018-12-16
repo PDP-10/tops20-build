@@ -1,16 +1,16 @@
 all: phase1/phase1.tap
 
-TOPS20_7:=	BB-H137F-BM:install \
-		BB-EV83B-BM:tcpip \
-		BB-H138F-BM:dist1 \
-		BB-LW55A-BM:dist2 \
-		BB-M780D-SM:monsrc \
-		BB-GS97B-SM:execsrc \
-		BB-M080Z-SM:monsrcmod.4 \
-		BB-M081Z-SM:execsrcmod.4 \
-		BB-PENEA-BM:tsu04.1 \
-		BB-KL11M-BM:tsu04.2 \
-		BB-M836D-BM:tools
+TOPS20_7:=	bb-h137f-bm:install \
+		bb-ev83b-bm_longer:tcpip \
+		bb-h138f-bm:dist1 \
+		bb-lw55a-bm:dist2 \
+		bb-m780d-sm:monsrc \
+		bb-gs97b-sm:execsrc \
+		bb-m080z-sm:monsrcmod.4 \
+		bb-m081z-sm:execsrcmod.4 \
+		bb-penea-bm:tsu04.1 \
+		bb-kl11m-bm:tsu04.2 \
+		bb-m836d-bm:tools
 
 # getting these from trailing-edge.com because it's mysteriously more
 # complete than bitsavers
