@@ -1,3 +1,7 @@
+; Edit= 9032 to IO.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8894 to IO.MAC on 12-Aug-88 by RASPUZZI
+;Update BUG. documentation.
 ; UPD ID= 8527, RIP:<7.MONITOR>IO.MAC.4,   9-Feb-88 16:15:13 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 60, RIP:<7.MONITOR>IO.MAC.3,   4-Aug-87 14:23:22 by RASPUZZI
@@ -1287,22 +1291,20 @@ BYTINX::TQNN <READF>		;[7321]Make routine BYTINX external
 	TQZE <BLKF,XQTAF>	;SEE IF FLAG IS ALREADY SET
 	BUG.(CHK,BLKF1,IO,HARD,<BYTINA - BLKF set before calling service routine>,,<
 
-
-Cause:	This is a consistency check in BYTINX.  The environment is in IO where  
+Cause:	This is a consistency check in BYTINX.  The environment is in IO where
 	sequential input is being processed.  The code is getting ready to  
 	jump to the device dependant code.  Before doing so it sees if a bit  
 	(BLKF) is set in STS (AC 8).  This bit indicates that the service 
 	routine wants to block.  Therefore, no matter what the device 
-	dependent routines do, the process will ultimately block.  It is 
+	dependent routines do, the process ultimately blocks.  It is 
 	unlikely that this is being done on purpose.  It is more likely that  
 	somewhere BLKF is not being cleaned up properly.
 
 Action:	If this is becoming a problem change the BUGCHK to a BUGHLT and
-	look at the dump.If FILSTS for the current JFN has the bit on then
+	look at the dump. If FILSTS for the current JFN has the bit on then
 	the problem gets a little tricky since the previous use of it left
 	BLKF on.  If BLKF is off in FILSTS then somewhere past the call to
 	CHKJFN it is being turned on.
-
 >)
 	XMOVEI C,BYTINB		;BYTIN BLOCK ROUTINE
 	MOVE D,SAVJFN		;ORIGINAL JFN
@@ -1803,20 +1805,19 @@ BYTOUA::JUMPGE STS,NOTOPN
 	FILINT(IOX5)		;Error interrupt
 	MOVE A,B
 	TQZE <BLKF,XQTAF>	;MAKE SURE BLKF IS OFF BEFORE CALL
-	 BUG.(CHK,BLKF2,IO,HARD,<BYTOUA - BLKF set before call to service routine>,,<
+	BUG.(CHK,BLKF2,IO,HARD,<BYTOUA - BLKF set before call to service routine>,,<
 
 Cause:	This is a consistency check in BYTOUA.  The environment is in IO just
-	before it gets ready to call the device dependent routines to do output.
-	Bit BLKF in STS (AC 8) is on.  It should be off.  It causes the process
-	to block.  It is unlikely that this sort of knowledge is available.   
-	It is more likely that this is an error.
+	before it gets ready to call the device dependent routines to do 
+	output. Bit BLKF in STS (AC 8) is on.  It should be off.  It causes 
+	the process to block.  It is unlikely that this sort of knowledge 
+	is available. It is more likely that this is an error.
 
 Action:	If the problem persists change the BUGCHK to a BUGHLT and look at
 	the dump.  If FILSTS for the current JFN has the BLKF bit on then
 	the last one to user the JFN left it in that state.  A hard problem
 	to find.  If BLKF is off in FILSTS then somewhere after the call to
 	CHKJFN the bit is being set on not reset.
-
 >)
 	XMOVEI C,BYTINB		;COMMON CO-ROUTINE
 	MOVE D,SAVJFN

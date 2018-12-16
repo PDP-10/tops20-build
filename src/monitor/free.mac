@@ -1,5 +1,16 @@
-; UPD ID= 8704, RIP:<7.MONITOR>FREE.MAC.8,  20-Apr-88 11:22:06 by RASPUZZI
+; Edit= 9003 to FREE.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8937 to FREE.MAC on 23-Aug-88 by LOMARTIRE
+;Spell MONITR correctly in ACTION field of BUGs!
+; Edit= 8912 to FREE.MAC on 17-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
+; Edit= 8833 to FREE.MAC on 20-Apr-88 by RASPUZZI (TCO 7.1278)
+;Install TCO 7.1278 - supress ONSTR/OFFSTR and make RELRNG a BUGCHK again.
 ;TCO 7.1278 - Make RELRNG a BUGCHK for the release.
+; Edit= 8803 to FREE.MAC on 18-Mar-88 by RASPUZZI
+;Prevent ILMNRF BUGHLTs in the RESBSW code that sets the free space bit table
+;writeable. It is only setting the first page of the bit table and we could be
+;using the second page.
 ; UPD ID= 8686, RIP:<7.MONITOR>FREE.MAC.7,  17-Mar-88 19:22:38 by RASPUZZI
 ;TCO 7.1258 - Have FSPREM scan the linked free space blocks and return
 ;	      the largest block size.
@@ -397,13 +408,13 @@ RELMSS::PUSH P,T1		;SAVE DATUM
 	POP P,T1		;RESTORE DATUM
 	JRST RELMES		;AND PROCEED
 RELSWP::HRRZM T2,0(T1)		;GLOBAL CALL WITH LENGTH IN T2
-	JUMPLE T2,[	BUG.(HLT,RELFRM,FREE,SOFT,<Illegal to deassign 0 free space>,,<
+	JUMPLE T2,[ BUG.(HLT,RELFRM,FREE,SOFT,<Illegal to deassign 0 free space>,,<
 
 Cause:	This is a free space problem.  The calling routine is trying to release
 	a block of storage of zero length.  It is illegal to free a block of
 	zero length.
 
-Action:	Look at the dump.  Backing up the stack will show which routine made
+Action:	Look at the dump.  Backing up the stack shows which routine made
 	the call to release the storage.
 >)]
 RELMES::
@@ -436,11 +447,8 @@ ASGFRE::SKIPG B			;CHECK FOR LEGAL REQUEST
 Cause:	An illegal request for free space is being made.  The calling routine
 	is asking for zero words of free space.
 
-Action:	Look at the dump.  By backing up the stack you
-	should be able to tell what routine called for the illegal
-	free space.
-
-
+Action:	Look at the dump.  By backing up the stack you should be able to 
+	tell what routine called for the illegal free space.
 >)
 	SKIPGE INTDF		;IS THE PROCESS NOINT?
 	JRST [	MOVE C,0(P)	;GET PC OF THE CALL
@@ -449,14 +457,18 @@ Action:	Look at the dump.  By backing up the stack you
 Cause:	This is a free space problem.  Calls to swapable free space
 	routines should be made only while the calling process is NOINT.  The
 	calling routine is not protecting itself from losing free space.  It is
-	OKINT.  Since it is OKINT it could get interupted and never return,
+	OKINT and it could get interrupted and never return,
 	thus losing the free block assigned.
 
-Action:	Make the routine be NOINT until it has ensured that the block will
-	be freed when it is interrupted (e.g. JSB stack).
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  The dump shows the routine
+	which is calling OKINT.  Make the routine be NOINT until it has 
+	ensured that the block is freed when it is interrupted 
+	(e.g. JSB stack).
 
-Data:	CALLER -  The address of the calling routine
-
+Data:	CALLER - The address of the calling routine
 >)
 		JRST .+1]
 	CAMLE B,2(A)		; Any possibility of success?
@@ -558,10 +570,14 @@ RELFRE::PUSH P,A		;SAVE ADDRESS OF HEADER WORD FOR POOL
 
 Cause:	This is a free space problem.  The calling routine is trying to release
 	a swapable free space block while it is OKINT.  This is dangerous since
-	it could get interrupted and loose the block.  All
-	free space actions should occur while NOINT.
+	it could get interrupted and loose the block.  All free space actions 
+	should occur while NOINT.
 
-Action:	Make the calling routine become NOINT when it removes the address
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  The dump shows the routine
+	which is calling OKINT.  Make it be NOINT when it removes the address
 	of the block about to be released from the database.  The routine
 	can be made OKINT when control is returned to it.
 
@@ -613,12 +629,14 @@ Cause:	This is a free space problem.  The caller to the free space
 	out by the free space manager.  The block is outside the
 	range of free space management.
 
-Action:	If the problem persists, change the CHK to a HLT and
-	look through the dump.  By looking at the stack you
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  By looking at the stack you
 	should be able to determine who called for the releasing
 	of the block.
 
-Data:	BLOCK - Address of block being released
+Data:	BLOCK  - Address of block being released
 	POLHDR - Address of free storage header (e.g. ASGRES)
 	POLHGH - High address of free space pool
 	POLLOW - Low address of free space pool
@@ -727,7 +745,7 @@ Cause:	This is a free space problem.  The block being returned does not fit
 	existing blocks that follow it in free space.  This block overlaps
 	into existing free blocks.  It cannot be merged.
 
-Action:	Looking at the stack will show the caller.  It is possible that the
+Action:	Looking at the stack shows the caller.  It is possible that the
 	length of the current block is incorrect.  It is equally likely that
 	the block(s) before this block (in free space) have had incorrect
 	lengths on return.  Thus, the caller may not be the culprit.
@@ -1055,9 +1073,6 @@ JSBST2:	SKIPN JSSTCD(C)		;THIS ONE FREE?
 Cause:	This is a problem with the JSB-stack logic; the count for the stack
 	indicated that free cells were available, however none could be
 	found.
-
-Action: Analyze the dump.
-
 >)
 
 
@@ -1475,7 +1490,6 @@ Action:	It is essential that any code that references a non-zero section
 	problems, including slower performance and ILMNRF BUGHLT's.
 
 Data:	PC - the PC from which ASGRES was called
-
 >)
 >				;END SECTION 0 CHECK
 
@@ -1490,13 +1504,13 @@ ASGRE2:	SKIPE XRESFL		;IF WE'RE NOT READY YET (MAP NOT SET UP)
 	JRST [	BUG.(CHK,ASGREQ,FREE,SOFT,<Illegal pool number given to ASGRES>,,<
 
 Cause:	This is a free space problem.  The caller is requesting resident
-	free space.  In T2 the caller is providing a pool number for where
-	the free space should come from.  This pool number is incorrect.
+	free space.  In T2 the caller is providing the pool number from 
+	which the free space should come.  This pool number is incorrect.
 
-Action:	If the problem persists change the BUGCHK to a BUGHLT to find the
-	culprit. The caller putting a bad value into T2.
-
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 		RETBAD (MONX03)] ;RETURN 'MONITOR INTERNAL ERROR'
 	ADD T2,.REPFR(W1)	;POINT TO TABLE OF FREE BLOCKS PER POOL
@@ -1519,10 +1533,10 @@ Cause:	This is a free space problem.  The caller is asking for resident
 	The priority determines how ASGRES is going to handle this request
 	when free space is low.  This priority is out of range.
 
-Action:	If the problem persists change the BUGCHK to a BUGHLT and look
-	through the dump to find the caller.
-
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 		RETBAD(MONX03)]	;RETURN 'MONITOR INTERNAL ERROR'
 	CAMGE T2,.REPR1(W1)	;WOULD THIS PUT US UNDER THE MINIMUM?
@@ -1977,7 +1991,6 @@ Action:	It is essential that any code that references a non-zero section
 	problems, including slower performance and ILMNRF BUGHLT's.
 
 Data:	PC - the PC from which RELRES was called
-
 >)
 >				;END SECTION 0 CHECK
 	  XMOVEI T3,RESNTB	;EXTENDED SECTION FREE POOL
@@ -2026,16 +2039,18 @@ RELRE3:	MOVEM T3,RELADR		;SAVE ADDRESS OF DESCRIPTOR BLOCK
 	TRNE T1,3		;ON A 4-WORD BOUNDARY?
 	JRST [	MOVE T1,RELRAD	;NO.  GET THE BAD ADDRESS
 		MOVE T2,RELCAL	; AND THE CALLER
-		BUG.(CHK,RESBAD,FREE,SOFT,<RELRES - Illegal address passed to RELRES>,<<T1,BADADR>,<T2,CALLER>>,<
+		BUG.(CHK,RESBAD,FREE,SOFT,<Illegal address passed to RELRES>,<<T1,BADADR>,<T2,CALLER>>,<
 
 Cause:	This is a free space problem.  The caller is trying to release some
 	resident free space.  The address being specified is not a legal
 	resident free space address.
 
-Action:	If the problem persists change the BUGCHK to a BUGHLT and find the
-	caller.  The caller is providing an illegal address.
-	Find where the caller get the address and how that location gets
-	modified.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  The dump indicates the 
+	caller which is providing the illegal address.  Find where the 
+	caller gets the address and how that location gets modified.
 
 Data:	BADADR - the address given to the free space manager
 	CALLER - the PC when the free space manager was called
@@ -2133,7 +2148,10 @@ Cause:	This is a free space problem.  The caller is trying to release resident
 	free space.  The address passed to RELRES is outside the range of the
 	resident free space pool.
 
-Action:	If the problem persists change the BUGCHK to a BUGHLT.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	BADADR - the address given to the free space manager
 	CALLER - the PC when the free space manager was called
@@ -2425,13 +2443,11 @@ RESLK3:	NOSKED
 ;to first free block, and clear the bit in the bit table
 
    IFN RESBSW,<
-	MOVE T3,LCKADR		;GET ADDRESS OF DESCRIPTOR BLOCK
-	HRRZ T3,.REBTB(T3)	;GET ADDRESS OF START OF BIT TABLE
-	IDIVI T3,PGSIZ		;GET PAGE NUMBER OF BIT TABLE
+	HRRZ T3,T1		;[8803] Get bit table address
+	LSH T3,-PGSFT		;[8803] Get page number only
 	MOVX T4,PTWR		;GET WRITE FLAG
 	IORM T4,@[EP. RSECMP(T3)] ;SET WRITE ACCESS IN MONITOR MAP
-	MOVE T3,LCKADR		;GET ADDRESS AGAIN
-	MOVE T3,.REBTB(T3)
+	MOVE T3,T1		;[8803] Get address again
 	CLRPT (T3)		;LET HARDWARE KNOW
    >				;END OF IFN RESBSW
 	MOVEI T4,1		;NOT IN USE, MARK IT TAKEN
@@ -2439,11 +2455,10 @@ RESLK3:	NOSKED
 	MOVE T4,LCKADR		;GET BACK THE FREE SPACE DESCRIPTOR
    IFN RESBSW,<
 	HRRZ T3,T3
-	IDIVI T3,PGSIZ		;BACK TO PAGE NUMBER OF BIT TABLE
+	LSH T3,-PGSFT		;[8803] Want page number of bit table
 	MOVX T1,PTWR		;GET WRITE FLAG
 	ANDCAM T1,@[EP. RSECMP(T3)] ;CLEAR WRITE-ENABLE
-	MOVE T4,LCKADR		;GET ADDRESS OF DESCRIPTOR BLOCK
-	MOVE T2,.REBTB(T4)	;GET ADDRESS OF BIT TABLE
+	MOVE T2,T1		;[8803] Get address of bit table
 	CLRPT (T2)		;LET HARDWARE KNOW
    >				;END OF IFN RESBSW
 	SOS .RETFR(T4)		;COUNT DOWN THE FREE COUNT
@@ -2860,15 +2875,14 @@ Action:	Look at the dump.  By backing up the stack you
 	should be able to tell what routine called for the illegal
 	free space.
 
-Data:	POOLN		Pool number
-	CALRPC		PC of caller of ASGFSP
+Data:	POOLN  - Pool number
+	CALRPC - PC of caller of ASGFSP
 >)
 
 ASGFS1:	SKIPL INTDF		;Is the process NOINT?
 	JRST ASGFS2		;Yes
 	MOVE T4,DESNDX		;Get pool number
 	MOVE T3,CALRPC		;Get caller's PC
-
 	BUG.(HLT,FSPANN,FREE,SOFT,<ASGFRE called OKINT>,<<T4,POOLN>,<T3,CALRPC>>,<
 
 Cause:	This is a free space problem.  Calls to swapable free space
@@ -2878,10 +2892,10 @@ Cause:	This is a free space problem.  Calls to swapable free space
 	thus losing the free block assigned.
 
 Action:	The data supplied gives the address of the calling routine.  Make
-	the routine NOINT until it has insured that the block will be
+	the routine NOINT until it has insured that the block is 
 	freed when it is interrupted (e.g. JSB stack).
 
-Data:	POOLN - Pool number
+Data:	POOLN  - Pool number
 	CALRPC - Caller of RELFSP
 >)
 ASGFS2:
@@ -3062,7 +3076,9 @@ Cause:	This is a free space problem.  There is no more space available
 
 Action:	The data supplied gives the pool number (pool descriptor index) of
 	the pool in question.  If the pool repeatedly runs out of space,
-	the pool size must be increased and the monitor rebuilt.
+	the pool size must be increased and the monitor rebuilt.  The pool
+	size is specified in STG.MAC as the third argument in the FSPPL. 
+	macro used to build the freespace pools.
 
 Data:	POOLN - Freespace pool number
 >)
@@ -3091,20 +3107,19 @@ RELFSP::SAVEAC <F,P1,P2,P3,Q1>		;Save AC's
 	JRST RLF1		;Yes
 	MOVE T4,DESNDX		;Get pool number
 	MOVE T3,CALRPC		;Get caller's PC
-
 	BUG.(HLT,FSPDNN,FREE,SOFT,<RELFSP called OKINT>,<<T4,POOLN>,<T3,CALRPC>>,<
 
 Cause:	This is a free space problem.  The calling routine is trying to release
 	a swapable free space block while it is OKINT.  This is dangerous since
-	it could get interrupted and loose the block.  All
-	free space actions should occur while NOINT.
+	it could get interrupted and loose the block.  All free space actions 
+	should occur while NOINT.
 
 Action:	The data supplied gives the address of the calling routine.  Make
 	the routine become NOINT when it removes the address of the block
-	about to be released from the database.  The routine
-	can be made OKINT when control is returned to it.
+	about to be released from the database.  The routine can be made 
+	OKINT when control is returned to it.
 
-Data:	POOLN - Pool number
+Data:	POOLN  - Pool number
 	CALRPC - PC of caller of RELFSP
 >)
 RLF1:	CSKED			;Don't allow reschedule
@@ -3196,15 +3211,15 @@ RLFR2:	CAME T3,T2		;Releasing already-released block?
 	MOVE Q1,DESNDX		;Get pool number
 	BUG.(HLT,FSPARB,FREE,SOFT,<RELFSP - Bad block being released>,<<Q1,POOLN>,<T4,CALRPC>,<P2,BLKADR>>,<
 
-Cause: The caller is attempting to release a block that has already been
+Cause:  The caller is attempting to release a block that has already been
 	released.
 
-Action:	Looking at the stack will show the caller.  It is possible that the
+Action:	Look at the stack to show the caller.  It is possible that the
 	length of the current block is incorrect.  It is equally likely that
 	the block(s) before this block (in free space) have had incorrect
 	lengths on return.  Thus, the caller may not be the culprit.
 
-Data:	POOLN - Pool number
+Data:	POOLN  - Pool number
 	CALRPC - PC of caller of RELFSP
 	BLKADR - Address of user block
 >)
@@ -3223,12 +3238,12 @@ Cause:	This is a free space problem.  The block being returned does not fit
 	into the free pool.  The block would overlap the preceding block
 	in the pool.
 
-Action:	Looking at the stack will show the caller.  It is possible that the
+Action:	Look at the stack to show the caller.  It is possible that the
 	length of the current block is incorrect.  It is equally likely that
 	the block(s) before this block (in free space) have had incorrect
 	lengths on return.  Thus, the caller may not be the culprit.
 
-Data:	POOLN - Pool number
+Data:	POOLN  - Pool number
 	CALRPC - PC of caller of RELFSP
 	BLKADR - Address of user block
 >)
@@ -3246,16 +3261,14 @@ Cause:	This is a free space problem.  The block being returned does not fit
 	into the free pool.  The block would overlap the succeeding block
 	in the pool.
 
-Action:	Looking at the stack will show the caller.  It is possible that the
+Action:	Look at the stack to show the caller.  It is possible that the
 	length of the current block is incorrect.  It is equally likely that
 	the block(s) before this block (in free space) have had incorrect
 	lengths on return.  Thus, the caller may not be the culprit.
 
-Data:	POOLN		Pool number
-	CALRPC		PC of caller of RELFSP
-	BLKADR		Address of user block
-
-
+Data:	POOLN  - Pool number
+	CALRPC - PC of caller of RELFSP
+	BLKADR - Address of user block
 >)
 	;See if the user block can me Merged with its successor.
 RLFR4:	CAME T4,T3		;Same as succeeding block address?
@@ -3325,12 +3338,12 @@ Cause:	This is a free space problem.  The block being returned does not fit
 	existing blocks that follow it in free space.  This block overlaps
 	into existing free blocks.  It cannot be merged.
 
-Action:	Looking at the stack will show the caller.  It is possible that the
+Action:	Looking at the stack shows the caller.  It is possible that the
 	length of the current block is incorrect.  It is equally likely that
 	the block(s) before this block in free space have had incorrect
 	lengths on return.  Thus, the caller may not be the culprit.
 
-Data:	POOLN - Pool number
+Data:	POOLN  - Pool number
 	CALRPC - PC of caller of RELFSP
 	BLKADR - Address of user block
 >)
@@ -3358,7 +3371,7 @@ Action:	Look through the dump.  If the blocksize is wrong, then study the
 	wrong, then more investigation is required.  The history buffer for the
 	pool may contain helpful data.
 
-Data:	POOLN - Pool number
+Data:	POOLN  - Pool number
 	CALRPC - PC of caller to RELFSP
 	BLKADR - Address of block being returned
 >)
@@ -3382,7 +3395,7 @@ Action:	Look through the dump.  By looking at the stack you
 	should be able to determine who called for the releasing
 	of the block.
 
-Data:	POOLN - Pool number
+Data:	POOLN  - Pool number
 	CALRPC - PC of caller to RELFSP
 	BLKADR - Address of block being returned
 >)
@@ -3695,7 +3708,6 @@ CHKLP:	SOS T1			;Pointers are at ends of header/trailer;
 
 BADSZ:	BUG.(HLT,FSPBBS,FREE,SOFT,<Bad blocksize>,<<P1,POOLN>,<P2,BLKADR>>,<
 
-
 Cause:	This is a free space problem; 	The block size is either smaller
 	than the minimum block size for this pool, or larger than the entire
 	amount of space allocated to the pool.
@@ -3707,11 +3719,7 @@ Action: If the condition is noticed when a block is being returned to the list,
 	the header/trailer.  These may give a clue as to what code caused the  
 	problem.
 
-	If the problem persists, change the BUGCHK to a BUGHLT and analyze the 
-	dump.
-
-
-Data:	POOLN - Pool number
+Data:	POOLN  - Pool number
 	BLKADR - Address of the block. Zero indicates it is the pool
 		 descriptor itself that contains the bad pointer.
 >)
@@ -3734,11 +3742,7 @@ Action: If the condition is noticed when a block is being returned to the list,
 	the header/trailer.  These may give a clue as to what code caused the  
 	damage.
 
-	If the problem persists, change the BUGCHK to a BUGHLT and analyze the 
-	dump.
-
-
-Data:	POOLN - Pool number
+Data:	POOLN  - Pool number
 	BLKADR - Address of the block. Zero indicates it is the pool
 		 descriptor itself that contains the bad pointer.
 >)
@@ -3810,13 +3814,9 @@ Cause:	This is a free space problem.  A free block in the freespace pool
 	was found to contain a pointer that did not fall within the legal
 	address interval for that pool.
 
-
-Action:	Analyze the Dump.
-
-
-Data:	POOLN		Pool number
-	BLKADR		Address of the block containing the bad pointer.
-	NXTPTR		The bad pointer
+Data:	POOLN  - Pool number
+	BLKADR - Address of the block containing the bad pointer.
+	NXTPTR - The bad pointer
 >)
 	RET
 
@@ -3830,15 +3830,8 @@ Cause:	This is a free space problem. When the address of the current block
 	the blocksize of the current block is incorrect, or that the successor  
 	of the current block has suffered header damage.
 
-
-
-
-Action:	If the problem persists, change the BUGCHK to a BUGHLT and analyze the 
-	dump.
-
-
-Data:	POOLN		Pool number
-	BLKADR		Address of the current block.
+Data:	POOLN  - Pool number
+	BLKADR - Address of the current block.
 >)
 	RET
 
@@ -3849,12 +3842,8 @@ BLKASN:	MOVE Q1,DESNDX		;Get pool number
 Cause:	This is a free space problem.  A block in the freespace pool was
 	found to have the "block-assigned" bit set.
 
-
-Action:	Analyze the Dump.
-
-
-Data:	POOLN		Pool number
-	BLKADR		Address of the block.
+Data:	POOLN  - Pool number
+	BLKADR - Address of the block
 >)
 	RET
 
@@ -3914,10 +3903,13 @@ Cause:	This BUGCHK occurs when a routine calls routine FSPREM in FREE
 	the pool number supplied is either out of range (greater or
 	equal to FSPTBL) or does not exit (FSPTAB entry equals zero).
 
-Action:	Examine the calling routine and fix it to supply a valid pool
-	number.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Use the dump to examine the 
+	calling routine and fix it to supply a valid pool number.
 
-Data:	POOLN - Pool number
+Data:	POOLN  - Pool number
 	CALLER - Address of calling routine
 >)
 	SETZ T2,		;Return zero to caller

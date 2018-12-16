@@ -1,7 +1,11 @@
-; UPD ID= 8719, RIP:<7.MONITOR>ENQSRV.MAC.18,  25-May-88 15:47:55 by LOMARTIRE
-;More of TCO 7.1292 - Fix all the places that quit after a "No" reply
-; UPD ID= 8718, RIP:<7.MONITOR>ENQSRV.MAC.17,  24-May-88 16:30:26 by LOMARTIRE
-;TCO 7.1292 - Prevent forks hung in EVWAIT - make all nodes reply to vote
+; Edit= 9018 to ENQSRV.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8904 to ENQSRV.MAC on 15-Aug-88 by LOMARTIRE
+;Improve BUG. documentation 
+; Edit= 8848 to ENQSRV.MAC on 25-May-88 by LOMARTIRE (TCO 7.1292)
+;More of edit 8847 - fix all places that quit after a "No" reply 
+; Edit= 8847 to ENQSRV.MAC on 24-May-88 by LOMARTIRE (TCO 7.1292)
+;Prevent jobs hung in EVWAIT - make all nodes reply to vote 
 ; UPD ID= 8513, RIP:<7.MONITOR>ENQSRV.MAC.14,   9-Feb-88 15:20:28 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8460, RIP:<7.MONITOR>ENQSRV.MAC.13,   5-Feb-88 09:34:31 by GSCOTT
@@ -892,7 +896,7 @@ ASKLOP:	CIOFF			;Lock out connection state changes
 ;TOPS-20 node running version 7.0 or greater in the cluster.
 
 ASKVOT:	TMNE VPNO,(Q3)		;Has the vote already been denied?
-	JRST ASKCHK		;[7.1292] Yes, stop and wait for all replies
+	JRST ASKCHK		;[8848] Yes, stop and wait for all replies
 	SKIPLE T1,CFSHST(Q1)	;Get the CID
 	SKIPL CFHSTS(Q1)	;Is there a valid CID in this slot
 	JRST ASKNXT		;No, try next slot
@@ -995,15 +999,15 @@ Cause:	The value in variable BUFL indicates that SC.BRK thought that the
 	less than or equal to zero which means that there is nothing more 
 	to send.
 
-tction:	Examine the dump for signs of a miscalculation in either SC.BRK
+Action:	Examine the dump for signs of a miscalculation in either SC.BRK
 	or the setting of EBTOTT.
 >)
 	CAILE T2,C%MUDA		;Will they fit in just one more buffer?
 	BUG.(HLT,EQLTOT,ENQSRV,SOFT,<ENQSRV - VRQA value of EBTOTT is too big>,,<
 
 Cause:	The value in variable BUFL indicates that SC.BRK thought that the
-	VRQA would require multiple buffers.  But, the value of EBTOTT 
-	indicates that the rest to send will not fit in just 1 more buffer.
+	VRQA would require multiple buffers.  The value of EBTOTT 
+	indicates that the rest of VRQA requires more than 1 more buffer.
 
 Action:	Examine the dump for signs of a miscalculation in either SC.BRK
 	or the setting of EBTOTT.
@@ -1640,7 +1644,9 @@ Cause:	The VRPA contains the replies to a vote request and VPNO and VPNOV
 	rejected the vote request; so it must have known about the lock.
 	This is a problem in the Lock-Block caching algorithm.
 	
-Action:	A cluster dump may be required here to solve the problem.
+Action:	A cluster dump may be required here to solve the problem.  Also,
+        check all the places where VPNOV and VPNO are set for a possible
+        problem.  This logic resides mostly in routines EVEOKR and EIEOKR.
 >)				;Yes - stop now!
 	ENDIF.
 	TMNE VPNO,(T1)		;Was this vote request denied by anyone?
@@ -1895,20 +1901,20 @@ EQLKSD::SAVEAC <T1>		;Preserve T1
 	 BUG.(CHK,EQNOTF,ENQSRV,SOFT,<ENQSRV - Rescheduling notification failed>,,<
 
 Cause:	Routine EQLKSD was called to notify the other systems in the cluster
-	that a lock has been rescheduled.  But, this did not occur because
-	of a lack of resources; SCA message buffers.  So, it may be that
-	there is fork on another system which is hung waiting to get access
-	to this lock and it won't unhang until that system recieves a 
-	rescheduling notification.  This BUGCHK should not occur and is
-	evidence of a much more serious SCA problem.
+	that a lock has been rescheduled.  This did not occur because
+	of a lack of resources; SCA message buffers.  There may be a fork on 
+	another system which is hung waiting to get access to this lock and it 
+	won't unhang until that system recieves a rescheduling notification.  
+	This BUGCHK should not occur and is evidence of a much more serious 
+	SCA problem.
 	
 Action:	In order to unhang any forks which may be waiting for access to the
 	lock which was just rescheduled, the following can be done.  On 
 	every system, set bit EN.SDO in every Lock-Block which is on the 
 	EQLBLT.  Then increment the right half of EQFKFL by the number of 
 	blocks just set.  This can be done by setting EQCSTF to -1 on 
-	each system.  This will make the system think that a cluster 
-	state change occurred and will force a rescheduling of all known
+	each system.  This makes the system think that a cluster 
+	state change occurred and forces a rescheduling of all known
 	lock blocks.
 >,,<DB%NND>)			;[7.1210][7.1096] Failed, lack of resources
 	RET			;All done - systems have been notified

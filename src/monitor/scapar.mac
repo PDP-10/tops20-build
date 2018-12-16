@@ -1,3 +1,5 @@
+; Edit= 8810 to SCAPAR.MAC on 24-Mar-88 by RASPUZZI
+;Increase the size of the SCA ring buffer.
 ; UPD ID= 8613, RIP:<7.MONITOR>SCAPAR.MAC.8,  11-Feb-88 18:29:07 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 182, RIP:<7.MONITOR>SCAPAR.MAC.7,  21-Oct-87 17:19:04 by RASPUZZI
@@ -1497,7 +1499,8 @@ L.BSD==4			;Length of a buffer segment descriptor
 
 	.RESTR==:-1		;Start of this entry
 
-	RBFLEN==:5		;Ring buffer size in pages
+;Adjusted for TOPS-20 development
+	RBFLEN==:60		;[8810] Ring buffer size in pages
 
 ;Below are the structure names which control which event will be recorded
 ;in the ring buffer.  RNGSW controls which events are recorded.

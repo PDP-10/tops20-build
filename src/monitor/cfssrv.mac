@@ -1,3 +1,23 @@
+; Edit= 9148 to CFSSRV.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9122 to CFSSRV.MAC on 22-Sep-89 by GSCOTT
+;Prevent two systems from using a shared tape drive at the same time by
+;returning OPNX32 (OPENF%) or ASNDX4 (ASND%).
+; Edit= 9038 to CFSSRV.MAC on 9-Dec-88 by RASPUZZI
+;Prevent CFSOFB BUGHLTs. Also, obtain exclusive access when updating an OFN.
+; Edit= 9030 to CFSSRV.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8960 to CFSSRV.MAC on 1-Sep-88 by GSCOTT
+;*Performance* Change IFNSK to IFSKP wherever possible.
+; Edit= 8956 to CFSSRV.MAC on 30-Aug-88 by GSCOTT
+;Fix badly formatted BUG.
+; Edit= 8951 to CFSSRV.MAC on 26-Aug-88 by LOMARTIRE
+;Improve BUG. documentation some more
+; Edit= 8874 to CFSSRV.MAC on 10-Aug-88 by RASPUZZI
+;Update BUG. documentation again.
+; Edit= 8863 to CFSSRV.MAC on 21-Jul-88 by RASPUZZI
+;Increase STKVAR for structure names and shutdown messages so that we don't
+;trash stacks and cause ILMNRFs.
 ; UPD ID= 8488, RIP:<7.MONITOR>CFSSRV.MAC.19,   9-Feb-88 12:17:31 by GSCOTT
 ;TCO 7.1218 - Update copyright notice.
 ; UPD ID= 8406, RIP:<7.MONITOR>CFSSRV.MAC.18,   4-Feb-88 10:23:20 by GSCOTT
@@ -423,7 +443,7 @@
 ; UPD ID= 2143, SNARK:<6.MONITOR>CFSSRV.MAC.201,   4-Apr-83 07:42:35 by MILLER
 ;TCO 6.1094. Make length of vote packets an even number of words
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1984, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1984, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -601,19 +621,23 @@
 ;   22. ENQ Lock resource manager
 ;       22.1    CFEQLK (Lock ENQ database) . . . . . . . . . . 183
 ;       22.2    CFEQUL (Unlock ENQ database) . . . . . . . . . 185
-;   23. Miscellaneous Interfaces
-;       23.1    FILRST (Reset all files at startup)  . . . . . 186
-;       23.2    CFSERR (Illegal configuration) . . . . . . . . 187
-;       23.3    CFRDSN (Read drive serial number)  . . . . . . 188
-;       23.4    CFSDSN (Swap drive serial number)  . . . . . . 189
-;       23.5    CFCBRD (Broadcast system cease)  . . . . . . . 192
-;       23.6    CFSDMP (Force cluster dump)  . . . . . . . . . 193
-;       23.7    ILLGET (Illegal return from CFSGET)  . . . . . 195
-;       23.8    CFSKPD (KLIPA Failure) . . . . . . . . . . . . 196
-;       23.9    ONLINE (CFS connection BUGINF) . . . . . . . . 197
-;       23.10   CFDISC (CFS disconnect BUGINF) . . . . . . . . 198
-;       23.11   PHYNOL (Declare the disks offline) . . . . . . 199
-;   24. End of CFSSRV  . . . . . . . . . . . . . . . . . . . . 200
+;   23. MTA Lock resource manager
+;       23.1    CFSMTA (Acquire MTA resource)  . . . . . . . . 186
+;       23.2    CFSMTR (Release MTA resource)  . . . . . . . . 189
+;       23.3    CFSMTS (Get MTA root and qualifier)  . . . . . 190
+;   24. Miscellaneous Interfaces
+;       24.1    FILRST (Reset all files at startup)  . . . . . 191
+;       24.2    CFSERR (Illegal configuration) . . . . . . . . 192
+;       24.3    CFRDSN (Read drive serial number)  . . . . . . 193
+;       24.4    CFSDSN (Swap drive serial number)  . . . . . . 194
+;       24.5    CFCBRD (Broadcast system cease)  . . . . . . . 197
+;       24.6    CFSDMP (Force cluster dump)  . . . . . . . . . 198
+;       24.7    ILLGET (Illegal return from CFSGET)  . . . . . 200
+;       24.8    CFSKPD (KLIPA Failure) . . . . . . . . . . . . 201
+;       24.9    ONLINE (CFS connection BUGINF) . . . . . . . . 202
+;       24.10   CFDISC (CFS disconnect BUGINF) . . . . . . . . 203
+;       24.11   PHYNOL (Declare the disks offline) . . . . . . 204
+;   25. End of CFSSRV  . . . . . . . . . . . . . . . . . . . . 205
 	SUBTTL	Design Notes
 
 COMMENT #
@@ -625,7 +649,7 @@ system out of a bunch of machines.
 The CFS support code is really a "global lock manager". The manager supports a
 "named locking scheme" as follows:
 
-A lock is a multi-part name. The first part of the name is the "root".  The
+A lock is a multi-part name.  The first part of the name is the "root".  The
 remaining part of the name defines a tree structure under the root.
 
 Locks have names, owners, state and data.
@@ -633,24 +657,24 @@ Locks have names, owners, state and data.
 The CFS protocol uses SCA to send and receive packets.
 
 Aside from the lock management function, this module also implements the CFS
-configuration manager. It handles nodes coming into the CFS network as well as
-nodes leaving the CFS network. CFSCON relies heavily on SCA to provide
+configuration manager.  It handles nodes coming into the CFS network as well as
+nodes leaving the CFS network.  CFSCON relies heavily on SCA to provide
 up-to-date information on the physical configuration, including notification of
 any configuration change.
 
-Locks are in one of several states. First, a lock may be owned locally. In this
-case, any attempts to share this lock must conform to the current level of
-ownership. Second, a lock may reside on the local node, but be unowned. A
+Locks are in one of several states.  First, a lock may be owned locally.  In
+this case, any attempts to share this lock must conform to the current level of
+ownership.  Second, a lock may reside on the local node, but be unowned.  A
 request for ownership may be granted as long as the request is equal to or less
-than the current level. Finally, a lock may be unknown on the local node. In
-any case where the lock cannot be immediately granted, a vote must be taken. A
-vote simply is a "braodcasting" of the lock request to all other CFS nodes. The
-reqeust is successful is no reply denies the request. Note this scheme has the
-advantage that locks need not be permanent and no single node is ever
-responsible for keeping track of a dormant lock. In principle, this will most
-likely happen, but it needn't. Furthermore, there is no a priori assignment of
-node to lock. This means that if the owner of a lock crashes, there is no
-special error recovery method. The next node to request the lock will simply
+than the current level.  Finally, a lock may be unknown on the local node.  In
+any case where the lock cannot be immediately granted, a vote must be taken.  A
+vote simply is a "braodcasting" of the lock request to all other CFS nodes.
+The reqeust is successful is no reply denies the request.  Note this scheme has
+the advantage that locks need not be permanent and no single node is ever
+responsible for keeping track of a dormant lock.  In principle, this will most
+likely happen, but it needn't.  Furthermore, there is no a priori assignment of
+node to lock.  This means that if the owner of a lock crashes, there is no
+special error recovery method.  The next node to request the lock will simply
 discover that its vote is successful.
 
 The obvious disadvantage of this scheme is that requesting a lock has a fixed
@@ -662,28 +686,29 @@ Configurations:
 
 The conditional assemblies control configurations as follows:
 
-CFSDUM: This is a "reduced" CFS. This system is on the CI and uses SCA to
+CFSDUM: This is a "reduced" CFS.  This system is on the CI and uses SCA to
 connect to other CI-based systems. However, this processor will not share
 structures with any other system but will insure that the structures it is
 using are mutually exclusive from structures used by any other CI-based TOPS-20
-system. This implies that this system will establish connections to other
+system.  This implies that this system will establish connections to other
 reduced or full CFS systems and will participate in strcuture mounting votes.
 
 CFSSCA: If zero, this processor is not on a CI with any other processor.  SCA
-may be in the monitor, but the CFS SYSAP is not present. This processor offers
-no assurances that it will not interfere with any other CI activity. If this is
-zero, CFSDUM will be defined. If this is a one, CFSDUM is defined independently
-of this conditional. If CFSSCA=0, then this should processor should either not
-be on a CI at all, or should be on a CI with no other TOPS-20 host systems. Any
-other configuration is unsupported and not likely to operate correctly.
+may be in the monitor, but the CFS SYSAP is not present.  This processor offers
+no assurances that it will not interfere with any other CI activity.  If this
+is zero, CFSDUM will be defined.  If this is a one, CFSDUM is defined
+independently of this conditional.  If CFSSCA=0, then this should processor
+should either not be on a CI at all, or should be on a CI with no other TOPS-20
+host systems.  Any other configuration is unsupported and not likely to operate
+correctly.
 
 In addition, the CFS network number, MYPOR2, defines the CFS subnet that this
-processor is in. This value is only significant if CFSSCA=1 and CFSDUM is not
+processor is in.  This value is only significant if CFSSCA=1 and CFSDUM is not
 defined.
 
 
 The tables CFSHST, CFSHNM, and CFHSTS describe the states of the connections to
-the other nodes, and one listener. THe following indicates the contents of
+the other nodes, and one listener.  The following indicates the contents of
 these tables are various stages in the life of a connection.
 
 			CFSHST		CFSHNM		CFHSTS
@@ -760,7 +785,7 @@ Directory allocation		CFSDAU
 Structure mounting		CFSSMT	CFSSDM	CFSSUG
 File enqueue			CFSENQ	CFSDEQ
 BAT blocks			CFGBBS	CFFBBS
-
+MTA allocation			CFSMTA	CFSMTR
 
 Unique code:
 
@@ -770,7 +795,8 @@ Outgoing response to request to vote: CFUNQ(in) --> CFUNQ(out)
 
 #
 	SUBTTL Data Storage
-;Note: The trailing space are required by SCA. The string must be 16 bytes
+
+;Note: The trailing space are required by SCA.  The string must be 16 bytes
 ;padded with spaces as necessary.
 
 LISDMP: ASCI8 (<LCS20$CFS$DUMP  >) ;[7.1021] The name of our dump listener
@@ -779,7 +805,7 @@ LISNAM: ASCI8 (<LCS20$CFS       >) ;Our name
 RS DMPSTK			;[7.1021] The address of the dump stack
 RS DMPSVP			;[7.1021] The stack at the time of the dump
 
-;Descriptions of this node. First offset contains serial number
+;Descriptions of this node.  First offset contains serial number
 
    IFDEF CFSDUM,<		;If we are to be a dummy
 RS	MYPORT,4		;Both of these are zero
@@ -815,7 +841,7 @@ RS	CFNXPG,1		;Page pool address
 RSI	CFNXSZ,<PGSIZ>		;Space available in pool
 RS	CFTADL,1		;Time and date cell
 
-;Start of a long block. Remaining words are bit mask of waiting forks.
+;Start of a long block.  Remaining words are bit mask of waiting forks.
 
 HSHDRI==:1+<NFKS+^D35>/^D36	;[7.1190] Additional words for dir locks
 WRDHSH==:NSPCQ0*HSHSIZ		;[7.1190] Words in hash packets
@@ -843,6 +869,7 @@ file enqueue		str. name	XB address + FILEEQ
 
 BAT blocks		str. name	-1
 
+MTA access		.MTTxx,,'MTA'	low order device serial number
 
 RESOURCE		HSHCOD
 
@@ -998,11 +1025,10 @@ CFSCTH:	SAVEQ			;Get some work regs
 	  RETBAD()		;Return failure
 	ENDIF.
 	LOAD Q3,RDVCST,(T2)	;GET VC STATE
-	CAIE Q3,VC.OPN		;OPEN?
-	IFNSK.			;No. Forget it then
+	CAIN Q3,VC.OPN		;[8960] Open?
+	IFSKP.			;[8960] No. Forget it then
 	  MOVE T1,T2		;Get block address
-	  CALL RELRES		;(T1) Return block to pool
-	  RET           	;No. Forget it then
+	  CALLRET RELRES	;[8960] (T1) Return block to pool and return
 	ENDIF.
 	MOVE Q3,.RDDST(T2)	;[7144] Get destination software type
 	MOVE T1,T2		;Get block address
@@ -1068,10 +1094,8 @@ HSHLOK:	SAVEQ
 	BUG.(HLT,CFSSEZ,CFSSRV,SOFT,<CFSSRV - Section 0>,,<
 
 Cause:	HSHLOK was called from section zero. HSHLOK must be called from a
-	non-zero section.
-
-Action:	Examine the stack and change the caller of HSHLOK to run in a
-	non-zero section
+	non-zero section.  Examine the stack and change the caller of HSHLOK to
+	run in a non-zero section.
 >)
    >	;IFN DEBUG
 	CALL HASHN		;GET HASH
@@ -1116,13 +1140,13 @@ GNAME2:	PUSH P,T1
 
 CFSULL::
    IFN CFSSCA,<			;If SCA present
-	SOSN SCAILK		;Last one?
-	IFNSK.			;If so.
-	 TMNN SCWKP		;Any need to action?
-	 SKIPE SCAQ		;No. ANything here?
-	 ANNSK.			;If so
-	 SAVET			;Save vulnerable regs
-	 CALL CFSCH1		;Yes. Do a check pass now
+	SOSE SCAILK		;[8960] Last one?
+	IFSKP.			;[8960] If so.
+	  TMNN SCWKP		;Any need to action?
+	  SKIPE SCAQ		;No.  Anything here?
+	  ANNSK.		;If so
+	    SAVET		;Save vulnerable regs
+	    CALL CFSCH1		;Yes. Do a check pass now
 	ENDIF.
 	OKSKED			;Allow scheduling now
    >	;IFN CFSSCA
@@ -1230,8 +1254,8 @@ CFSRS0:	JN <HSHUGD,HSHKPH,HSHWVT,HSHTAM>,(T1),RSKP ;[7.1029] If voting, forced h
 	TMNE HSHCNT,(T1)	;A debugging check!!!!
 	BUG.(HLT,CFSMPB,CFSSRV,SOFT,<CFSSRV - CFSMAP returned in-use entry>,,<
 
-Cause:	CFSMAP has returned a resource block that is already in use. This
-	bug is a debugging check.
+Cause:	CFSMAP has returned a resource block that is already in use.  This bug
+	is a debugging check.
 >)
    >	;IFN DEBUG
 	TMNN HSHLKF,(T1)	;Locked?
@@ -1335,8 +1359,7 @@ CFCNCK::SKIPN CFSHCT		;Get count of hosts
 	  SKIPL CFHSTS(T3)	;[7445] Is it fully active?
 	  IFSKP.		;A valid one did exist
 	    CALL SC.NOD		;(T1/T1,T2) Get node number for this CID
-	    SKIPL T2		;A valid CID?
-	    IFNSK.		;Yes, node number is returned
+	    IFGE. T2		;[8960] A valid CID?
 	      CAMN T4,T2	;Is this the CID for the desired node?
 	      RETSKP		;Yes, return success
 	    ENDIF.
@@ -1424,8 +1447,8 @@ CFSGT2:	CFSLOK			;PROTECT DATABASE
 
 ;Request and owner type match. Make sure we can seize it
 
-CFSGOD:	TMNE HSHCNT,(T1)	;Unclaimed?
-	IFNSK.			;If not
+CFSGOD:	TMNN HSHCNT,(T1)	;[8960] Unclaimed?
+	IFSKP.			;[8960] If not
 	 CAIE T3,.HTOEX		;DO we want exclusive access?
 	 ANSKP.			;If so
 	  JE HSHLCL,(T1),CFSGTX	;If not local exclusive, lose
@@ -1444,8 +1467,8 @@ CFSGOD:	TMNE HSHCNT,(T1)	;Unclaimed?
 
 ;Can't honor the request just now.
 
-CFSGTX:	SKIPN RTYFLG		;WANT TO RETRY?
-	IFNSK.			;If not
+CFSGTX:	SKIPE RTYFLG		;[8960] Want to retry?
+	IFSKP.			;[8960] If not
 	 MOVE T1,Q1
 	 CALL @HSHRET(T1)	;Release the block
 	 SETOM T2		;Conflict on this system. No reason code.
@@ -1554,13 +1577,13 @@ CFSG00:	LOAD T1,HSHTYP,(Q1)	;TYPE WE ARE VOTING ON
 ;the failed vote (found in HSHDRC) in T2.
 
 CFSGT3:	MOVE T1,Q1		;Copy pointer
-	SKIPN RTYFLG		;SHALL WE TRY, TRY AGAIN?
-	IFNSK.			;If not
-	 LOAD Q1,HSHDRC,(T1)	;Get the reason for the NO
-	 CALL HSHULN		;Unlink it
-	 CALL @HSHRET(T1)	;release it
-	 MOVE T2,Q1		;Move reason code to T2
-	 CALLRET CFSFAL		;AND DONE
+	SKIPE RTYFLG		;[8960] Shall we try, try again?
+	IFSKP.			;[8960] If not
+	  LOAD Q1,HSHDRC,(T1)	;Get the reason for the NO
+	  CALL HSHULN		;Unlink it
+	  CALL @HSHRET(T1)	;release it
+	  MOVE T2,Q1		;Move reason code to T2
+	  CALLRET CFSFAL	;AND DONE
 	ENDIF.
 	SETZM T1
 	JRST CFSGTX		;FAIL
@@ -1664,13 +1687,13 @@ CFSND2:	ADDI Q1,1		;NEXT BIT TABLE WORD
 
 ;Here if no local fork waiting. See if another host is waiting
 
-CFSND3:	SKIPE T3,HSHNBT(T1)	;ANYTING HERE?
-	IFNSK.			;If so
-	 SKIPN AC3		;Want to leave a record of this?
-	 IFNSK.			;If so
-	  SETONE HSHRFF,(T1)	;So do it
-	 ENDIF.
-	 CALL CFNOHS		;Tell them
+CFSND3:	SKIPN T3,HSHNBT(T1)	;[8960] Anything here?
+	IFSKP.			;[8960] If so
+	  SKIPE AC3		;[8960] User want to leave a record of this?
+	  IFSKP.		;[8960] Yes
+	    SETONE HSHRFF,(T1)	;So do it
+	  ENDIF.
+	  CALL CFNOHS		;Tell them
 	ENDIF.
 	CALLRET CFSRSK		;And done
 	SUBTTL	Resource manager -- CFSOHS (Notify rejected hosts after undeclare)
@@ -1688,25 +1711,26 @@ CFNOHS:	SAVEAC <P1>		;Where to save packet
 	MOVE P,CFSSTK		;Get local stack
 	MOVE P1,T1
 	DO.
-	SKIPN T3,HSHNBT(P1)	;Any body here?
-	EXIT.
-	CALL GVOTE1		;GET A VOTE BUFFER
-	 EXIT.
-	JFFO T3,.+1		;GET HOST NUMBER WAITING
-	MOVE T3,BITS(T4)	;GET THE CORRESPONDING BIT
-	ANDCAM T3,HSHNBT(P1)	;TURN IT OFF
-	MOVEI T3,.CFRFR
-	STOR T3,CFCOD,(T1)	;CODE
-	DMOVE T2,HSHROT(P1)	;GET RESOURCE
-	DMOVEM T2,CFROT(T1)	;STASH IT
-	MOVE T2,T4		;HOST NUMBER
-	CALL SCASND
-	IFNSK.			;If failed
-	 PIOFF
-	 CALL CFSWDN		;Return the buffer
-	 PION
-	ENDIF.
-	LOOP.
+	  SKIPN T3,HSHNBT(P1)	;Any body here?
+	  EXIT.
+	  CALL GVOTE1		;GET A VOTE BUFFER
+	   EXIT.
+	  JFFO T3,.+1		;GET HOST NUMBER WAITING
+	  MOVE T3,BITS(T4)	;GET THE CORRESPONDING BIT
+	  ANDCAM T3,HSHNBT(P1)	;TURN IT OFF
+	  MOVEI T3,.CFRFR
+	  STOR T3,CFCOD,(T1)	;CODE
+	  DMOVE T2,HSHROT(P1)	;GET RESOURCE
+	  DMOVEM T2,CFROT(T1)	;STASH IT
+	  MOVE T2,T4		;HOST NUMBER
+	  CALL SCASND		;(T1,T2/T3)
+	  IFSKP.		;[8960] If it worked
+	    LOOP.		;[8960] Loop for the next one
+	  ENDIF.		;[8960] Otherwise it failed
+	  PIOFF
+	  CALL CFSWDN		;Return the buffer
+	  PION
+	  LOOP.
 	ENDDO.
 	MOVE P,CFSSVP		;Restore original stack
    >	;IFN CFSSCA
@@ -1822,20 +1846,20 @@ VOTRST:	SKIPN CFSCMC		;Any connects outstanding?
 	 CALL CFSWUP		;Do it
 	ENDIF.
 	DO.
-	 SKIPE T1,DLYLOK	;A delay in effect?
-	 IFNSK.			;If so
-	  SUB T1,TODCLK		;Get relative time
-	  IFG. T1		;If we still need to wait...
-	   CALL SETBKT		;Compute wait time
-	   HRRI T1,CFRCNW	;Wait
-	   CALL CFSWUP		;Do it
-	   MOVE T1,TODCLK	;Get now
-	   CAMGE T1,DLYLOK	;Really time to wake up?
-	   LOOP.		;No
-	  ENDIF.
+	  SKIPN T1,DLYLOK	;[8960] A delay in effect?
+	  IFSKP.		;[8960] If so
+	    SUB T1,TODCLK	;Get relative time
+	    IFG. T1		;If we still need to wait...
+ 	      CALL SETBKT	;Compute wait time
+	      HRRI T1,CFRCNW	;Wait
+	      CALL CFSWUP	;Do it
+	      MOVE T1,TODCLK	;Get now
+	      CAMGE T1,DLYLOK	;Really time to wake up?
+	      LOOP.		;No
+	    ENDIF.
 	  SETZM DLYLOK		;Yes
 	  CALL CLRDLY
-	 ENDIF.
+	  ENDIF.
 	ENDDO.
 	MOVEM P,CFSSVP		;Save stack pointer
 	MOVE P,CFSSTK		;Get new stack
@@ -1844,12 +1868,12 @@ VOTRST:	SKIPN CFSCMC		;Any connects outstanding?
 	SETZRO <HSHVRS,HSHYES>,(Q1) ;ASSUME NO NO'S
 	SETZRO HSHRTY,(Q1)	;And now resends yet either
 	SETZRO HSHDLY,(Q1)	;No delays yet either
-	SKIPN P3,CFSHCT		;GET HOST COUNT OF OTHER HOSTS
-	IFNSK.			;If nobody out there...
-	 MOVE P,CFSSVP		;Restore original stack
-	 CFSLOK			;Lock up the data base
-	 OKSKED
-	 RET			;And return now
+	SKIPE P3,CFSHCT		;[8960] Get host count of other hosts
+	IFSKP.			;[8960] If nobody out there...
+	  MOVE P,CFSSVP		;Restore original stack
+	  CFSLOK		;Lock up the data base
+	  OKSKED		;Turn on scheduling
+	  RET			;And return now
 	ENDIF.
 	SETZRO HSHVCT,(Q1)	;VOTE IS AT ZERO
 	SETZRO HSHDRC,(Q1)	;No denial reason code yet
@@ -1864,12 +1888,12 @@ VOTRST:	SKIPN CFSCMC		;Any connects outstanding?
 ;TO THE QUEUE BY SCA. IF THE QUEUE IS EXHAUSTED, THE VOTE
 ;WILL BE DELAYED UNTIL SOME ARE FREED (NOT EXPECTED TO BE LONG)
 
-VOTE1:	TMNE HSHYES,(Q1)	;ALREADY VETOED?
-	IFNSK.
-	 MOVE P,CFSSVP		;Restore stack
-	 CFSLOK			;YES.
-	 OKSKED
-	 RET
+VOTE1:	TMNN HSHYES,(Q1)	;[8960] Already vetoed?
+	IFSKP.			;[8960] Yes
+	  MOVE P,CFSSVP		;Restore stack
+	  CFSLOK		;Yes
+	  OKSKED
+	  RET
 	ENDIF.
 	SKIPLE CFSHST(P4)	;THIS HOST UP?
 	SKIPL P5,CFHSTS(P4)	;maybe. CTS?
@@ -1906,19 +1930,19 @@ VOTE1:	TMNE HSHYES,(Q1)	;ALREADY VETOED?
 	MOVEI T2,.HTOEX		;No. Must always be exclusive for these
 	MOVEM T2,CFTYP(T1)
 	HRRZ T2,P4		;HOST NUMBER
-	TMNE HSVUC,(Q1)		;Vote to include HSHCOD?
-	IFNSK.			;If so
-	 SETONE CFVUC,(T1)	;Set it
-	 MOVE T3,HSHCOD(Q1)	;Get the code
-	 MOVEM T3,CFDAT(T1)	;Send it off
+	TMNN HSVUC,(Q1)		;[8960] Vote to include HSHCOD?
+	IFSKP.			;[8960] If so
+	  SETONE CFVUC,(T1)	;Set it
+	  MOVE T3,HSHCOD(Q1)	;Get the code
+	  MOVEM T3,CFDAT(T1)	;Send it off
 	ENDIF.
 	CALL SCASND
 	IFNSK.			;If failed
-	 PIOFF
-	 CALL CFSWDN		;Enqueue the buffer
-	 PION
-	 MOVE P,CFSSVP		;Restore stack
-	 JRST VOTRST		;Do it again
+	  PIOFF
+	  CALL CFSWDN		;Enqueue the buffer
+	  PION
+	  MOVE P,CFSSVP		;Restore stack
+	  JRST VOTRST		;Do it again
 	ENDIF.
 	ADDI P1,1		;Did one
 VOTEW0:	CAIGE P1,0(P3)		;Found them all yet?
@@ -1932,45 +1956,45 @@ VOTEW0:	CAIGE P1,0(P3)		;Found them all yet?
 	JRST VOTRST		;No. Start over
 	CALL UPDTCK		;UPDATE TOD CLOCK
 	DO.
-	TMNE HSHVRS,(Q1)	;NEED TO RESTART?
-	JRST VOTRST		;yes
-	TMNE HSHYES,(Q1)	;Someone veto the request?
-	IFNSK.			;If so...
-	 CFSLOK
-	 OKSKED
-	 RET
-	ENDIF.
-	LOAD T2,HSHVCT,(Q1)	;GET COUNT OF RETURNS
-	CAIN T2,0(P3)		;NO. ALL IN?
-	EXIT.			;YES.
+	  TMNE HSHVRS,(Q1)	;NEED TO RESTART?
+	  JRST VOTRST		;yes
+	  TMNN HSHYES,(Q1)	;[8960] Someone veto the request?
+	  IFSKP.		;[8960] If so...
+	    CFSLOK
+	    OKSKED
+	    RET
+	  ENDIF.
+	  LOAD T2,HSHVCT,(Q1)	;GET COUNT OF RETURNS
+	  CAIN T2,0(P3)		;NO. ALL IN?
+	  EXIT.			;YES.
    REPEAT 0,<			;Don't do stall
-	CALL GETMST		;GET CURRENT TIME
-	SUB T1,TODCLK		;COMPUTE TIME IN THE LOOP
-	CAIGE T1,MAXVWT		;WAITED TOO LONG?
-	LOOP.			;NO
-   >	;Repeat 0
+	  CALL GETMST		;GET CURRENT TIME
+	  SUB T1,TODCLK		;COMPUTE TIME IN THE LOOP
+	  CAIGE T1,MAXVWT	;WAITED TOO LONG?
+	  LOOP.			;NO
+   >				;Repeat 0
 
 ;Here when we have waited a long time for the votes. Dismiss and
 ;try again later.
 
-	MOVE T2,Q1		;Block address
-	MOVEI T1,VOTSWT		;WAIT ROUTINE
-	CSKED			;Be critical for the rest of this
-	OKSKED
-	CALL CFSWUP		;WAIT FOR IT
-	NOSKED
-	ECSKED
-	LOOP.
+	  MOVE T2,Q1		;Block address
+	  MOVEI T1,VOTSWT	;WAIT ROUTINE
+	  CSKED			;Be critical for the rest of this
+	  OKSKED
+	  CALL CFSWUP		;WAIT FOR IT
+	  NOSKED
+	  ECSKED
+	  LOOP.
 	ENDDO.
 	; ..
 
 ;Votes are all in, and no nay-sayers
 
-	TMNN HSHDLY,(Q1)
-	IFNSK.
-	 CFSLOK
-	 OKSKED
-	 RET
+	TMNE HSHDLY,(Q1)	;[8960] 
+	IFSKP.			;[8960] 
+	  CFSLOK
+	  OKSKED
+	  RET
 	ENDIF.
 
 ;At least one respondent wants time to release the resource. Wait
@@ -1987,11 +2011,11 @@ VOTEW0:	CAIGE P1,0(P3)		;Found them all yet?
 	OKSKED
 	CALL CFSWUP		;WAIT FOR IT
 	SETZRO HSHDWT,(Q1)
-	TMNN HSHVRS,(Q1)	;RESTART OR SUCCESS?
-	IFNSK.
-	 CFSLOK
-	 ECSKED
-	 RET
+	TMNE HSHVRS,(Q1)	;[8960] Restart or success?
+	IFSKP.			;[8960] 
+	  CFSLOK
+	  ECSKED
+	  RET
 	ENDIF.
 	NOSKED
 	ECSKED
@@ -2036,14 +2060,14 @@ GVOTE::	SETOM T1		;WAIT
 	ASUBR <WFLAG>
 	DO.
 	PIOFF
-	SKIPN T1,VOTQ		;GET ONE
-	IFNSK.
-	 PION
-	 SKIPN WFLAG
-	 RETBAD()		;IF NO WAIT, ALL DONE
-	 MOVEI T1,VBWAIT
-	 CALL CFSWUP		;WAIT FOR SOME
-	 LOOP.
+	SKIPE T1,VOTQ		;[8960] Get one
+	IFSKP.			;[8960] If none there
+	  PION
+	  SKIPN WFLAG
+	  RETBAD()		;IF NO WAIT, ALL DONE
+	  MOVEI T1,VBWAIT
+	  CALL CFSWUP		;WAIT FOR SOME
+	  LOOP.
 	ENDIF.
 	ENDDO.
 	MOVE T2,(T1)
@@ -2069,19 +2093,19 @@ VBWAIT:	SKIPE VOTQ		;ANY HERE?
 
 CFSCHK::SKIPE SCAILK		;OK to do this now?
 	RET			;No. Try again next time
-	SKIPE SCAFL1		;Is KLIPA off-line?
-	IFNSK.			;If so
-	SETZ T1,0		;either path
-	 CALL CIONLT		;is it sound yet?
-	 IFNSK.			;If not
-	  MOVX T1,^D1000	;Come back in a sec
-	  MOVEM T1,CFSTIM	;To check it again
-	 ELSE.
-	  CALL PRTONL		;Set dual-port access
-	 ENDIF.
+	SKIPN SCAFL1		;[8960] Is KLIPA off-line?
+	IFSKP.			;[8960] If so
+	  SETZ T1,0		;either path
+	  CALL CIONLT		;is it sound yet?
+	  IFSKP.		;[8960] If yes
+	    CALL PRTONL		;[8960] Set dual-port access
+	  ELSE.			;[8960] If not
+	    MOVX T1,^D1000	;[8960] Come back in a sec
+	    MOVEM T1,CFSTIM	;[8960] To check it again
+	  ENDIF.		;[8960] 
 	ELSE.
-	 MOVX T1,^D5000		;Back in five seconds, please
-	 MOVEM T1,CFSTIM		;Store it
+	  MOVX T1,^D5000	;Back in five seconds, please
+	  MOVEM T1,CFSTIM	;Store it
 	ENDIF.
 	SOSLE CFSTTM		;Time for full test?
 	RET			;No
@@ -2172,9 +2196,9 @@ SCAPOL::SAVEQ			;GET SOME WORK REGS
 	 MOVE T1,Q1		;Get pointer to message
 	 CALL SCMSG		;Do a message
 	 IFNSK.
-	  CALL SCAENQ		;ENQUEUE IT FOR RETRY
-	  SKIPN Q2
-	  MOVE Q2,Q1		;COPY REQUEUED ADDRESS
+	   CALL SCAENQ		;ENQUEUE IT FOR RETRY
+	   SKIPN Q2
+	   MOVE Q2,Q1		;COPY REQUEUED ADDRESS
 	 ENDIF.
 	LOOP.
 	ENDDO.
@@ -2303,8 +2327,8 @@ CFSRTV:	SAVEAC <P1,P2,P3,P4,Q2>
 	DMOVE T1,CFROT(Q1)	;GET CODES
 	CALL HSHLOK		;LOOK IT UP
 	IFNSK.			;If not here
-       	 SETZM P1		;Indicate so
-	 JRST CFSRV2		;And OKAy it
+	  SETZM P1		;Indicate so
+	  JRST CFSRV2		;And OKAy it
 	ENDIF.
 	MOVE P1,T1		;Save pointer
 	TMNN HSHTAM,(T1)   	;[7247] Is this a cached block?
@@ -2325,13 +2349,13 @@ CFSRTV:	SAVEAC <P1,P2,P3,P4,Q2>
 
 ;Found the request. Look it over.
 
-	TMNE CFVUC,(Q1)		;Vote to include HSHCOD?
-	IFNSK.			;If so
-	 MOVE T2,CFDAT(Q1)	;Get required value
-	 CAMN T2,HSHCOD(T1)	;match?
-	 ANSKP.			;They do not, he loses
-	   MOVX P4,.CDVUC	;Get reason code
-	   JRST CFSRV3		;He loses
+	TMNN CFVUC,(Q1)		;[8960] Vote to include HSHCOD?
+	IFSKP.			;[8960] If so
+	  MOVE T2,CFDAT(Q1)	;Get required value
+	  CAMN T2,HSHCOD(T1)	;match?
+	  ANSKP.		;They do not, he loses
+	    MOVX P4,.CDVUC	;Get reason code
+	    JRST CFSRV3		;He loses
 	ENDIF.
 	LOAD T2,HSHTYP,(T1)	;Get our type
 	MOVE T3,CFTYP(Q1)	;Get his requested access
@@ -2494,10 +2518,10 @@ CFSRV4:	CALL GVOTE1		;GET A BUFFER
 	STOR P4,CFDRC,(T1)  	;Store the reason for saying NO, if any
 	MOVE T2,.MHSCI(Q1)
 	CALL SCASND		;SEND IT
-	IFNSK.
-	 PIOFF
-	 CALL CFSWDN		;Return the buffer
-	 PION
+	IFNSK.			;[8960] Failed
+	  PIOFF
+	  CALL CFSWDN		;Return the buffer
+	  PION
 	ENDIF.
 	MOVE T1,Q1		;ENSURE NON-ZERO
 	RETSKP			;AND DONE
@@ -2519,24 +2543,24 @@ CFSRVT:	DMOVE T1,CFROT(Q1)	;GET VALUES
 	OPSTR <CAME T2,>,HSHUNQ,(T1) ;MATCH?
 	JRST RSKP		;NO. SKIP IT THEN
 	INCR HSHVCT,(T1)	;YES. ANOTHER COUNTY HEARD FROM
-	TMNE CFODA,(Q1)		;Providing optional data?
-	IFNSK.			;If so
-	 DO.
-	  SKIPG CFTYP(Q1)	;If a fail vote
-	  IFSKP.
-	   MOVE T2,CFDAT(Q1)	;Get the time stamp
-	   MOVEM T2,HSHWTM(T1)	;Send it back
-	   EXIT.
-	  ENDIF.
-	  SKIPE T2,HSHCDA(T1)	;Want to be notified?
-	  IFNSK.		;If so
-	   CALL 0(T2)		;Do so
-	    EXIT.		;If +1, don't use it
-	  ENDIF.
+	TMNN CFODA,(Q1)		;[8960] Providing optional data?
+	IFSKP.			;[8960] If so
+	  DO.
+	    SKIPG CFTYP(Q1)	;If a fail vote
+	    IFSKP.
+	      MOVE T2,CFDAT(Q1)	;Get the time stamp
+	      MOVEM T2,HSHWTM(T1) ;Send it back
+	      EXIT.
+	    ENDIF.
+	    SKIPN T2,HSHCDA(T1)	;[8960] Want to be notified?
+	    IFSKP.		;[8960] If so
+	      CALL 0(T2)	;Do so
+	       EXIT.		;If +1, don't use it
+	    ENDIF.
 	  DMOVE T2,CFDAT(Q1)	;Get it
 	  DMOVEM T2,HSHOPT(T1)	;Store it in the packet
 	  SETONE HSHODA,(T1)	;Say we have some
-	 ENDDO.
+	  ENDDO.
 	ENDIF.
 
 	AOS PSKD1		;MAKE SURE THE SCHEDULER NOTICES THIS
@@ -2594,13 +2618,12 @@ CFSOFC:	DMOVE T1,CFROT(Q1)	;Get stuff
 	IFSKP.			;[7247] Yes
 	  MOVX T1,OFNLAC	;[7247] Get "lost access" bit
 	  TDNN T1,SPTH(T2)	;[7247] It had better be set!
-	  BUG. (HLT,CFSOAC,CFSSRV,SOFT,<CFSSRV - Invalid access to cached OFN>,,<
+	  BUG.(HLT,CFSOAC,CFSSRV,SOFT,<CFSSRV - Invalid access to cached OFN>,,<
 
-Cause:	CFS has received a message from a remote system that an OFN
-	has changed and needs to be verified again. But CFS has found
-	that the OFN is cached and the OFNLAC bit is not set.  This
-	should not happen since this bit should be set when the other
-	system was granted access.
+Cause:	CFS has received a message from a remote system that an OFN has changed
+	and needs to be verified again. But CFS has found that the OFN is
+	cached and the OFNLAC bit is not set.  This should not happen since
+	this bit should be set when the other system was granted access.
 >)				;[7247] It's not!
 	  RETSKP		;[7247] Ok, just return
 	ENDIF.			;[7247] 
@@ -2611,12 +2634,11 @@ Cause:	CFS has received a message from a remote system that an OFN
 	 TXNE T3,HSHWVT		;Better be voting then
 	 TXNE T3,HSHUGD		;And not upgrading
 	 ANNSK.			;If not both...
-	 BUG. (HLT,CFSOFB,CFSSRV,SOFT,<CFSSRV - OFN owned at CFSOFC>,,<
+	 BUG.(HLT,CFSOFB,CFSSRV,SOFT,<CFSSRV - OFN owned at CFSOFC>,,<
 
-Cause:	CFS has received a message from a remote system that an OFN
-	has changed and needs to be verified again. But CFS has found
-	that it owns the OFN. It should never have received such a
-	message.
+Cause:	CFS has received a message from a remote system that an OFN has changed
+	and needs to be verified again. But CFS has found that it owns the OFN.
+	It should never have received such a message.
 >)
 	ENDIF.
    >	;IFN DEBUG
@@ -2684,14 +2706,22 @@ CFCEAS:	SAVEP
 	HRLI T1,.RESP1		;PRIORITY 1
 	MOVE T2,[RS%SE0+.RESGP]	;FROM THE GENERAL POOL
 	CALL ASGRES		;(T1,T2/T1) GET THE SPACE
-	 IFNSK.
-	    BUG. (INF,CFCCML,CFSSRV,SOFT,<CFSSRV - Cluster cease message lost>,,<
+	IFNSK.
+	  BUG.(INF,CFCCML,CFSSRV,SOFT,<CFSSRV - Cluster cease message lost>,,<
 
-Cause:	Another system sent a "cluster cease" that could not be queued
-	because there was no available resident free space.
+Cause:	Another system sent a "cluster cease" that could not be queued because
+	there was no available resident free space.
+
+Action:	If this becomes persistent, find out why there is no freespace
+	available.  Run SYSDPY and use the RE display to see if the general
+	pool is being used.  If there is no one particular freespace hog,
+	consider building your monitor with an increase in the freespace
+	general pool.  If this problem is reproducible, set this BUGINF
+	dumpable and submit an SPR along with the dump and instructions on
+	reproducing the problem.
 >,,<DB%NND>)			;[7.1210]
-	    JRST CFCEAX		;TOO BAD, BUT NOT CRTITICAL
-	 ENDIF.
+	  JRST CFCEAX		;TOO BAD, BUT NOT CRTITICAL
+	ENDIF.
 	SKIPE T2,CCHEAD		;GET HEAD OF QUEUED BLOCKS
 	IFSKP.
 	   MOVEM T1,CCHEAD	;NONE THERE, MAKE THIS ONE FIRST
@@ -2722,8 +2752,13 @@ CFCEAX:	MOVE T1,Q1		;INSURE T1 IS NON-ZERO SO BUFFER IS RETURNED
 
 	SWAPCD
 
-	SLEN==^D14		;WORDS TO HOLD STRUCTURE NAMES
-	HLEN==^D25		;WORDS TO HOLD HEADER TEXT
+;[8863]
+;Milestone - These values were increased because of ILMNRFs. The
+;more structures you have served, the higher potential exists for
+;ILMNRFs when this routine scribbles on the stack.
+
+	SLEN==^D20		;[8863] Words to hold structure names
+	HLEN==^D30		;[8863] Words to hold header text
 
 CHKCLC::SETZ T1,		;THIS IS THE INTERLOCK
 	EXCH T1,CCHEAD		; WITH THE INTERRUPT LEVEL CODE
@@ -2927,22 +2962,22 @@ LSNUP:	SAVEQ
 	SETZM Q3		;No. Treat as a reduced node then
 	MOVEM T1,CFSHNM(Q1)	;AND PORT NUMBER HERE
 	MOVEI T3,HSTSIZ		;SIZE OF HOST TABLE
-	CAMG T1,MYPORT		;HIGHER PRIORITY THAN I?
-	IFNSK.
-	DO.
-	 SKIPLE CFSHST(T3)	;ACTIVE?
-	 CAME T1,CFSHNM(T3)	;IS THIS ALREADY CONNECTED?
-	 IFSKP.
-	  SKIPL CFHSTS(T3)	;Make sure is fully active
-	  ANSKP.
-	  BLCAL. (SC.REJ,<CFSHST(Q1),[0]>)
-	   NOP
-	  SETZM CFSHST(Q1)	;THIS SLOT NOW AVAILABLE
-	  JRST LSNUP1		;GO START A NEW LISTENER
-	  RET			;DONE
-	 ENDIF.
-	 SOJGE T3,TOP.
-	ENDDO.
+	CAMLE T1,MYPORT		;[8960] Higher priority than I?
+	IFSKP.			;[8960] 
+	  DO.
+	    SKIPLE CFSHST(T3)	;ACTIVE?
+	    CAME T1,CFSHNM(T3)	;IS THIS ALREADY CONNECTED?
+	    IFSKP.
+	      SKIPL CFHSTS(T3)	;Make sure is fully active
+	      ANSKP.
+	        BLCAL. (SC.REJ,<CFSHST(Q1),[0]>)
+	         NOP
+	        SETZM CFSHST(Q1) ;THIS SLOT NOW AVAILABLE
+	        JRST LSNUP1	;GO START A NEW LISTENER
+	        RET		;DONE
+	    ENDIF.
+	  SOJGE T3,TOP.
+	  ENDDO.
 	ENDIF.
 
 ;Here if we should accept
@@ -2957,9 +2992,10 @@ LSNUP:	SAVEQ
 	  MOVE T3,T1		;Move error code
 	  MOVE T1,Q2		;Get connect ID
 	  CALL SC.NOD		;(T1/T1,T2) Get node number
-	  BUG. (HLT,CFACCF,CFSSRV,SOFT,<CFSSRV - SC.ACC failed>,<<T2,NODE>,<T1,CID>,<T3,ERR>>,<
+	  BUG.(HLT,CFACCF,CFSSRV,SOFT,<CFSSRV - SC.ACC failed>,<<T2,NODE>,<T1,CID>,<T3,ERR>>,<
 
-Cause:	The call to SC.ACC failed.
+Cause:	The call to SC.ACC to accept a connection failed.  This indicates a
+	possible problem with SCAMPI.
 
 Data:	NODE - Node Number
 	CID - Connect ID
@@ -3042,13 +3078,26 @@ CFSCPS:	SAVEAC<P1,P2>
 	 IFSKP.
 	   MOVE T1,CFSHST(P2)	;Get connect ID
 	   CALL SC.NOD		;(T1/T1,T2) Get node number
-	   BUG. (HLT,CFRECN,CFSSRV,SOFT,<CFSSRV - Illegal reconnect>,<<T2,NODE>,<T1,CID>>,<
+	   BUG.(HLT,CFRECN,CFSSRV,SOFT,<CFSSRV - Illegal reconnect>,<<T2,NODE>,<T1,CID>>,<
 
 Cause:	The VC between this system and another has been continued illegally.
+	This BUGHLT only occurs in a cluster and on the system
+	with the lowest CPU serial number. It happens when a system joins the
+	cluster and that system has been away longer than the CFS vote delay
+	period.  This time period is calculated to be
+	(DLYTIM*maximum_CI_node_seen)+NDSTTM.  Currenty this is 5 seconds per
+	CI node plus 10 seconds grace period.
+
+Action:	This BUGHLT usually occurs when a system has been hung for a long
+	period of time on the CI or if someone has stopped and continued a
+	halted system in the cluster (using EDDT breakpoints or other methods).
+	If this problem is persistent, there is a good chance that one of the
+	systems in the cluster is having CI problems.  Another step which could
+	be taken would be to increase the value in DLYTIM and see if this
+	provides enough time for the cluster to stablize.
 
 Data:	NODE - Number that has re-established a connection
 	CID - Connect ID
-
 >)
 	 ENDIF.
 	 EXCH T2,P2		;Swap index and OLD/NEW arg
@@ -3062,9 +3111,7 @@ Data:	NODE - Number that has re-established a connection
 	CALL ONLINE		;Do a message
 	SETONE SCCNC
 	TRNE P1,-1		;IS this reduced
-	IFNSK.			;If not
-	 AOS T3,CFSHCM		;One more full voter on-line
-	ENDIF.
+	AOS T3,CFSHCM		;[8960] One more full voter on-line
 	MOVEI T1,0(T2)		;Copy host index
 	CALL SNDTIM		;Send it the TAD
 	SKIPE SCAILK		;Data base locked?
@@ -3146,10 +3193,11 @@ CFSWDN::
    >				;[7.1072]
    IFN DEBUG,<			;Only for debugging...
 	LOAD CX,CFGWD,(T3)  	;Check if special word is here
-	CAME CX,[252525]	  ;Is it?
+	CAME CX,[252525]	;Is it?
 	BUG.(HLT,CFGARD,CFSSRV,SOFT,<CFSSRV - Vote packet address is bad>,,<
 
-Cause: A bad vote packet address has been given to CFSWDN.
+Cause:	A bad vote packet address has been given to CFSWDN.  The guard word did
+	not contatin 252525.
 >)
    >	;IFN DEBUG
 	EXCH T3,VOTQ		;PUT IT ON TOP
@@ -3229,9 +3277,7 @@ IFN DEBUG,<
 	SETZM CFSENT(Q1)
 	SETZM CFRECV(Q1)
 	TRNE T3,-1		;Full or reduced?
-	IFNSK.			;If full
-	 AOS T3,CFSHCM		;One more full voter
-	ENDIF.
+	AOS T3,CFSHCM		;[8960] Full, one more full voter
 	MOVEI T1,0(Q1)		;Copy the index
 	CALL SNDTIM		;Send it TAD
 	SKIPE SCAILK		;Data base locked?
@@ -3277,9 +3323,9 @@ SCAENQ:	PIOFF
    IFE CFSSCA,<
 SCASND::BUG.(HLT,CFSSMC,CFSSRV,SOFT,<CFSSRV - Tried to send a message>,,<
 
-Cause:	CFSSRV tried to send an SCA message and that option is not
-	supported in this version of TOPS-20>
-)
+Cause:	CFSSRV tried to send an SCA message and that option is not supported in
+	this version of TOPS-20.
+>)
    >	;IFE CFSSCA
 
    IFN CFSSCA,<
@@ -3287,41 +3333,42 @@ SCASND::ASUBR <SCBUFF,SCHOST>
 	SKIPE CFSHST(T2)	;Is this on-line?
 	SKIPL CFHSTS(T2)	;And up?
 	IFNSK.			;If not
-	 MOVE T3,T1		;Return message buffer in T3
-	 RETBAD()		;And tell caller
+	  MOVE T3,T1		;Return message buffer in T3
+	  RETBAD()		;And tell caller
 	ENDIF.
+
 	PIOFF
-	SKIPE CFSSMQ(T2)	;A queue?
-	IFNSK.			;If so
-	 CALL SENDQ		;Queue it up
-	 PION
-	 RETSKP			;And done
+	SKIPN CFSSMQ(T2)	;[8960] A queue?
+	IFSKP.			;[8960] If so
+	  CALL SENDQ		;Queue it up
+	  PION
+	  RETSKP		;And done
 	ENDIF.
 	AOS CFSENT(T2)		;Sent one
 	AOS CFSSND		;[7211] ADD TO TOTAL SENT
-
 	PION
+
 	DO.
-	 SETZRO STCRA,(T2)	;Say we are about to send
-	 BLCAL. (SC.SMG,<CFSHST(T2),[F.RTB+F.SPM],[VOTSZB],T1,[CFSPRI],[0],[0]>)
-	 IFNSK.
-	  CAIN T1,SCSNEC	;NOT ENOUGH CREDIT?
-	  IFNSK.		;If so...
-	   MOVE T1,SCBUFF	;YES.
-	   MOVE T2,SCHOST	;RESTORE ARGS
-	   PIOFF
-	   TMNE STCRA,(T2)	;Did credit arrive while we weren't looking?
-	   IFNSK.		;If so
-	    PION
-	    LOOP.
-	   ENDIF.
-	   CALL SENDQ		;Queue it up
-	   PION
-	  ELSE.
-	   MOVE T3,SCBUFF	;Reuturn buffer address in T3
-	   RETBAD()		;Didn't send it
-	  ENDIF.
-	 ENDIF.
+	  SETZRO STCRA,(T2)	;Say we are about to send
+	  BLCAL. (SC.SMG,<CFSHST(T2),[F.RTB+F.SPM],[VOTSZB],T1,[CFSPRI],[0],[0]>)
+	  IFNSK.		;[8960] If failure
+	    CAIE T1,SCSNEC	;[8960] Not enough credit?
+	    IFSKP.		;[8960] If so...
+	      MOVE T1,SCBUFF	;YES.
+	      MOVE T2,SCHOST	;RESTORE ARGS
+	      PIOFF		;[8960] Turn off PI system
+	      TMNN STCRA,(T2)	;[8960] Credit arrive while we weren't looking?
+	      IFSKP.		;[8960] If so
+	        PION		;[8960] Turn PI back on
+	        LOOP.		;[8960]  and call SC.SMG again
+	      ENDIF.		;[8960]
+	      CALL SENDQ	;Queue it up
+	      PION		;[8960] Turn PI back on and continue
+	    ELSE.		;[8960] Not little credit left, error
+	      MOVE T3,SCBUFF	;Return buffer address in T3
+	      RETBAD()		;Didn't send it
+	    ENDIF.
+	  ENDIF.		;[8960] End of SMG failure code
 	ENDDO.
 	RETSKP			;AND DONE
 	ENDAS.
@@ -3428,12 +3475,15 @@ CFDLSN::SAVEQ
 	  BLCAL. (SC.LIS,<<.,LISDMP>,<.,LISDMP>,[-1],<.,CFSINT>,Q1,[0],[0]>) ;[7.1190]
 	  IFNSK.
 	    SETZM CFSHST(Q1)	;An error. No longer listening
-	    BUG. (INF,CFDLSF,CFSSRV,SOFT,<CFSSRV - Failed to get dump listener>,<<T1,ERR>>,<
+	    BUG.(INF,CFDLSF,CFSSRV,SOFT,<CFSSRV - Failed to get dump listener>,<<T1,ERR>>,<
 
-Cause:	The call to SC.LIS to set up the dump listener failed.
+Cause:	The call to SC.LIS to set up the dump listener failed.  This system
+	does not participate in any cluster dump.
+
+Action:	If this problem is reproducible, set this BUGINF dumpable and submit an
+	SPR along with the dump and instructions on reproducing the problem.
 
 Data:	ERR - Error code returned by SC.LIS
-
 >)
 	    RET			;Return failure
 	  ENDIF.
@@ -3466,12 +3516,12 @@ CFSLSN::SAVEQ
 	 BLCAL. (SC.LIS,<<.,LISNAM>,<.,LISNAM>,[-1],<.,CFSINT>,Q1,[SCRDIT],[RCRDIT]>) ;[7.1190]
 	 IFNSK.
 	  SETZM CFSHST(Q1)	;AN ERROR. NO LONGER LISTENING
-	  BUG. (HLT,CFLISF,CFSSRV,SOFT,<CFSSRV - SC.LIS failed>,<<T1,ERR>>,<
+	  BUG.(HLT,CFLISF,CFSSRV,SOFT,<CFSSRV - SC.LIS failed>,<<T1,ERR>>,<
 
-Cause:	The call to SC.LIS failed.
+Cause:	The call to SC.LIS failed in CFSLSN.  This indicates a possible problem
+	with SCAMPI.
 
 Data:	ERR - Error code returned by SC.LIS
-
 >)
 	  RET			;BAD
 	 ENDIF.
@@ -3547,20 +3597,21 @@ CHKOL0:	SAVEAC<Q1>
 PUTOLD:	SAVEP			;Get some work regs
 	MOVSI P1,-HSTSIZ	;Size of the table
 	MOVE P2,OLDTAB		;The address of the table
+
 	DO.			;Scan it
-	 SKIPN P4,0(P2)		;Look at this one
-	 IFSKP.			;If occupied
-	  TXZ P4,1B0		;Turn off delay bit
-	  CAMN T2,P4		;Is it what we want?
-	  IFNSK.		;If so
-	   MOVE P3,P2		;Save the index
-	   EXIT.		;And reinstall it
+	  SKIPN P4,0(P2)	;Look at this one
+	  IFSKP.		;If occupied
+	    TXZ P4,1B0		;Turn off delay bit
+	    CAME T2,P4		;[8960] Is it what we want?
+	    IFSKP.		;[8960] If so
+	      MOVE P3,P2	;Save the index
+	      EXIT.		;And reinstall it
+	    ENDIF.
+	  ELSE.			;If empty
+	    MOVE P3,P2		;Save the slot
 	  ENDIF.
-	 ELSE.			;If empty
-	  MOVE P3,P2		;Save the slot
-	 ENDIF.
-	 ADDI P2,1		;Next slot
-	 AOBJN P1,TOP.		;Look at them all
+	  ADDI P2,1		;Next slot
+	  AOBJN P1,TOP.		;Look at them all
 	ENDDO.
    IFN DEBUG,<
 ;	SKIPE DLYFLG		;Only do it if flag is set
@@ -3597,17 +3648,17 @@ CHKDLY:	SAVET
 	MOVE T2,OLDTAB
 	SETZM T4		;Assume none here
 	DO.
-	 SKIPGE T3,0(T2)	;Delay?
-	 IFNSK.			;If so
-	  TXZ T3,1B0		;Turn off bit
-	  CAME T3,T1		;Is it the one we want?
-	  AOSA T4		;No. Say not clear yet
-	  SETZM 0(T2)		;Yes. Clear it
-	 ENDIF.
-	 ADDI T2,1		;Next entry
-	 SOJG Q1,TOP.		;Check it all out
-	 SKIPN T4		;Found any?
-	 SETZM DLYLOK		;No, all clear!
+	  SKIPL T3,0(T2)	;[8960] Delay?
+	  IFSKP.		;[8960] If so
+	    TXZ T3,1B0		;Turn off bit
+	    CAME T3,T1		;Is it the one we want?
+	    AOSA T4		;No. Say not clear yet
+	    SETZM 0(T2)		;Yes. Clear it
+	  ENDIF.
+	  ADDI T2,1		;Next entry
+	  SOJG Q1,TOP.		;Check it all out
+	  SKIPN T4		;Found any?
+	  SETZM DLYLOK		;No, all clear!
 	ENDDO.
 	RET
    >	;IFN CFSSCA
@@ -3686,6 +3737,9 @@ CFSRDR::CALL GNAME
 
 Cause:	CFSRDR was called to unlock a directory, but the directory is not
 	locked.
+
+Action:	If this problem is reproducible, set this BUGINF dumpable and submit an
+	SPR along with the dump and instructions on reproducing the problem.
 >)
 	 RET			;Wasn't locked!
 	ENDIF.
@@ -3717,10 +3771,6 @@ CFSDAU::ASUBR <STRN0,DIRN,ACCESS,ALLC>
 	BUG.(HLT,CFBAFN,CFSSRV,SOFT,<CFSSRV - Bad function to CFSDAU>,,<
 
 Cause:	CFSDAU was called with an invalid function.
-
-Action:	Find the caller in the dump and try to determine why it passed a
-	bad function code to CFSDAU.
-
 >)
 	SAVEQ			;Work regs
 	JRST @[IFIW!CFAGET	;Lock allocation entry and get value
@@ -3751,20 +3801,21 @@ CFAG00:	MOVEI Q3,.HTOEX		;Assume exclusive
    IFNDEF CFSDUM,<		;Only if we are a real CFS node
 	TMNN CF%PRM,ACCESS	;Want it held?
 	IFSKP.
-	 SETONE HSHKPH,(T1)	;Hold it here
+	  SETONE HSHKPH,(T1)	;Hold it here
 	ENDIF.
-	TMNE <HSHTWF,HSHWVT,HSHUGD>,(T1) ;Anybody else doing this?
-	IFNSK.			;If so
-	 MOVE T2,T1		;Copy address
-	 MOVEI T1,CFGVOT	;Wait for a bit
-	 CFSULK
-	 CALL CFSWUP		;""
-	 AOJA P1,CFAG00
+	TMNN <HSHTWF,HSHWVT,HSHUGD>,(T1) ;[8960] Anybody else doing this?
+	IFSKP.			;[8960] If so
+	  MOVE T2,T1		;Copy address
+	  MOVEI T1,CFGVOT	;Wait for a bit
+	  CFSULK
+	  CALL CFSWUP		;""
+	  AOJA P1,CFAG00
 	ENDIF.
-	LOAD T2,HSHTYP,(T1)	;Get the type
-	CAMGE T2,Q3		;Is it all set for us?
-	IFNSK.			;If not
 
+	LOAD T2,HSHTYP,(T1)	;Get the type
+	CAML T2,Q3		;[8960] Is it all set for us?
+	IFSKP.			;[8960] If not
+
 ;Here when the access is not correct
 
 	 SETONE HSHTWF,(T1)	;Prevent tampering from others
@@ -3836,24 +3887,24 @@ CFSDAO:	CALL CFSSPC		;Get some space
 	CALL HSHLOK		;Find the entry
 	 BUG.(HLT,CFSNAF,CFSSRV,SOFT,<Allocation entry not found>,,<
 
-Cause:	An allocation entry has just been created and CFSSRV can't find
-	it in the hash table.
+Cause:	An allocation entry has just been created and CFSSRV can't find it in
+	the hash table.
 >)
 
 	TMNE CF%HLD,ACCESS	;Want it held?
 	IFSKP.			;if not
-	 DECR HSHCNT,(T1)	;Get rid of it
+	  DECR HSHCNT,(T1)	;Get rid of it
 	ENDIF.
-	SKIPE T3,HSHOP1(T1)	;Anything in here?
-	IFNSK.			;If so
-	 MOVE T2,T1		;Get resource address
-	 MOVE T1,HSHOPT(T1)	;Get it
+	SKIPN T3,HSHOP1(T1)	;[8960] Anything in here?
+	IFSKP.			;[8960] If so
+	  MOVE T2,T1		;Get resource address
+	  MOVE T1,HSHOPT(T1)	;Get it
 	ELSE.			;If not
-	 MOVE T2,ALLC		;Get new value
-	 MOVEM T2,HSHOPT(T1)	;Stash
-	 TMNN CF%NUL,ACCESS	;Is the value valid?
-	 AOS HSHOP1(T1)		;Say we've been here
-	 EXCH T1,T2
+	  MOVE T2,ALLC		;Get new value
+	  MOVEM T2,HSHOPT(T1)	;Stash
+	  TMNN CF%NUL,ACCESS	;Is the value valid?
+	  AOS HSHOP1(T1)	;Say we've been here
+	  EXCH T1,T2
 	ENDIF.
 	CALLRET CFSFAL		;And done (we did a resched if we got here)
 	SUBTTL	Directory lock resource manager -- CFASTO (Store new allocation value)
@@ -3864,8 +3915,8 @@ Cause:	An allocation entry has just been created and CFSSRV can't find
 CFASTO:	CALL GETDBK		;Get block address
 CFABUG:	 BUG.(HLT,CFANAE,CFSSRV,SOFT,<CFSSRV - No allocation entry>,,<
 
-Cause:	The caller wanted to update a directory allocation entry, and
-	no such entry could be found
+Cause:	The caller wanted to update a directory allocation entry, and no such
+	entry could be found.
 >)
 
 	MOVE T2,ALLC		;Get the value
@@ -4010,13 +4061,13 @@ CFSGFA::SAVEQ
 	ENDIF.
 	CFSULK
 
-	CALL CFSSPC		;GET SOME SPACE
-	IFNSK.
-		MOVEI T1,^D30000 ;PICK UP STALE RESOURCES
-		MOVEI T2,10	;JUST DO SOME
-		CALL CFSRSX	;FREE UP SOME
-		CALL CFSSPC	;TRY AGAIN
-		 RETBAD()	;NOPE
+	CALL CFSSPC		;Get some space
+	IFNSK.			;Error
+	  MOVEI T1,^D30000	;Pick up stale resources
+	  MOVEI T2,10		;Just do some
+	  CALL CFSRSX		;Free up some
+	  CALL CFSSPC		;Try again
+	   RETBAD()		;Nope
 	ENDIF.
 	MOVE Q3,T1		;COPY BLOCK
 	MOVE T2,ACCESS		;Desired access
@@ -4096,13 +4147,13 @@ CFSGWL::
    IFNDEF CFSDUM,<		;If real
 	SAVEQ
 	DMOVE Q1,T1
-	CALL CFSSPC		;GET A BLOCK
-	IFNSK.
-		SETZM T1
-		MOVEI T2,10	;JUST DO SOME
-		CALL CFSRSX	;FAILED. FREE UP SPACE THEN
-		CALL CFSSPC	;TRY AGAIN
-		 RETBAD()	;FAILED. NO SPACE
+	CALL CFSSPC		;Get a block
+	IFNSK.			;If error
+	  SETZM T1
+	  MOVEI T2,10		;Just do some space
+	  CALL CFSRSX		;Failed.  Free up space then
+	  CALL CFSSPC		;Try again
+	    RETBAD()		;Failed.  No space
 	ENDIF.
 	MOVE T2,Q1		;STR #
 	CALL GNAME2
@@ -4264,12 +4315,10 @@ CFSAWT::MOVEI T3,1		;UNLOCK WHEN DONE
 	TLNE T1,-1		;[7247] And is it positioned correctly?
 	BUG.(HLT,CFSION,CFSSRV,SOFT,<CFSSRV - Invalid OFN number>,,<
 
-Cause:	CFSAWT or CFSAWP has been called with an invalid OFN number.
-	These routines expect the OFN number to be in the right half
-	of T1 and to be in the expected range of values.
-
-Action:	Find the caller in the dump and try to determine why it
-	passed a bad OFN number.
+Cause:	CFSAWT or CFSAWP has been called with an invalid OFN number.  These
+	routines expect the OFN number to be in the right half of T1 and to be
+	in the expected range of values.  The caller in the dump should be
+	examined to determine why it passed a bad OFN number.
 >)				;[7247] No, report error
 	SAVEP5			;REGS
 	STKVAR <WTFLAG,LKFLAG>
@@ -4307,37 +4356,37 @@ CFSAWH:				;[7247]
 	CAME T2,HSHCOD(T1)	;Quick check for consistency
 	BUG.(HLT,CFSBTP,CFSSRV,SOFT,<CFSSRV - Bad token packet>,,<
 
-Cause:	CFSAWT has been called to acquire an access token for an OFN.
-	The OFN access token already exists on this system and the 
-	block address is in CFSOFN.  But the OFN recorded in the 
-	block does not match the one passed into CFSAWT.
+Cause:	CFSAWT has been called to acquire an access token for an OFN.  The OFN
+	access token already exists on this system and the block address is in
+	CFSOFN.  But the OFN recorded in the block does not match the one
+	passed into CFSAWT.
 >)
    >	;IFN DEBUG
-	SKIPG HSHPST(T1)	;[7247] This one in use and good?
-	IFNSK.			;If not
-	 XMOVEI T2,CFSDWT	;Where to do it
-	 MOVEM T2,HSHPST(T1)	;Fix it up (make it a usable block)
+	SKIPLE HSHPST(T1)	;[8960][7247] This one in use and good?
+	IFSKP.			;[8960] If not
+	  XMOVEI T2,CFSDWT	;Where to do it
+	  MOVEM T2,HSHPST(T1)	;Fix it up (make it a usable block)
 	ENDIF.
 	MOVE P5,T1		;Save pointer
 	INCR HSHLKF,(P5)	;Lock it
 
-CFSUGX:	TMNE <HSHTWF,HSHUGD,HSHWVT>,(P5) ;Waiting for it somewhere else?
-	IFNSK.
-	 CFSULK
-	 MOVEI T1,CFGVOT	;And wait for vote to complete
-	 SETOM WTFLAG		;We didn't set HSHTWF
-	 JRST CFSUGW		;And wait a bit
+CFSUGX:	TMNN <HSHTWF,HSHUGD,HSHWVT>,(P5) ;[8960] Waiting for it somewhere else?
+	IFSKP.			;[8960] If any of the above
+	  CFSULK
+	  MOVEI T1,CFGVOT	;And wait for vote to complete
+	  SETOM WTFLAG		;We didn't set HSHTWF
+	  JRST CFSUGW		;And wait a bit
 	ENDIF.
 	LOAD T3,HSHTYP,(P5)	;Get type we now hold
 	LOAD T1,STRX,(P1)	;Get STR #
 	MOVE T1,STRTAB(T1)	;Get SDB
-	TMNE STEXL,(T1)		;Is this exclusive?
-	IFNSK.			;If so
+	TMNN STEXL,(T1)		;[8960] Is this exclusive?
+	IFSKP.			;[8960] If so
 	 MOVEI T3,.HTOEX	;Upgrade it now to the maximum
 	 STOR T3,HSHTYP,(P5)	;And store it
 	ENDIF.
-	CAIN T3,.HTOEX		;Do we hold exclusive rights?
-	IFNSK.			;If so
+	CAIE T3,.HTOEX		;[8960] Do we hold exclusive rights?
+	IFSKP.			;[8960] If so
    REPEAT 0,<			;Not using anti-hog device now
 	 TMNN HSHRFF,(P5)	;Someone waiting?
 	 IFSKP.			;If so
@@ -4389,12 +4438,12 @@ CFSUGX:	TMNE <HSHTWF,HSHUGD,HSHWVT>,(P5) ;Waiting for it somewhere else?
 	  MOVE T1,P5		;Copy address
 	  CALL CFNOHS		;Notify anyone rejected in the interim
 	 ENDIF.
-	 TMNE HSHODA,(P5)	;Any optional data?
-	 IFNSK.			;If so,
-	  MOVE T2,HSHOPT(P5)	;Get it
-;	  SKIPE HSHOP1(P5)	;Store only if from the owner
-	  MOVEM T2,OFNLEN(P1)	;Update length information
-	  SETZRO HSHODA,(P5)	;And no longer valid
+	 TMNN HSHODA,(P5)	;[8960] Any optional data?
+	 IFSKP.			;[8960] If so,
+	   MOVE T2,HSHOPT(P5)	;Get it
+;	   SKIPE HSHOP1(P5)	;Store only if from the owner
+	   MOVEM T2,OFNLEN(P1)	;Update length information
+	   SETZRO HSHODA,(P5)	;And no longer valid
 	 ENDIF.
 	 JRST RTYPE		;And go set the state
 	ENDIF.
@@ -4402,43 +4451,44 @@ CFSUGX:	TMNE <HSHTWF,HSHUGD,HSHWVT>,(P5) ;Waiting for it somewhere else?
 	SETZRO HSHTWF,(P5)	;Clear it now
 	SETOM WTFLAG		;And say we didn't set it
 	MOVEI T1,CFSRWT		;Do this one if here
-	SKIPE T2,HSHWTM(P5)	;gave us a time to wait?
-	IFNSK.			;If so
-	 CAIGE T2,^D20		;Wait at least this long
-	 MOVEI T2,^D20		;""
-	 SKIPA
+	SKIPN T2,HSHWTM(P5)	;[8960] gave us a time to wait?
+	IFSKP.			;[8960] If so
+	  CAIGE T2,^D20		;Wait at least this long
+	  MOVEI T2,^D20		;""
+	  JRST CFSUGT		;[8960] Enter below
 	ENDIF.
 
 ;Here when couldn't upgrade an entry
 
 CFSUGW:	MOVEI T2,^D500		;Wait a long time if here (we should be
 				; notified via the "undo" when to try again
-	ADD T2,TODCLK		;Wait time
+CFSUGT:	ADD T2,TODCLK		;[8960] Wait time
 	MOVEM T2,HSHTIM(P5)
 	MOVE T2,P5		;Block address
 	CALL CFSWUP		;Do the wait
 	CFSLOK			;Lock 'er up
-	SKIPN WTFLAG		;Did we set the wait flag?
-	IFNSK.			;If so
-	 SETZRO HSHTWF,(P5)
+	SKIPE WTFLAG		;[8960] Did we set the wait flag?
+	IFSKP.			;[8960] If so
+	  SETZRO HSHTWF,(P5)
 	ENDIF.
-	SKIPLE HSHPST(P5)	;[7247] Has it been released or uncached?
-	IFNSK.			;If not
-	 SETZRO <HSHRTY,HSHVRS>,(P5)
-	 DECR HSHLKF,(P5)	;No longer need this lock
-	 CFSULK			;Don't need this now
-	 JRST CFSAWL		;And go to the top
+	SKIPG HSHPST(P5)	;[8960][7247] Has it been released or uncached?
+	IFSKP.			;[8960] If not
+	  SETZRO <HSHRTY,HSHVRS>,(P5)
+	  DECR HSHLKF,(P5)	;No longer need this lock
+	  CFSULK		;Don't need this now
+	  JRST CFSAWL		;And go to the top
 	ENDIF.
 	LOAD T1,HSHLKF,(P5)	;Get lock value
-	SOSE T1			;Are we the last?
-	IFNSK.			;If not
-	 STOR T1,HSHLKF,(P5)	;Replace it
-	 JRST CFSFAL
-	ENDIF.
-	MOVE T1,HSHCOD(P5)	;Get the OFN
+	SOJE T1,CFSUGL		;[8960] Decrement lock value, are we the last?
+	STOR T1,HSHLKF,(P5)	;We are not the last, replace new count
+	JRST CFSFAL		;Unlock and return
+
+;[8960] Here when we are the last (HSKLKF=1)
+
+CFSUGL:	MOVE T1,HSHCOD(P5)	;[8960] Get the OFN
 	ADD T1,CFSOFN		;Point to OFN table entry
 	SETZM 0(T1)		;Clear it
-
+
 ;[7247] Here when a call was made to CFSUWT or CFSUNC while block was locked
 
 	SKIPL HSHPST(P5)	;[7247] Was a token uncache attempted?
@@ -4479,10 +4529,10 @@ CFSAW1:
 	LOAD T2,STGADR,SPTH(P1)	;Get XB address
    IFN DEBUG,<			;Make sure all is OK
 	SKIPN T2		;Is it?
-	BUG. (HLT,CFNLTK,CFSSRV,SOFT,<CFSSRV - Null disk address given to CFSAWT>,,<
+	BUG.(HLT,CFNLTK,CFSSRV,SOFT,<CFSSRV - Null disk address given to CFSAWT>,,<
 
-Cause:	A call was made to create an OFN access token but SPTH for the
-	OFN is not set up.
+Cause:	A call was made to create an OFN access token but SPTH for the OFN is
+	not set up.
 >)
    >	;IFN DEBUG
 	TXO T2,FILEWT		;Set token bit
@@ -4493,15 +4543,14 @@ Cause:	A call was made to create an OFN access token but SPTH for the
 	  TMNN HSHTAM,(T1)	;[7247] Is it?
           BUG.(HLT,CFSTCM,CFSSRV,SOFT,<CFSSRV - Access token cached but not marked>,,<
 
-Cause:	A cached access token is being requested.  As expected, it
-	is in the hash table and not in CFSOFN.  But HSHTAM is not
-	set as expected.
+Cause:	A cached access token is being requested.  As expected, it is in the
+	hash table and not in CFSOFN.  But HSHTAM is not set as expected.
 >)				;[7247] No, report error
 	  CAME P1,HSHCOD(T1)	;[7247] Is this the same OFN?
           BUG.(HLT,CFAOFM,CFSSRV,SOFT,<CFSSRV - OFN mismatch in cached token>,,<
 
-Cause:	A cached access token has been found for a certain OFN
-	but the OFN stored in the hash block does not agree.
+Cause:	A cached access token has been found for a certain OFN but the OFN
+	stored in the hash block does not agree.
 >)				;[7247] No, report error
 
 	  MOVE T2,CFSOFN	;[7247] Get OFN table address
@@ -4547,15 +4596,15 @@ Cause:	A cached access token has been found for a certain OFN
 	MOVE T2,TODCLK		;Get now
 	ADDI T2,WRTTIM		;"Fairness" time
 	MOVEM T2,HSHFCT(P5)	;Stash it
-	TMNE HSHODA,(P5)	;Any optional data?
-	IFNSK.			;If so,
-	 MOVE T2,HSHOPT(P5)	;Get it
-	 MOVEM T2,OFNLEN(P1)	;Update length information
-	 SETZRO HSHODA,(P5)	;And no longer valid
+	TMNN HSHODA,(P5)	;[8960] Any optional data?
+	IFSKP.			;[8960] If so,
+	  MOVE T2,HSHOPT(P5)	;Get it
+	  MOVEM T2,OFNLEN(P1)	;Update length information
+	  SETZRO HSHODA,(P5)	;And no longer valid
 	ELSE.
-	 MOVE T2,OFNLEN(P1)	;Get our value
-	 MOVEM T2,HSHOPT(P5)	;Stash it
-	 AOS HSHOP1(P5)		;And init transaction number
+	  MOVE T2,OFNLEN(P1)	;Get our value
+	  MOVEM T2,HSHOPT(P5)	;Stash it
+	  AOS HSHOP1(P5)	;And init transaction number
 	ENDIF.
 	SKIPE T1
 	CALL @HSHRET(T1)	;?????
@@ -4580,11 +4629,11 @@ RTYPE:	JE <HSHKPH>,(P5),NOKEEP	;[7.1029] We must exit with the keep bit set!
 
 NOKEEP:	BUG.(HLT,CFKBNS,CFSSRV,SOFT,<CFSSRV - Keep bit not set>,,<
 
-Cause:	CFSAWT/CFSAWP was called to get a CFS resource block for
-	a token. This routine ALWAYS sets the HSHKPH bit when it
-	obtains this token. This BUGHLT was arrived at when the
-	routine was returning to its caller and the keep bit was
-	not set.
+Cause:	CFSAWT/CFSAWP was called to get a CFS resource block for a token. This
+	routine ALWAYS sets the HSHKPH bit when it obtains this token. This
+	BUGHLT was arrived at when the routine was returning to its caller and
+	the keep bit was not set.  The dump should reveal how the keep bit got
+	cleared or who cleared it.
 >)				;[7.1029] Keep bit not set?????
 
 	ENDSV.
@@ -4712,9 +4761,9 @@ CFSFWT::
 	    TMNE OFNCSH,(T2)	;[7247] Is this OFN cached?
 	    BUG.(HLT,CFWTNF,CFSSRV,SOFT,<CFSSRV - Cached OFN not found when freed>,,<
 
-Cause:	CFSFWT was called to free the file access token for an OFN and the 
-	OFN is cached.  But the call to HSHLOK did not find the resource
-	block for the file access token.  One should be there.
+Cause:	CFSFWT was called to free the file access token for an OFN and the OFN
+	is cached.  But the call to HSHLOK did not find the resource block for
+	the file access token.  One should be there.
 >)				;[7247] Yes so it should be in hash table!
 	    JRST CFSFAL		;[7247] Return success and unlock CFS database
 	  ENDIF.		;[7247] 
@@ -4812,39 +4861,39 @@ CFSUW0:	TXO T2,FILEWT		;Access token
 	TMNE HSHTAM,(T1)	;[7247] Is this a cached token?
 	JRST CFSFAL		;[7247] Yes, so don't need to release it
 	MOVE T2,HSHCOD(T1)	;Get the OFN
-	TMNE SPTFR,(T2)		;Someone waiting for us?
-	IFNSK.			;If so
-	 CFSULK
-	 MOVE T3,T2		;Copy
-	 IDIVI T3,^D36		;Compute the word it is in
-	 MOVE T4,BITS(T4)	;Get the bit
-	 ANDCAM T4,OFNCFS(T3)	;Zap the bit
-	 MOVE T1,T2
-	 CALL CFSFDF		;Try now
-	  NOP
-	 MOVE T1,STRN0
-	 MOVE T2,XB
-	 JRST CFSUW0		;And do it again
+	TMNN SPTFR,(T2)		;[8960] Someone waiting for us?
+	IFSKP.			;[8960] If so
+	  CFSULK
+	  MOVE T3,T2		;Copy
+	  IDIVI T3,^D36		;Compute the word it is in
+	  MOVE T4,BITS(T4)	;Get the bit
+	  ANDCAM T4,OFNCFS(T3)	;Zap the bit
+	  MOVE T1,T2
+	  CALL CFSFDF		;Try now
+	   NOP
+	  MOVE T1,STRN0
+	  MOVE T2,XB
+	  JRST CFSUW0		;And do it again
 	ENDIF.
 
 	PUSH P,T1		;Save packet
 	CALL CFNOHS		;Notify any others
 	POP P,T1
-	TMNE HSHLKF,(T1)	;Now interlocked?
-	IFNSK.			;If so
-	 SETZRO <HSHTYP,HSHCNT>,(T1)  ;[7247] Clear type and count but not KEEP
-	 SKIPL HSHPST(T1)	;[7247] Has an uncache been attemped already?
-	 MOVEM Q1,HSHPST(T1)	;[7247] No, so set release flag in post address
-	 JRST CFSFAL		;And give it up
+	TMNN HSHLKF,(T1)	;[8960] Now interlocked?
+	IFSKP.			;[8960] If so
+	  SETZRO <HSHTYP,HSHCNT>,(T1) ;[7247] Clear type and count but not KEEP
+	  SKIPL HSHPST(T1)	;[7247] Has an uncache been attemped already?
+	  MOVEM Q1,HSHPST(T1)	;[7247] No, so set release flag in post address
+	  JRST CFSFAL		;And give it up
 	ENDIF.
 	MOVE T3,HSHCOD(T1)	;Get OFN again
 	ADD T3,CFSOFN		;Point to entry in table
 	SKIPN 0(T3)		;Is one here?
 	BUG.(HLT,CFSNOT,CFSSRV,SOFT,<CFSSRV - OFN token table and hash table disagree>,,<
 
-Cause:	CFSSRV is trying to remove a file access token and has found the
-	token in the hash table but not in the OFN token table. This indicates
-	that one of the data bases is incorrect.
+Cause:	CFSSRV is trying to remove a file access token and has found the token
+	in the hash table but not in the OFN token table. This indicates that
+	one of the data bases is incorrect.
 >)
 	SETZM 0(T3)		;Clear entry in OFN table
 	SKIPL Q1		;[7247] Want to cache the token?
@@ -4894,8 +4943,8 @@ CFSCON::
 CFSCND:	   BUG.(HLT,CFSTND,CFSSRV,SOFT,<CFSSRV - Access token not deleted>,,<
 
 Cause:	CFSCON was called to verify that an access token has been deleted
-	before an OFN is released. This BUGHLT indicates that the token has
-	not been deleted or cached.
+	before an OFN is released. This BUGHLT indicates that the token has not
+	been deleted or cached.
 
 >)				;[7247] Found but not cached - error!
 	 ENDIF.			;[7247] 
@@ -4930,13 +4979,15 @@ CFSUNC::TMNE OFNDMO,SPTH(T1)	;[7247]
 	CALL HSHLOK		;[7247] (T1,T2/T1,T2) Look for token
          BUG.(HLT,CFCTNF,CFSSRV,SOFT,<CFSSRV - Could not find cached token while uncaching>,,<
 
-Cause:	CFSUNC has been called to uncache the token for a certain OFN.
-	The file access token should have been cached and in the hash
-	table but it was not found.
+Cause:	CFSUNC has been called to uncache the token for a certain OFN.  The
+	file access token should have been cached and in the hash table but it
+	was not found.  To diagnose the problem, attempt to locate the token in
+	question and find out where it is (probably on the free list).  It 
+	is not easy to determine how the token got there.
 >)				;[7247] Not found - error!!
 
-	TMNE HSHLKF,(T1)	;[7247] Now interlocked?
-	IFNSK.			;[7247] If so
+	TMNN HSHLKF,(T1)	;[8960][7247] Now interlocked?
+	IFSKP.			;[8960][7247] If so
 	  SETZRO <HSHTYP,HSHCNT>,(T1)  ;[7247] Clear status bits but not KEEP
 	  SETOM HSHPST(T1)	;[7247] Set to indicate that uncache attempted
 	  JRST CFSFAL		;[7247] Return
@@ -4944,16 +4995,16 @@ Cause:	CFSUNC has been called to uncache the token for a certain OFN.
 	TMNN HSHTAM,(T1)	;[7247] Is it cached?
         BUG.(HLT,CFSUCN,CFSSRV,SOFT,<CFSSRV - Uncaching non-cached token>,,<
 
-Cause:	CFSUNC has been called to uncache the token for a certain OFN.
-	We found the access token for the OFN but it is not cached.
+Cause:	CFSUNC has been called to uncache the token for a certain OFN.  We
+	found the access token for the OFN but it is not cached.
 >)				;[7247] No, error
 	MOVE T2,HSHCOD(T1)	;[7247] Get the OFN described by this token
 	CAME T2,UCOFN		;[7247] Does it match the one to be uncached?
         BUG.(HLT,CFSUCM,CFSSRV,SOFT,<CFSSRV - Uncaching mismatch>,,<
 
-Cause:	CFSUNC has been called to uncache the token for a certain OFN.
-	We found the access token for the OFN but the OFN stored in the
-	resource block does not match the one we should be uncaching.
+Cause:	CFSUNC has been called to uncache the token for a certain OFN.  We
+	found the access token for the OFN but the OFN stored in the resource
+	block does not match the one we should be uncaching.
 >)				;[7247] No - error
 	SETZRO HSHTAM,(T1)	;[7247] Uncache just in case it was set
 	SOS CFACCT		;[7247] Decrement currently cached count
@@ -4978,18 +5029,38 @@ Cause:	CFSUNC has been called to uncache the token for a certain OFN.
    IFNDEF CFSDUM,<		;Only need this for full CFS
 CFSBOW::SKIPN CFSHCT		;Anybody out there?
 	RET			;No
+	STKVAR <COFN>		;[9038] Temp storage
+	MOVEM T1,COFN		;[9038] Hang onto this
 	LOAD T2,STGADR,SPTH(T1)	;Get XB address
 	LOAD T1,STRX,(T1)	;Get structure number
 	TSTRMT			;Is it a shared structure?
 	 RET			;No. All done then
 	TXO T2,FILEWT
 	CALL GNAME		;Get the name
+	MOVE T3,CFSOFN		;[9038] Get CFS resource block table
+	ADD T3,COFN		;[9038] Find place where CFS resource block is
+	MOVE T3,(T3)		;[9038] Get CFS resource block
+	LOAD T4,HSHTYP,(T3)	;[9038] Get access type
+	CAIE T4,.HTOEX		;[9038] Do we own it exclusively?
 
+;If we were to broadcast the update, then other systems in the cluster
+;might have crashed with CFSOFB BUGHLTs. This prevents that from happening.
+
+	BUG.(HLT,CFTYAM,CFSSRV,SOFT,<CFSSRV - Type of Access Mismatch>,,<
+
+Cause:	The local system was going to broadcast to all other systems that
+	it was about to update an OFN. However, it was found that the local
+	system does not have exclusive access to the OFN. If an OFN has been
+	changed in anyway, it should have acquired the write token and this
+	should theoretically never happen.
+>)				;[9038] We have the wrong access, crash
 
 ;Now send message to each node that is up
 
 	BLCAL. (CFSBRD,<T1,T2,[.CFBOW],[0]>) ;Do the braodcast
 	RET			;And done
+
+	ENDSV.			;[9038]
 	SUBTTL	File access token resource manager -- CFSBEF (Broadcast EOF)
 
 ;CFSBRD routines, continued
@@ -5033,8 +5104,8 @@ CFSBEF::SAVEAC<P1,P2>		;Get some regs
 	SKIPN T2,0(T2)		;Here?
 	BUG.(HLT,CFSBNO,CFSSRV,SOFT,<CFSSRV - Broadcast of unknown OFN>,,<
 
-Cause:	CFSBEF was called to broadcast the EOF pointer for an OFN.  This
-	OFN does not have an entry in the CFSOFN table.
+Cause:	CFSBEF was called to broadcast the EOF pointer for an OFN.  This OFN
+	does not have an entry in the CFSOFN table.
 >)				;Report error
 	MOVEM P1,HSHOPT(T2)	;Store broadcast value  
  	AOS P2,HSHOP1(T2)	;Bump the transaction number
@@ -5112,8 +5183,9 @@ CFSBEF::RET
 CFSFOD::BUG.(HLT,CFSDDD,CFSSRV,SOFT,<CFSFOD called incorrectly>,,<
 
 Cause:	CFSFOD has been called by DDMP to indicate that a force out is
-	complete. However, as this is not a real CFS monitor, DDMP should
-	never have been requested to do this.
+	complete. However, as this is not a real CFS monitor, DDMP should never
+	have been requested to do this.  This was probably caused by a bad
+	monitor build.
 >)
    >	;IFDEF CFSDUM
 
@@ -5176,12 +5248,11 @@ CFSFO1:	 SETZRO <SPTST,SPTFR>,(Q2) ;[7247] No longer have it
 	MOVEM T2,CFTYP(T1)
 	MOVE Q3,T1		;Save pointer to message
 	SETZRO HSHRFF,(Q1)
-	TMNN SPTSR,(Q2)		;Exclusive?
-	IFNSK.			;If not
-	 DMOVE T1,[.HTOAD	;Share it
-		   .SPSRD]
+	TMNE SPTSR,(Q2)		;[8960] Exclusive?
+	IFSKP.			;[8960] If not
+	  DMOVE T1,[EXP .HTOAD,.SPSRD] ;Share it
 	ELSE.
-	 SETZB T1,T2
+	  SETZB T1,T2
 	ENDIF.
 	STOR T1,HSHTYP,(Q1)	;new type
 	STOR T2,SPTST,(Q2)	;New OFN access
@@ -5199,9 +5270,9 @@ CFSFO1:	 SETZRO <SPTST,SPTFR>,(Q2) ;[7247] No longer have it
 	MOVE T1,Q3		;recover message pointer
 	CALL SCASND		;SEND OFF VOTE
 	IFNSK.
-	 PIOFF
-	 CALL CFSWDN		;Return the buffer
-	 PION
+	  PIOFF
+	  CALL CFSWDN		;Return the buffer
+	  PION
 	ENDIF.
 	RETSKP			;And done
 
@@ -5386,14 +5457,12 @@ CFMDSN:	DO.
 	  CALL HSHLOK		;[7.1012](T1,T2/T1,T2) Look up the block
 	   BUG.(HLT,CFDGON,CFSSRV,SOFT,<CFMDSN - DSN token has disappeared>,,<
 
-Cause:	In routine CFMDSN, CFSGET has granted us access to an already
-	existing DSN token. But when we tried to look up token in the
-	CFS data base, it could not be found.
-
-Action:	Examine the dump and try to determine how the DSN token was
-	released. The only way a DSN token can be released is by
-	dismounting the structure to which it belongs. This should not
-	happen because we have the device tables locked while we are
+Cause:	In routine CFMDSN, CFSGET has granted us access to an already existing
+	DSN token.  But when we tried to look up token in the CFS data base, it
+	could not be found.  Examination of the dump should try to determine
+	how the DSN token was released.  The only way a DSN token can be
+	released is by dismounting the structure to which it belongs.  This
+	should not happen because we have the device tables locked while we are
 	in CFMDSN.
 >)				;[7.1012] Not found. wrong!
 	  MOVE T2,HSHCOD(Q1)	;[7.1012] Get alias name
@@ -5404,14 +5473,13 @@ Action:	Examine the dump and try to determine how the DSN token was
 	    MOVE T3,HSHCOD(Q1)	;[7.1012] Get the structure alias
 	    BUG.(CHK,CFDDSN,CFSSRV,HARD,<CFSSRV - Duplicate DSN detected>,<<T1,HGHDSN>,<T2,LOWDSN>,<T3,ALIAS>>,<
 
-Cause:	Routine CFMDSN was called to register a DSN for a disk mount.
-	However, the DSN supplied was already is use by a structure of
-	another name. The most likely cause of this BUGCHK is that
-	there is more than one drive with the same serial number
-	available to the system.
+Cause:	Routine CFMDSN was called to register a DSN for a disk mount.  However,
+	the DSN supplied was already is use by a structure of another name.
+	The most likely cause of this BUGCHK is that there is more than one
+	drive with the same serial number available to the system.
 
-Action:	Contact Field Service and have them change the serial number
-	on one of the drives.
+Action:	Contact Field Service and have them change the serial number on one of
+	the drives.
 
 Data:	HSHDSN  - High order disk serial number
 	LOWDSN   - Low order disk serial number
@@ -5535,8 +5603,8 @@ CFSSU1:	MOVE T2,SDBUDB(T1)	;[7464] Get SDB address
 	CALL HSHLOK		;Look it up
 	 BUG.(HLT,CFSSUF,CFSSRV,SOFT,<CFSSUG - Could not find entry to upgrade>,,<
 
-Cause:	A request was made to change the mount type of a structure, and the
-	CFS data base has no record of the structure being mounted.
+Cause:	A request was made to change the mount type of a structure, and the CFS
+	data base has no record of the structure being mounted.
 >)
 
 	LOAD T2,HSHTYP,(T1)	;Get current type
@@ -5582,7 +5650,7 @@ CFMDER:	SKIPN T2		;[7330] Did we receive an expected error code?
 	RETBAD(MSTX47)		;No.  Failed because another system had .HTOEX
 	RETBAD(MSTX48)		;Yes. Failed because another system had .HTOAD
 
-CFMDE1: BUG. (HLT,CFSTUC,CFSSRV,SOFT,<CFSSRV - Unexpected error encountered during structure operation>,<<T2,CODE>>,<
+CFMDE1: BUG.(HLT,CFSTUC,CFSSRV,SOFT,<CFSSRV - Unexpected error encountered during structure operation>,<<T2,CODE>>,<
 
 Cause:	A structure mount or dismount failed and generated an unexpected or
 	illegal error code of zero.  This should never happen.
@@ -5745,9 +5813,22 @@ STRVVT:	MOVE P3,T1		;Save block
 	CALL CFSUGZ		;do it
 	 BUG.(HLT,CFSVFL,CFSSRV,SOFT,<CFSSRV - Structure verify failed>,,<
 
-Cause:	CFS could not verify an existing structure resource during
-	the join operation. This probably means there is a structure
-	naming conflict.
+Cause:	CFS could not verify an existing structure resource during the join
+	operation.  This probably means there is a structure naming conflict.
+
+	There is one known scenario for this BUGHLT.  If the CFS joining
+	process did not complete properly, then this system may have acquired
+	some of the resources exclusively when they were also held on other
+	nodes.  By the time STRVVT is called to verify the structure access,
+	all the CFS connections have completed.  So, now that all the other 
+	cluster systems are voted with, the verification of exclusive access 
+	has failed.
+
+Action:	Insure that there is no naming conflict or drive serial number conflict
+	with the structures.  Insure that the BS: and PS: are not mounted
+	exclusively by any other system in the cluster.  If the structures all
+	appear to be in order, submit an SPR with the dump and a copy of
+	MONITR.EXE.
 >)
 	DECR HSHCNT,(P3)	;Don't need this count
 	RET			;Done
@@ -5819,12 +5900,11 @@ CFSENQ::SAVEQ
 	 BUG.(HLT,CFEQHF,CFSSRV,SOFT,<ENQ token not found>,,<
 
 Cause:	An ENQ token was just created and one already existed so the block
-	which was passed has been released.  Now, we are attempting to find
-	the original block and this has failed.
-
-Action: Look in CFS free space to try to find the remains of the original 
-	block.  Try to determine how the block could have been released even 
-	though this routine acquired it.
+	which was passed has been released.  Now, we are attempting to find the
+	original block and this has failed.  To diagnose this problem, look in
+	CFS free space to try to find the remains of the original block.  Try
+	to determine how the block could have been released even though this
+	routine acquired it.
 >)				;[7348] Error!
 	MOVE T2,OFNENQ		;[7348] Get the OFN for this ENQ
 	MOVEM T2,HSHCOD(T1)	;[7348] Put it in the token
@@ -5859,12 +5939,12 @@ ENQSET:	STKVAR <SAVOFN>		;[7315] A place to save the OFN
  	  CALL OFNJFD		;[7315] (T1/T1)Convert OFN into JFN
 	   BUG.(HLT,CFEQSF,CFSSRV,SOFT,<CFSSRV - Could not convert OFN to JFN>,,<
 
-Cause:	ENQSET was called to set up the root and qualifier for the ENQ token 
-	for a certain OFN.  This OFN was dismounted so the routine must look
-	in the JFN block for the structure name because the STRTAB entry is 
-	zero.  However, the conversion from OFN to JFN failed.
-
-Action:	Investigate the dump to try to determine why the call to OFNJFN failed.
+Cause:	ENQSET was called to set up the root and qualifier for the ENQ token
+	for a certain OFN.  This OFN was dismounted so the routine must look in
+	the JFN block for the structure name because the STRTAB entry is zero.
+	However, the conversion from OFN to JFN failed.  To diagnose this
+	problem, investigate the dump to try to determine why the call to
+	OFNJFN failed.
 >)				;[7315] Error!
 	  HLRZS T1		;[7315] Position the JFN correctly
 	  IMULI T1,MLJFN	;[7315] Convert into internal offset
@@ -5970,6 +6050,9 @@ CFEQUL::SAVET			;Preserve the temps
 
 Cause:	CFEQUL was called to unlock the ENQ Database Lock, but the Lock
         was found not to be locked.
+
+Action:	If this problem is reproducible, set this BUGCHK dumpable and submit an
+	SPR along with the dump and instructions on reproducing the problem.
 >)
 	  RET			;Issue warning and quit
 	ENDIF.
@@ -5977,7 +6060,144 @@ Cause:	CFEQUL was called to unlock the ENQ Database Lock, but the Lock
 	RET			;Return success
 
    >				;[7.1072] End of IFN CLEQIN
+	SUBTTL	MTA Lock resource manager -- CFSMTA (Acquire MTA resource)
 
+;[9122] This routine is called by ASND% and OPENF% to insure that only one
+;system is using a shared tape drive.
+;
+;Called with T1/ index into device tables
+;Returns +1 if access is not allowed
+;Returns +2 if access is allowed
+
+CFSMTA::SAVET			;[9122] Save some temps
+	HRRZ T2,DEVDSP(T1)	;[9122] Get the address of device dispatch
+	CAIE T2,MTADTB		;[9122] Is this a MTA: (and not a MT:) device?
+	RETSKP			;[9122] Nope, return OK
+
+;[9122] Insure that the MTA device is not currently assigned.
+
+	HLRZ T2,DEVUNT(T1)	;[9122] Get owning job number or -1 if unass
+	CAMN T2,JOBNO		;[9122] This job has it assigned already?
+	RETSKP			;[9122] Yes, allow access always
+	CAIE T2,-1		;[9122] Is it unassigned now?
+	BUG.(CHK,CFSMTU,CFSSRV,SOFT,<CFSSRV - CFSMTA called for assigned device>,,<
+
+Cause:	CFSMTA was called to acquire the MTA access token for a MTA device,
+	but the MTA device was already assigned to a different job.  This check
+	should have been done by the calling code.
+
+Action:	If this problem is reproducible, set this BUGCHK dumpable and submit an
+	SPR along with the dump and instructions on reproducing the problem.
+>,RSKP)				;[9122] Skip return to allow even if problem
+
+;[9122] We have a legal device for assignment, get the root and qualifier.
+
+	CALL CFSMTS		;[9122] (T1/T1,T2) Get root and qual set up
+	 RETSKP			;[9122] Allow access if no MTA UDB or serial no
+
+	SAVEQ			;[9122] Get some work regs
+	DMOVE Q1,T1		;[9122] Save the root and qualifier for later
+
+;[9122] We now have the root and qualifier and we are dealing with a MTA
+;assignment.  Try to find the resource block on this system for this MTA drive.
+
+	CFSLOK			;[9122] Prevent CFS interruptions
+	CALL HSHLOK		;[9122] (T1,T2/T1,T2) See if we have MTA token
+	IFSKP.			;[9122] We have it!
+	  LOAD T3,HSHCNT,(T1)	;[9122] Load the count of locks on this
+	  SKIPE T3		;[9122] Share count must be zero now
+	  BUG.(CHK,CFSMTF,CFSSRV,SOFT,<CFSSRV - MTA resource lock fouled>,,<
+
+Cause:	CFSMTA was called to acquire the MTA access token for a MTA device,
+	but the share count for the token was not zero.  This indicates that
+	CFSMTA has been called twice for the same MTA access token.
+
+Action:	If this problem is reproducible, set this BUGCHK dumpable and submit an
+	SPR along with the dump and instructions on reproducing the problem.
+>,CFSRSK)			;[9122] Something is fouled up, skip return
+	  INCR HSHCNT,(T1)	;[9122] Indicate we are now using it
+	  MOVE T3,FORKX		;[9122] Get our fork number
+	  STOR T3,HSHFRK,(T1)	;[9122] Store it in the hash block
+	  MOVE T3,TODCLK	;[9122] Get the uptime
+	  MOVEM T3,HSHTIM(T1)	;[9122]  and store it in the block
+	  JRST CFSRSK		;[9122] Unlock CFS and skip return
+	ENDIF.			;[9122] Otherwise we need to vote
+	CFSULK			;[9122] Unlock CFS database
+
+;[9122] We need to vote for the MTA token.  First get a block for voting.
+
+	DO.			;[9122] Look to get space
+	  CALL CFSSPC		;[9122] (/T1) Get a short request block
+	  IFNSK.		;[9122] If failed to get one
+	    CALL SBLOCK		;[9122] (/) Wait awhile
+	    LOOP.		;[9122] Try again
+	  ENDIF.		;[9122] Fall out when
+	OD.			;[9122]  we have the block
+
+;[9122] Fill in the request block, Q1 has root, Q2 has qualifier.
+
+	DMOVEM Q1,HSHROT(T1)	;[9122] Save the root and qualifier
+	MOVEI T2,.HTOEX		;[9122] Load exclusive type
+	STOR T2,HSHTYP,(T1)	;[9122] This token is exclusive
+	SETZM HSHFCT(T1)	;[9122] No hold time required
+	SETZM HSHCOD(T1)	;[9122] No unique code required
+
+;[9122] Now ask for the resource, skip return if we get it.
+
+	SETZ T2,		;[9122] No retry on this vote
+	CALL CFSGET		;[9122] (T1,T2/T1,T2) Get the resource
+	 RET			;[9122] Access not allowed to the device
+	SKIPE T1		;[9122] Did our block get used?
+	CALL @HSHRET(T1)	;[9122] No, so return it now
+	RETSKP			;[9122] We now own it, allow access 
+	SUBTTL	MTA Lock resource manager -- CFSMTR (Release MTA resource)
+
+;[9122] This routine is called by RELD% and CLOSF% to give up the MTA access
+;token when a MTA drive is no longer in use.  
+;
+;Called with T1/ index into device tables
+;Returns +1 always, with token released
+
+CFSMTR::SAVET			;[9122] Save some temps
+	HRRZ T2,DEVDSP(T1)	;[9122] Get the address of device dispatch
+	CAIE T2,MTADTB		;[9122] Is this a MTA: (and not a MT:) device?
+	RET			;[9122] Nope, return OK
+
+;[9122] Set up root and qualifier for this, and release the resource.
+
+	CALL CFSMTS		;[9122] (T1/T1,T2) Set up root and qualifier
+	 RET			;[9122] No UDB or no serial number
+
+	CALL CFSNDO		;[9122] (T1,T2/) Release the resource
+	 BUG.(CHK,CFSMTO,CFSSRV,SOFT,<CFSSRV - MTA resource not owned at release>,,<
+
+Cause:	CFSMTR was called to release the MTA access token for a MTA device,
+	but the resource was not locked.  This indicates a problem in getting
+	the resource at the time that the MTA device was assigned to the job.
+
+Action:	If this problem is reproducible, set this BUGCHK dumpable and submit an
+	SPR along with the dump and instructions on reproducing the problem.
+>)				;[9122] Something is fouled up somewhere 
+	RET			;[9122] Return
+
+	SUBTTL	MTA Lock resource manager -- CFSMTS (Get MTA root and qualifier)
+
+;[9122] Utility routine to set up root and qualifier for CFA MTA resource
+;The root is ".MTTxx,,'MTA'" and the qualifier is the device serial number.
+;
+;Call with T1/ index to device tables
+;Returns +1 if no serial number for device or device doesn't exist
+;Returns +2 with T1/ root and T2/ qualifier
+
+CFSMTS:	HRRZ T3,DEVUNT(T1)	;[9122] Get MTA unit number
+	HRRZ T3,MTCUTB(T3)	;[9122] Load the address of the MTA UDB
+	JUMPE T3,R		;[9122] Return +1 if there is no UDB
+	LOAD T2,USTYP,(T3)	;[9122] Get unit type 
+	HRLZ T1,T2		;[9122] Get unit type,,0
+	HRRI T1,'MTA'		;[9122] Finish up the root word
+	HRRZ T2,UDBDSN(T3)	;[9122] Now load the drive serial number
+	JUMPN T2,RSKP		;[9122] Return +2 with root and qual set up
+	RET			;[9122] Return +1 if no serial number
 	SUBTTL	Miscellaneous Interfaces -- FILRST (Reset all files at startup)
 
 ;Routine called at system start-up to reset all file states to unowned.
@@ -6017,9 +6237,9 @@ FILRST::
 
 CFSERR::BUG.(HLT,CFSICN,CFSSRV,SOFT,<CFSSRV - Illegal configuration>,,<
 
-Cause:	This system has detected an illegal configuration. There may be 
-	too many nodes in the network. The caller of this routine should 
-	be examined for more details.
+Cause:	This system has detected an illegal configuration.  There may be too
+	many nodes in the network.  The caller of this routine should be
+	examined for more details.
 >)
 	SUBTTL	Miscellaneous Interfaces -- CFRDSN (Read drive serial number)
 
@@ -6152,13 +6372,12 @@ CFDSN1:	MOVE T1,NUDB		;Get new UDB
 	 SKIPA T2,Q2  		;If not here, good, so get packet address
 	BUG.(HLT,CFSRNM,CFSSRV,SOFT,<CFRDSN - Could not rename DSN entry>,,<
 
-Cause:	A pack of a mounted structure has been moved to a new unit and
-	the new CFS mount resource already exists for the new drive.
-      	Or, a drive on which there is a pack of a mounted structure has
-	been given a new drive serial number and the new CFS mount 
-	resource already exists for the new drive.
-	This indicates either the CFS data base is wrong, or PHYSIO's
-	data base is wrong.
+Cause:	A pack of a mounted structure has been moved to a new unit and the new
+	CFS mount resource already exists for the new drive.  Or, a drive on
+	which there is a pack of a mounted structure has been given a new drive
+	serial number and the new CFS mount resource already exists for the new
+	drive.  This indicates either the CFS database is wrong, or PHYSIO's
+	database is wrong.
 >)
 	MOVEM T2,HSHLNK(T1)	;Enqueue it
 	MOVEM T1,HSHBKP(T2)	;And point backwards as well
@@ -6275,10 +6494,13 @@ CFSDMP::MOVEM P,DMPSVP		;Save incoming stack
 	  BLCAL. (SC.CON,<<.,LISDMP>,<.,LISDMP>,T1,[0],[0],<.,CFSINT>,T1,[0],[0],[0]>) ;[7.1190] Do connect
            BUG.(INF,CFCDCF,CFSSRV,SOFT,<CFSSRV - Cluster dump connect attempt failed>,<<Q2,NODE>,<T1,ERR>>,<
 
-Cause:	An attempt to connect to the cluster dump listener on another node
-	has failed.  This means that, most likely, when this node crashes,
-	the remote node will not.  Chances are, this BUGINF will not appear
-	on the CTY or in ERROR.SYS but it should be queued in the dump.
+Cause:	An attempt to connect to the cluster dump listener on another node has
+	failed.  Thus, when this node crashes, the remote node does not.  
+	Chances are, this BUGINF does not appear on the CTY or in ERROR.SYS, 
+	but it should be queued in the dump.
+
+Action:	If this problem is reproducible, set this BUGCHK dumpable and submit an
+	SPR along with the dump and instructions on reproducing the problem.
 
 Data:	NODE - CI node number of remote system
 	ERR - Error code returned by SC.CON
@@ -6290,8 +6512,15 @@ CFSDM1:	  AOBJN Q1,TOP.		;Continue with next node
 	PION			;Allow interrupts again
         BUG.(HLT,CFCLDP,CFSSRV,SOFT,<CFSSRV - Forced cluster dump>,,<
 
-Cause:	A call was made to CFSDMP to force a cluster dump.  The other 
-	systems in the cluster should have crashed with a KLPDMP BUGHLT.
+Cause:	A call was made to CFSDMP to force a cluster dump.  The other systems
+	in the cluster should have crashed with a KLPDMP BUGHLT.  This occurs
+	when location 67 has a non-zero value or it the code actually calls
+	into CFSDMP directly.
+
+Action:	If the cluster dump was not performed legitimately, then it is possible
+	that the monitor mistakenly trashed location 67 causing the cluster
+	dump.  In this case, an SPR should be submitted along with the dump(s)
+	from the systems and any insturctions on reproducing the problem.
 >)
 	SUBTTL	Miscellaneous Interfaces -- ILLGET (Illegal return from CFSGET)
 
@@ -6311,15 +6540,17 @@ Cause:	A call to CFSGET, CFSGTT or CFSGTL returns +1 even though a
 ;of synch wrt the shared structures and may permanently interlock
 ;one another against referencing those structures.
 
-CFSDIE:	BUG. (HLT,CFSKPD,CFSSRV,HARD,<CFSSRV - The KLIPA failed>,,<
+CFSDIE:	BUG.(HLT,CFSKPD,CFSSRV,HARD,<CFSSRV - The KLIPA failed>,,<
 
-Cause: The KLIPA hardware or the CI has failed and CFS cannot continue.
+Cause:	The KLIPA hardware or the CI has failed and CFS cannot continue.
+
+Action:	Have field service check out the system's CI20.
 >)
 
-CFNCNT:	BUG. (HLT,CFZCNT,CFSSRV,SOFT,<CFSSRV - Zero HSHCNT before decrement>,,<
+CFNCNT:	BUG.(HLT,CFZCNT,CFSSRV,SOFT,<CFSSRV - Zero HSHCNT before decrement>,,<
 
-Cause:	A routine wants to decrement the resource share count but the
-	count is already zero.
+Cause:	A routine wants to decrement the resource share count but the count is
+	already zero.
 >)
 	SUBTTL	Miscellaneous Interfaces -- ONLINE (CFS connection BUGINF)
 
@@ -6331,9 +6562,9 @@ ONLINE:	SAVET
 	MOVE T1,CFSHST(T1)	;Get CID
 	CALL SC.NOD		;Get node number
    IFN DEBUG,<
-	BUG. (INF,CFCONN,CFSSRV,SOFT,<CFSSRV - CFS connection>,<<T2,NODE>,<T1,CID>,<T3,SERNUM>>,<
+	BUG.(INF,CFCONN,CFSSRV,SOFT,<CFSSRV - CFS connection>,<<T2,NODE>,<T1,CID>,<T3,SERNUM>>,<
 
-Cause:	A CFS connection has been received from another node on the CI-20.
+Cause:	A CFS connection has been received from another node on the CI20.
 
 Data:	NODE - Number of connecting node
 	CID - Connect ID
@@ -6352,10 +6583,10 @@ OFLINE:	SAVET
 	LSH T3,-4		;right-justify it
 	MOVE T1,CFSHST(T1)	;Get CID
 	CALL SC.NOD		;Get node number
-	BUG. (INF,CFDISC,CFSSRV,SOFT,<CFSSRV - CFS disconnect>,<<T2,NODE>,<T1,CID>,<T3,SERNUM>>,<
+	BUG.(INF,CFDISC,CFSSRV,SOFT,<CFSSRV - CFS disconnect>,<<T2,NODE>,<T1,CID>,<T3,SERNUM>>,<
 
-Cause:	A CFS disconnect request has been received from a remote node on
-	the CI-20.
+Cause:	A CFS disconnect request has been received from a remote node on the
+	CI20.
 
 Data:	NODE - Remote node number
 	CID - Connect ID

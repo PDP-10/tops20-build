@@ -1,3 +1,11 @@
+; Edit= 9041 to LOGNAM.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 8937 to LOGNAM.MAC on 23-Aug-88 by LOMARTIRE
+;Spell MONITR correctly in ACTION field of BUGs!
+; Edit= 8920 to LOGNAM.MAC on 18-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8546, RIP:<7.MONITOR>LOGNAM.MAC.3,   9-Feb-88 17:04:52 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; *** Edit 7418 to LOGNAM.MAC by RASPUZZI on 24-Feb-87, for SPR #21535
@@ -91,15 +99,18 @@ SLNLOP:	HRRZ T1,SYNMTB(T4)	;GET DEFINITION STRING ADDRESS
 	HLRO T2,SYNMTB(T4)	;GET POINTER TO LOGICAL NAME STRING
 	HRRO T3,SYNMTB(T4)	;GET POINTER TO DEFINITION STRING
 	CRLNM			;CREATE THIS SYSTEM LN
-	 BUG.(CHK,NOSLNM,LOGNAM,HARD,<SLNINI - Cannot create system logical name>,<<T1,ERRCOD>>,<
+	 BUG.(CHK,NOSLNM,LOGNAM,SOFT,<SLNINI - Cannot create system logical name>,<<T1,ERRCOD>>,<
 
 Cause:	A call to CRLNM% to create the default system-wide logical names at
 	system startup failed.
 
 Action:	This logical name is not defined. System operation may be impaired.
+        If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	ERRCOD - Error code returned by CRLNM%
-
 >)
 	AOBJN T4,SLNLOP		;LOOP BACK FOR ALL ENTRIES IN TABLE
 	POP P,CAPENB		;RESTORE CAPABILITIES
@@ -122,6 +133,7 @@ Data:	ERRCOD - Error code returned by CRLNM%
 
 
 .CRLNM::MCENT			;ENTER SLOW JSYS
+	TRVAR <LOGSTR,ERRCOD,VFLAG> ;[9041] Temp storage
 	XCTU [HRRZ P1,1]	;GET THE USER'S FIRST ARG
 	CAILE P1,.CLNSY		;LEGAL FUNCTION CODE?
 	RETERR (CRLNX3)		;NO, ILLEGAL FUNCTION CODE
@@ -131,7 +143,59 @@ Data:	ERRCOD - Error code returned by CRLNM%
 	MOVE T1,CAPENB		;GET PRIVILEGES
 	TRNN T1,SC%WHL!SC%OPR	;IS USER PRIVILEGED?
 	JUMPN P4,[RETERR (CRLNX2)] ;NO, ERROR IF SYSTEM LN FUNCTION
-	NOINT			;DISABLE INTERRUPTS
+	IFN. P4			;[9041] System function? If so,
+	  SKIPN ACJFN		;[9041] ACJ running?
+	  JRST CRLNM9		;[9041] Nope, don't check
+	  NOINT			;[9041] No interrupts while we diddle
+	  HRRZI T1,<2*MAXLC+2>	;[9041] Get this many words of freespace
+	  HRLI T1,.RESP3	;[9041] Priority, grow some if not enough
+	  MOVEI T2,.RESGP	;[9041] Want to get it from resident pool
+	  CALL ASGRES		;[9041] (T1,T2/) Get that freespace
+	   RETERR (MONX05,OKINT) ;[9041] Couldn't this is not good
+	  MOVEM T1,LOGSTR	;[9041] Save address of freespace block
+	  MOVEI T2,<2*MAXLC+2>	;[9041] Get count back
+	  MOVEM T2,.GOSIZ(T1)	;[9041] Block size goes here
+	  MOVE T2,GBLJNO	;[9041] Get user's job
+	  MOVEM T2,<.GEJOB+1>(T1) ;[9041] Save it in this spot
+	  UMOVE T2,T1		;[9041] Get user's requested function
+	  MOVEM T2,<.GECFN+1>(T1) ;[9041] Put it in argument block
+	  ;..
+	  ;..
+	  CAIN T2,.CLNSA	;[9041] Deleting all system logicals?
+	  IFSKP.		;[9041] If not, copy from user space
+	    XMOVEI T3,<.GELNM+1>(T1) ;[9041] Start putting string here
+	    TXO T3,<OWGP. 7>	;[9041] Make one word global byte pointer
+	    UMOVE T2,T2		;[9041] Get user's byte pointer
+	    TLC T2,-1		;[9041] Check for -1,,addr
+	    TLCN T2,-1		;[9041] Is it a -1?
+	    HRLI T2,(POINT 7,)	;[9041] Yes, make it a 7-bit byte pointer
+	    MOVEI T4,MAXLC	;[9041] Get max character count
+	    SETZM VFLAG		;[9041] Say no ^V seen
+	    DO.			;[9041] Now get user's string
+	      SOJL T4,ENDLP.	;[9041] If too many characters, truncate
+	      XCTBU [ILDB T1,T2] ;[9041] Get two nybbles
+	       ERJMP BADCRL	;[9041] Punish him!
+	      JUMPE T1,ENDLP.	;[9041] End of string?
+	      IDPB T1,T3	;[9041] Transfer that byte
+	      CAIE T1,"V"-100	;[9041] Is it a ^V?
+	      IFSKP.		;[9041] If so,
+	        SKIPN VFLAG	;[9041] ^V of ^V?
+	        AOS T4		;[9041] No, first ^V, don't count it
+	        SETCMM VFLAG	;[9041] And set ^V flag accordingly
+	      ELSE.		;[9041] Else, no ^V
+	        SETZM VFLAG	;[9041] Clear this
+	      ENDIF.		;[9041]
+	      JRST TOP.		;[9041] Do more characters
+	    OD.			;[9041]
+	    MOVEI T1,.CHNUL	;[9041] Terminate string with null
+	    IDPB T1,T3		;[9041] Insert it
+	  ENDIF.		;[9041]
+	  MOVE T1,LOGSTR	;[9041] Get argument block address
+	  GTOKM (.GOCRL,<T1>,BADCR1) ;[9041] Can user do this?
+	  CALL RELRES		;[9041] (T1/) Return freespace
+	  SKIPA			;[9041] And continue
+	ENDIF.			;[9041]
+CRLNM9:	NOINT			;DISABLE INTERRUPTS
 	CAIE P1,.CLNJA		;DELETE ALL LOGICAL NAMES?
 	CAIN P1,.CLNSA		;...
 	JRST CRLNMA		;YES, GO DELETE THEM
@@ -199,6 +263,16 @@ CRLNM1:	MOVE T2,T1		;GET LOCATION FOR THIS NEW ENTRY
 	UNLOCK @LOKTAB(P4)	;FREE UP LOGICAL NAME INTERLOCK
 	OKINT			;FINISHED CHANGING THE LOGICAL NAME TABLE
 	SMRETN			;GIVE SKIP RETURN TO USER
+
+BADCRL:	MOVE T1,LSTERR		;[9041] Get error
+BADCR1:	MOVEM T1,ERRCOD		;[9041] And save it for a moment
+	MOVE T1,LOGSTR		;[9041] Here's the freespace address
+	CALL RELRES		;[9041] (T1/) Give it back
+	OKINT			;[9041] Now you can interrupt me
+	MOVE T1,ERRCOD		;[9041] Get error code back
+	RETERR ()		;[9041] And done
+
+	ENDTV.			;[9041] End of TRVAR storage
 
 
 ; ROUTINE TO DELETE ALL ENTRIES FROM THE LOGICAL NAME TABLE
@@ -1617,11 +1691,16 @@ LNLUKS::MOVEI T2,1		;TRY LOOKING IN SYSTEM LN TABLE
 
 LNMLUK::PUSH P,P4		;SAVE PERMANENT ACS USED
 	TRZE T2,777776		;IS THIS A VALID INDEX VALUE?
-	BUG.(CHK,LNMILI,LOGNAM,HARD,<LNMLUK - Illegal value of logical name table index>,,<
+	BUG.(CHK,LNMILI,LOGNAM,SOFT,<LNMLUK - Illegal value of logical name table index>,,<
 
 Cause:	A call was made to LNMLUK to lookup a logical name in the logical
 	name tables but the caller specified neither a job-wide nor
 	a system-wide logical name.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	HRRO P4,T2		;SET UP INDEX REG
 	NOINT			;LOCK UP DATA BASE
@@ -1858,12 +1937,16 @@ TBLK2B:	MOVEI T1,@Q2		;CHECK NEXT ENTRY FOR AMBIGUOUS
 	MOVE T1,-1(P)
 	CALL STRCMP
 	IFSKP. <
-	  BUG.(CHK,ILLTAB,LOGNAM,HARD,<TABLK2 - Table not in proper format>,<<Q1,TABADD>>,<
+	  BUG.(CHK,ILLTAB,LOGNAM,SOFT,<TABLK2 - Table not in proper format>,<<Q1,TABADD>>,<
 
 Cause:	A logical name table is not in the proper alphabetic order.
 
-Data:	TABADD - Address of logical name table
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
+Data:	TABADD - Address of logical name table
 >)>
 	POP P,T2
 	JUMPE T1,TABLKM		;NEXT ENTRY NOT DISTINCT, GIVE AMBIGUOUS RETURN

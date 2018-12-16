@@ -1,3 +1,36 @@
+; Edit= 9148 to CTHSRV.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9091 to CTHSRV.MAC on 17-May-89 by JROSSELL
+;If a terminal is set to width 0 and the server is a VMS system, then don't
+;send a CHARACTERISTICS message. VMS reports a QIO error. 
+; Edit= 9076 to CTHSRV.MAC on 6-Mar-89 by JROSSELL
+;VMS servers do not support lower case input control (TT%LIC) so always insure
+;that this bit is not set when sending a CHARACTERISTICS message to a VMS
+;server. 
+; Edit= 9065 to CTHSRV.MAC on 30-Jan-89 by JROSSELL, for SPR #21562
+;If MSGOUT returns failure don't assume that the link has gone away. Instead,
+;also check if the message may have been blocked. 
+; Edit= 9044 to CTHSRV.MAC on 20-Dec-88 by RASPUZZI
+;Make accommodations for cretinous operating systems (like VMS 4.7 or less)
+;and strip out trailing spaces in the username that comes in the CTERM connect
+;intiate message.
+; Edit= 9041 to CTHSRV.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 9024 to CTHSRV.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8986 to CTHSRV.MAC on 28-Oct-88 by JROSSELL, for SPR #21549
+;Correct some problems with SET TERMINAL characteristics 
+; Edit= 8977 to CTHSRV.MAC on 4-Oct-88 by JROSSELL, for SPR #21689
+;Add support for optionally not flushing NULs when a terminal is in ASCII
+;mode. 
+; Edit= 8963 to CTHSRV.MAC on 6-Sep-88 by JROSSELL, for SPR #21696
+;Correct edit 8961 to update the duplex mode only if such a request was made. 
+; Edit= 8961 to CTHSRV.MAC on 3-Sep-88 by JROSSELL, for SPR #21696
+;Cause routine CTHSRV to also check for duplex mode changes. 
+; Edit= 8878 to CTHSRV.MAC on 10-Aug-88 by RASPUZZI
+;Update BUG. documentation. 
 ; UPD ID= 8497, RIP:<7.MONITOR>CTHSRV.MAC.5,   9-Feb-88 12:18:46 by GSCOTT
 ;TCO 7.1218 - Update copyright notice.
 ; UPD ID= 8467, RIP:<7.MONITOR>CTHSRV.MAC.4,   9-Feb-88 11:14:01 by MCCOLLUM
@@ -89,7 +122,7 @@
 ;
 ;Rewrite.
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -227,10 +260,12 @@
 ;       11.8    Identify CTERM terminal type (.MOCTM)  . . . .  88
 ;       11.9    Get prompt string from user byte pointer . . .  89
 ;       11.10   LOCK CDB . . . . . . . . . . . . . . . . . . .  90
-;   12. TERMINAL TYPE TRANSLATION TABLE  . . . . . . . . . . .  92
-;   13. STOCK MESSAGES . . . . . . . . . . . . . . . . . . . .  93
-;   14. PERMANENT CTERM DATA BASE  . . . . . . . . . . . . . .  94
-;   15. End of CTHSRV  . . . . . . . . . . . . . . . . . . . .  95
+;   12. Fetch User from DECnet Connect Message . . . . . . . .  93
+;   13. Get ACJ Blessing For Incoming CTERM Connection . . . .  94
+;   14. TERMINAL TYPE TRANSLATION TABLE  . . . . . . . . . . .  96
+;   15. STOCK MESSAGES . . . . . . . . . . . . . . . . . . . .  97
+;   16. PERMANENT CTERM DATA BASE  . . . . . . . . . . . . . .  98
+;   17. End of CTHSRV  . . . . . . . . . . . . . . . . . . . .  99
 	SUBTTL MACROS
 ;Get one byte from a message, with error check
 ;PTR - byte pointer to current byte of message
@@ -282,7 +317,7 @@ FTCOUN==1			;Feature test - KEEP COUNT OF THINGS
 ;Returns +1 always
 CTMRUN: MOVX T1,CR%CAP		;Create a fork
 	CFORK%			;Do it
-	JRST CTMRNX		;Couldn't.
+	 ERJMP CTMRNX		;Couldn't.
 	XMOVEI T2,CTMLOP	;Where to proceed
 	MSFRK%			;Continue things below
 	 ERJMP CTMRNX		;Failed.
@@ -446,6 +481,9 @@ MSGDRJ:	BUG.(CHK,CTDILS,CTHSRV,SOFT,<CTERM link is in an unexpected state>,,<
 Cause:	A CTERM link is in one of these states: Connect Sent, Connect
 	Rejected; or some illegal state.
 
+Action:	The DOB% facility should produce a dump for this bug. If not,
+	then you have to change the BUGCHK to a BUGHLT to get a
+	dump before submitting an SPR.
 >)
 	RET			;DONE
 
@@ -537,8 +575,18 @@ IFN FTCOUN,<
 	MOVE T1,CTHSAP		;Get pointer to SAB again
 	OPSTR <SKIPN T1,>,SACBP,(T1) ;Try to get connect block pointer
 	IFSKP.			; -yes, there was a connect block
-	  LOAD T1,CBNUM,(T1)	;  and get the remote node address
-	  STOR T1,CHRID,(CDB)	;   so we can now store it away
+	  LOAD T2,CBNUM,(T1)	;  and get the remote node address
+	  STOR T2,CHRID,(CDB)	;   so we can now store it away
+	  CALL FETUSR		;[9041](T1,CDB/) Now get NODE::USER in CH block
+	  ECSKED		;[9041] Don't be a hog when waiting for ACJ
+	  CALL CTMGOK		;[9041](CDB/) Now ask ACJ for a yes sir
+	  IFSKP.		;[9041] If succeeded
+	    CSKED		;[9041] High priority again, and go on
+	  ELSE.			;[9041] ACJ said no way
+	    CSKED		;[9041] Big boost
+	    MOVX T1,RSNACR	;[9041] Say access denied
+	    JRST MSGDC1		;[9041] And cleanup mess
+	  ENDIF.		;[9041]
 	ENDIF.			;The INISAB will deallocate the connect block
 	CALL INISAB		;(/T1) Get SAB
 	SETZRO SAAA1,(T1)	;Set no message string
@@ -750,6 +798,12 @@ MSGPE1:	BUG.(INF,CTDEPF,CTHSRV,SOFT,<CTERM host enter passive failed>,,<
 
 Cause:	There was a free space allocation failure during an enter passive 
 	for a CTERM host.
+
+Action:	Go into SYSDPY's RE display and see which freespace pool is
+	being used up. If this happens frequently, there may be a
+	software bug loosing the freespace. However, there may be
+	insufficient freespace in the pool that has run out. You
+	could try to increase that pool's size in your monitor.
 >)
 	RET
 	ENDSV.
@@ -811,7 +865,9 @@ IFN FTCOUN,<
 	CALL INISAB		;(/T1) Initialize the CTERM SAB
 	LOAD T2,SAAA1,(T1)	;Get count of bytes left to send
        	JUMPN T2,MSGOU1		;(T1,T2,CB3) If any, block again
-MSGUB1:	SETZM MSGBLW		;Else note that the blockage is clear.
+	TMNE CHRCB,(CDB)	;[9065]Is the CDB to be deleted?
+	CALL CDBDEL		;[9065]Yes, set its state to deleted
+MSGUB1:	SETZM MSGBLW		;[9065]Note that the blockage is clear.
 	RET   			
 
 	SUBTTL DECNET LAYER -- INITIALIZE THE SAB
@@ -867,8 +923,11 @@ FNDSHU:	LOAD T1,CHSTS,(CDB)	;Is this link allowed
 	MOVE T1,[POINT 8,CTMUNB];Point to unbind message.
 	MOVEI T2,.UBNSZ		;Size of message.
 	CALL MSGOUT		;(T1,T2,CDB) Send it out.
-	 RETSKP			;Can't send - forget it.
-	RETSKP			;Done.
+	 SKIPN MSGBLW		;[9065]Is the output blocked?
+	IFSKP.			;[9065]
+	  SETONE CHRCB,(CDB)	;[9065]Yes, indicate must delete the CDB
+	  RETSKP		;[9065]Don't release the link yet
+	ENDIF.			;[9065]
 	CALL CDBDEL		;Release the link.
 	RETSKP
 
@@ -993,10 +1052,16 @@ FNDBAC:	LOAD T3,CHSTA,(CDB)	;Get state.
 	ILDB T3,T1		;***
 	ILDB T3,T1		;***
 	GET2BY T1,T2,T3		;*** Get operating system type
-	CAIN T3,10		;*** Is it TOPS20?
-	SETONE CHRTI,(CDB)	;Yes, We like remote TEXTI%s
-	CAIE T3,7		;*** Are we VMS?
-	IFNSK.
+	STOR T3,CHOST,(CDB)	;[9076]Save the OS type for STPAR%
+	CAIN T3,.FBT20		;[9076]Is it a TOPS-20 system?
+	SETONE CHRTI,(CDB)	;[9076]Yes, remote TEXTI% is supported
+	CAIE T3,.FBVMS		;[9076]Is it A VMS system?
+	IFSKP.			;[9076]
+	  LOAD T2,CHLIN,(CDB)	;[9076]Yes, pick up the line number
+	  CALLX (MSEC1,STADYN)	;[9076]Pick up the TDB
+	   JFCL			;[9076]Ignore any error	   
+	  SETZRO TT%LIC,TTFLGS(T2) ;[9076]VMS doesn't handle raise input only
+	ELSE.			;[9076]
 	  SETONE CHLWI,(CDB)	;No. Remember we can set terminal line width
 	  SETONE CHEDT,(CDB)	; and that
 	ENDIF.			; the server can do input editing. Currently,
@@ -1055,15 +1120,34 @@ CTMINI:	LOAD T1,CHSTS,(CDB)	;Is this link allowed
 	TXNN T1,NSNDR		; to send ?
 	RET           		;No. Try later.
 ;Send message
-	MOVE T1,[POINT 8,CTMMSG] ;Point to it.
-	MOVEI T2,CTMMSZ		;Get size of it.
-	CALL MSGOUT		;(T1,T2,CDB) Send it
-	 RETSKP			;On error, link is gone.
+	LOAD T1,CHFLG,(CDB)	;[9065]Pick up the flag word
+	TXZE T1,CH%SCM		;[9065]INITIATE message previously blocked?
+	JRST CTMI.1		;[9065]Yes, now send the CHARACTERISTICS message
+	TXZE T1,CH%IIC		;[9065]CHARACTERISTICS message previously blocked?
+	JRST CTMI.2		;[9065]Yes, finish initializing
+	MOVE T1,[POINT 8,CTMMSG] ;[9065]Point to the INITIATE message
+	MOVEI T2,CTMMSZ		;[9065]Get size of it.
+	CALL MSGOUT		;[9065](T1,T2,CDB) Send it
+	IFNSK.			;[9065]
+	  SKIPN MSGBLW		;[9065]Is the link blocked?
+	  RETSKP		;[9065]No, the link is gone
+	  SETONE CHSCM,(CDB)	;[9065]Indicate send CHARACTERISTICS message
+	  RET			;[9065]Send CHARACTERISTICS message later
+	ENDIF.			;[9065]
+	TRNA			;[9065]On success, don't update the flag word
 ;Send initial characteristics
-	MOVE T1,[POINT 8,CTMMS1] ;Point to it.
+CTMI.1: STOR T1,CHFLG,(CDB)	;[9065]Store the updated flag word
+	MOVE T1,[POINT 8,CTMMS1] ;[9065]Point to the CHARACTERISTICS message
 	MOVEI T2,CTMMZ1		;Get size of it.
 	CALL MSGOUT		;(T1,T2,CDB) Send it
-	 RETSKP			;On error, link is gone.
+	IFNSK.			;[9065]
+	  SKIPN MSGBLW		;[9065]Is the output blocked?
+	  RETSKP		;[9065]No, the link is gone
+	  SETONE CHIIC,(CDB)	;[9065]Indicate initialization is incomplete
+	  RET			;[9065]Try later
+	ENDIF.			;[9065]
+	TRNA			;[9065]On success, don't update the flag word
+CTMI.2:	STOR T1,CHFLG,(CDB)	;[9065]Store the updated flag word
 	MOVEI T1,.STRUN		;Set state to 
 	STOR T1,CHSTA,(CDB)	; "running"
 	LOAD T2,CHLIN,(CDB)	;Get line number
@@ -1119,34 +1203,40 @@ CTMRNG:	SAVEAC <Q1>
 	  IDPB T3,T1		; into message
 	  SETZ T3,		;Flags
 	  IDPB T3,T1
-	  CALL FNDOUT		;(T2,CDB) Send it out
-	   RETSKP		;Failed - CDB is gone
-	  SETZRO CHCLI,(CDB)	;Clear clear input flag.
+	  SETZRO CHCLI,(CDB)	;[9065]Clear the clear input flag.
+	  CALL FNDOUT		;[9065](T2,CDB) Send it out
+	  IFNSK.		;[9065]
+	    SKIPE MSGBLW	;[9065]Is the output blocked?
+	    RET			;[9065]Yes, check this line later
+	    RETSKP		;[9065]No, so the CDB is gone
+	  ENDIF.		;[9065]	
 	  MOVE T2,Q1		;Restore TDB
      	ENDIF.
 	TMNN CHCOC,(CDB) 	;Send CCOC words ?
 	IFSKP.
-	  CALL CTMSCC		;Yes. 
-	   RET   		;Failed - CDB is gone
-	  SETZRO CHCOC,(CDB)	;Clear CCOC flag
+  	  SETZRO CHCOC,(CDB)	;[9065]Yes, clear the CCOC flag
+	  CALL CTMSCC		;[9065]Check the CCOC words for any changes
+	  IFNSK.		;[9065]
+	    SKIPE MSGBLW	;[9065]Is the output blocked?
+	    RET			;[9065]Yes,check this line later
+	    RETSKP		;[9065]No, so the CDB is gone
+	  ENDIF.		;[9065]
 	  MOVE T2,Q1		;Restore TDB
 	ENDIF.
 	TMNN TTOTP,(T2) 	;Send output ?
 	IFSKP.		 	
 	  CALL CTMSOT		;(T2,CDB) Send output.
 	   RET			;More to send.
-	  MOVE T2,Q1		;Restore TDB
 	ENDIF.
 	TMNN CHASR,(CDB) 	;Send another START-READ ?
 	IFSKP.
-	  LOAD T1,CHRFL,(CDB)	;Get flags
+  	  LOAD T1,CHRFL,(CDB)	;Get flags
 	  LOAD T2,CHRLN,(CDB)	;Get length
-;	  SETZ T3,		;No ^R buffer this time.
 	  LOAD T3,CHRBL,(CDB)	;Get length of ^R buffer
 	  CALL CTMSTR		;(T1,T2,T3,CDB) Issue the START-READ.
-	  TMNE CHASR,(CDB)	;Need to send another START-READ ?
-	   RET			;Yes.
-	  MOVE T2,Q1		;No. Restore TDB
+	  TMNN CHASR,(CDB)	;[9065]Need to send another START-READ ?
+	  SKIPE MSGBLW		;[9065]No, is the output blocked?
+	  RET			;[9065]Yes, send it later
 	ENDIF.
 	RETSKP			;Everything done.
 
@@ -1185,11 +1275,15 @@ CTMSO1: LOAD T1,CHSTS,(CDB)	;Is this link
 	SKIPE P3		;Is there really one ?
 	AOS %CTMSG+.WRITE	;Yes. Count another CTERM write message
    >;END IFN FTCOUN
-	SKIPN P3		;Is there anything in there ?
-	IFSKP.
+	IFN. P3			;[9065]Is there anything in there?
 	  MOVE T2,Q3		;Yes. Get count of bytes left in buffer.
 	  CALL FNDOUT  		;(T2) Send message out.
-  	   RETSKP               ;Failure, link is gone.
+	  IFNSK.		;[9065]
+	    SKIPE P4		;[9065]Any more characters in the TTYSRV buffer?
+	    SKIPN MSGBLW	;[9065]Yes, is the link blocked?
+  	    RETSKP              ;[9065]No, the link is gone or empty buffer
+	    RET			;[9065]Indicate more messages need to be sent
+	  ENDIF.		;[9065] 
 	ENDIF.
 	JUMPN P4,CTMSO1		;If TTYSRV buffer is not empty, continue.
 	RETSKP
@@ -1783,11 +1877,18 @@ CTHSPY:	MOVE Q1,T3              ;Copy character
 XRENT	(CTHOOE,G)		;[7.1024]CTHOOE::, XCTHOO::
 
 	SAVEAC <CDB>
-	SKIPN CDB,TTDEV(T2)
-	RETSKP
-	TMNN CHTCI,(CDB)
-	RETSKP
-	RET
+	SKIPN CDB,TTDEV(T2)	;[8986]Pick up the CTERM data block
+	RETSKP			;[8986]If none, then quit now
+	TMNN CHTCI,(CDB)	;[8986]Doing output?
+	RETSKP			;[8986]Yes, then output the character
+	TMNN CHRTI,(CDB)	;[8986]Is the server a TOPS-20 system?
+	RET			;[8986]No, so don't echo
+	LOAD T3,TT%DUM,TTFLGS(T2) ;[8986]Pick up the duplex mode
+	CAIE T3,.TTHDX		;[8986]Is it HALFDUPLEX?
+	RET			;[8986]No, so don't echo
+	CAIL T1,.CHSPC		;[8986]Is it a control character?
+	RET			;[8986]No, don't echo
+	RETSKP			;[8986]Yes, so echo 
 
 	SUBTTL CTERM LAYER -- TDCALL -- CHANGE MODE TO ASCII
 ;CALL CTHASC with
@@ -1878,45 +1979,68 @@ XNENT	(CTHTYP,G)		;[7.1024]CTHTYP::, XCTHTY::
 ;	T2/ TDB
 ;Returns +1 always with T1/ new settings (poss. altered)
 ;			T2/ TDB
-;Currently only generates messages to change the following in the server:
-;
-;  TT%LIC - lower case (1==convert to upper)
+;[8961]Generates a message to change the following in the server:
+;[8961]
+;[8961]TT%LIC - lower case  (1==convert to upper)
+;[8961]and/or
+;[8961]TT%DUM - duplex mode (00==convert to full duplex
+;[8961]                     (10==convert to character half duplex
+;[8961]                     (11==convert to line half duplex)
 
 XNENT	(CTHSPR,G)		;[7.1024]CTHSPR::, XCTHSP::
 
 IFN FTCOUN,<
 	AOS %CTPAR		;COUNT ANOTHER STPAR
 >
+	TXNN T1,TT%LIC		;[9076]Turn on "raise input only"?
+	IFSKP.			;[9076]
+	  SKIPN T3,TTDEV(T2)	;[9076]Yes, pick up the CDB address
+	  RET			;[9076]Return if none
+	  LOAD T3,CHOST,(T3)	;[9076]Pick up the server's OS type
+	  CAIN T3,.FBVMS	;[9076]Is the server a VMS system?
+	  TXZ T1,TT%LIC		;[9076]Yes, it can't support raise input only
+	ENDIF.			;[9076]
 	MOVE T3,T1		;Get copy of flags
 	XOR T3,TTFLGS(T2)	;Get changes
-	ANDI T3,TT%LIC		;[7183] Get only bits of interest
+	AND T3,[TT%LIC!TT%DUM!TT%LCA] ;[7183][8961][8986]Get only bits of interest
 	JUMPE T3,RTN		;Done if nothing has changed
 IFN FTCOUN,<
 	AOS %CTPRS		;COUNT ANOTHER STPAR SENT
 >
 	SAVEAC <T2,CDB,Q1,Q2,Q3,P2>
-	MOVE Q1,T3		;Get safe copy of changes
-	MOVE Q2,T1		;Get safe copy of flags
-	MOVE P2,T2		;Get TDB in safe place.
-	SKIPN CDB,TTDEV(P2)	;Get CDB 
-	RET			;None. Done.
-	TMNN CHLWI,(CDB)	;[7183] Does server support line width setting?
-	RET			;[7183] No. Done.
-	CALL LOKCDB		;(T2,CDB) Get control of CTERM.
-	 RET			;Failed. 
-	CALL GETCHM		;(/T1,T2) Get characteristics message buffer
-	TXNN Q2,TT%LIC		;Yes. Want to raise lower case ?
-	TDZA T3,T3 		;No.
-	MOVEI T3,1		;Yes.
-	MOVX T4,CH%RAI		;Get characteristic type.
-	CALL SETCHR   		;(T1,T2,T3,T4/T1,T2) Set it in the message.
-	 NOP			;Ignore failure
+	SKIPN CDB,TTDEV(T2)	;[8961]Get CDB 
+	RET			;[8961]None, quit now
+	MOVE Q1,T3		;[8961]Get safe copy of changes
+	MOVE Q2,T1		;[8961]Get safe copy of flags
+	MOVE P2,T2		;[8961]Get TDB in safe place.
+	CALL LOKCDB		;[8961](T2,CDB) Get control of CTERM.
+	 RET			;[8961]Failed. 
+	CALL GETCHM		;[8961](/T1,T2) Get characteristics message buffer
+	TXNN Q1,TT%LIC!TT%LCA	;[8961][8986]Has a case change request occurred?
+	IFSKP.			;[8961]
+	  TXC Q2,TT%LCA		;[8986]Yes, Complement "has lower case"
+	  TXNN Q2,TT%LIC!TT%LCA	;[8961][8986]Want to raise lower case?
+	  TDZA T3,T3 		;[8961]No
+	  MOVEI T3,1		;[8961]Yes
+	  MOVX T4,CH%RAI	;[8961]Get characteristic type
+	  CALL SETCHR   	;[8961](T1,T2,T3,T4/T1,T2) Set it in the message
+	   NOP			;[8961]Ignore any failure
+	  TXC Q2,TT%LCA		;[8986]Restore original "has lower case" value
+	ENDIF.			;[8961]
+	TXNN Q1,TT%DUM		;[8963]Duplex mode change?
+	IFSKP.			;[8963]
+	  TXNE Q2,TT%DUM	;[8963]Yes, Half duplex requested?
+	  TDZA T3,T3		;[8963]Yes, indicate so
+	  MOVEI T3,1		;[8963]No, indicate so
+	  MOVX T4,CH%NEC	;[8963]Get characteristic type
+	  CALL SETCHR		;[8963](T1,T2,T3,T4/T1,T2) Set it in the message
+	   NOP			;[8963]Ignore any errors
+	ENDIF.			;[8963]
 	CALL FNDOUT		;Send it off.
 	 NOP			;Ignore error
 	CALL ULKCDB		;Release CTERM
 	MOVE T1,Q2		;Get flags back
 	RET
-
 	SUBTTL CTERM LAYER -- TDCALL -- SFMOD% JSYS
 
 ;	XRESCD			;[7.1024]Called NOSKED.
@@ -2056,9 +2180,12 @@ IFN FTCOUN,<
 >
 	SKIPN CDB,TTDEV(T2)	;Get CDB
 	RET			;None. Done.
-	TMNN CHLWI,(CDB)	;Does this server support line width setting?
-	RET			;No. Done.
-	MOVE Q1,T1		;Save width
+	SKIPE Q1,T1		;[9091]Save the width
+	IFSKP. 			;[9091]Is the width zero?
+	  LOAD T1,CHOST,(CDB)	;[9091]Yes, pickup the server's OS type
+	  CAIN T1,.FBVMS	;[9091]Is it a VMS system?
+	  RET			;[9091]Yes, don't send a CHARACTERISTICS update
+	ENDIF.	  	 	;[9091]
 	CALL LOKCDB		;(T2,CDB) Get control of CTERM
 	 RET			;Failed
 	MOVE T2,Q1		;Get value
@@ -2126,42 +2253,59 @@ XNENT	(CTHSBM,G)		;[7.1024]CTHSBM::, XCTHSB::
 ;CALL CTHPPC with:
 ;	T1/ new pause character ,, new unpause character
 ;	T2/ TDB
-;Returns +1 always
-;If pause/unpause characters are ^S, ^Q, set the CTERM output flow control true.
-;Otherwise, set the characters to be out of band, with no echo.
-;Don't send to VMS, since it blows up on this msg.
+;[8986]Returns +1 Either the pause or the unpause character or both are illegal
+;[8986]           (Only control characters are legal. This restriction is
+;[8986]            necessary since the pause and unpause characters are treated
+;[8986]            as OUT-OF-BAND characters and OUT-OF-BAND characters can 
+;[8986]            only be control characters.)
+;[8986]Returns +2 The pause and unpause characters are both legal
 
 XNENT	(CTHPPC,G)		;[7.1024]CTHPPC::, XCTHPP::
 
-	SAVEAC <T1,T2,CDB,Q1,Q2,Q3>
+	SAVEAC <T1,T2,CDB,Q1,Q2,P2> ;[8986]
 	SKIPN CDB,TTDEV(T2)	;Get CDB address
-	RET			;None. Done
-	TMNN CHLWI,(CDB)	;Does this server support line width setting?
-	RET			;No. Done.
-	MOVE Q2,T1		;Preserve new pause/unpause characters
+	RETSKP			;[8986]None, done
+	MOVE Q2,T1		;[8986]Preserve new pause/unpause characters
+	HRRZS T1		;[8986]Isolate the new unpause character
+	CAIE T1,.CHNUL		;[8986]Is this character in
+	CAIL T1,.CHSPC		;[8986] the proper range?
+	RET			;[8986]No, indicate so
+	HLRZ T1,Q2		;[8986]Pick up the new pause character
+	CAIE T1,.CHNUL		;[8986]Is this character in
+	CAIL T1,.CHSPC		;[8986] the proper range?
+	RET			;[8986]No, indicate so
+	LOAD T3,TTPPC,(T2)	;[8986]Pick up the old pause character
+	LOAD T4,TTUPC,(T2)	;[8986]Pick up the old unpause character
+	HRL T4,T3		;[8986]Old pause,,old unpause
+	SUB T4,Q2		;[8986]Subtract the new from the old
+	JUMPE T4,RSKP		;[8986]Return if no new characters specified
 	CALL LOKCDB		;(T2,CDB) Grab control of CTERM
-	 RET			;Failed.
-	MOVE Q3,T2		;Put TDB in permanent place
+	 RETSKP			;[8986]Failed.
+	MOVE P2,T2		;[8986]Put TDB in permanent place
 	CALL GETCHM		;(/T1,T2) Set up for characteristic msg
 	MOVEI T4,377		;Get change mask
 	LOAD T3,TTPPC,(P2)	;Get old pause character
 	MOVX Q1,<FLD(.CAOOX,CAOOB)> ;Not out of band, 
 	CALL CTMPEC		;(T3,Q1/T3,Q1) Set echo up.
-	CALL SETCHA		;(T1,T2,T3,T4,Q1/T1,T2,T3,T4,Q1) Clear old unpause
+	CALL SETCHA		;[8986](T1,T2,T3,T4,Q1/T1,T2,T3,T4,Q1) Clear old pause
 	 JRST CTMSPX          	;Failure.
 	LOAD T3,TTUPC,(P2)	;Get old unpause character 
+	MOVX Q1,<FLD(.CAOOX,CAOOB)> ;[8986]Not out of band, 
 	CALL CTMPEC 		;(T3,Q1/T3,Q1) Set echo up.
+	CALL SETCHA		;[8986](T1,T2,T3,T4,Q1/T1,T2,T3,T4,Q1) Clear old unpause
+	 JRST CTMSPX		;[8986]Failure, release control of CTERM
 	HLRZ T3,Q2		;Get new pause character.
 	MOVX Q1,<FLD(.CAOOH,CAOOB)> ;Hello out of band, no echo.
 	CALL SETCHA		;(T1,T2,T3,T4,Q1/T1,T2,T3,T4,Q1) Set it.
 	 JRST CTMSPX          	;Failure.
-	HRRZ T3,Q2		;Get unpause character
+	HRRZ T3,Q2		;[8986]Get new unpause character
 	CALL SETCHA		;(T1,T2,T3,T4,Q1/T1,T2,T3,T4,Q1) Set it.
 	 JRST CTMSPX          	;Failure.
 	CALL FNDOUT		;(T1,T2,CDB) Send message.
 	 NOP			;Ignore error.
 
-CTMSPX:	CALLRET ULKCDB		;Let go of CTERM
+CTMSPX: CALL ULKCDB		;[8986]Let go of CTERM
+	RETSKP
 
 ;Routine to set the echo characteristic
 ;T3/ character
@@ -2411,7 +2555,7 @@ CTMSTR:	SAVEQ
 	  TMNE TTNUS,(Q3)	;Yes.  Outgoing NRT ?
 	  IFSKP.
 	    TXZ Q1,SR%DCD+SR%RAI+SR%TEC	;No. Clear disable control, raise fields, and terminator echo.
-	    TXO Q1,SR%DED+SR%RAN+SR%XEC ;Disable editing, no raise and no echo.
+	    TXO Q1,SR%DCC+SR%RAN+SR%XEC ;[8977]Disable control characters, no raise and no echo.
 	  ENDIF.
 	ENDIF.
 	CALL FNDCOM		;(/T1,T2) Set up message buffer
@@ -2685,6 +2829,11 @@ MSGINE:	 BUG.(CHK,CTDFSA,CTHSRV,SOFT,<Can't get free space for CTERM>,,<
 
 Cause:	During system startup CTERM couldn't get enough free space.
 
+Action:	Go into SYSDPY's RE display and see which freespace pool is
+	being used up. If this happens frequently, there may be a
+	software bug loosing the freespace. However, there may be
+	insufficient freespace in the pool that has run out. You
+	could try to increase that pool's size in your monitor.
 >)
 	SUBTTL SYSTEM INITIALIZATION -- SWAP TABLE
 
@@ -2835,7 +2984,8 @@ CTMPER:	LOAD T4,CHIMB,(CDB)	;Get pointer to beginning of DECnet message
 
 Cause:	A server has sent TOPS-20 a message which it does not like.
 
-Action:	If this BUGINF persists, change it to a BUGHLT. Examine the
+Action:	The DOB% facility should have taken a dump of this BUG. If
+	not and this BUGINF persists, change it to a BUGHLT. Examine the
 	message in the dump to determine the problem.
 
 Data:	COUNT - The current byte count
@@ -3021,6 +3171,7 @@ ULKCDB:	SAVEAC <T1>
 XRENT	(CHRRH,G)		;[7.1024]CHRRH::, XCHRRH::
 
 	SASUBR <UAB>
+	SAVEQ			;[9041] Can't be bashing these now
 	MOVEM T1,UAB		;SAVE OUTPUT POINTER
 	MOVX T4,NW%DNA		;SET NETWORK TYPE
 	DPB T4,[POINT 9,.NWTTF(T1),17] ;STORE NETWORK TYPE
@@ -3028,22 +3179,58 @@ XRENT	(CHRRH,G)		;[7.1024]CHRRH::, XCHRRH::
 	NOSKED
 	SKIPN T3,TTDEV(T2)	;GET LINK INDEX
 	JRST CHRRH3		;IN CASE ALREADY GONE
-	LOAD T3,CHRID,(T3)	;GET DECNET ADDRESS 
+	XMOVEI Q1,CH.USR(T3)	;[9041] Get address of username string
+	LOAD Q3,CHRID,(T3)	;[9041] Get DECnet address 
 	OKSKED	
-	MOVEM T3,.NWNNU(T1)	;SAVE IT AWAY
-	JUMPE T3,CHRRH4		;IF ZERO - NO HOST NAME
-	MOVE T1,T3		;PUT ADDRESS WHERE SCTA2N WANTS IT
+	MOVEM Q3,.NWNNU(T1)	;[9041] Save it away
+	IFE. Q3			;[9041] Have an address at all?
+	  MOVE T3,UAB		;[9041] Get argument block address
+	  MOVE T2,.NWNNP(T3)	;[9041] Get byte pointer
+	  SETZ T3,		;[9041] No known node name flag
+	  JRST CHRRH2		;[9041] And say no node at all
+	ENDIF.			;[9041]
+	MOVE T1,Q3		;[9041] Put address where SCTA2N wants it
 	CALL <XENT SCTA2N>	;[7.1024]CONVERT # TO SIXBIT NAME
 	IFNSK.
-CHRRH4:	 MOVE T3,UAB		;GET ARG BLOCK ADDRESS
-	 MOVE T2,.NWNNP(T3)	;GET BYTE POINTER
-	 SETZ T3,		;NO KNOWN NODE NAME FLAG
-	 JRST CHRRH2		;COULDN'T
+	  MOVE T3,UAB		;[9041] Get argument block address
+	  MOVE T1,.NWNNP(T3)	;[9041] Get byte pointer to output string
+	  MOVE T2,Q3		;[9041] Get node address back
+	  IDIVI T2,^D1024	;[9041] Get area number
+	  PUSH P,T3		;[9041] Save machine number for later
+	  MOVX T3,<FLD(^D10,NO%RDX)> ;[9041] Output in decimal please
+	  NOUT%			;[9041] Slam area number in string
+	   ERJMP .+1
+	  MOVEI T2,"."		;[9041] Get area/machine seperator
+	  IDPB T2,T1		;[9041] And drop it in the string
+	  POP P,T2		;[9041] Retrieve the machine number
+	  MOVX T3,<FLD(^D10,NO%RDX)> ;[9041] Output it in decimal
+	  NOUT%			;[9041] Put it in
+	   ERJMP .+1
+	  MOVE T2,T1		;[9041] Get byte pointer in correct AC
+	  SETZ T3,		;[9041] But say no node name (even though number was given)
+	  JRST CHRR15		;[9041] And continue
 	ENDIF.
 	MOVE T3,UAB		;GET ARG BLOCK ADDRESS
 	MOVE T2,.NWNNP(T3)	;GET POINTER TO OUTPUT STRING
 	CALLX (MSEC1,GETSIX)	;[7.1024]CONVERT SIXBIT TO ASCII
-CHRRH2:	SETZ T1,
+	;..
+	;..
+;[9041] - Here when node name or AREA.NUMBER has been determined. Now
+;try to put in the username string if we have one.
+CHRR15:	SKIPN (Q1)		;[9041] Is there a username?
+	JRST CHRRH2		;[9041] No, don't bother with "::"
+	MOVEI T1,":"		;[9041] Get node and user seperator
+	IDPB T1,T2		;[9041] Insert it once
+	IDPB T1,T2		;[9041] And a second time to be sure
+	TXO Q1,<OWGP. 7>	;[9041] Make this a one word global byte pointer
+	DO.			;[9041] Now copy in username
+	  ILDB T1,Q1		;[9041] Get a username byte
+	  JUMPE T1,ENDLP.	;[9041] All out, get out of loop
+	  IDPB T1,T2		;[9041] Put username byte into string
+	  JRST TOP.		;[9041] And do more
+	OD.			;[9041]
+
+CHRRH2:	MOVEI T1,.CHNUL		;[9041] Get a null
 	IDPB T1,T2		;DEPOSIT A NULL
 	MOVE T1,UAB		;GET POINTER TO USER ARG BLOCK
 	MOVX T2,NW%NNN		;GET "NO NODE NAME KNOWN" FLAG
@@ -3057,6 +3244,130 @@ CHRRH3:	OKSKED
 	SETZ T3,		;NO NODE NAME
 	CALLRET CHRRH2		;UPDATE HOSTNAME STRING, AND RETURN
 
+	SUBTTL Fetch User from DECnet Connect Message
+;[9041]
+;FETUSR - This routine is called when a connect initiate message
+;is received for CTERM. The remote username string is extracted
+;out of the connect initiate message and slammed into the CDB.
+;
+; Call with:
+;	T1/ Address of connect block from SCLINK
+;	CDB/ Address of CDB (CH block)
+;	CALL FETUSR
+;
+; Returns:
+;	+1 - Always, with the remote username in CHUSR
+
+	XSWAPCD			;Called by CTERM fork
+
+FETUSR:	SAVET			;These are used
+	ADDI T1,<CB.SRC+2>	;Remote username string starts here
+	TXO T1,<OWGP. 8>	;Make one word global byte pointer
+	XMOVEI T2,CH.USR(CDB)	;Get address of place to put username string
+	TXO T2,<OWGP. 7>	;Make it a one word global byte pointer
+	MOVEI T4,MAXLC		;Don't let malicious nodes get us
+	DO.			;Loop over all characters
+	  ILDB T3,T1		;Get a byte from connect initiate message
+;[9044]
+;This horrible addition was put in because certain cretinous operating
+;systems like VMS pad usernames with spaces (version 4.7 of VMS or less).
+	  CAIN T3,.CHSPC	;[9044] Is it a space?
+	  JRST TOP.		;[9044] Yes, ignore it
+	  IDPB T3,T2		;Stash byte in CDB
+	  JUMPE T3,R		;If it was a null, then we are done
+	  SOJG T4,TOP.		;Still possible to do more?
+	OD.
+
+;At this point, the remote node has given us more than the maximum number
+;of characters in a username. We truncate after 39 characters.
+
+	MOVEI T3,.CHNUL		;Get null
+	IDPB T3,T2		;Slam it in the string
+	RET			;And we are done
+
+	SUBTTL Get ACJ Blessing For Incoming CTERM Connection
+;[9041]
+;CTMGOK - Routine called by the CTERM fork when a connect initiate
+;message for CTERM has been received. The CTERM fork will now ask
+;the ACJ if the connection is allowed.
+;
+; Called with:
+;	CDB/ CH block
+;	CALL CTMGOK
+;
+; Returns:
+;	+1 - ACJ said no way
+;	+2 - Go ahead and allow connection
+
+	XSWAPCD			;Called by fork
+
+CTMGOK:	TRVAR <NODSTR,NODADR,MACNUM> ;String for ACJ to go here
+	ACSAV			;Don't destroy any registers
+	NOINT			;Satisfy the freespace routines
+	HRRZI T1,MAXLC+1	;Get this many words
+	HRLI T1,.RESP3		;Lock down if there isn't any space
+	MOVEI T2,.RESGP		;From the general pool
+	CALLX (MSEC1,ASGRES)	;(T1,T2/T1) Get some freespace
+	 RETBAD (,OKINT)	;If none, too bad
+	MOVEM T1,NODSTR		;Save freespace address
+	MOVEI T2,MAXLC+1	;Get freespace size
+	MOVEM T2,.GOSIZ(T1)	;It goes here
+	LOAD T1,CHRID,(CDB)	;Get node address
+	MOVEM T1,NODADR		;Save for later
+	CALL <XENT SCTA2N>	;(T1/T1) Get node name in SIXBIT
+	IFSKP.			;If we got node name,
+	  MOVE T2,NODSTR	;Get freespace address
+	  XMOVEI T2,<.GEWHO+1>(T2) ;Get freespace block where string goes
+	  TXO T2,<OWGP. 7>	;Make it one word global byte pointer
+	  CALL <XENT GETSIX>	;(T1,T2/T2) Translate node name
+	  MOVE T1,T2		;Put byte pointer in good place
+	ELSE.			;Node name not good, time to do it long hand
+	  MOVE T1,NODSTR	;Get freespace address
+	  XMOVEI T1,<.GEWHO+1>(T1) ;Get freespace block address where string goes
+	  TXO T1,<OWGP. 7>	;Make it one word global byte pointer
+	  MOVE T2,NODADR	;Get node address back
+	  IDIVI T2,^D1024	;Get area number
+	  MOVEM T3,MACNUM	;Save machine number for later
+	  MOVX T3,<FLD(^D10,NO%RDX)> ;Output in decimal please
+	  NOUT%			;Slam area number in string
+	   ERJMP .+1
+	  MOVEI T2,"."		;Get area/machine seperator
+	  IDPB T2,T1		;And drop it in the string
+	  MOVE T2,MACNUM	;Retrieve the machine number
+	  MOVX T3,<FLD(^D10,NO%RDX)> ;Output it in decimal
+	  NOUT%			;Put it in
+	   ERJMP .+1
+	ENDIF.
+	;..
+	;..
+	SKIPN CH.USR(CDB)	;Do we have a username?
+	JRST CTMGK1		;No, just pass in node name
+	MOVEI T2,":"		;Add 1 seperator
+	IDPB T2,T1		;Put in the colon
+	IDPB T2,T1		;Again
+	XMOVEI T2,CH.USR(CDB)	;Get address of username string
+	TXO T2,<OWGP. 7>	;Here we go again
+	DO.			;Now insert username into string
+	  ILDB T3,T2		;Get character
+	  IDPB T3,T1		;And put it in ACJ string
+	  JUMPN T3,TOP.		;If not null, keep going
+	OD.
+CTMGK1:	MOVE T1,NODSTR		;Get address of freespace
+	S1XCT <GTOKM (.GOCTM,<T1>,CTMGK2)> ;Ask ACJ
+	CALLX (MSEC1,RELRES)	;(T1/) Give it back
+	OKINT			;And interrupts are OK now
+	RETSKP			;ACJ said to go ahead
+
+	SWAPCD			;This has to be in section 1!!!
+
+CTMGK2:	MOVE T1,NODSTR		;Now return that freespace
+	CALLX (MSEC1,RELRES)	;(T1/) Give it back
+	OKINT			;And interrupts are OK now
+	RET			;ACJ said no can do
+
+	ENDTV.			;And of TRVAR
+
+	XSWAPCD			;Continue in section 6 again
 
 	SUBTTL TERMINAL TYPE TRANSLATION TABLE
 ;Indexed by TOPS20 terminal type

@@ -1,3 +1,23 @@
+; Edit= 9041 to CLUFRK.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 9036 to CLUFRK.MAC on 15-Nov-88 by RASPUZZI
+;Make sure that the system's name gets sent over during PHYKLP START/STACK/ACK
+;sequence. Also, when the NODE% JSYS changes the name, have the local system
+;notify remote systems. Finally, make CLUDGR send over the node name in the
+;last 2 words of the optional connection data. I'm out of breath.
+; Edit= 9028 to CLUFRK.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8877 to CLUFRK.MAC on 10-Aug-88 by RASPUZZI
+;Update BUG. documentation.
+; Edit= 8866 to CLUFRK.MAC on 21-Jul-88 by RASPUZZI
+;Make the CLUDGR SYSAP correctly handle CLUBUF (SYSAP buffer count) and also
+;make CLNEED handle little credit left situations.
+;Remove references to CLUBUF from here.
+; Edit= 8850 to CLUFRK.MAC on 31-May-88 by RASPUZZI
+;Add code to do the TMON% version of .SFSEA and .SFLTS. Also, teach INFO% how
+;it must handle ethernet addresses for .SFSEA between remote systems.
 ; UPD ID= 8492, RIP:<7.MONITOR>CLUFRK.MAC.14,   9-Feb-88 12:18:13 by GSCOTT
 ;TCO 7.1218 - Insert copyright notice.
 ; UPD ID= 8388, RIP:<7.MONITOR>CLUFRK.MAC.13,  27-Jan-88 10:30:23 by GSCOTT
@@ -102,14 +122,15 @@
 ;        1.28   CLFCFG (Do CNFIG% request) . . . . . . . . . .  36
 ;        1.29   CLFMSR (Do MSTR%)  . . . . . . . . . . . . . .  37
 ;        1.30   CLFTIM (Do TIME% simulation) . . . . . . . . .  40
-;        1.31   CLFTMG (Do TTMSG% request) . . . . . . . . . .  41
-;        1.32   CLFBAD (Bad function from remote)  . . . . . .  42
-;        1.33   CLFFAL (Send Failure)  . . . . . . . . . . . .  44
-;        1.34   CLFRSP (Reassemble SCA packets)  . . . . . . .  45
-;        1.35   CLFWAT (Scheduler test to wait for action) . .  46
-;        1.36   ZERDAT (Zero out data area)  . . . . . . . . .  47
-;        1.37   CLFSND (Routine to send results) . . . . . . .  48
-;    2. End of CLUFRK  . . . . . . . . . . . . . . . . . . . .  51
+;        1.31   CLFNOD (Change node name)  . . . . . . . . . .  41
+;        1.32   CLFTMG (Do TTMSG% request) . . . . . . . . . .  42
+;        1.33   CLFBAD (Bad function from remote)  . . . . . .  43
+;        1.34   CLFFAL (Send Failure)  . . . . . . . . . . . .  45
+;        1.35   CLFRSP (Reassemble SCA packets)  . . . . . . .  46
+;        1.36   CLFWAT (Scheduler test to wait for action) . .  47
+;        1.37   ZERDAT (Zero out data area)  . . . . . . . . .  48
+;        1.38   CLFSND (Routine to send results) . . . . . . .  49
+;    2. End of CLUFRK  . . . . . . . . . . . . . . . . . . . .  52
 	SUBTTL CLUDGR Fork -- Data Storage
 NR (CLFSCR,PGSIZ)		;Scratch page for CLUDGR fork
 NR (CLFREA,PGSIZ)		;Reassemble incoming data for CLUDGR fork here
@@ -175,6 +196,7 @@ CLFTAB:	XADDR. CLFBAD		;Cannot do function 0 on remote node
 	XADDR. CLFJOB		;Get job numbers and terminals of user
 	XADDR. CLFRCD		;Simulate RCDIR%
 	XADDR. CLFTIM		;Simulate TIME%
+	XADDR. CLFNOD		;[9036] Set node name in system block
 TABLEN==<.-CLFTAB-1>		;Table length
 
 	SUBTTL CLUDGR Fork -- CLFRUN (Begin running CLUDGR fork here)
@@ -663,9 +685,15 @@ CLFSGT:	MOVE T1,CLFREA		;Get SIXBIT name
 
 	XSWAPCD			;Fork code
 
-CLFTMN:	MOVE T1,CLFREA		;Get function code
+CLFTMN:	DMOVE T1,CLFREA		;Get function code and ethernet channel (just in case)
+	HRROI T3,CLFSCR		;[8850] Put ethernet address here (for .SFSEA)
 	TMON%			;Do the JSYS shuffle
 	 ERJMP DOLAST		;Handle badness
+	CAIE T1,.SFSEA		;[8850] User want ethernet address?
+	IFSKP.			;[8850] If so,
+	  MOVEI T1,4		;[8850] Send over this many words
+	  CALLRET CLFSND	;[8850] Data is there, so send it
+	ENDIF.			;[8850]
 	XMOVEI T1,CLFSCR	;Return setting here
 	MOVEM T2,.AC2(T1)	;Here's the results
 	CALLRET CL2SND		;Send over 2 words
@@ -897,6 +925,7 @@ CLFGJI:	SAVEPQ			;Save these
 ;Word 12-21 - User name string
 ;Word 22-41 - Connected directory string
 ;Word 42-71 - Origin string
+;Word 72 - Job's connect time
 
 	XSWAPCD			;Fork code
 
@@ -971,7 +1000,9 @@ CLFSYS:	SAVEPQ			;These are abused
 	  SETOM (Q1)		;Assume running
 	  CAIE T1,-1		;Is it running
 	  SETZM (Q1)		;No, say TI
-	ENDIF.
+	ELSE.			;[9041]
+	  SETOM (Q1)		;[9041] If no TTY, then running
+	ENDIF.			;[9041]
 	AOS Q1			;Bump to next data word
 	MOVE T1,JOBRT(P1)	;Get job runtime too
 	MOVEM T1,(Q1)		;It is going to be passed back
@@ -1072,8 +1103,17 @@ CLFSYS:	SAVEPQ			;These are abused
 CLFSY1:	SETZB T3,T4
 	SOUT%
 	 ERJMP .+1
-	ADDI Q1,3*MAXLW		;Account for origin in block to be returned	
-CLFSY2:	MOVE T1,Q1		;Get current scratch page pointer
+CLFSY2:	ADDI Q1,3*MAXLW		;[9041] Account for origin in block to be returned
+	MOVE T1,JOB		;[9041] Get job back
+	CALLX (MSEC1,LCL2GL)	;[9041] (T1/T1) Get global job
+	 JRST CLFSY3		;[9041] Does not happen
+	HRROI T2,T4		;[9041] Put one word here
+	MOVEI T3,.JICT		;[9041] Want job's connect time
+	GETJI%			;[9041] And get it
+	 ERJMP .+1		;[9041] Ignore errors
+	MOVEM T4,(Q1)		;[9041] Save the connect time
+CLFSY3:	AOS Q1			;[9041] Bump past word we just got
+	MOVE T1,Q1		;[9041] Get current scratch page pointer
 	XMOVEI T2,CLFSCR	;Get scratch page address
 	SUB T1,T2		;This is how many words to send to remote system
 	CALLRET CLFSND		;(T1/) Do the send and return to process more requests
@@ -1198,6 +1238,41 @@ CLFTIM:	MOVE T1,TODCLK		;Here's our uptime
 	MOVEM T1,CLFSCR		;Stash results here for sending back
 	CALLRET CL1SND		;Send only 1 word
 
+	SUBTTL CLUDGR Fork -- CLFNOD (Change node name)
+;[9036]
+;CLFNOD - Called when a remote system does a NODE% JSYS and
+;changes its node name. This routine will make sure the location
+;in the system block has the right node name.
+;
+; Call with:
+;	CLFREA setup
+;	CALL CLFNOD
+;
+; Returns:
+;	+1 - Always
+
+	XSWAPCD
+
+CLFNOD:	SAVEQ			;Save what we use
+	MOVSI Q1,-C%SBLL	;Get our counter
+	CIOFF			;No interruptions please
+	MOVE T1,CINODE		;Get remote system node number
+	SKIPN T2,SBLIST(T1)	;Have a system block?
+	IFSKP.			;If so,
+	  XMOVEI T1,CLFREA	;Here's new node name
+	  HRLI T1,(POINT 7,)	;Make nice byte pointer
+	  XMOVEI T2,.SBNNM(T2)	;Get address of where node name should be
+	  HRLI T2,(POINT 8,)	;Make nice byte pointer
+	  DO.			;Now loop over all byte and stash them
+	    ILDB T3,T1		;Get first one
+	    IDPB T3,T2		;And store it away
+	    JUMPN T3,TOP.	;Is it a null?
+	  OD.			;If so, done
+	ENDIF.
+	CION
+	SETZM CLFSCR		;Clear this (no error)
+	CALLRET CL1SND		;And send one word over
+
 	SUBTTL CLUDGR Fork -- CLFTMG (Do TTMSG% request)
 ;CLFTMG - This is called when in coming packets represent a request for
 ;a remote TTMSG% and this node is the sucker to do the work. It always
@@ -1271,7 +1346,7 @@ CLFBAD:	STKVAR <ERROR,RETADR,TRIES,SCABUF> ;Place to save error code
 	MOVEM T1,ERROR		;Save error code whilest we get SCA buffer
 	MOVEI T1,1		;Tell SCA we only want a single buffer
 	CALL <XENT SC.ABF>	;(T1/T1,T2,T3) get an SCA buffer
-CLFNOB:	 BUG. (HLT,CLUOSB,CLUFRK,SOFT,<CLUDGR fork could not get an SCA buffer>,,<
+CLFNOB:	 BUG.(HLT,CLUOSB,CLUFRK,SOFT,<CLUDGR fork could not get an SCA buffer>,,<
 
 Cause:	A request was made for CLUDGR fork to do something. Unfortunately,
 	this request failed for one reason or another. When CLUDGR fork
@@ -1281,7 +1356,6 @@ Cause:	A request was made for CLUDGR fork to do something. Unfortunately,
 >)				;What do you mean no buffers?
 	MOVEM T3,RETADR		;This is where return buffer
 	MOVEM T1,SCABUF		;Save SCA buffer address
-	AOS CLUBUF		;Say another buffer in use by CLUDGR
 	MOVX T2,CL%REQ		;Say this is a response
 	ANDCAM T2,FLAGS		;By clearing this bit
 	MOVX T2,CL%ERR		;Now say we had an error
@@ -1321,14 +1395,15 @@ CLFBD2:	RET			;And finished
 
 	XSWAPCD			;Called by fork
 
-CLFFAL:	BUG. (HLT,CLUSCM,CLUFRK,SOFT,<CLUDGR fork send unconditionally failed>,,<
+CLFFAL:	BUG.(HLT,CLUSCM,CLUFRK,SOFT,<CLUDGR fork send unconditionally failed>,,<
 
 Cause:	The local system attempted to send a response to a remote system
 	MAXTRY times. This BUGHLT indicates that the send failed each
 	time due to lack of receive credit on the remote system. The
-	system must be sucking all of the credits somehow. However, simply
-	not performing the send will hang a fork on the remote system.
-	At least the fork will wake up.
+	system has used up all of the credits, and the send ties up a fork
+	on the remote system.
+
+Action:	It is possible that CI problems caused this BUGHLT.
 >)				;Crash
 
 	SUBTTL CLUDGR Fork -- CLFRSP (Reassemble SCA packets)
@@ -1347,7 +1422,7 @@ Cause:	The local system attempted to send a response to a remote system
 CLFRSP:	SAVEAC <Q1>		;Save scratch spot
 	XMOVEI T3,CLFREA	;Start putting stuff at this location
 	SKIPN Q1,REQSCA(T1)	;Get first SCA buffer
-	BUG. (HLT,CLFNSB,CLUFRK,SOFT,<No SCA buffers for request>,,<
+	BUG.(HLT,CLFNSB,CLUFRK,SOFT,<No SCA buffers for request>,,<
 
 Cause:	This BUG indicates that a request came in from a remote system
 	for the local CLUDGR fork to perform. However, after the CL%ALL
@@ -1450,7 +1525,7 @@ CLFSN1:	HRR T2,WRDS		;Get count of words to move
 	CALL SC.BRK		;(T1,T2/T1,T2,T3) Put stuff in SCA message buffers
 	IFNSK.			;If we failed,
 	  SOSGE TRIES		;See if we failed too much
-	  BUG. (HLT,CLOUTB,CLUFRK,SOFT,<System out of SCA buffers>,,<
+	  BUG.(HLT,CLOUTB,CLUFRK,SOFT,<System out of SCA buffers>,,<
 
 Cause:	The CLUDGR fork was trying to send a response to a remote
 	system. However, it could not obtain the SCA bufferage to
@@ -1464,8 +1539,7 @@ Action:	Find out who is eating up the SCA buffers.
 	  JRST CLFSN1		;Try it again
 	ENDIF.
 	OKINT			;All set now
-	ADDM T2,CLUBUF		;Add the buffers in use by CLUDGR
-	MOVEM T1,BUFCHN		;Save SCA buffer chain
+	MOVEM T1,BUFCHN		;Save SCA buffer chain
 	MOVEM T3,RETBUF		;Routine to return the buffers
 	MOVX T2,CL%REQ		;Say this is a response
 	ANDCAM T2,FLAGS		;By clearing this bit
@@ -1506,7 +1580,6 @@ CLFSN2:	MOVE T1,BUFCHN		;Get first buffer in chain
 ;Here when send failed somehow. We are now going to give back
 ;the rest of the SCA buffers.
 PNTCHN:	MOVE T1,BUFCHN		;Get buffer back
-	SOS CLUBUF		;Discount this buffer
 	CALLX (MSEC1,SC.RBF)	;(T1/) Now return it
 	SKIPN T1,NEXT		;Was there more?
 	RET			;No more, go back

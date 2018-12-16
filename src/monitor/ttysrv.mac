@@ -1,5 +1,35 @@
-; 8720 Tue Oct  9 02:30:07 EDT 2018 kcr
-; default terminal type is vt300 for everything, and terminal size set to 0
+; Edit= 9146 to TTYSRV.MAC on 9-Feb-90 by GSCOTT
+;Turning off TT%PGM didn't really work on LAT terminals because the LAT server
+;was not being told to turn off flow control in both directions, which makes
+;the LAT session go into passall mode, because the definiton of SL.DXF was
+;wrong. Also removes edit 9144. 
+; Edit= 9126 to TTYSRV.MAC on 3-Oct-89 by GSCOTT
+;Don't CFOBF% at LOG21 unless the SOBE% loop times out, don't clear SBDLP at
+;CSBDAV, remove edit 9120 as it was a bad idea.
+; Edit= 9117 to TTYSRV.MAC on 20-Jul-89 by GSCOTT
+;TVTSOF now assigns buffers based on network packet size. TVTCSO and OPSCAN
+;now use a bittable (TVTSOQ) to indicate which TVT lines need to be serviced.
+;GTOCHR now releases TTY buffers when the last character is removed from the
+;buffer. Certain SOUT%s to terminals now use a quick output routine called
+;BLAST. Improve "LINK FROM" message in TLINK%.
+; Edit= 9072 to TTYSRV.MAC on 28-Feb-89 by RASPUZZI
+;Prevent NSKDIS BUGHLTs when attaching to a job from a CTERM terminal. Small
+;race condition existed where someone else could have the CTMLOK and deep down
+;in the bowls of CTHSRV, we would try to LOCK the CTMLOK and of course want to
+;block since someone else had it. You can't block when you are NOSKED.
+; Edit= 9062 to TTYSRV.MAC on 19-Jan-89 by GSCOTT
+;TTYASO was two instructions too big.
+; Edit= 9041 to TTYSRV.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 8986 to TTYSRV.MAC on 28-Oct-88 by JROSSELL, for SPR #21549
+;Correct some problems with SET TERMINAL characteristics 
+; Edit= 8977 to TTYSRV.MAC on 4-Oct-88 by JROSSELL, for SPR #21689
+;Add support for optionally not flushing NULs when a terminal is in ASCII
+;mode. 
+; Edit= 8944 to TTYSRV.MAC on 25-Aug-88 by GSCOTT
+;Update BUG. documentation.
 ; UPD ID= 8666, RIP:<7.MONITOR>TTYSRV.MAC.16,  24-Feb-88 18:45:22 by RASPUZZI
 ;More of TCO 7.1230 - Fix misguidance in TTMSG% comments.
 ; UPD ID= 8659, RIP:<7.MONITOR>TTYSRV.MAC.15,  22-Feb-88 12:22:20 by GSCOTT
@@ -369,7 +399,7 @@
 ; UPD ID= 229, SNARK:<6.MONITOR>TTYSRV.MAC.61,   3-Dec-81 10:48:24 by MURPHY
 ;TCO 5.1625 - Create job on CR and LF as well as ^C.
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -413,21 +443,21 @@
 ;   11. TLINK JSYS . . . . . . . . . . . . . . . . . . . . . .  95
 ;   12. Miscellaneous Global Routines  . . . . . . . . . . . . 108
 ;   13. Buffer Control . . . . . . . . . . . . . . . . . . . . 120
-;   14. Character Information Table (CHITAB) . . . . . . . . . 122
-;   15. TCO (First Level Output) . . . . . . . . . . . . . . . 125
-;   16. TCOY (Second Level Output) . . . . . . . . . . . . . . 129
-;   17. TCOY For Control Characters  . . . . . . . . . . . . . 133
-;   18. TCOUT (Third Level Output) . . . . . . . . . . . . . . 140
-;   19. TCI (Get Char From Input Buffer) . . . . . . . . . . . 150
-;   20. Miscellaneous Routines . . . . . . . . . . . . . . . . 157
-;   21. TTCH7 (Empty TTBBUF, Process TTCS Words) . . . . . . . 160
-;   22. TTCHI (Move Char From TTBBUF To Input Buffer)  . . . . 172
-;   23. TTEMES (Send Short Message)  . . . . . . . . . . . . . 193
-;   24. BIGSTO (Store Char In TTBBUF)  . . . . . . . . . . . . 195
-;   25. TTSNDO (Non-Interrupt Character Send)  . . . . . . . . 196
-;   26. TTSND (Send Character To Line) . . . . . . . . . . . . 199
-;   27. PTY Device Dependent Code  . . . . . . . . . . . . . . 206
-;   28. End of TTYSRV  . . . . . . . . . . . . . . . . . . . . 210
+;   14. Character Information Table (CHITAB) . . . . . . . . . 123
+;   15. TCO (First Level Output) . . . . . . . . . . . . . . . 126
+;   16. TCOY (Second Level Output) . . . . . . . . . . . . . . 132
+;   17. TCOY For Control Characters  . . . . . . . . . . . . . 136
+;   18. TCOUT (Third Level Output) . . . . . . . . . . . . . . 143
+;   19. TCI (Get Char From Input Buffer) . . . . . . . . . . . 153
+;   20. Miscellaneous Routines . . . . . . . . . . . . . . . . 160
+;   21. TTCH7 (Empty TTBBUF, Process TTCS Words) . . . . . . . 163
+;   22. TTCHI (Move Char From TTBBUF To Input Buffer)  . . . . 175
+;   23. TTEMES (Send Short Message)  . . . . . . . . . . . . . 196
+;   24. BIGSTO (Store Char In TTBBUF)  . . . . . . . . . . . . 198
+;   25. TTSNDO (Non-Interrupt Character Send)  . . . . . . . . 200
+;   26. TTSND (Send Character To Line) . . . . . . . . . . . . 203
+;   27. PTY Device Dependent Code  . . . . . . . . . . . . . . 211
+;   28. End of TTYSRV  . . . . . . . . . . . . . . . . . . . . 215
 	SUBTTL Definitions -- Tables for each Line Type
 
 ;TABLE OF INSTRUCTIONS TO SET/CLEAR PARITY BIT AS FUNCTION OF LINE TYPE
@@ -455,7 +485,7 @@ IFN .-DDLTBL-NLTYPS,<PRINTX %DDLTBL SIZE DOES NOT AGREE WITH NLTYPS>
 
 	SWAPCD			;THIS TABLE CAN BE SWAPPABLE
 
-LTYTAB:	NW%FE 			;FE
+LTYTAB::NW%FE 			;[9072] FE - Table now global
 	NW%MC 			;MC
 	NW%PT 			;PT
 	NW%TV 			;TV
@@ -474,13 +504,13 @@ DEVTT0:: DVXTT0
 
 
 ;USUAL DEVICE FLAGS AND STATUS
-; 0 LINES/PAGE, 0 CHARS/LINE
-; WAKEUP ON ALL, ECHO MODE 2 (DEFERRED OR IMMED)
+; 66 LINES/PAGE, 75 CHARS/LINE
+; WAKEUP ON ALL, ECHO MODE 2 (DEFERRED OR IMMED), Refuse Links
 ; DATA MODE ASCII, 'RAISE' LC INPUT (ALSO CONVERTS OLD-STYLE ALT-MODES)
 
-NORMTF::0B10+0B17+17B23+2B25+TT%ALK+1B29+1B31+TT%PGM
-NORMTY::.TT300			;an xterm by any other name
-CTYTY:: .TT300			; ^
+NORMTF::^D66B10+^D72B17+17B23+2B25+1B29+1B31+TT%PGM ;[9041]
+NORMTY::.TTDEF			;[7.1230] Non-CTY terminal type
+CTYTY:: .TT120			;[7.1230] CTY terminal type defaults to LA120
 
 TAB81::	EXP 1B0+1B8+1B16+1B24+1B32
 TAB82::	EXP 1B4+1B12+1B20+1B28
@@ -718,10 +748,9 @@ INICTY:	SAVET
 	CALL ASGRES		;GET RESIDENT SPACE
 	 BUG.(HLT,NOCTY,TTYSRV,SOFT,<Unable to allocate data for CTY>,,<
 
-Cause:	During initialization of terminal lines, a call to ASGRES was made
-	to get resident free space for the CTY's data base.  The call got
-	a failure return - no free space available.
-
+Cause:	During initialization of terminal lines, a call to ASGRES was made to
+	get resident free space for the CTY's data base.  The call got a
+	failure return - no free space available.
 >)
 	HRRZ T2,CTYLNO		;T2/ LINE NUMBER, T1/ ADDRESS OF BLOCK
 	HLRZ T3,CTYLNO		;RECOVER LINE TYPE
@@ -1036,9 +1065,8 @@ LCKTT1:	INCR TTLCK,(T2)		;BUMP THE LOCK
 LCKTT2:				;HERE TO HANDLE BAD LOCK
 	BUG.(HLT,TTLOKB,TTYSRV,SOFT,<TTLCK - Bad TTY lock>,,<
 
-Cause:	The monitor tried to lock a TTY line and discovered the lock
-	count was overdecremented.
-
+Cause:	The monitor tried to lock a TTY line and discovered the lock count was
+	overdecremented.
 >)
 	JRST LCKTT1		;HANDLE IF WE ARE CONTINUED FROM BUGHLT
 
@@ -1068,10 +1096,13 @@ ULKTTY::SKIPN INSKED		;DON'T DECREMENT COUNT IF IN SCHEDULER
 
 ULKTMP:	SAVELN
 	LOAD T2,TINTL,(T2)
-	BUG.(CHK,ULKBAD,TTYSRV,HARD,<Unlocking TTY when count is zero>,<<T2,TTYLIN>>,<
+	BUG.(CHK,ULKBAD,TTYSRV,SOFT,<Unlocking TTY when count is zero>,<<T2,TTYLIN>>,<
 
-Cause:	A call has been made to ULKTTY to unlock a terminal but the lock
-	count is already zero. This indicates a coding problem.
+Cause:	A call has been made to ULKTTY to unlock a terminal but the lock count
+	is already zero.  This indicates a coding problem.
+
+Action:	If this BUGCHK is reproducible, set it dumpable and submit an SPR with
+	the dump and instructions on reproducing the problem.
 
 Data:	TTYLIN - TTY line number
 >)
@@ -1088,10 +1119,12 @@ ULKTT1:	IFQN. TTDAL,(T2)	;DID SOMEBODY TRY TO DEALLOCATE THIS?
 	ENDIF.
 	RET
 ULKTT2:				;HERE ON BAD UNLOCK
-	BUG.(CHK,TTULKB,TTYSRV,HARD,<Bad TTY unlock in ULKTT>,,<
+	BUG.(CHK,TTULKB,TTYSRV,SOFT,<Bad TTY unlock in ULKTT>,,<
 
-Cause:	The monitor tried to unlock the TTY and it was already
-	unlocked.
+Cause:	The monitor tried to unlock the TTY and it was already unlocked.
+
+Action:	If this BUGCHK is reproducible, set it dumpable and submit an SPR with
+	the dump and instructions on reproducing the problem.
 >)
 	JRST ULKTT1		;HANDLE IF CONTINUE AFTER BUGHLT
 
@@ -1164,8 +1197,7 @@ TTYASO::SAVELN
 ;been assigned and try again.
 
 	OKSKD1
-	MOVE T1,[TSACT1]	;YES. SET UP TO WAIT
-	TXO T1,1B0		;INDICATE IT'S A ROUTINE ADDRESS
+	MOVX T1,1B0+TSACT1	;[9062] Return flag and block routine address
 	RETBAD 			;LET CALLER DO A DISMS
 
 TTYAO1:	JUMPE T2,TTYAO2		;SEE IF LINE BECOMING ACTIVE
@@ -1175,8 +1207,7 @@ TTYAO1:	JUMPE T2,TTYAO2		;SEE IF LINE BECOMING ACTIVE
 ;try again.
 
 	OKSKD1
-	MOVE T1,[TSACT2]	;YES. SET UP TO WAIT
-	TXO T1,1B0		;INDICATE IT'S A ROUTINE ADDRESS
+	MOVX T1,1B0+TSACT2	;[9062] Return a block routine and flag
 	RETBAD 			;LET CALLER DO A DISMS
 
 ;TTACTL=0.  Assign a dynamic block for the line and initialize its values.
@@ -1386,13 +1417,15 @@ TTYDE4:	MOVEM T2,TTYDLN		;SAVE INTERNAL LINE NUMBER
 ;LINE IS NOT ACTIVE. THIS SHOULD NOT HAPPEN
 
 TTYDE1:	MOVE T2,TTYDLN		;GET LINE NUMBER
-	BUG.(CHK,TTNAC7,TTYSRV,HARD,<Deallocating inactive line>,<<T2,TTYLIN>>,<
+	BUG.(CHK,TTNAC7,TTYSRV,SOFT,<Deallocating inactive line>,<<T2,TTYLIN>>,<
 
-Cause:	TTYDEA was called to deallocate a terminal's dynamic data block
-	but the line was inactive and had no block.
+Cause:	TTYDEA was called to deallocate a terminal's dynamic data block but the
+	line was inactive and had no block.
+
+Action:	If this BUGCHK is reproducible, set it dumpable and submit an SPR with
+	the dump and instructions on reproducing the problem.
 
 Data:	TTYLIN - TTY line number
-
 >)
 	RETSKP
 
@@ -1725,11 +1758,12 @@ TTSOBE::CALL SKCOE		;SKIP IF CTRL-O INTERRUPT ENABLED
 	    RETSKP		;SAY OUTBUF EMPTY
 	  ENDIF.
 	ENDIF.
+	LOAD T1,TSALC,(T2)	;[9117] Get sendall count in case return noskip
+	JN TTSAL,(T2),R		;[9117] Return noskip if sendall in progress
 	MOVE 1,TTOCT(2)		;GET # OF BYTES
 	JN TTOTP,(T2),R		;RETURN NOSKIP IF OUTPUT IS STILL ACTIVE
-	SKIPLE 1		;BYTES STILL IN -10 MEMORY
-	RET			;NO. NONSKIP
-	TDCALL D,<<FE,TTSBEF>,<MC,MCSBEF>>
+	JUMPG T1,R		;[9117] Return noskip if bytes still in memory
+	TDCALL D,<<FE,TTSBEF>,<MC,MCSBEF>> ;[9126]
 	 RETSKP			;DEVICE BUFFER (IF ANY) ALSO EMPTY
 	RET			;DEVICE BUFFER NOT EMPTY
 
@@ -1838,7 +1872,7 @@ TTOBE0:	CALL STADYN		;GET ADDRESS OF DYNAMIC DATA
 TSOBED:	SKIPE TTOCT(T2)		;IS OUTPUT BUFFER EMPTY?
 	RET			;NO. DON'T WAKE UP
 	JN TTOTP,(T2),R		;NO IF STILL OUTPUT ACTIVE
-	TDCALL D,<<FE,TTSBEF>,<MC,MCSBEF>> ;CHECK DEVICE BUFFERING IF ANY
+	TDCALL D,<<FE,TTSBEF>,<MC,MCSBEF>> ;[9126]
 	IFSKP. <RET>		;SKIPS IF BUFFER *NOT* EMPTY
 	SETZRO TTBKO,(T2)	;NOTE WAIT COMPLETED
 	RETSKP
@@ -1899,8 +1933,6 @@ TTRMOD::SAVELN
 
 ;IMPLEMENTS SFMOD JSYS
 
-;won't the stack be wrong if the ITERR is taken? Check now, push later?
-
 TTSMOD::PUSH P,1
 	TRNE 1,400000		;THIS BIT MUST BE ZERO
 	ITERR(DECRSV,<CALL ULKTTY>)	;NOT ZERO - ERROR RETURN
@@ -1915,6 +1947,11 @@ TTSMOD::PUSH P,1
 	  IFSKP. <
 	  MOVEI T1,TTOMRK	;YES, PUT MARKER IN OUTPUT STREAM
 	  CALL TCOUM>>
+	LOAD T1,TYLMD,(T2)	;[9117] Get last data mode
+	CAIE T1,.TTBIN		;[9117] Was the last mode binary?
+	IFSKP.			;[9117] Yes, it was
+	  SETZRO TYLCH,(T2)	;[9117] Clear last character
+	ENDIF.			;[9117] 
 	LOAD T1,TT%DAM,TTFLGS(T2) ;GET TERMINAL DATA MODE
 	STOR 1,TYLMD,(T2)	;CHANGE IT FOR PI LEV ALSO
 	POP P,T1
@@ -2108,7 +2145,7 @@ TTSSIG::STOR T1,TTIGI,(T2)	;STORE NEW SETTING OF IGNORE INPUT BIT
 
 	RESCD
 
-SETOBF:	SAVET			;SAVE ALL REGS
+SETOBF::SAVET			;[9117] Save T1 through T4
 	MOVE T3,TTSPWD(T2)	;GET LINE SPEED
 	CAME T3,[-1]		;KNOWN SPEED?
 	IFSKP.
@@ -2329,6 +2366,22 @@ TTESET::CALL STADYN		;Get dynamic data
         STOR T3,TTETP,(T2)	;Set the action routine index.
 	RETSKP
 
+;[8977]TTANUL - Routine to enable or disable NUL passthrough in ASCII mode
+;[8977]         Called by MTOPR's .MOANU function
+;[8977]Accepts:
+;[8977]       T2/ Dynamic block address
+;[8977]       T3/ ASCII NUL passthrough flag
+;[8977]		 .MOANN - flush NULs from TTBBUF
+;[8977]		 .MOANY - pass  NULs from TTBBUF to the input buffer
+;[8977]
+;[8977]Returns +1: Illegal argument value specified
+;[8977]        +2: TDB updated with latest ASCII NUL passthrough flag value
+
+TTANUL::CAIL T3,.MOANN		;[8977]Check for a valid lower bound
+	CAILE T3,.MOANY		;[8977]Check for a valid upper bound
+	RET			;[8977]Indicate an error has occurred
+	STOR T3,TTNUL,(T2)	;[8977]Update the NUL passthrough flag
+	RETSKP			;[8977]Indicate success
 
 
 ;NWTRRH - Return network information for terminal
@@ -2345,7 +2398,7 @@ TTESET::CALL STADYN		;Get dynamic data
 ; Returns + 1 on error with T1/ error code
 ;	  + 2 on sucess
 
-MXHL==^D8			;MAX LENGTH OF HOSTNAME (WORDS)
+MXHL==^D12			;[9041] Max length of hostname (words)
 
 NWTRRH::TRVAR <NWTJFN,NWTDB,NWTUAB,<NWTARG,.NWNU1+1>,<NWTHST,MXHL>>
 	MOVEM T1,NWTJFN
@@ -2573,7 +2626,8 @@ TTRXOB::LOAD T1,TTNXO,(T2)	;GET THE BIT
 TTPPCS::HRRZ T3,T1		;CHECK UNPAUSE CHARACTER
 	CAIN T3,PGMOFC		;CTRL-S?
 	ITERR (TTYX02,<CALL ULKTTY>) ;YES, DOESN'T WORK
-	TDCALL D,<<CH,CTHPPC>>	;DO DEVICE-DEPENDENT STUFF
+	TDCALL D,<<CH,CTHPPC>>,<RETSKP> ;[8986]Do device dependent routind
+	ITERR (TTYX02,<CALL ULKTTY>) ;[8986]Quit now if illegal character
 	STOR T1,TTUPC,(T2)
 	HLRZ T1,T1
 	STOR T1,TTPPC,(T2)
@@ -2771,6 +2825,7 @@ TTCMPP::SKIPGE CHITAB(T2)	;NEED PARITY ON THIS CHARACTER?
 	IFSKP.			;[7.1056] Skip if yes
 	  AOS TTCAPF		;[7.1056] Set priv word to +1 for monitor
 	ELSE.			;[7.1056] 
+	  GTOKM (.GOTTM,<T1>)	;[9041] ACJ letting them?
 	  MOVE D,CAPENB		;[7.1056] Get capabilities
 	  TXNE D,SC%WHL!SC%OPR	;[7.1056] Is he privileged?
 	  SETOM TTCAPF		;[7.1056] Yes, set priv word to -1 for user
@@ -3612,6 +3667,10 @@ STPAR1:	LDB 1,[POINT 3,0(P),3]
 ;'OBJECT' IS USUALLY THE CALLER OF THE JSYS; 'REMOTE' IS THE OTHER LINE
 
 .TLINK::MCENT
+	CALL CKMMOD		;[9041] Coming from monitor?
+	IFNSK.			;[9041] If not, this must be blessed
+	  GTOKM (.GOTLK,<T1,T2>,MRETNE) ;[9041] Ask ACJ for permission
+	ENDIF.			;[9041]
 	TRVAR <OBJNO,OBJADR,REMNO,TLSAV1,LNKWRN>
 	SETOM LNKWRN		;ASSUME LINK MESSAGE IS NEEDED
 	MOVEI T1,-.TTDES(T1)	;TURN OBJECT DESIGNATOR INTO LINE NUMBER
@@ -3901,8 +3960,8 @@ TL22:	CALL ULKTTY
 	JRST TL25		;NO, SKIP MESSAGE
 	MOVE T1,OBJNO		;GET TERMINAL NUMBER
 	ADDI T1,.TTDES		;TURN INTO DESIGNATOR
-	HRROI 2,[ASCIZ /
-LINK FROM /]
+	HRROI T2,[ASCIZ /
+[Link from /]			;[9117] Start the message
 	SETZ 3,
 	SOUT			;MSG ON OBJECT ALSO SEEN ON REMOTE
 	 ERJMP TL25
@@ -3911,15 +3970,15 @@ LINK FROM /]
 	HRLI 2,USRLH		;TURN IT INTO A USER NUMBER
 	DIRST			;TYPE HIS NAME
 	 JFCL
-	HRROI 2,[ASCIZ /, TTY /]
+	HRROI T2,[ASCIZ /, TTY/] ;[9117] Label the following number
 	SOUT
 	 ERJMP TL25
 	MOVE 2,FX		;OBJECT LINE NUMBER
 	MOVEI 3,10
 	NOUT
 	 ERJMP TL25
-	HRROI T2,[ASCIZ /
-/]
+	HRROI T2,[ASCIZ /]
+/]				;[9117] Close the message
 	SETZ T3,
 	SOUT
 	 ERJMP TL25
@@ -4558,11 +4617,14 @@ TTGTB2:	ADJSP P,-1		;JUNK
 	POP P,4
 	POP P,1
 	RET
+
+TTGTB3:	BUG.(CHK,TTYNTB,TTYSRV,SOFT,<Ran out of TTY buffers>,,<
 
-TTGTB3:	BUG.(CHK,TTYNTB,TTYSRV,HARD,<Ran out of TTY buffers>,,<
+Cause:	TTGTBF was called to assign and set up TTY buffers but TTFREC indicates
+	that there are no buffers available.
 
-Cause:	TTGTBF was called to assign and set up TTY buffers but TTFREC
-	indicates that there are no buffers available.
+Action:	If this BUGCHK is reproducible, set it dumpable and submit an SPR with
+	the dump and instructions on reproducing the problem.
 >,,<DB%NND>)			;[7.1210] 
 	AOS TTFREC		;GIVE BACK FRUITLESS SOS
 	CHNON DLSCHN		;RESTORE THE CHANNEL
@@ -4814,6 +4876,78 @@ TCO::	LOAD T3,TT%DAM,TTFLGS(T2) ;GET TERMINAL DATA MODE
 	JRST TC1B		;NO
 	CALL TCOUT		;YES, NO TRANSLATE
 	JRST TC1C
+
+;[9117] BLAST routine to provide fast output to terminal for short strings.
+;Call with T2/ line number, user's T2 and T3 set up for a SOUT
+;Returns +1 Blast successful
+;	 +2 Blast unsuccessful, must use slow methods
+;
+;In order for blasting to occur, the following conditions are to be met:
+;		1) TTY in binary mode
+;		2) No links
+;		3) Exact byte count specified (-n in user's AC3)
+;		4) Entire string fits in currently available TTY output buffer
+
+BLAST::	SAVEQ			;[9117] Get some work registers
+	XCTU [SKIPL Q1,3]	;[9117] Get count of chars
+	RETSKP			;[9117] Can't blast if not exact count
+	MOVE T1,TTFLGS(T2)	;[9117] Get flags
+	TXNE T1,TT%DAM		;[9117] Binary data mode?
+	RETSKP			;[9117] Nope, can't have a blast
+	MOVE T1,TTLINK(T2)	;[9117] Check for any links
+	AOJN T1,RSKP		;[9117] No blast if any links
+	JN TOFLG,(T2),RSKP	;[9117] No blast if output being flushed?
+	DYNST T3		;[9117] Get internal line number
+	CAMN T3,CTYINT		;[9117] Is this an alias for the cty?
+	RETSKP			;[9117] Yes, no blasting
+	LOAD T3,TOMAX,(T2)	;[9117] Capacity of output buffers
+	SUB T3,TTOCT(T2)	;[9117] Minus space already used
+	ADD T3,Q1		;[9117] Minus number of bytes we need
+	SKIPE TTOIN(T2)		;[9117] Do the buffers exist?
+	CAIGE T3,^D20		;[9117] Allow some slush
+	RETSKP			;[9117] Not enough space to have a blast
+	TDCALL D,<<PT,CKPTOU>,<MC,CKMCOU>>,RETSKP ;[9117] Output possible?
+	RETSKP			;[9117] No, take failure return
+	NOSKED			;[9117] Turn off timesharing
+	CHNOFF DLSCHN		;[9117] Must prevent deassign of buffers
+	SKIPN T3,TTOIN(T2)	;[9117] Buffers exist?
+	JRST BLASTF		;[9117] No, can't blast
+	LOAD T3,TOMAX,(T2)	;[9117] Capacity of output buffers
+	SUB T3,TTOCT(T2)	;[9117] Minus space already used
+	ADD T3,Q1		;[9117] Minus number of bytes we need
+	JUMPLE T3,BLASTF	;[9117] Not enough left, can't blast
+				;[9117] Fall through to start blasting
+
+;[9117] We can blast, cover your ears and copy the short string out now.
+
+	MOVE T3,TTOIN(T2)	;[9117] Get pointer to output buffer
+BLAST1:	XCTBUU [ILDB T1,2]	;[9117] Get a byte to blast
+	TDNE T3,WRPMSK		;[9117] End of buffer?
+	IFSKP.			;[9117] Yes
+	  HRRZ T4,T3		;[9117] Copy local address of global pointer
+	  LDB Q2,[POINT 6,T3,5] ;[9117] Get byte position and size
+	  CAIN Q2,73		;[9117] Pointing to last byte?
+	  HRR T3,1-TTSIZ(T4)	;[9117] Yes, get address of next buffer
+	ENDIF.			;[9117] Ready to put character in buffer
+	IDPB T1,T3		;[9117] Put it in buffer
+	AOJL Q1,BLAST1		;[9117] Repeat for whole string
+
+;[9117] Blasting done, update pointers and counts and return.
+
+	MOVEM T3,TTOIN(T2)	;[9117] Save updated pointer
+	XCTU [MOVN T4,3]	;[9117] Get positive number of bytes
+	ADDM T4,TTOCT(T2)	;[9117] Update count
+	CHNON DLSCHN		;[9117] Turn dls back on
+	ADDM T4,NTTYOT		;[9117] Update count of tty output characters
+	SETZ T1,		;[9117] Get a zero
+	UMOVEM T1,3		;[9117] Set user's ac3 to zero
+	CALLRET STRTOU		;[9117] (T2,T3/) Start output to line if needed
+
+;[9117] Here if we discovered we can't blast after turning of PI and scheduler.
+
+BLASTF:	CHNON DLSCHN		;[9117] Turn on TTYSRV PI level
+	OKSKED			;[9117] Turn on timesharing again
+	RETSKP			;[9117] Take skip return, can't blast
 
 ;TCOE - ECHO OUTPUT
 
@@ -5599,15 +5733,17 @@ J0TCOT:	CALL TCOTST		;SEE IF NORMAL COMPLETION
 J0TC60:	AOSE J0RLDF		;HAS FE BEEN RELOADED?
 	RET			;YES, KEEP WAITING
 	CALL LODCFE		;REQUEST RELOAD OF CONSOLE FE
-	BUG. (CHK,CTYSTK,TTYSRV,HARD,<FE reload requested because CTY is stuck>,,<
+	BUG.(CHK,CTYSTK,TTYSRV,HARD,<FE reload requested because CTY is stuck>,,<
 
-Cause:	A JOB 0 fork was trying to output to the console, but was unable
-	to. The job entered the J0TCOT scheduler test to wait for the CTY
-	to clear, so that output could begin again. However, the CTY has
-	remained hung for a while and a FE reload has been requested.
+Cause:	A job 0 fork was trying to output to the console, but was unable to.
+	The job entered the J0TCOT scheduler test to wait for the CTY to clear,
+	so that output could begin again.  However, the CTY has remained hung
+	for a while and a FE reload has been requested.
 
-Action:	Check the CTY to see if it is functioning or has been left at the
-	PAR prompt. If the problem persists, contact Field Service.
+Action:	Check the CTY to see if it is functioning properly, has not run out of
+	paper, and has not been left at the RSX20F PARSER prompt.  If the
+	problem persists, contact Field Service to have them check out the CTY
+	and front end hardware.
 >,,<DB%NND>)			;[7.1210] 
 	RET			;KEEP WAITING
 
@@ -5848,11 +5984,8 @@ GTTCI::	SKIPG 1,TTICT(2)	;ANY CHARS IN BUFFER?
 Cause:	At TCI0 (get a character from the line's input buffer) the pointer to
 	the dynamic data base for the line was 0.  This could either be a
 	coding error or the resident table containing the pointers was
-	clobbered.
-
-Action:	Look at the dump.  The stack should indicate which routine called
-	TCI0 without the pointer.
-
+	clobbered.  Examination of the stack in the dump should indicate which
+	routine called TCI0 without the pointer.
 >)
 
 	HRRZ 4,3
@@ -6203,12 +6336,13 @@ TTQAD2:	CAMN T3,TQFNT(T4)	;THIS ONE?
 	AOBJN T4,TTQAD2		;NO
 	BUG.(CHK,TTQADX,TTYSRV,SOFT,<TTYSRV - Unknown function requested>,<<T3,ADR>>,<
 
-Cause:	TTQAD has been called with a routine address that is not
-	in its local table of known routines.
+Cause:	TTQAD has been called with a routine address that is not in its local
+	table of known routines.  To diagnose this problem, look at the stack
+	to find the call to TTQAD.  Then find the name of the routine being
+	passed and add it to the TQFNT table.
 
-Action:	Look at the stack to find the call to TTQAD. Then find
-	the name of the routine being passed and add it to the TQFNT
-	table.
+Action:	If this BUGCHK is reproducible, set it dumpable and submit an SPR with
+	the dump and instructions on reproducing the problem.
 
 Data:	ADR - Address of bogus routine
 >)
@@ -6358,7 +6492,8 @@ TTCOF:	JN TTCON,(B),R		;IF CARRIER IS BACK ON NOW, DON'T HANGUP
 
 ;ALSO CALLED FOR A LINE ASSOCIATED WITH A PTY WHEN THE PTY IS CLOSED.
 
-NTYCOF::CALL TTCOB1		;FLUSH OUTPUT
+NTYCOF::JUMPL T2,R		;[9117] Do nothing if already detached
+	CALL TTCOB1		;FLUSH OUTPUT
 	CALL CHKCTT		;SEE IF THIS IS A CONTROLLING TERMINAL
 	 CALLRET TTJBDT		;NO. DON'T ISSUE INTERRUPT
 	MOVE B,C		;YES. B/ADDRESS OF DYNAMIC DATA
@@ -6706,7 +6841,10 @@ TTMCI1::LOAD 3,TIMAX,(2)	;YES. GET CAPACITY OF INPUT BUFFER
 ;SOME TRANSLATION (OUTPUT OR ECHOING OR BOTH) IS REQUIRED BY TERMINAL
 ;DATA MODE. SEE IF ECHOING IS REQUIRED
 
-TTCHI4:	JUMPE 1,RSKP		;FLUSH NULLS ASAP
+TTCHI4: IFE. 1			;[8977]Is this a NUL?
+	  TMNN TTNUL,(2)	;[8977]Yes, are NULs being flushed?
+	  RETSKP		;[8977]Yes, so flush this one
+	ENDIF.			;[8977] 
 	LOAD 3,TIMAX,(2)	;CAPACITY OF INPUT BUFFERS
 	CAMG 3,TTICT(2)		;FULL?
 	JRST TTCH12		;YES, ECHO BELL
@@ -7212,8 +7350,12 @@ BIGSTO::MOVEI 3,TTBSIZ		;GET SIZE OF TTBBUF
 	IFSKP.
 	  BUG.(CHK,TTYBBO,TTYSRV,HARD,<TTYSRV - Big buffer overflow>,,<
 
-Cause:	The buffer for incoming TTY characters was full.  (The character
-	was discarded and the line XOFFed.)
+Cause:	The buffer for incoming TTY characters was full.  The character was
+	discarded and the line XOFFed.
+
+Action:	Some device connected to the system is filling the buffer for incoming
+	terminal characters.  The device is probably not responding quickly
+	enough to XON/XOFF commands.
 >,,<DB%NND>)			;[7.1210] 
 	  RET
 	ENDIF.
@@ -7225,7 +7367,7 @@ Cause:	The buffer for incoming TTY characters was full.  (The character
 	MOVEM 1,TTBBUF(3)	;STORE CURRENT DATA
 	AOS TTBIGC		;COUNT CONTENTS
 	RET
-
+
 ;INPUT DONE AND CHARACTER PRESENT (CALLED FROM INTERRUPT ROUTINES)
 ; T1/ CHARACTER
 ; T2/ LINE NUMBER
@@ -7394,21 +7536,20 @@ TTSND6:	JN <TTSFG,TTRXF>,(T2),[
 ; RETURN +1: BUFFER EMPTY
 ;	+2: T1/ CHAR (9 BITS)
 
-GTOCHR:	SOSGE TTOCT(2)		;ARE THERE CHARACTERS IN OUTPUT BUFFER?
-	JRST [	SETZRO TTOTP,(T2) ;NO CHARACTERS. CLEAR OUTPUT-ACTIVE
-		SETZM TTOCT(T2)	;ZERO COUNTER
-		CALLRET CLENUP] ; AND GO RELEASE BUFFERS
+GTOCHR:	SKIPLE TTOCT(T2)	;[9117] Any characters in output buffer?
+	IFSKP.			;[9117] Nope the count is zero
+	  SETZRO TTOTP,(T2)	;[9117] Clear the output active bit
+	  RET			;[9117]  and return
+	ENDIF.			;[9117] There are characters in output buffer
+
 	CALL CHKWRN		;SEE IF FORK WAKEUP NEEDED
 	SKIPN 3,TTOOUT(2)	;GET BUFFER POINTER
 	BUG.(HLT,TTONOB,TTYSRV,SOFT,<GTOCHR - No buffer but count non-zero>,,<
 
-Cause:	At TTSND7 (send a character to a line) the pointer to the
-	line's data base was 0.  This is either a coding error or the resident
-	table containing the pointers was clobbered.
-
-Action:	Look at the dump.  The stack should indicate which routine
-	made the call without a pointer.
-
+Cause:	At TTSND7 (send a character to a line) the pointer to the line's data
+	base was 0.  This is either a coding error or the resident table
+	containing the pointers was clobbered.  Examination of the stack in the
+	dump should indicate which routine made the call without a pointer.
 >)
 	TDNN 3,WRPMSK		;AT END OF BUFFER?
 	JRST [	LDB 4,[POINT 6,3,5] ;LOOK AT P,S FIELD OF BYTE POINTER
@@ -7418,9 +7559,22 @@ Action:	Look at the dump.  The stack should indicate which routine
 		HRR T3,1-TTSIZ(T4) ;POINT TO NEXT BUFFER IN CHAIN
 		MOVEM 3,TTOOUT(2)	;SAVE POINTER
 		JRST .+1]
-	ILDB T1,TTOOUT(2)	;GET NEXT CHARACTER
-	RETSKP
 
+	ILDB T1,TTOOUT(2)	;GET NEXT CHARACTER
+
+;[9117] We now release TTY buffers when the last character is removed, instead
+; of releasing them when an attempt is made to read from the empty buffers.
+; This frees up lots of TTY output buffers which would otherwise hang around
+; forever because of device drivers which only remove the number of chars
+; specified by TTOCT, and therefore never attempt to read from the empty buffer
+; chain.
+
+	SOSLE TTOCT(T2)		;[9117] Skip if we just emptied the tty buffer
+	RETSKP			;[9117] Nope, just return now
+	SAVET			;[9117] Yep, save T1-T4
+	CALL CLENUP		;[9117] (T2/) and go release those buffers
+	RETSKP			;[9117] All done, buffers released
+
 ;BACKUP OUTPUT PTR BY ONE (E.G. BECAUSE DTE QUEUE FULL)
 ; T2/ DYN PTR
 
@@ -7433,6 +7587,12 @@ BAKTTO::MOVNI T3,1
 	  MOVEM T3,TTSAL2(T2)
 	  RET
 	ENDIF.
+	SKIPE TTOOUT(T2)	;[9117] Is there a tty buffer?
+	IFSKP.			;[9117] Nope
+	  SAVET			;[9117] Save the temps (sigh)
+	  MOVE T1,T4		;[9117] Get the byte back
+	  CALLRET TCOU5		;[9117] (T1,T2/) Send it to output stream again
+	ENDIF.			;[9117] So there is a tty buffer
 	ADJBP T3,TTOOUT(T2)
 	MOVEM T3,TTOOUT(T2)	;RESTORE IT
 	AOS TTOCT(T2)		;RESET COUNT
@@ -7460,6 +7620,9 @@ TTSND3:	CAIE T1,TTOMRK		;OUTPUT MARKER?
 
 Cause:	An unrecognized function escape character was encountered in a TTY
 	output stream.
+
+Action:	If this BUGCHK is reproducible, set it dumpable and submit an SPR with
+	the dump and instructions on reproducing the problem.
 
 Data:	TDB - Terminal dynamic data block address
 	TTY - TTY line number
@@ -7585,12 +7748,8 @@ TTLIL2:	TDCALX Q1,<<FE,FEDABL>>,<RET>
 
 TTBUGH::BUG.(HLT,BADTTY,TTYSRV,SOFT,<Transfer to nonexistent TTY code>,,<
 
-Cause:	The transfer vector for a non-existent TTY line type was
-	referenced.
-
-Action:	Look at the dump.  The stack should indicate which routine caused
-	the reference.
-
+Cause:	The transfer vector for a non-existent TTY line type was referenced.
+	The stack should indicate which routine caused the reference.
 >)
 	RET
 	SUBTTL PTY Device Dependent Code

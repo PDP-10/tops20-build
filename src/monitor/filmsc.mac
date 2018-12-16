@@ -1,3 +1,24 @@
+; Edit= 9148 to FILMSC.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9117 to FILMSC.MAC on 20-Jul-89 by GSCOTT
+;TVTSOF now assigns buffers based on network packet size. TVTCSO and OPSCAN
+;now use a bittable (TVTSOQ) to indicate which TVT lines need to be serviced.
+;GTOCHR now releases TTY buffers when the last character is removed from the
+;buffer. Certain SOUT%s to terminals now use a quick output routine called
+;BLAST. Improve "LINK FROM" message in TLINK%.
+; Edit= 9041 to FILMSC.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 8977 to FILMSC.MAC on 4-Oct-88 by JROSSELL, for SPR #21689
+;Add support for optionally not flushing NULs when a terminal is in ASCII
+;mode. 
+; Edit= 8937 to FILMSC.MAC on 23-Aug-88 by LOMARTIRE
+;Spell MONITR correctly in ACTION field of BUGs!
+; Edit= 8911 to FILMSC.MAC on 17-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
+; Edit= 8907 to FILMSC.MAC on 16-Aug-88 by LOMARTIRE
+;Improve BUG. documentation 
 ; UPD ID= 8667, RIP:<7.MONITOR>FILMSC.MAC.5,  25-Feb-88 08:30:14 by RASPUZZI
 ;TCO 7.1241 - Prevent ILMNRFs out of TTYCL1.
 ; UPD ID= 8517, RIP:<7.MONITOR>FILMSC.MAC.4,   9-Feb-88 15:36:02 by GSCOTT
@@ -185,7 +206,7 @@
 ;<4.MONITOR>FILMSC.MAC.2,  9-Mar-78 09:37:53, Edit by ENGEL
 ;ADD MTOPR FUNCTIONS FOR 128-CHARACTER MASK
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -202,9 +223,27 @@
 ;	DIGITAL ASSUMES NO  RESPONSIBILITY FOR  THE USE OR  RELIABILITY OF  ITS
 ;	SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
 
-
 	SEARCH PROLOG
 	TTITLE FILMSC		;MISC - TTY, PTY, STRING AND NIL
+	Subttl	Table of Contents
+
+;		     Table of Contents for FILMSC
+;
+;				  Section		      Page
+;
+;
+;    1. FILMSC Definitions . . . . . . . . . . . . . . . . . .   3
+;    2. NUL DEVICE FUNCTIONS . . . . . . . . . . . . . . . . .   4
+;    3. STRING DEVICE FUNCTIONS  . . . . . . . . . . . . . . .   6
+;    4. PTY DEVICE FUNCTIONS . . . . . . . . . . . . . . . . .   8
+;    5. RESCAN JSYS  . . . . . . . . . . . . . . . . . . . . .  21
+;    6. TTYSCN - Search All Open JFNs for Certain TTY  . . . .  36
+;    7. MTOPR Functions for TTYs . . . . . . . . . . . . . . .  37
+;    8. TERMINAL WAKE-UP AND FIELD WIDTH SUPPORT . . . . . . .  46
+;    9. TTYASN . . . . . . . . . . . . . . . . . . . . . . . .  49
+;   10. Disk File ACJefier . . . . . . . . . . . . . . . . . .  51
+	SUBTTL FILMSC Definitions
+
 	SWAPCD
 
 IFE FTNSPSRV,<SEARCH TTYDEF>	;remove this when MTOPR symbols live in MONSYM
@@ -448,6 +487,10 @@ Cause:	STADYN was called to get the address of the dynamic data block for
 	+1, indicating that there is no dynamic data block assigned for
 	that line. This should never happen.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	RETBAD (TTYX01)
 
@@ -1145,6 +1188,10 @@ TTYBLO::HLRZ B,DEV		;GET LINE NUMBER
 	JRST [	CALL ULKTTY	;NOT ACTIVE. ERROR
 		TQO ERRF	;INDICATE ERROR TO CALLER
 		RET]
+	CALL BLAST		;[9117] Try super efficient output routine
+	 JRST TTYOLX		;[9117] It worked, go finish up
+				;[9117] Fall through if not blasting today
+
 	MOVSI Q3,-1000		;SET UP A COUNTER
 TTYOLP:	XCTBUU [ILDB A,2]	;GET A BYTE
 	XCTU [SKIPN 3]		;CHECK FOR NO CHARACTERS
@@ -1360,7 +1407,7 @@ TTMTOP:	TQNN <OPNF>		;CHECK TO SEE IF OPENED
 	JUMPL T2,RSKP		;RETURN IF NOT CONTROLLING TERMINAL
 	XCTU [HRRZ 3,2]		;GET MTOPR OP CODE
 	CAIL T3,.MOPIH		;TOO SMALL?
-	CAILE T3,.MOUHU		;[7435] or too big?
+	CAILE T3,.MOANU		;[8977]Or too large?
 	RETBAD (MTOX1)		;ERROR
 	CALLRET @TTMTFC-.MOPIH(T3) ;DO IT
 
@@ -1403,6 +1450,7 @@ IFN FTNSPSRV,<			;[7435]
 >;[7435] END OF IFN FTNSPSRV
 	DTBDSP	(TTMHUP)	;[7435] 62 - .MOHUP - Hangup remote line
 	DTBDSP	(TTMUHU)	;[7435] 63 - .MOUHU - Unhangup (raise DTR) 
+	DTBDSP	(TTMASN)	;[8977] 64 - .MOANU - ASCII NUL passthrough
 
 ;[7435] Function .MOHUP of MTOPR - Hangup line (drop DTR)
 
@@ -1417,6 +1465,20 @@ TTMUHU:	CALL TTMLOK		;[7435] (T2/) Check access to this terminal
 	 RETBAD (MTOX7)		;[7435] Can't do it
 	CALL TTUHUP		;[7435] (T2/) Call routine to unhangup the line
 	RETSKP			;[7435] Success return
+
+;[8977] Function .MOANU of MTOPR - ASCII mode NUL passthrough
+
+TTMASN:	CALL TLOCK		;[8977](T2/T2)Lock the TDB
+	 RETBAD			;[8977]Quit on an error
+	UMOVE T3,3		;[8977]Pick up the NUL passthrough flag
+	CALL TTANUL		;[8977](T2,T3/)Place the flag in the TDB
+	IFSKP.			;[8977]
+	  CALL ULKTTY		;[8977](T2/)Unlock the TDB
+	  RETSKP		;[8977]Indicate success in updating the TDB
+	ELSE.			;[8977]
+	  CALL ULKTTY		;[8977]Unlock the TDB
+	  RETBAD(MTOX22)	;[8977]Indicate the error from routine TTANUL
+	ENDIF.			;[8977] 
 
 ;FUNCTION .MOPIH OF MTOPR - SEE IF LINE IS HUNGRY
 
@@ -1839,7 +1901,90 @@ TTYDA1:	SETZRO DV%ASN,DEVCHR(T2) ;INDICATE NO LONGER ASSIGNED
 
 ;FAILED TO DEASSIGN DYNAMIC DATA. RETURN FAILURE TO CALLER WITHOUT
 ;CHANGING DEVICE TABLES
+	SUBTTL Disk File ACJefier
+;[9041]
+;FILACJ - Routine called when one of the ACJ functions for a secure
+;file is attempted. This routine takes a byte pointer in AC 1 and
+;copies the entire filename using this byte pointer (from STR: up to
+;version).
+;
+; Call with:
+;	T1/ Byte pointer
+;	JFN/ Offset into JFN block
+;	CALL FILACJ
+;
+; Returns:
+;	+1 - Always, with entire filename copied.
+;	     T1/ Updated byte pointer
+;
+;Note: This routine locks the JFNLCK to prevent the JFN structure from
+;changing out from under us. It happened to JFNS%...
+
+FILACJ::LOCK JFNLCK		;Lock the JFN structure while we work
+	LOAD T2,FLDSB,(JFN)	;Get pointer to structure name
+	CALL MUVIT		;(T1,T2/T1) Copy in structure name
+	MOVEI T2,":"		;Get device seperator
+	IDPB T2,T1		;And insert it
+	MOVEI T2,"<"		;Now begin directory delimiter
+	IDPB T2,T1		;And stick it in
+	LOAD T2,FLDIR,(JFN)	;Find directory string
+	CALL MUVIT2		;(T1,T2/T1) Get directory name
+	MOVEI T2,">"		;Terminator for directory name
+	IDPB T2,T1		;Move it in
+	LOAD T2,FLNSB,(JFN)	;Pointer to file name
+	CALL MUVIT		;(T1,T2/T1) Transfer file name into freespace
+	MOVEI T2,"."		;Now drop in the seperator
+	IDPB T2,T1		;Name delimited
+	LOAD T2,FLESB,(JFN)	;Get extension location
+	CALL MUVIT		;(T1,T2/T1) Copy in the file extension
+	MOVEI T2,"."		;Get seperator for extension
+	IDPB T2,T1		;And insert it
+	LOAD T2,FLVNO,(JFN)	;Retrieve file version number
+	UNLOCK JFNLCK		;And release what we locked (done with it)
+	MOVX T3,<FLD(^D10,NO%RDX)> ;And output it in decimal
+	NOUT%			;Do it
+	 ERJMP .+1		;I hope not
+	RET			;And we have finished
+
 
+;[9041]
+;MUVIT - Stub routine for FILACJ. This is called to copy string pointed
+;to from JFN block into freespace area. It's kind of a fast SOUT%.
+;
+; Called with:
+;	T1/ Byte pointer (target)
+;	T2/ Lookup pointer into JSB freespace for source string
+;	CALL MUVIT
+;
+; Returns:
+;	+1 - Always, with updated byte pointers and string from T2
+;	     moved into string pointed to by T1
+
+MUVIT2:	TDZA T4,T4		;Clear this
+MUVIT:	SETO T4,		;Flag this entry
+	STKVAR <FLAG>		;Hold entry point
+	MOVEM T4,FLAG		;Save entry point
+	AOS T2			;Bump past count word in lookup pointer
+	HRLI T2,(POINT 7,)	;Make byte pointer
+	DO.			;Loop over all characters
+	  ILDB T3,T2		;Get source byte
+	  JUMPE T3,R		;If null, then we are done
+	  SKIPE FLAG		;Special entry point?
+	  IFSKP.		;If so, don't quote periods
+	    CAIN T3,"."		;Is character a dot?
+	    JRST MUVIT1		;Yes, ignore quoting
+	  ENDIF.
+	  EXCH T1,T3		;Get byte in good AC
+	  CALL QUOCHK		;(T1/) See if character needs to be quoted
+	  IFSKP.		;It needs to be quoted
+	    MOVEI T4,"V"-100	;Get ^V
+	    IDPB T4,T3		;Stick in ^V
+	  ENDIF.
+	  EXCH T1,T3		;Get byte pointer back and character back
+MUVIT1:	  IDPB T3,T1		;Copy byte into destination
+	  JRST TOP.		;And do more of them
+	OD.
+
 	TNXEND
 	END
 

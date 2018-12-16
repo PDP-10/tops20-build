@@ -1,3 +1,12 @@
+; Edit= 9036 to CLUPAR.MAC on 15-Nov-88 by RASPUZZI
+;Make sure that the system's name gets sent over during PHYKLP START/STACK/ACK
+;sequence. Also, when the NODE% JSYS changes the name, have the local system
+;notify remote systems. Finally, make CLUDGR send over the node name in the
+;last 2 words of the optional connection data. I'm out of breath.
+; Edit= 8866 to CLUPAR.MAC on 21-Jul-88 by RASPUZZI
+;Make the CLUDGR SYSAP correctly handle CLUBUF (SYSAP buffer count) and also
+;make CLNEED handle little credit left situations.
+;Remove BUFMAX it shouldn't be a constant. It should be a data cell.
 ; UPD ID= 8493, RIP:<7.MONITOR>CLUPAR.MAC.4,   9-Feb-88 12:18:19 by GSCOTT
 ;TCO 7.1218 - Update copyright notice.
 ; UPD ID= 221, RIP:<7.MONITOR>CLUPAR.MAC.3,  28-Oct-87 10:27:08 by RASPUZZI
@@ -191,9 +200,9 @@ REQMAX==<REQCID+1>			;Number of words for request block
 
 CLSND==0,,-1			;Special function for cluster send
 CLCHNG==0,,-2			;Special function for setting our CLUDGR/Cluster send all status
+CLNOD==31			;[9036] Special function for node name change
 BUFINI==^D10			;Number of buffers to queue up initially
 BUFLOT==^D128			;Buffer threshold for returning SCA buffers
-BUFMAX==2*BUFLOT		;Max number of buffers can be used by CLUDGR
 BUFQUE==^D5			;Number of buffers to queue when CLUDGR gets low
 RCRDIT==2			;Minimum receive credit
 SCRDIT==2			;Minimum send credit
@@ -201,6 +210,7 @@ MAXTRY==^D10			;Max number of send tries before giving up
 WAIT==^D1000			;Time to wait in between tries
 .CLSET==0			;First word of connection data is remote CLUSET
 .CLTMG==1			;Second word is setting for remote sends
+.CLNDD==2			;[9036] Node name starts here
 
 	SUBTTL IPCF fields that need to be defined
 ;If these are changed in IPCF, they must be changed here too.

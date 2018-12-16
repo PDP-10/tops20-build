@@ -1,3 +1,14 @@
+; Edit= 8989 to PHYKNI.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8981 to PHYKNI.MAC on 11-Oct-88 by GSCOTT
+;Add NOKLIN. 
+; Edit= 8908 to PHYKNI.MAC on 16-Aug-88 by GSCOTT
+;Update BUG. documentation. 
+; Edit= 8851 to PHYKNI.MAC on 1-Jun-88 by RASPUZZI
+;Always define ETHADR and have PHYKNI set it up at the right time. 
+; Edit= 8815 to PHYKNI.MAC on 29-Mar-88 by RASPUZZI, for SPR #21715
+;Don't let GETCOR hog up freespace and not return any if the freespace block
+;does not meet the requirement of being contiguous in physical memory.
 ; UPD ID= 8606, RIP:<7.MONITOR>PHYKNI.MAC.6,  11-Feb-88 17:12:38 by RASPUZZI
 ;TCO 7.1221 - Teach PHYKNI that where the major version of the NI ucode
 ;	      really is. When we start the KLNI, if there is bas NI ucode,
@@ -341,27 +352,27 @@
 ;   24. Transmit errors  . . . . . . . . . . . . . . . . . . .  30
 ;   25. Here to handle receive errors  . . . . . . . . . . . .  31
 ;   26. KNIERR - Handle KLNI hardware errors . . . . . . . . .  32
-;   27. KNIPPE - Planned CRAM Parity Errors  . . . . . . . . .  33
-;   28. Individual Planned CRAM Parity Errors  . . . . . . . .  34
-;   29. KNICHK - Periodic Checks . . . . . . . . . . . . . . .  40
-;   30. Good Stuff - KLNI dump and reload logic description  .  41
-;   31. KNIJB0 - Run KNILDR if necessary . . . . . . . . . . .  42
-;   32. Read/Write CRAM  . . . . . . . . . . . . . . . . . . .  43
-;   33. NISND - Send Datagram  . . . . . . . . . . . . . . . .  44
-;   34. Byte pointer evaluation tables . . . . . . . . . . . .  45
-;   35. CNTFRG - Count BSDs  . . . . . . . . . . . . . . . . .  50
-;   36. BLDBSD - Build BSDs  . . . . . . . . . . . . . . . . .  51
-;   37. FIXBSD - Correct buffer for physical contituity  . . .  54
-;   38. SETSND - Setup Send Datagram Entry . . . . . . . . . .  55
-;   39. NISRB - Specify Receive Buffer . . . . . . . . . . . .  58
-;   40. Read/Clear Performance Counters  . . . . . . . . . . .  60
-;   41. Read/Read Clear Counters Response  . . . . . . . . . .  61
-;   42. Complete Reading Of Channel Counters . . . . . . . . .  62
-;   43. Complete Reading Of Portal Counters  . . . . . . . . .  63
-;   44. CMPSLZ - Compute Seconds Since Last Zeroed . . . . . .  64
-;   45. NISCS - Set Channel State  . . . . . . . . . . . . . .  65
-;   46. NIRPI - Read Portal Information  . . . . . . . . . . .  66
-;   47. QUECMD - Queue A Command . . . . . . . . . . . . . . .  67
+;   27. KNIPPE - Planned CRAM Parity Errors  . . . . . . . . .  34
+;   28. Individual Planned CRAM Parity Errors  . . . . . . . .  35
+;   29. KNICHK - Periodic Checks . . . . . . . . . . . . . . .  41
+;   30. Good Stuff - KLNI dump and reload logic description  .  42
+;   31. KNIJB0 - Run KNILDR if necessary . . . . . . . . . . .  43
+;   32. Read/Write CRAM  . . . . . . . . . . . . . . . . . . .  44
+;   33. NISND - Send Datagram  . . . . . . . . . . . . . . . .  45
+;   34. Byte pointer evaluation tables . . . . . . . . . . . .  46
+;   35. CNTFRG - Count BSDs  . . . . . . . . . . . . . . . . .  51
+;   36. BLDBSD - Build BSDs  . . . . . . . . . . . . . . . . .  52
+;   37. FIXBSD - Correct buffer for physical contituity  . . .  55
+;   38. SETSND - Setup Send Datagram Entry . . . . . . . . . .  56
+;   39. NISRB - Specify Receive Buffer . . . . . . . . . . . .  59
+;   40. Read/Clear Performance Counters  . . . . . . . . . . .  61
+;   41. Read/Read Clear Counters Response  . . . . . . . . . .  62
+;   42. Complete Reading Of Channel Counters . . . . . . . . .  63
+;   43. Complete Reading Of Portal Counters  . . . . . . . . .  64
+;   44. CMPSLZ - Compute Seconds Since Last Zeroed . . . . . .  65
+;   45. NISCS - Set Channel State  . . . . . . . . . . . . . .  66
+;   46. NIRPI - Read Portal Information  . . . . . . . . . . .  67
+;   47. QUECMD - Queue A Command . . . . . . . . . . . . . . .  68
 	Subttl	Table of Contents (page 2)
 
 ;		     Table of Contents for PHYKNI
@@ -369,39 +380,39 @@
 ;				  Section		      Page
 ;
 ;
-;   48. FNDPT - Find The PTT Entry For A Protocol Type . . . .  68
-;   49. MSGAVA - Response Message Available  . . . . . . . . .  69
-;   50. DGSNT - Response to Datagram Sent  . . . . . . . . . .  70
-;   51. NIRSI - Read KLNI Station Information  . . . . . . . .  71
-;   52. NIRCI - Read Channel Information . . . . . . . . . . .  72
-;   53. NICLO - Flush All Commands From A Portal . . . . . . .  73
-;   54. CLOSED - Command Flush Completion  . . . . . . . . . .  74
-;   55. NISCA - Set Channel Address  . . . . . . . . . . . . .  75
-;   56. PMOVE - Physical Mover . . . . . . . . . . . . . . . .  76
-;   57. PUTQUE - Put An Entry On The Queue . . . . . . . . . .  77
-;   58. REMQUE - Remove An Entry From A Queue  . . . . . . . .  78
-;   59. GETCOR/RELCOR - Core Manager . . . . . . . . . . . . .  79
-;   60. GXRCOR - Get Core For Transmits And Receives . . . . .  80
-;   61. CHKBUF - Check Buffer Physical Range . . . . . . . . .  81
-;   62. NISTP - Stop The KLNI (Freeze) . . . . . . . . . . . .  82
-;   63. INICOM - Setup Initial KLNI Commands . . . . . . . . .  83
-;   64. ENBKLP - Enable KLIPA NI Port  . . . . . . . . . . . .  84
-;   65. PCBINI - Initialize The Port Control Block . . . . . .  85
-;   66. ASGPRO - Assign Protocol Type  . . . . . . . . . . . .  88
-;   67. NIDPT - Disable A Protocol Type  . . . . . . . . . . .  89
-;   68. NISRA - Specify Receive Address  . . . . . . . . . . .  90
-;   69. NIDRA - Disable A Multicast Address  . . . . . . . . .  91
-;   70. FNDMT - Find Enabled MTT Entry For A Given Multicast A  92
-;   71. LDMCT - Build Load Tables Commands . . . . . . . . . .  93
-;   72. LDPTT - Load Protocol Type Table . . . . . . . . . . .  94
-;   73. NIWSI - Write Station Information  . . . . . . . . . .  95
-;   74. LOGERR - Generate ERROR.SYS Entries  . . . . . . . . .  96
-;   75. Common BUGs  . . . . . . . . . . . . . . . . . . . . .  97
-;   76. Miscellaneous Routines . . . . . . . . . . . . . . . .  98
-;   77. History Buffer Routines  . . . . . . . . . . . . . . .  99
-;   78. INIUNB - Initialize The History Buffer . . . . . . . . 100
-;   79. FNDCHN - Find Channel Block Associated With Channel #  101
-;   80. End of PHYKLP  . . . . . . . . . . . . . . . . . . . . 102
+;   48. FNDPT - Find The PTT Entry For A Protocol Type . . . .  69
+;   49. MSGAVA - Response Message Available  . . . . . . . . .  70
+;   50. DGSNT - Response to Datagram Sent  . . . . . . . . . .  73
+;   51. NIRSI - Read KLNI Station Information  . . . . . . . .  74
+;   52. NIRCI - Read Channel Information . . . . . . . . . . .  75
+;   53. NICLO - Flush All Commands From A Portal . . . . . . .  76
+;   54. CLOSED - Command Flush Completion  . . . . . . . . . .  77
+;   55. NISCA - Set Channel Address  . . . . . . . . . . . . .  78
+;   56. PMOVE - Physical Mover . . . . . . . . . . . . . . . .  79
+;   57. PUTQUE - Put An Entry On The Queue . . . . . . . . . .  80
+;   58. REMQUE - Remove An Entry From A Queue  . . . . . . . .  81
+;   59. GETCOR/RELCOR - Core Manager . . . . . . . . . . . . .  82
+;   60. GXRCOR - Get Core For Transmits And Receives . . . . .  83
+;   61. CHKBUF - Check Buffer Physical Range . . . . . . . . .  84
+;   62. NISTP - Stop The KLNI (Freeze) . . . . . . . . . . . .  85
+;   63. INICOM - Setup Initial KLNI Commands . . . . . . . . .  86
+;   64. ENBKLP - Enable KLIPA NI Port  . . . . . . . . . . . .  87
+;   65. PCBINI - Initialize The Port Control Block . . . . . .  90
+;   66. ASGPRO - Assign Protocol Type  . . . . . . . . . . . .  93
+;   67. NIDPT - Disable A Protocol Type  . . . . . . . . . . .  94
+;   68. NISRA - Specify Receive Address  . . . . . . . . . . .  95
+;   69. NIDRA - Disable A Multicast Address  . . . . . . . . .  96
+;   70. FNDMT - Find Enabled MTT Entry For A Given Multicast A  97
+;   71. LDMCT - Build Load Tables Commands . . . . . . . . . .  98
+;   72. LDPTT - Load Protocol Type Table . . . . . . . . . . .  99
+;   73. NIWSI - Write Station Information  . . . . . . . . . . 100
+;   74. LOGERR - Generate ERROR.SYS Entries  . . . . . . . . . 101
+;   75. Common BUGs  . . . . . . . . . . . . . . . . . . . . . 102
+;   76. Miscellaneous Routines . . . . . . . . . . . . . . . . 104
+;   77. History Buffer Routines  . . . . . . . . . . . . . . . 105
+;   78. INIUNB - Initialize The History Buffer . . . . . . . . 106
+;   79. FNDCHN - Find Channel Block Associated With Channel #  107
+;   80. End of PHYKLP  . . . . . . . . . . . . . . . . . . . . 108
 	SUBTTL Known Bugs And Deficiencies
 
 COMMENT/
@@ -715,7 +726,7 @@ ENDSTR
 
 BEGSTR SB,SN.LST
 	WORD BBA		; Physical BSD base address
-				;  Anything may be added from here on ****
+				;  Anything may be added from here on 
 	WORD PID		; Portal ID
 	WORD MSD		; MSD pointer
 	WORD RID		; Request ID
@@ -731,7 +742,7 @@ BEGSTR BD
 	WORD NXA		;PHYSICAL NEXT BSD ADDRESS
 	WORD SLN		;SEGMENT LENGTH
 	WORD RES		;RESERVED FOR SOFTWARE
-				;**** ADDITION DEFINITIONS MAY BE ADDED HERE
+				; ADDITION DEFINITIONS MAY BE ADDED HERE
 ENDSTR
 
 	SUBTTL Port Storage Definitions
@@ -837,7 +848,7 @@ BEGSTR WS,CM.LST
 	NXTWRD
 	FILLER 24		;NOT USED
 	FIELD RTY,12		;ERROR RETRY VALUE
-				;**** ADDITIONS MAY BE ADDED HERE
+				; ADDITIONS MAY BE ADDED HERE
 	HWORD FNC		;FUNCTION WHICH INVOKED THIS COMMAND
 ENDSTR
 
@@ -871,7 +882,7 @@ BEGSTR RD,CM.LST
 ;	FIELD SA2,16,31		; Low order source address
 	FIELD PTY,16,31		; Protocol type
 	FIELD PBA,22,35		; Physical address of receive buffer
-				; **** Additions may be added here
+				;  Additions may be added here
 	WORD VBA,2		; Virtual address of receive buffer
 	WORD PID		; Portal ID
 	WORD RID		; Request ID
@@ -990,6 +1001,7 @@ ENDSTR
 	SUBTTL Local Storage
 
 RSI	(CHNBAS,0)		;BASE OF CHANNEL BLOCK LIST
+RSI	(NOKLIN,0)		;[8981] nonzero to pretend no KLNI
 RS	NIHERE,1		;[7134] NI IN USE
 RS	(TIMCNT)		;COUNT FOR BROKEN KLIPA
 RS	(PRTSTG,PS.LST)		;PORT STORAGE
@@ -1034,7 +1046,7 @@ DSPEND==.-CMDDSP			;END OF DISPATCH TABLE
 NIDSP:	SAVEAC <PS,CM>
 	SKIPLE T1		; Less than zero?
 	CAXLE T1,NF.MAX		; Or larger than the max?
-	 BUG. (HLT,KNIBFC,PHYKNI,SOFT,<PHYKNI - Illegal NI function code>,<<T1,FUNC>>,<
+	 BUG.(HLT,KNIBFC,PHYKNI,SOFT,<PHYKNI - Illegal NISRV function code>,<<T1,FUNC>>,<
 
 Cause:	NISRV called PHYKNI with a bad function code.  The code is in T1.
 
@@ -1046,9 +1058,9 @@ Data:	FUNC - Illegal function code
 	LOAD PS,PRCHN,(PR)	; Get channel block address
 	JUMPLE PS,NIDSP1	; Jump if it's .LE. 0
 	OPSTR <CAME PS,>,PSCHK,(PS) ; Does the check word look Kosher?
-NIDSP1:	 BUG. (HLT,KNIICA,PHYKNI,SOFT,<PHYKNI - Illegal channel block address>,<<PS,PS>,<PR,PR>>,<
+NIDSP1:	 BUG.(HLT,KNIICA,PHYKNI,SOFT,<PHYKNI - Illegal channel block address>,<<PS,PS>,<PR,PR>>,<
 
-Cause:	The channel block address for this portal is invalid.
+Cause:	The channel block address for this NIA20 portal is invalid.
 
 Data:	PS - Bad channel block address
 	PR - Bad portal block address
@@ -1100,6 +1112,8 @@ NIINI1:
 
 ; Check for a KLIPA in slot 5
 
+	SKIPE NOKLIN		;[8981] Pretenting no KLNI today?
+	RET			;[8981] Yes, return now
 	CONI KNI,T1		; Read the CSR
 	JE CI.PPT,T1,RTN	; Just return if not a KLIPA
 
@@ -1155,9 +1169,9 @@ KNIDSP::JRST NIINI		;0 - INITIALIZATION
 	JRST DSPBUG		;12 - CHECK UNIT EXISTANCE
 	JRST DSPBUG		;13 - EXTRACT ADDRESS FROM CCW WORD
 
-DSPBUG:	BUG. (HLT,KNIIPF,PHYKNI,SOFT,<PHYKNI - Illegal channel dispatch>,,<
+DSPBUG:	BUG.(HLT,KNIIPF,PHYKNI,SOFT,<PHYKNI - Illegal channel dispatch>,,<
 
-Cause:	The KLNI driver was called to perform a PHYSIO function it is not
+Cause:	The NIA20 driver was called to perform a PHYSIO function it is not
 	capable of doing.
 >)
 	RET
@@ -1371,14 +1385,14 @@ KNISV1:	OPSTR <SKIPN T2,>,PSNXT,(T2) ;  Get address of next channel block
 	UNBRK KNI		; Dismiss the interrupt
 
 repeat 0,<
-	BUG. (HLT,KNIUEI,PHYKNI,HARD,<PHYKNI - Unexpected interrupt>,<<T1,CONI>,<T2,CDBSTS>>,<
+	BUG.(HLT,KNIUEI,PHYKNI,HARD,<PHYKNI - Unexpected interrupt>,<<T1,CONI>,<T2,CDBSTS>>,<
 
-Cause:	The KLNI has interrupted the processor, however the monitor does not
-	beleive that there is a KLNI in this channel slot.  Since the monitor
-	determined that this is NOT a KLNI (at system startup time via
+Cause:	The NIA20 has interrupted the processor, however the monitor does not
+	beleive that there is a NIA20 in this channel slot.  Since the monitor
+	determined that this is NOT a NIA20 (at system startup time via
 	KNITST), this interrupt should NOT have happened.
 
-Action:	Call field service.
+Action:	Field Service should check out the NIA20 and KL10 hardware.
 
 Data:	CONI - CONI KNI,...
 	CDBSTS - Contents of CDBSTS word of channel data block.
@@ -1403,9 +1417,9 @@ INTPRO:	SAVEAC <P1,PS,PR,CM,UN>
 	  MOVX T1,CI.FQE+CO.BTS	; Get bits for CONO
 	  OPSTR <XCT>,PSCNO,(PS); Clear the condition
 	  SKIPE NIBUGX		; Skip this if we aren't interested
-	  BUG. (INF,KNIFQE,PHYKNI,SOFT,<PHYKNI - Free Queue Error>,,<
+	  BUG.(INF,KNIFQE,PHYKNI,SOFT,<PHYKNI - Free Queue Error>,,<
 
-Cause:	  The KLNI received a packet for a protocol, and there were no free
+Cause:	  The NIA20 received a packet for a protocol, and there were no free
 	  packets available for that protocol type.
 
 Action:	  Determine which protocol type ran out of packets, and fix the driver
@@ -1438,10 +1452,13 @@ NIINT2:	OPSTR <AOSN T2,>,QHIWD,(T1) ;Wait for interlock
 	 JRST NIINT3		; Got it
 	CAXG T2,TIMOUT		;Waited long enough?
 	 JRST NIINT2		;No, try again
-	BUG. (CHK,KNIRIT,PHYKNI,SOFT,<PHYKNI - Response queue interlock timed out>,,<
+	BUG.(CHK,KNIRIT,PHYKNI,SOFT,<PHYKNI - Response queue interlock timed out>,,<
 
 Cause:	PHYKNI did not succeed in getting the response queue interlock after
 	5000. tries.
+
+Action:	There may be an NIA20 microcode problem.  It is more likely that there
+	is a NIA20 hardware problem.  Field Service should check out the NIA20.
 
 >,RTN,<DB%NND>)			;[7.1210]
 
@@ -1571,21 +1588,25 @@ URCERR:	MOVX T1,URCCOD		; Get the magic code
 ; contains inconsistent length information with respect to the command block
 ; or the free queue.
 
-BLVERR:	BUG. (HLT,KNIBLV,PHYKNI,SOFT,<PHYKNI - Buffer length violation>,,<
+BLVERR:	BUG.(HLT,KNIBLV,PHYKNI,SOFT,<PHYKNI - Buffer length violation>,,<
 
-Cause:	The BSD chain contained inconsistent length information for 
-	the transmit or receive command that caused it.
+Cause:	The BSD chain contained inconsistent length information for the
+	transmit or receive command that caused it.
 >)
 
-ILLERR:	BUG. (HLT,KNIIEC,PHYKNI,HARD,<PHYKNI - Illegal port error code>,<<T1,CODE>,<T4,CMD>>,<
+ILLERR:	BUG.(HLT,KNIIEC,PHYKNI,HARD,<PHYKNI - Illegal port error code>,<<T1,CODE>,<T4,CMD>>,<
 
 Cause:	The port generated a response which contained:
 
 	a. An unknown error code
 	b. An inappropriate error code for the command
 
+
+Action:	There may be an NIA20 microcode problem.  It is more likely that there
+	is a NIA20 hardware problem.  Field Service should check out the NIA20.
+
 Data:	CODE - Error Code
-	CMD- Command
+	CMD - Command
 >)
 
 	SUBTTL Transmit errors
@@ -1596,14 +1617,16 @@ EXCERR:	MOVX T1,UNEXC%		; Get error code
 	RET			; And pass it on
 
 CCFERR:	LOAD T1,CMTDR,(CM)	; Get the TDR value
-	BUG. (INF,KNICCF,PHYKNI,HARD,<PHYKNI - Carrier check failed>,<<T1,TDR>>,<
+	BUG.(INF,KNICCF,PHYKNI,HARD,<PHYKNI - Carrier check failed>,<<T1,TDR>>,<
 
-Cause:	The NIA module did not detect it's own carrier while it was
+Cause:	The NIA20 module did not detect it's own carrier while it was
 	transmitting.
 
-Action:	Make sure that both ends of the transceiver cable are securely
-	fastened.  Also check Ethernet cable to see if it is properly
-	terminated.
+Action:	The usual cause is that the Ethernet transceiver cable has come loose.
+	Make sure that both ends of the transceiver cable are securely
+	fastened.  If this BUGINF is seen on several systems at once, check the
+	Ethernet cable to see if it is properly terminated.  If all of these
+	check out, the NIA20 hardware should be checked by Field Service.
 
 Data:	TDR - TDR value
 >,,<DB%NND>)			;[7.1210] 
@@ -1612,26 +1635,27 @@ Data:	TDR - TDR value
 
 ; Here on Collision Detect Check failures
 
-CDFERR:	BUG. (CHK,KNICDF,PHYKNI,HARD,<PHYKNI - Collision detect check failed>,,<
+CDFERR:	BUG.(CHK,KNICDF,PHYKNI,HARD,<PHYKNI - Collision detect check failed>,,<
 
 Cause:	The H4000 did not assert the collision detect signal shortly after
 	completion of a transmission.  (This signal is also known as the
 	"Heartbeat" of the H4000).
 
 Action:	Check the transceiver cable and make sure both ends are securely
-	fastened (to the H4000 and the NIA box).  Check the H4000.
+	fastened to both the H4000 and NIA20.  Field Service should also check
+	the H4000 or DELNI hardware.
 >,,<DB%NND>)			;[7.1210] 
 	SETZ T1,		; Indicate successful transmission
 	RET
 
 ; Here when we get a frame too long error
 
-FTLERR:	BUG. (CHK,KNIFTL,PHYKNI,HARD,<PHYKNI - Frame too long>,,<
+FTLERR:	BUG.(CHK,KNIFTL,PHYKNI,HARD,<PHYKNI - Frame too long>,,<
 
-Cause:	The NIA module detected that it was transmitting a frame longer
+Cause:	The NIA20 port module detected that it was transmitting a frame longer
 	than 1536. bytes.
 
-Action:	Check the NIA module.
+Action:	Field Service should check the NIA20.
 >,,<DB%NND>)			;[7.1210] 
 	SETZ T1,		; Just return success
 	RET
@@ -1639,20 +1663,20 @@ Action:	Check the NIA module.
 ; Here when a remote station fails to defer to us (ie: a late collision).
 
 RFDERR:	LOAD T1,CMTDR,(CM)	; Get the TDR
-	BUG. (INF,KNIRFD,PHYKNI,HARD,<PHYKNI - Remote failure to defer>,<<T1,TDR>>,<
+	BUG.(INF,KNIRFD,PHYKNI,HARD,<PHYKNI - Remote failure to defer>,<<T1,TDR>>,<
 
-Cause:	A collision was detected after the NIA had "acquired" control of the
+Cause:	A collision was detected after the NIA20 had "acquired" control of the
 	Ethernet cable.  This is also known as a "late collision".
 
-	A collision may only occur during the transmission of the preamble
-	of a frame.  This problem occurs when the collision is detected
-	after the preamble has been transmitted.
+	A collision may only occur during the transmission of the preamble of a
+	frame.  This problem occurs when the collision is detected after the
+	preamble has been transmitted.
 
-Action:	Check the Ethernet cable.  The maximum distance between any two
-	stations on the cable may not exceed 1500. meters.  A longer cable
-	may result in late collisions of this sort.  This problem may also
-	be caused by a malfunctioning Ethernet station.  Check the other
-	Ethernet stations on the cable to see if they are having similar
+Action:	Field Service should check the Ethernet cable.  The maximum distance
+	between any two stations on the cable may not exceed 1500. meters.  A
+	longer cable may result in late collisions of this sort.  This problem
+	may also be caused by a malfunctioning Ethernet station.  Check the
+	other Ethernet stations on the cable to see if they are having similar
 	problems.
 
 Data:	TDR - TDR value
@@ -1663,21 +1687,25 @@ Data:	TDR - TDR value
 ; Here when we attempt to transmit a frame with less than 46. bytes of data
 ; and we didn't specify padding.
 
-FTSERR:	BUG. (HLT,KNIFTS,PHYKNI,SOFT,<PHYKNI - Frame too short>,,<
+FTSERR:	BUG.(HLT,KNIFTS,PHYKNI,SOFT,<PHYKNI - Frame too short>,,<
 
-Cause:	The port was told to transmit a frame with less than 46. bytes of
-	user data and the pad flag (CMPAD) was not set.  This should have
-	been detected by NISND.
+Cause:	The port was told to transmit a frame with less than 46. bytes of user
+	data and the pad flag (CMPAD) was not set.  This should have been
+	detected by NISND.
 >)
 
 	SUBTTL Here to handle receive errors
 
 ; Here when we get a NIA receive buffer overrun
 
-DOVERR:	BUG. (CHK,KNIDOV,PHYKNI,HARD,<PHYKNI - NIA buffer overrun>,,<
+DOVERR:	BUG.(CHK,KNIDOV,PHYKNI,HARD,<PHYKNI - NIA20 buffer overrun>,,<
 
-Cause:	The NIA module did not have enough free space to store an
+Cause:	The NIA20 hardware did not have enough free space to store an
 	incoming datagram.
+
+Action:	It is likely that there is a NIA20 hardware problem.  Field Service
+	should check out the NIA20.
+
 >,,<DB%NND>)			;[7.1210] 
 	LOAD PR,RDPID,(CM)	; Get the portal ID
 	LOAD T1,PRFQA,(PR)	; Get PTT entry address
@@ -1726,7 +1754,7 @@ KNIERR:	SAVEAC P1
 
 	CAXL T1,MINCPE		; Before the first planned CRAM parity error?
 	 JRST KNIPPE		;  No, must be a micro-stopcode
-
+
 ; Here on an unplanned CRAM parity error
 
 PARERR:	SAVEAC P2
@@ -1735,12 +1763,12 @@ PARERR:	SAVEAC P2
 	 SETO T1,		; !?! Port running!?!
 	STOR T1,PSCRL,(PS)	; Save the MSB in the PSB
 	STOR T2,PSCRR,(PS)	; Save the LSB in the PSB
-	BUG. (CHK,KNIPER,PHYKNI,HARD,<PHYKNI - CRAM parity error>,<<P1,CONI>,<P2,ADDR>,<T1,LOCMSB>,<T2,LOCLSB>>,<
+	BUG.(CHK,KNIPER,PHYKNI,HARD,<PHYKNI - CRAM parity error>,<<P1,CONI>,<P2,ADDR>,<T1,LOCMSB>,<T2,LOCLSB>>,<
 
-Cause:	The KLNI has detected a parity error in it's Control RAM.  This is
-	a hardware problem.  
+Cause:	The KLNI has detected a unplanned parity error in it's Control RAM.  
 
-Action:	Reload the ucode.  If the problem persists call field service.
+Action:	There is a NIA20 hardware problem.  Reload the NIA20 microcode.  Field
+	Service should check out the NIA20.
 
 Data:	CONI - CONI
 	ADDR - Address of parity error
@@ -1749,13 +1777,13 @@ Data:	CONI - CONI
 	CALL STRLD		; Set state to RELOAD and start KNILDR
 	CALLRET LOGERR		; Log the problem and return
 
-HRDERR:	BUG. (CHK,KNIHED,PHYKNI,HARD,<PHYKNI - Hard error detected>,<<P1,CONI>,<T1,PC>>,<
+HRDERR:	BUG.(CHK,KNIHED,PHYKNI,HARD,<PHYKNI - Hard error detected>,<<P1,CONI>,<T1,PC>>,<
 
-Cause:	MBUS ERROR, or EBUS PARITY ERROR was detected.  This is a KLNI
-	hardware problem.  The address (ADDR) and it's contents (LOCMSB 
-	and LOCLSB) are printed out.
+Cause:	The NIA20 has detected MBUS ERROR or EBUS PARITY ERROR.
 
-Action:	Call field service.
+Action:	This is a NIA20 hardware problem.  The address (ADDR) and it's contents
+	(LOCMSB and LOCLSB) are printed out.  Call Field Service and have the
+	NIA20 checked.  
 
 Data:	CONI - CONI KNI,
 	PC - PC (Microcode PC at time of problem)
@@ -1807,14 +1835,15 @@ DIETAB:	TABBEG MINCPE,MAXCPE,FOO
 
 	SUBTTL Individual Planned CRAM Parity Errors
 
-DIEUPE:	BUG. (INF,KNIUPE,PHYKNI,HARD,<PHYKNI - NIA20 unknown planned CRAM parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIEUPE:	BUG.(INF,KNIUPE,PHYKNI,HARD,<PHYKNI - NIA20 unknown planned CRAM parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
 Cause:	The NIA20 got a CRAM parity error in the range of 7750 to 7777.  This
-	particular error falls into this range, but is not known to TOPS-20.
+	particular error falls into the range of planned CRAM parity errors,
+	but is not known to TOPS-20.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -1823,16 +1852,17 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIEIPE:	BUG. (INF,KNIIPE,PHYKNI,HARD,<PHYKNI - Internal port error>,<<P1,CSR>,<P2,VERSION>,<T1,ADDR>>,<
+DIEIPE:	BUG.(INF,KNIIPE,PHYKNI,HARD,<PHYKNI - Internal NIA20 port error>,<<P1,CSR>,<P2,VERSION>,<T1,ADDR>>,<
 
 Cause:	The NIA20 detected an inconsistency with an operation it was
 	performing.  The inconsistency can be caused by any number of things,
 	but the end result is that the function did not occur correctly or was
 	not logical.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 checked.  It is unlikely, but
+	possible, that this can be caused by a NIA20 microcode bug.
 
 Data:	CSR - CONI KNI,
 	VERSION - Version number of the NIA20 microcode
@@ -1840,16 +1870,16 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIEFST:	BUG. (INF,KNIFST,PHYKNI,HARD,<PHYKNI - Failed self test>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIEFST:	BUG.(INF,KNIFST,PHYKNI,HARD,<PHYKNI - NIA20 failed self test>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
 Cause:	When the NIA20 is idle it performs a self test to check out various
 	pieces of logic (such as the ALU, the microsequencer, and the data
 	mover/formatter).  It also performs a self test when it is first
 	started.  In one of those cases, the self test failed.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -1858,13 +1888,13 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIEEPE:	BUG. (INF,KNIEPE,PHYKNI,HARD,<PHYKNI - EBUS parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIEEPE:	BUG.(INF,KNIEPE,PHYKNI,HARD,<PHYKNI - NIA20 detected EBUS parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
 Cause:	The NIA20 received a word with bad parity from the EBUS.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 and KL10 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -1873,24 +1903,24 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIEPIE:	BUG. (INF,KNIPIE,PHYKNI,HARD,<PHYKNI - PLI parity error>,,<
+DIEPIE:	BUG.(INF,KNIPIE,PHYKNI,HARD,<PHYKNI - NIA20 detected PLI parity error>,,<
 
 Cause:	More than five parity errors occurred when reading data over the PLI
 	interface.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 checked.
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIECPE:	BUG. (INF,KNICPE,PHYKNI,HARD,<PHYKNI - CBUS parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIECPE:	BUG.(INF,KNICPE,PHYKNI,HARD,<PHYKNI - NIA20 detected CBUS parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
 Cause:	The NIA20 detected bad parity for data that was read over the CBUS.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 and KL10 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -1899,13 +1929,13 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIEDPE:	BUG. (INF,KNIDPE,PHYKNI,HARD,<PHYKNI - NIA20 data path error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIEDPE:	BUG.(INF,KNIDPE,PHYKNI,HARD,<PHYKNI - NIA20 data path error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
 Cause:	The threshold (5) for data mover parity errors was exceeded.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -1914,14 +1944,14 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIECAE:	BUG. (INF,KNICAE,PHYKNI,HARD,<PHYKNI - CBUS available timeout>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIECAE:	BUG.(INF,KNICAE,PHYKNI,HARD,<PHYKNI - NIA20 got CBUS available timeout>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
 Cause:	The NIA20 was unable to acquire control of the CBUS within 50
 	microseconds from the start of a CBUS request.
 
 	The NIA20 will be dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 and KL10 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -1930,14 +1960,14 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIEERE:	BUG. (INF,KNIERE,PHYKNI,HARD,<PHYKNI - EBUS request timeout>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIEERE:	BUG.(INF,KNIERE,PHYKNI,HARD,<PHYKNI - NIA20 got EBUS request timeout>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
 Cause:	The NIA20 was unable to get control of the EBUS within 20 milliseconds
 	after making a PI request.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 and KL10 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -1946,14 +1976,14 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIEGCE:	BUG. (INF,KNIGCE,PHYKNI,HARD,<PHYKNI - Grant CSR timeout>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIEGCE:	BUG.(INF,KNIGCE,PHYKNI,HARD,<PHYKNI - NIA20 got Grant CSR timeout>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
 Cause:	The NIA20 was unable to acquire control of the CSR (CONI word) within
 	10 milliseconds after requesting it.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 and KL10 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -1962,14 +1992,14 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIESWC:	BUG. (INF,KNISWC,PHYKNI,HARD,<PHYKNI - Channel short word count>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIESWC:	BUG.(INF,KNISWC,PHYKNI,HARD,<PHYKNI - NIA20 short word count>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
 Cause:	When the NIA20 completed a CBUS transfer, the channel had a short word
 	count error.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 and KL10 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -1978,16 +2008,16 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIESCE:	BUG. (INF,KNISCE,PHYKNI,HARD,<PHYKNI - Spurious channel error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIESCE:	BUG.(INF,KNISCE,PHYKNI,HARD,<PHYKNI - NIA20 spurious channel error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
 Cause:	A spurious channel error occurs whenever the channel raises the error
 	signal, but no error bits are present in the channel logout area.  This
 	error occurs after the threshold (5) of spurious channel errors has
 	been exceeded.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 and KL10 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -1996,14 +2026,14 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIESTA:	BUG. (INF,KNISTA,PHYKNI,HARD,<PHYKNI - NIA20 spurious transmit attention>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIESTA:	BUG.(INF,KNISTA,PHYKNI,HARD,<PHYKNI - NIA20 spurious transmit attention>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
-Cause:	The NIA module set the PLI transmit attention bit, but there was no
+Cause:	The NIA20 module set the PLI transmit attention bit, but there was no
 	transmit pending according to the microcode.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -2012,15 +2042,15 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIEUBE:	BUG. (INF,KNIUBE,PHYKNI,HARD,<PHYKNI - NIA20 used buffer list parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIEUBE:	BUG.(INF,KNIUBE,PHYKNI,HARD,<PHYKNI - NIA20 used buffer list parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
-Cause:	The port received a PLI parity error while reading the NIA module's
-	user buffer list.  This error is only reported after a threshold (5)
-	for this type of error has been exceeded.
+Cause:	The NIA20 port received a PLI parity error while reading the NIA
+	module's user buffer list.  This error is only reported after a
+	threshold (5) for this type of error has been exceeded.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -2029,14 +2059,14 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIEFBE:	BUG. (INF,KNIFBE,PHYKNI,HARD,<PHYKNI - NIA20 free buffer list parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIEFBE:	BUG.(INF,KNIFBE,PHYKNI,HARD,<PHYKNI - NIA20 free buffer list parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
-Cause:	The NIA receive status indicated that there was a free buffer list
+Cause:	The NIA20 receive status indicated that there was a free buffer list
 	parity error.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -2045,15 +2075,15 @@ Data:	CSR - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
-DIEXPE:	BUG. (INF,KNIXPE,PHYKNI,HARD,<PHYKNI - NIA20 transmit buffer parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
+DIEXPE:	BUG.(INF,KNIXPE,PHYKNI,HARD,<PHYKNI - NIA20 transmit buffer parity error>,<<P1,CSR>,<T1,ADDR>,<T3,LOGOU1>,<T4,LOGOU2>>,<
 
-Cause:	The NIA transmit status indicated a transmit buffer parity error.  This
-	error is not reported until a threshold (5) of this type of error has
-	been exceeded.
+Cause:	The NIA20 transmit status indicated a transmit buffer parity error.
+	This error is not reported until a threshold (5) of this type of error
+	has been exceeded.
 
-	The NIA20 will be dumped and restarted by KNILDR.
+	The NIA20 is dumped and restarted by KNILDR.
 
-Action:	Contact Field Service.
+Action:	Call Field Service and have the NIA20 hardware checked.
 
 Data:	CSR - CONI KNI,
 	ADDR - Address of parity error
@@ -2105,9 +2135,12 @@ KNICH2:
 	CALL NISTP		; Stop the channel gracefully
 	CALL RDLAR		; Read the LAR
 	 SETO T1,		; Port is still running!  Use a funny PC...
-	BUG. (CHK,KNISTP,PHYKNI,SOFT,<PHYKNI - KLNI stopped>,<<P1,CONI>,<T1,LAR>>,<
+	BUG.(CHK,KNISTP,PHYKNI,SOFT,<PHYKNI - NIA20 stopped>,<<P1,CONI>,<T1,LAR>>,<
 
-Cause:	No response from KLNI after 5 seconds.
+Cause:	No response from NIA20 after 5 seconds.
+
+Action:	Unless the NIA20 has been halted by hand, call Field Service and have
+	the NIA20 hardware checked.
 
 Data:	CONI - CONI KNI,
 	LAR - Latched Address Register
@@ -2193,7 +2226,7 @@ KNIJBH:
 	SETZ T4,		; Don't care about fork number
 	CALLX (MSEC1,RUNDII)	; Run the program to completion
 	IFNSK.
-	  BUG. (CHK,KNICFF,PHYKNI,SOFT,<PHYKNI - Cannot reload the KLNI>,<<T1,ERROR>>,<
+	  BUG.(CHK,KNICFF,PHYKNI,SOFT,<PHYKNI - Cannot reload the NIA20>,<<T1,ERROR>>,<
 
 Cause:	The monitor was unable to find SYSTEM:KNILDR.EXE when it attempted to
 	reload or dump the port.
@@ -2222,9 +2255,12 @@ KNIJB1:	  MOVX T1,UNS.CR	; Get new state - Can't reload
 	CAXN T1,UNS.RN		; Is the KLNI now running?
 	 RET			;  Yes, all done!
 
-	BUG. (CHK,KNIRLF,PHYKNI,SOFT,<PHYKNI - KLNI Reload Failed>,<<T1,STATE>>,<
+	BUG.(CHK,KNIRLF,PHYKNI,SOFT,<PHYKNI - NIA20 Reload Failed>,<<T1,STATE>>,<
 
-Cause:	KNILDR ran, but failed to reload the KLNI for some reason.
+Cause:	KNILDR ran, but failed to reload the NIA20 for some reason.
+
+Action:	Look at any possible KNILDR output.  Call Field Service and have the
+	NIA20 hardware checked.
 
 Data:	STATE - State of the KLNI
 >,,<DB%NND>)			;[7.1210] 
@@ -2583,7 +2619,7 @@ BLDBS1:	LOAD T1,MDBYT,(P3)	;Get the byte count
 	IFIW BLDBS2		;.BYCSZ - Check the size manually
 	IFIW KNIBT1		;Illegal BYTAB entry
 
-KNIBT1:	BUG. (HLT,KNIBTB,PHYKNI,SOFT,<PHYKNI - Bad BYTAB entry>,<<P2,ENTRY>,<T1,BYTPTR>>,<
+KNIBT1:	BUG.(HLT,KNIBTB,PHYKNI,SOFT,<PHYKNI - Bad BYTAB entry>,<<P2,ENTRY>,<T1,BYTPTR>>,<
 	
 Cause:	BYTAB has been corrupted.  
 
@@ -3104,7 +3140,7 @@ RCRES2:	MOVE T4,(T1)		; Get an entry from the hardware block
 	 JRST RCRCC		;  Yes, process channel counters
 	CAXN T1,NF.RPC		; Read portal counters?
 	 JRST RCRPC		;  Yes, go to it
-	BUG. (HLT,KNIICF,PHYKNI,SOFT,<PHYKNI - Illegal read counters function>,,<
+	BUG.(HLT,KNIICF,PHYKNI,SOFT,<PHYKNI - Illegal read counters function>,,<
 
 Cause:	The read counters callback routine detected an illegal function code
 	in the field C1FNC of the command block.
@@ -3231,7 +3267,7 @@ RCRPC:	SAVEAC P1
 	STOR T1,PCDGS,(T3)
 
 ; Fetch the lost buffers count from the appropriate place in the read counters
-; block.  **** Note that this code may not work for unknown protocol queue****
+; block.   Note that this code may not work for unknown protocol queue
 
 	LOAD T1,PRFQA,(P1)	; Get free queue address
 	LOAD T2,PSPTT,(PS)	; Get start of PTT for this channel
@@ -3467,7 +3503,7 @@ MULAV1:	JFFO T3,MULAVA		; Jump if there are some enabled addresses
 
 	LOADE T3,PRPRO,(PR)	; Get the protocol type
 	JUMPL T3,MSGAV2		; Jump if it's promiscuous or unknown
-
+
 ;Here when a multicast is received for a portal that doesn't have it enabled
 
 	SKIPN NIBUGX		; Don't print these if not interested
@@ -3481,19 +3517,28 @@ MULAV1:	JFFO T3,MULAVA		; Jump if there are some enabled addresses
 	  LOAD T1,RDPTY,(CM)	; Get protocol type
 	  CALL SWAB		; Normalize it
 
-	  BUG. (INF,KNIDMD,NISRV,SOFT,<Portal not enabled for this multicast>,<<P1,HIDST>,<P2,LODST>,<T3,HISRC>,<T4,LOSRC>>,<
+	  BUG.(INF,KNIDMD,NISRV,SOFT,<Portal not enabled for this multicast>,<<P1,HIDST>,<P2,LODST>,<T3,HISRC>,<T4,LOSRC>>,<
 
-Cause:  A portal received a multicast frame on an address it wasn't enabled
-	for.  The frame will be discarded, and the buffer will be re-used.
+Cause:  A portal received a multicast frame on an address for which it wasn't 
+	enabled.  The frame is discarded, and the buffer is re-used.
+	A KNIDM1 BUGINF follows with the protocol type.
+
+Action:	No immediate action is required.  However, if this BUGINF persists,
+	examine the additional data and try to determine by the protocol type
+	and source and destination addresses what is going on.  It is possible,
+	but very unlikely, that some sort of NIA20 hardware problem is at
+	fault.
 
 Data:	HIDST - High order destination address
 	LODST - Low order destination address
 	HISRC - High order source address
 	LOSRC - Low order source address
 >)
-	  BUG. (INF,KNIDM1,NISRV,SOFT,<KNIDMD continued>,<<T1,PROTO>>,<
+	  BUG.(INF,KNIDM1,NISRV,SOFT,<KNIDMD continued>,<<T1,PROTO>>,<
 
 Cause:	Additional data for KNIDMD.
+
+Action:	See KNIDMD.
 
 Data:	PROTO - Protocol type
 >,,<DB%NND>)			;[7.1210] 
@@ -3502,7 +3547,7 @@ Data:	PROTO - Protocol type
 	LOAD T1,PRFQA,(PR)	; Get PTT entry address
 	LOAD T1,PTVIR,(T1)	; Get virt address of free queue header
 	CALLRET PUTQUE		; Put this buffer back on the free list
-
+
 MSGAV2:	LOAD T1,RDRID,(CM)	; Get request ID
 	STOR T1,UNRID,(UN)	; Set request ID
 
@@ -3582,10 +3627,9 @@ DGSNT:	OPSTR <SKIPN UN,>,PSINT,(PS) ; Get interrupt level control buffer
 
 ;NON-BSD SENT
 
-DGSNT5:	BUG. (HLT,KNINBS,PHYKNI,SOFT,<PHYKNI - Non-BSD datagram sent>,<<CM,BUFFER>>,<
+DGSNT5:	BUG.(HLT,KNINBS,PHYKNI,SOFT,<PHYKNI - Non-BSD datagram sent>,<<CM,BUFFER>>,<
 
-Cause:	A NON-BSD style datagram was sent. The driver does not send this
-	style.
+Cause:	A NON-BSD style datagram was sent. The driver does not send this style.
 
 Data:	BUFFER - Buffer address
 >)				;+++debug+++
@@ -3659,12 +3703,16 @@ NSARD:	STOR CM,PSRSI,(PS)	; Give buffer back
 
 BADVAR:	LOAD T2,PSVAR,(PS)	; Get the monitor's copy of the variables.
 
-	BUG. (CHK,KNIVAR,PHYKNI,SOFT,<Monitor variables do not match KLNI variables>,<<T1,KLNI>,<T2,MON>>,<
+	BUG.(CHK,KNIVAR,PHYKNI,SOFT,<Monitor variables do not match NIA20 variables>,<<T1,KLNI>,<T2,MON>>,<
 
-Cause:	PHYKNI just read some status variables from the KLNI and found them 
-	different from the shadow copies stored in the monitor.
+Cause:	PHYKNI just read some status variables from the NIA20 and found them
+	different from the shadow copies stored in the monitor.  The port is
+	shutdown.
 
-Action:	The port will be shutdown.
+Action:	It is possible that there is a monitor software or NIA20 microcode
+	problem.  If this BUGCHK continues and is reprooducable, change this
+	CHGCHK to a BUGHLT and send in an SPR along with the dump and how to
+	reproduce the problem.
 
 Data:	KLNI - KLNI's version of the variables
 	MON - Monitor's version of the variables
@@ -3676,12 +3724,16 @@ BADVA1:	CALL NISTP		; Stop the KLNI
 
 BADADR:	LOAD T3,PSHAD,(PS)	; Get the monitor's copy of the address
 	LOAD T4,PSLAD,(PS)	; "
-	BUG. (CHK,KNIADR,PHYKNI,SOFT,<Monitor address does not match KLNI address>,<<T1,KLNHIO>,<T2,KLNLO>,<T3,MONHIO>,<T4,MONLO>>,<
+	BUG.(CHK,KNIADR,PHYKNI,SOFT,<Monitor address does not match NIA20 address>,<<T1,KLNHIO>,<T2,KLNLO>,<T3,MONHIO>,<T4,MONLO>>,<
 
-Cause:	PHYKNI just read the Ethernet address from the KLNI and found it 
-	different from the shadow copy stored in the monitor.
+Cause:	PHYKNI just read the Ethernet address from the KLNI and found it
+	different from the shadow copy stored in the monitor.  The port is 
+	shutdown.
 
-Action:	The port will be shutdown.
+Action:	It is possible that there is a monitor software or NIA20 microcode
+	problem.  If this BUGCHK continues and is reprooducable, change this
+	BUGCHK to a BUGHLT and send in an SPR along with the dump and how to
+	reproduce the problem.
 
 Data:	KLNHIO & KLNLO - KLNI's copy of the Ethernet address
 	MONHIO & MONLO - Monitor's copy of the Ethernet address
@@ -3786,10 +3838,10 @@ CLOSED:	LOAD T1,CMERC,(CM)	; Get the error code
 	MOVE T1,CM		; Get address of command block
 	CALLRET RELCOR		; Release the command block
 
-BADFLS:	BUG. (HLT,KNIIRC,PHYKNI,SOFT,<Illegal status on close>,<<T1,STATUS>>,<
+BADFLS:	BUG.(HLT,KNIIRC,PHYKNI,SOFT,<PHYKNI - Illegal status on close>,<<T1,STATUS>>,<
 
-Cause:	The status field contained an unexpected value upon return from the
-	close function.
+Cause:	The NIA20 driver has discovered that status field contained an
+	unexpected value upon return from the close (command flush) function.
 
 Data:	STATUS - Status
 >)
@@ -3807,6 +3859,7 @@ NISCA:	LOAD T1,UNCHN,(UN)	; Get channel number
 
 	NIOFF			; No interrupts
 	OPSTRM <DMOVEM T1,>,PSHAD,(PS) ; Store the new address
+	DMOVEM T1,ETHADR	;[8851] Save it here too
 	SETONE PSVAD,(PS)	; Indicate that the address is valid
 	NION			; Enable the interrupts
 
@@ -3943,6 +3996,9 @@ CHKMPT:	MAP T2,QH.FLI(T1)	;GET PHYSICAL ADDRESS OF QUEUE HEADER
 ;
 ; RETURNS +1: ALLOCATION FAILURE
 ;	  +2: ALLOCATION MADE. T1=BUFFER ADDRESS
+;
+; Warning: This routine is recursive. Tread with little cat feet
+;          when making changes.
 ;-
 
 GETCOR:	STKVAR <WORDS,ADDRESS>	;PLACE TO SAVE NUMBER OF WORDS AND ADDRESS
@@ -3954,16 +4010,25 @@ GETCOR:	STKVAR <WORDS,ADDRESS>	;PLACE TO SAVE NUMBER OF WORDS AND ADDRESS
 	MOVEM T1,ADDRESS	;SAVE THE ADDRESS
 	MOVE T2,WORDS		;GET NUMBER OF WORDS BACK
 	CALL CHKBUF		;MAKE SURE IT IS CONTIGUOUS PHYSICALLY
-	IFNSK.
-	  MOVE T1,WORDS		;GET NUMBER OF WORDS BACK
-	  CALL GETCOR		;TRY AGAIN
-	   RET			; TRIED TWICE, GIVE UP
-	  EXCH T1,ADDRESS	;SWAP NEW ADDRESS WITH OLD ADDRESS
-	  CALL RELCOR		;RELEASE THE OLD BLOCK
+	IFSKP.			;[8815] If contiguous,
+	  MOVE T1,ADDRESS	;[8815] Then return with this block
+	  RETSKP		;[8815] And say all is well
 	ENDIF.
 
-	MOVE T1,ADDRESS		;GET ADDRESS BACK
-	RETSKP			;AND GIVE GOOD RETURN
+;Come here when freespace block is not contiguous in memory
+
+	MOVE T1,WORDS		;[8815] Get number of words back
+	CALL GETCOR		;[8815] (T1/) Try again
+	IFNSK.			;[8815] If we can't get anything we like,
+	  EXCH T1,ADDRESS	;[8815] Return what we did have
+	  CALL RELCOR		;[8815] (T1/) Give back the old block
+	  MOVE T1,ADDRESS	;[8815] And retrieve error code
+	  RET			;[8815] And return failure
+	ENDIF.			;[8815]
+	EXCH T1,ADDRESS		;[8815] Swap new address with old address
+	CALL RELCOR		;[8815] (T1/) Release the old block
+	MOVE T1,ADDRESS		;[8815] Get address back
+	RETSKP			;[8815] And give good return
 
 	ENDSV.
 
@@ -4183,18 +4248,20 @@ ENBKLP:	CALL RDVER		; Read the ucode version
 	STOR T2,PSUMI,(PS)	; Save minor version #
 	STOR T3,PSUED,(PS)	; Save the edit #
 	CAMGE T3,UCVEDT		;[7.1221] Acceptable edit level?
-	BUG. (CHK,KNIVER,PHYKNI,SOFT,<Bad KLNI microcode version>,<<T3,BADEDT>,<<XADDR. UCVEDT>,GODEDT>>,<
+	BUG.(CHK,KNIVER,PHYKNI,SOFT,<Bad NIA20 microcode version>,<<T3,BADEDT>,<<XADDR. UCVEDT>,GODEDT>>,<
 
-Cause:	PHYKNI has read the microcode edit number from the KLNI, and has
-	determined that it is below the minimum revision level required for
-	proper port/driver operation. The NI is started anyway.
+Cause:	The NIA20 port driver has read the microcode edit number from the
+	NIA20, and has determined that it is below the minimum revision level
+	required for proper port/driver operation.  The NI is started anyway.
 
-Action:	Obtain the proper version of the KLNI microcode.  The minimum
-	acceptable version is indicated by the second additional data item.
+Action:	Obtain the proper version of the NIA20 microcode, and install it into
+	SYSTEM:KNILDR.EXE.  The minimum acceptable version is indicated by the
+	second additional data item.
 
 Data:	BADEDT - Edit number read from the KLNI
 	GODEDT - Edit number we require
 >,,<DB%NND>)			;[7.1210][7.1221] BUGCHK, but start the KLNI
+
 	MOVX T1,CO.CPT		; Get ready to
 	OPSTR XCT,PSCNO,(PS)	;  clear the port
 	LOAD T1,PSPBA,(PS)	; Get physical addr of 1st word of PCB
@@ -4232,27 +4299,27 @@ Data:	BADEDT - Edit number read from the KLNI
 	JUMPE T2,INIERR		; Go away if timed out
 	OPSTR XCT,PSCQA,(PS)	; Start up the command queue
 	RETSKP			; Indicate success
-
+
 ; Here when we timed out during port initialization.  See if any error bits
 ; are set in T1.
 
 INIERR:	TXNE T1,CI.ERR		; Any error bits set?
 	 JRST KNIERR		;  Yes, complain and log the problem
 
-	BUG. (CHK,KNIINF,PHYKNI,HARD,<PHYKNI - KLNI initialization timed out>,<<T1,CONI>>,<
+	BUG.(CHK,KNIINF,PHYKNI,HARD,<PHYKNI - NIA20 initialization timed out>,<<T1,CONI>>,<
 
-Cause:	The KLNI timed out during initialization.  Either "disable complete"
-	didn't set or "enable complete" didn't set (the CONI will indicate
+Cause:	The NIA20 timed out during initialization.  Either "disable complete"
+	didn't set or "enable complete" didn't set (the CONI indicates
 	which).  This is very likely a hardware problem, because the microcode
-	version number was valid, and there was no specific error indication
-	in the CONI.
+	version number was valid, and there was no specific error indication in
+	the CONI.
 
-Action:	Try reloading the KLNI microcode.  If the problem still persists call
-	field service.
+Action:	Try reloading the NIA20 microcode.  If the problem still persists call
+	Field Service.
 
 Data:	CONI - CONI KNI,
 >,,<DB%NND>)			;[7.1210] 
-	CALLRET NISTP			; Stop the KLNI gracefully
+	CALLRET NISTP		; Stop the KLNI gracefully
 
 	SUBTTL PCBINI - Initialize The Port Control Block
 
@@ -4457,10 +4524,11 @@ NIDPT3:	OPSTR <SKIPN T2,>,PRMUL,(PR) ; Get the enabled multicast bit table
 	JFFO T2,.+1		; Find the MTT table offset for this bit
 	OPSTR <ADD T3,>,PSMTT,(PS) ; Point to the MTT entry
 	CALL NIDRA2		; Disable this address
-	 BUG. (HLT,KNIADE,PHYKNI,SOFT,<PHYKNI - Multicast address disable error>,,<
+	 BUG.(HLT,KNIADE,PHYKNI,SOFT,<PHYKNI - Multicast address disable error>,,<
 
-Cause:	NIDPT got an error from NIDRA when attempting to disable a multicast
-	address that was supposedly enabled.
+Cause:	In the NIA20 driver, NIDPT got an error from NIDRA when attempting to
+	disable a multicast address that was supposedly enabled.  This is a
+	NIA20 microcode problem or a monitor software problem.
 >)
 	JRST NIDPT3		; Go look for more addresses
 
@@ -4746,7 +4814,7 @@ SEBTAB:	;SEBPTR offset,type(SBT{WD,STR,EVC,FNA}),data
 
 	SUBTTL Common BUGs
 
-ILLPTY:	BUG. (HLT,KNIIPT,PHYKNI,SOFT,<PHYKNI - Illegal protocol type on close>,<<T1,PTYPE>>,<
+ILLPTY:	BUG.(HLT,KNIIPT,PHYKNI,SOFT,<PHYKNI - Illegal protocol type on close>,<<T1,PTYPE>>,<
 
 Cause:	A protocol type was specified on the close that was NOT enabled.
 
@@ -4754,42 +4822,53 @@ Data:	PTYPE - The specified protocol type.
 >)
 	RET
 
-QEMPTY:	BUG. (CHK,KNIQUE,PHYKNI,SOFT,<PHYKNI - Queue empty on entry>,<<T1,QUE>>,<
+QEMPTY:	BUG.(CHK,KNIQUE,PHYKNI,SOFT,<PHYKNI - Queue empty on entry>,<<T1,QUE>>,<
 
 Cause:	A queue was empty when the routine REMQUE was called.
+
+Action:	This may be a NIA20 microcode problem or a software problem.  It is
+	possible, but unlikely, that there is a NIA20 hardware problem.  If
+	this BUGCHK persists, change the BUGCHK to a BUGHLT, and submit an SPR
+	along with the dump and instructions on reproducing the problem.
 
 Data:	QUE - The queue header address.
 >)
 	RET
 
 
-UNKRES:	BUG. (HLT,KNIUOP,PHYKNI,HARD,<PHYKNI - Unknown response>,<<T1,RESP>>,<
+UNKRES:	BUG.(HLT,KNIUOP,PHYKNI,HARD,<PHYKNI - Unknown response>,<<T1,RESP>>,<
 
-Cause:	The port gave us a response we don't know about.
+Cause:	The NIA20 port gave us a response we don't know about.
 
 Data:	RESP - Response
 >)
 	RET
-
+
 ILLFNC:	BUG. (CHK,KNIIFD,PHYKNI,SOFT,<PHYKNI - Illegal function from DLL>,<<T1,PASED>,<T2,BLKADR>,<T3,FNC>>,<
 
 Cause:	The NIDLL called the driver with a function we don't handle yet.
 
-Data:	BLKADR -The function block address.
+Action:	If this BUGCHK persists, change the BUGCHK to a BUGHLT, and submit an
+	SPR along with the dump and instructions on reproducing the problem.
+
+Data:	BLKADR - The function block address.
 	FNC - The function code
 >)
 	RET
 
-NOCTL:	BUG. (HLT,KNINIB,PHYKNI,SOFT,<PHYKNI - No control buffer at interrupt level>,,<
+NOCTL:	BUG.(HLT,KNINIB,PHYKNI,SOFT,<PHYKNI - No control buffer at interrupt level>,,<
 
 Cause:	The Port Storage (PS) block was not set up with the address of a UN
 	block to be used at interrupt level.
 >)
 	RET
 
-VMCBUG:	BUG. (CHK,KNIIAM,PHYKNI,SOFT,<PHYKNI - Illegal addressing mode>,<<T2,ADR>>,<
+VMCBUG:	BUG.(CHK,KNIIAM,PHYKNI,SOFT,<PHYKNI - Illegal addressing mode>,<<T2,ADR>>,<
 
 Cause:	An illegal addressing mode was specified.
+
+Action:	If this BUGCHK persists, change the BUGCHK to a BUGHLT, and submit an
+	SPR along with the dump and instructions on reproducing the problem.
 
 Data:	ADR - The mode specfied.
 >)

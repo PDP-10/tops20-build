@@ -1,3 +1,9 @@
+; Edit= 8990 to PHYM78.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8913 to PHYM78.MAC on 17-Aug-88 by GSCOTT
+;Update BUG. documentation. 
+; Edit= 8830 to PHYM78.MAC on 14-Apr-88 by GSCOTT (TCO 7.1275)
+;Install TCO 7.1275 into autopatch sources. 
 ; UPD ID= 8699, RIP:<7.MONITOR>PHYM78.MAC.10,  14-Apr-88 14:35:36 by GSCOTT
 ;TCO 7.1275 - Wait 40000 times for DI.TMR (TM ready) after DO.TMC (TM clear) 
 ; is set - this is what TOPS-blue does when it wants to reset the TM78.
@@ -147,13 +153,13 @@
 ;    8. Reset TM78 . . . . . . . . . . . . . . . . . . . . . .  11
 ;    9. Start I/O Routine  . . . . . . . . . . . . . . . . . .  12
 ;   10. Interrupt Processing
-;       10.1    Attention Interrupt  . . . . . . . . . . . . .  15
-;       10.2    Command Done . . . . . . . . . . . . . . . . .  17
-;       10.3    Analyze What Happened  . . . . . . . . . . . .  20
-;       10.4    Action Routines  . . . . . . . . . . . . . . .  25
-;   11. Error Recovery . . . . . . . . . . . . . . . . . . . .  28
-;   12. TM78 Initializing Routine  . . . . . . . . . . . . . .  32
-;   13. Tables To Control I/O  . . . . . . . . . . . . . . . .  38
+;       10.1    Attention Interrupt  . . . . . . . . . . . . .  16
+;       10.2    Command Done . . . . . . . . . . . . . . . . .  18
+;       10.3    Analyze What Happened  . . . . . . . . . . . .  21
+;       10.4    Action Routines  . . . . . . . . . . . . . . .  26
+;   11. Error Recovery . . . . . . . . . . . . . . . . . . . .  29
+;   12. TM78 Initializing Routine  . . . . . . . . . . . . . .  33
+;   13. Tables To Control I/O  . . . . . . . . . . . . . . . .  39
 	SUBTTL Parameters
 
 	;DRIVE REGISTERS USED IN DATAO'S
@@ -328,10 +334,12 @@ TM8CH2:	AOBJN T1,TM8CH1		;[7.1116] Loop for all units
 
 Cause:	This BUGCHK happens when the KS.ACT bit is on in the KDB but US.ACT
 	wasn't set in any UDBs during a periodic check.  This is not expected
-	to happen.  KS.ACT is cleared.
+	to happen.  KS.ACT is cleared and normal tape operation is restored.
 
-Action:	The hardware may be flakey or broken.  If it is not and you can
-	reproduce this BUGCHK, please submit an SPR.
+Action:	The hardware may be flakey or broken.  Field Service should check out
+	the TM78 hardware.  If the hardware checks out OK, change this BUGCHK
+	to a BUGHLT and submit an SPR along with the dump and how to reproduce
+	the problem.
 
 Data:	CHAN - Channel number
 	CONT - Controller number
@@ -402,13 +410,13 @@ TM8ZA1:	MOVSI T2,(.DOTMS)	;Select the TM status register
 	BUG.(CHK,TM8FKR,PHYM78,HARD,<PHYM78 - TM78 failed kontroller reset>,<<T1,STATUS>,<T2,CHAN>,<Q2,CONT>>,<
 
 Cause:	This BUGCHK happens when the monitor is attempting to reset a TM78
-	controller and the controller failed to become ready after a very
-	long wait.  The first word of additional data shows the TM78 status
+	controller and the controller failed to become ready after a very long
+	wait.  The first word of additional data shows the TM78 status
 	register.  If any bits are set in this word, there is a serious TM78
 	hardware failure.
 
-Action:	The TM78 or other hardware may be flakey or broken.
-	Call Field Service.
+Action:	The TM78 or other hardware may be flakey or broken.  Field Service
+	should check out the TM78.
 
 Data:	STATUS - TM78 status (register 3)
 	CHAN - Channel number
@@ -518,13 +526,15 @@ TM8SI5:	MOVE T3,SAVFNC(P3)	;GET THE FUNCTION
 	CAIE T3,DF.SNS		;IS FUNCTION A SENSE AFTER ONLINE?
 	HRRZM P3,KDBACT(P2)	;NO. SAVE WHAT SLAVE WE'RE DOING IT TO
 	JRST CHSTRT
-
+
 BADSIO:	BUG.(CHK,TM8ISI,PHYM78,HARD,<PHYM78 - Illegal function at start IO>,,<
 
-Cause:	This BUGCHK can be caused by trying to write an odd number of
-	words to a tape drive that is set for the high density mode. 
-	If T2 is odd, this is probably the cause.
+Cause:	This BUGCHK can be caused by trying to write an odd number of words to
+	a tape drive that is set for the high density mode.  If T2 is odd, this
+	is probably the cause.
 
+Action:	If this BUGCHK is reproducable, set it dumpable, and send in an SPR
+	with the dump and how to reproduce the problem.
 >)				;[7.1116]
 	MOVX T1,IS.ERR!IS.NRT!IS.DVE ;MARK AN ERROR OCCURED
 	IORM T1,IRBSTS(P4)	;IN IORB
@@ -687,13 +697,16 @@ DTDONE:	SETZM TU7ECD(P3)	;CLEAN UP ANY TEMPS
 
 TM8INU:	HRRZ T1,CDBADR(P1)	;[7.1116] Load channel number
 	HRRZ T2,TM8ADR(P2)	;[7.1116] Load kontroller number
-	BUG.(CHK,TM8NUD,PHYM78,HARD,<PHYM78 - Channel Done interrupt but no unit active>,<<T1,CHAN>,<T2,CONT>>,<
+	BUG.(CHK,TM8NUD,PHYM78,HARD,<PHYM78 - Channel done interrupt but no unit active>,<<T1,CHAN>,<T2,CONT>>,<
 
-Cause:	A command done interrupt was issued but there was no unit active
-	on that channel. 
+Cause:	A command done interrupt was issued by an RH20 channel but there was no
+	unit active on that channel.  If an OVRDTA had previously occured, and
+	the device finally responds, this BUGINF happens.  This usually
+	indicates a hardware failure.
 
-Action:	There may be TM78 or other hardware problems.  If this BUGCHK
-	is persistent, call Field Service.
+Action:	Field Service should check the devices on the channel listed in the
+	additional data; any channel/controller/unit listed in OVRDTA BUGCHKs
+	should be suspected.
 
 Data:	CHAN - Channel number
 	CONT - Controller number
@@ -919,9 +932,9 @@ INTRW1:	SOS (P)			;ADJUST STACK POINTER.
 
 Cause:	The TM78 gave a spurious rewind started interrupt.
 
-Action:	The monitor has dismissed the interrupt.  There may be TM78 or
-	other hardware problems.  If this BUGCHK is persistent, notify
-	Field Service.
+Action:	The monitor has dismissed the interrupt.  There may be TM78 or other
+	hardware problems.  If this BUGCHK is persistent, notify Field Service
+	and have them check out the TM78 and drive.
 
 Data:	CHAN - Channel number
 	CONT - Controller number
@@ -953,13 +966,13 @@ CLRTM:	CALL TM8ZAP		;RESET THE TM78
 	MOVE T3,TM8ADR(P2)	;GET CONTROLLER NUMBER
 	BUG.(INF,TM8AEI,PHYM78,HARD,<PHYM78 - Asynchronous error interrupt (TM78 hardware problem)>,<<T1,ICODE>,<T2,CHAN>,<T3,CONT>>,<
 
-Cause:	The TM78 gave an asynchronous error interrupt.  This happens when
-	the TM78 thinks it has detected a hardware fault in the TM78 or 
-	one of its drives.
+Cause:	The TM78 gave an asynchronous error interrupt.  This happens when the
+	TM78 thinks it has detected a hardware fault in the TM78 or one of its
+	drives.
 
-Action:	The TM78 has been cleared and restarted.   The TM78 or one of its 
-	drives may be getting flakey.  Please call Field Service to check
-	the TM78 out.
+Action:	The TM78 has been cleared and restarted.  The TM78 or one of its drives
+	may be getting flakey.  Field Service must be called to check the TM78
+	out.
 
 Data:	ICODE - The interrupt code associated with this interrupt from
 		MASSBUS register 13 of the TM78
@@ -1234,7 +1247,7 @@ REVCHK:	ILDB T1,Q1		;GET THE REVSION LEVEL NUMBERS.
 Cause:	The TM78 does not have a microcode version that is needed by this
 	monitor.
 
-Action:	Have Field Service install the new microcode.
+Action:	Field Service must install the new microcode.
 
 Data:	ACTUAL LEVELS - The actual revision levels in the TM78
 	MINIMUM LEVELS - The levels that are required by this monitor
@@ -1275,8 +1288,9 @@ INIL3:	SOJG Q3,INIL1		;GO TRY AGAIN
 
 Cause:	Repeated attempts to sense a tape drive status have failed.
 
-Action:	There is a TM78 or tape drive hardware problem.
-	Please notify Field Service.
+Action:	There is a TM78 or tape drive hardware problem.  Field Service should
+	check out the TM78.  If one particular drive number is being called
+	out, that drive is suspect too.
 
 Data:	CHAN - Channel number
 	CONT - Controller number
@@ -1327,8 +1341,8 @@ INIUNI:	SAVEQ
 	HRLOI T3,-MTAN-1	;YES. DRIVE IS THERE. FIND SLOT TO SAVE IT
 INIUN1:	AOBJP T3, [BUG.(INF,TM8N2S,PHYM78,HARD,<PHYM78 - More drives than table space, excess ignored>,,<
 
-Cause:	The number of tape drives available exceeds the constant value
-	MTAN. Only MTAN drives will be configured.
+Cause:	The number of tape drives available exceeds the constant value MTAN.
+	Only MTAN drives are configured.
 
 Action:	The monitor should be rebuilt with a value of MTAN large enough to
 	accommodate all the tape drives available to the system.

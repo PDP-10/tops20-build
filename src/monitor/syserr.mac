@@ -1,3 +1,12 @@
+; Edit= 9148 to SYSERR.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9106 to SYSERR.MAC on 14-Jun-89 by GSCOTT
+;To avoid ILLUUOs and ILMNRFs, reload the "routine to call" address at SEBCP5
+;rather than using the XMOVEIed address loaded at SEBCP1+3.
+; Edit= 8991 to SYSERR.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8941 to SYSERR.MAC on 25-Aug-88 by GSCOTT
+;Update BUG. documentation. 
 ; UPD ID= 8626, RIP:<7.MONITOR>SYSERR.MAC.5,  11-Feb-88 18:37:58 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8448, RIP:<7.MONITOR>SYSERR.MAC.4,   4-Feb-88 16:42:52 by GSCOTT
@@ -121,7 +130,7 @@
 ;<4.MONITOR>SYSERR.MAC.1, 19-Dec-78 15:41:41, EDIT BY MURPHY
 ;ADD BLOCK PRIORITY TO SCHED CALL
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -302,19 +311,21 @@ SEBCP1:	XMOVEI T4,SEBDAT(Q1)	;GET ADDRESS OF DATA AREA
 	CAIGE T1,NSBTTB		;LEGAL?
 	JRST @SBTTB(T1)		;DISPATCH
 	LOAD T4,SEHCOD,(Q1)	;GET EVENT CODE INTO T4
-	BUG.(CHK,SEBUDT,SYSERR,HARD,<SEBCPY - Unknown data type>,<<T1,DATTYP>,<T4,EVENT>>,<
+	BUG.(CHK,SEBUDT,SYSERR,SOFT,<SEBCPY - Unknown data type>,<<T1,DATTYP>,<T4,EVENT>>,<
 
-Cause:	An unknown data type was supplied to SEBCPY to be copied into a
-	SYSERR block. Legal types are defined in the SBTTB table.
+Cause:	An unknown data type was supplied to SEBCPY to be copied into a SYSERR
+	block. Legal types are defined in the SBTTB table.  This data type
+	entry is ignored.
 
-Action:	This data type entry will be ignored.
+Action:	If this BUGICHK can be reproduced, set it dumpable and submit an SPR
+	along with instructions on reproducing the problem.
 
 Data:	DATTYP - Data type
 	EVENT - Event code
 >)
 SEBCP9:	AOBJN Q2,SEBCP1		;LOOP FOR ALL ITEMS
 	RETSKP			;DONE
-
+
 ;POINTER TYPE DISPATCH TABLE.  POINTER CODES CHECKED HERE ALTHOUGH
 ;DEFINED IN PROLOG.  CONFLICTING DEFINITION WILL PRODUCE
 ;MULDEF GLOBAL DURING LINK
@@ -363,13 +374,13 @@ SEBCP8:	SOJL T4,[SETZ T1,	;SPACE EXHAUSTED, TERMINATE
 
 ;HERE IF INSUFFICIENT STORAGE FOR STRING
 
-SEBCP7:	BUG.(CHK,SEBISS,SYSERR,HARD,<SEBCPY - Insufficient string storage in block>,,<
+SEBCP7:	BUG.(CHK,SEBISS,SYSERR,SOFT,<SEBCPY - Insufficient string storage in block>,,<
 
-Cause:	There is insufficent room in the SYSERR block for a string type
-	data item.
+Cause:	There is insufficent room in the SYSERR block for a string type data
+	item.  The string is truncated to fit into the space available.
 
-Action:	The string will be truncated to fit into the space available.
-
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with instructions on reproducing the problem.
 >)
 	LOAD T1,SEBSIZ,(Q1)	;UPDATE FREE STRING PTR
 	STOR T1,SEBSOF,(Q1)
@@ -381,9 +392,12 @@ SEBCP4:	STOR T3,SEHCOD,(Q1)	;CODE IS IMMEDIATE
 	JRST SEBCP9
 
 ;FUNCTION ADDRESS
+;[9106] Don't use the address in T3, as it has resulted from a XMOVEI and we
+;may get the wrong section number, and wonder off into weeds from SEBFRK.
 
-SEBCP5:	STOR T3,SEBFN,(Q1)	;STORE IMMEDIATE VALUE
-	JRST SEBCP9
+SEBCP5:	LOAD T3,SEBDPT,(Q2)	;[9106] Get the address, don't XMOVEI it
+	STOR T3,SEBFN,(Q1)	;Store the address of routine to call
+	JRST SEBCP9		;Loop for all items
 
 ;JSYS TO LOG INFORMATION IN SYSERR FILE
 ; T1/ ADDRESS OF BLOCK
@@ -402,11 +416,13 @@ SEBCP5:	STOR T3,SEBFN,(Q1)	;STORE IMMEDIATE VALUE
 	TLNN T1,777000		;CHECK FOR ZERO CODE
 	JRST [ MOVE A,JOBNO	;GET JOB NUMBER
 	       MOVE B,JOBPNM(A)	;AND THE PROGRAM NAME
-               BUG. (INF,SYENCD,SYSERR,SOFT,<SYSERR - Missing code for error type>,<<A,JOBNO>,<B,JOBPNM>>,<
+               BUG.(INF,SYENCD,SYSERR,SOFT,<SYSERR - Missing code for error type>,<<A,JOBNO>,<B,JOBPNM>>,<
 
-Cause: The user forgot to supply a code type for the error entry.
+Cause:	The user forgot to supply a code type for the error entry.  The entry
+	is not made since it causes problems in the error file.
 
-Action: Don't make an entry since it will cause problems in the error file.
+Action:	If this BUGINF can be reproduced, set it dumpable and submit an SPR
+	along with instructions on reproducing the problem.
 
 Data:	JOBNO - Job number, internal index
 	JOBPNM - Job program name
@@ -444,21 +460,19 @@ SERINI::MOVX T1,1B1		;XMIT CAPABILITIES
 	CFORK
 	 BUG.(HLT,SERFRK,SYSERR,HARD,<SERINI - Cannot create SYSERR fork>,,<
 
-Cause:	The cause of this BUGHLT is that Job 0 was unable to create a
-	SYSERR fork.  The specific JSYS that fails is the CFORK JSYS,
-	and the dump should have the reason for the failure.  Look at
-	LSTERR to determine the reason the CFORK failed.
+Cause:	The cause of this BUGHLT is that Job 0 was unable to create a SYSERR
+	fork.  The specific JSYS that fails is the CFORK JSYS, and the dump
+	should have the reason for the failure.  Look at LSTERR to determine
+	the reason the CFORK failed.
 
-Action:	The action needed to remedy this problem depends on the error returned
-	by CFORK.  Look at that code and try to determine how to
-	undo what it is complaining about.
-
-
+	The action needed to remedy this problem depends on the error returned
+	by CFORK.  Look at that code and try to determine how to undo what it
+	is complaining about.
 >)
 	MOVE T2,[MSEC1,,SEBRUN]	;START PC
 	MSFRK			;START IN EXEC MODE
 	RET
-
+
 ;MAIN SYSERR LOGGING LOOP.
 ;JOB 0 FORK STARTED HERE AT SYSTEM STARTUP
 
@@ -500,11 +514,13 @@ SEBTST:	SKIPN SECHKF
 
 SEBINH:	BUG.(CHK,SEBINT,MEXEC,SOFT,<Unexpected interrupt in SYSERR process>,<<ITFPC,ITFPC>,<LSTERR,LSTERR>>,<
 
-Cause:	An unexpected error has occurred in the process that handles
-	error logging.  The error handler will attempt
-	to reinitialize the context and resume processing.  The
-	stack may be examined for an indication of where the error
-	occurred.
+Cause:	An unexpected error has occurred in the process that handles error
+	logging.  The error handler attempts to reinitialize the context
+	and resume processing.  The stack may be examined for an indication of
+	where the error occurred.
+
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with instructions on reproducing the problem.
 
 Data:	ITFPC - PC when error occurred.
 	LSTERR - Last error code in fork.
@@ -567,7 +583,7 @@ SEBOER:	 JRST [	MOVE T1,SEBJFN	;BAD VERSION, TRY NEXT ONE
 	CAIE T2,777		;BY CHECKING IF THE EOF VALUE WAS 777
 	SETZM SPRCNT		;NOT VALID, SET SPRCNT TO START AT 1.
 	RETSKP			;AND RETURN
-
+
 SEBOF1:	MOVX T1,GJ%FOU+GJ%PHY+GJ%SHT
 	HRROI T2,SEFLNM
 	GTJFN			;TRY FOR NEW VERSION
@@ -577,10 +593,15 @@ SEBOF1:	MOVX T1,GJ%FOU+GJ%PHY+GJ%SHT
 
 SEBOF2:	BUG.(CHK,SERGOF,SYSERR,HARD,<SETOFI - Cannot GTJFN/OPEN SYSERR file>,,<
 
-Cause:	The SYSERR fork failed to open the ERROR.SYS file for output.
-	SYSERR first attempts to get a JFN on a currently existing version
-	of the file. If that fails, it attempts to get a JFN for a new
-	version of the file. This BUG indicates that both attempts failed.
+Cause:	The SYSERR fork failed to open the SERR:ERROR.SYS file for output.  The
+	SYSERR fork first attempts to get a JFN on a currently existing version
+	of the file.  If that fails, it attempts to get a JFN for a new version
+	of the file.  This BUG indicates that both attempts failed.
+
+Action:	There is a problem with writing the SERR:ERROR.SYS file.  Make sure
+	that the file structure is in good shape, has enough space available,
+	and that the directory is in good shape.  If there seems to be a lot of
+	disk problems, have Field Service check out the hardware.
 >,,<DB%NND>)			;[7.1210] 
 	MOVX T1,^D60000		;COMPUTE 1 MINUTE FROM NOW
 	ADD T1,TODCLK
@@ -631,16 +652,17 @@ SEBCH0:	CALL UNQSEB		;UNQUEUE NEXT BLOCK
 	STOR T1,SEHUTM,(Q1)
 	MOVE T1,APRSER		;[7357] Get APR serial numbern
 	STOR T1,SEHSER,(Q1)
+
 	AOSN T1,SPRCNT		;INCREMENT RUNNING COUNT
 	 BUG.(INF,SPRZR1,SYSERR,SOFT,<SEBCHK - SPRCNT went to zero>,,<
 
-Cause:	The SYSERR fork keeps a running count of the number of entries made
-	on the error file in SPRCNT. This count is continous over system
-	reloads and crashes. This BUG indicates that the count has
-	overflowed its one word value.
+Cause:	The SYSERR fork keeps a running count of the number of entries made on
+	the error file in SPRCNT.  This count is continous over system reloads
+	and crashes.  This BUG indicates that the count has overflowed its one
+	word value.
 
-Action:	None. The count has wrapped around, probably legitimately, and will
-	be reset to zero.
+Action:	No action is required.  The count has wrapped around, probably
+	legitimately, and is reset to zero.
 >,,<DB%NND>)			;[7.1210] Tell someone if wraparound
 	STOR T1,SEHCNT,(Q1)
 	XMOVEI T1,SEBHED(Q1)	;SETUP PTR TO FIRST WORD TO BE MOVED
@@ -745,14 +767,12 @@ EXTCHK:	SAVET			;CHECK TO SEE IF CALLER CAN REFERENCE HIS DATA
 	TXNN T1,VSECNO		;IF NOT EXTENDED BUGCHK.
 	BUG.(HLT,SBXSE0,SYSERR,SOFT,<SYSERR called from SEC 0 with ext blk>,<<T4,PC>>,<
 
-Cause:	SEBCPY/QUESEB/OR SEBCPY with unextended function call address was
-	performed when the SYSERR block was in extended free space.
-
-Action:	The inconsistency must be fixed because it indicates that referencing
-	the data block may fail if performed by unextended instructions.
+Cause:	SEBCPY, QUESEB, or SEBCPY with unextended function call address was
+	performed when the SYSERR block was in extended free space.  The
+	inconsistency must be fixed because it indicates that referencing the
+	data block may fail if performed by unextended instructions.
 
 Data:	PC - the PC of the caller to the SYSERR routine.
-
 >)
 	RET
 	TNXEND

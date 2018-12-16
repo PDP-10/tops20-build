@@ -1,3 +1,14 @@
+; Edit= 9172 to SCLINK.MAC on 22-Jun-90 by GSCOTT
+;Insure the AC save routines in APRSRV are used by always SEARCHing PROLOG
+;before any SEARCH of MACSYM so that the proper USRSAV macro (from PROLOG) is
+;used in the SAVEAC macro.
+; Edit= 8948 to SCLINK.MAC on 25-Aug-88 by RASPUZZI, for SPR #22244
+;Prevent CFCLDP BUGHLTs and DECnet freespace lossage by having the session
+;control layer check a link number before it dishes it out to the job. If too
+;large, then cleanup and take an error path back so SCJSYS does the right
+;thing from there.
+; Edit= 8934 to SCLINK.MAC on 23-Aug-88 by GSCOTT
+;Update BUG. documentation. 
 ; UPD ID= 8617, RIP:<7.MONITOR>SCLINK.MAC.8,  11-Feb-88 18:31:38 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8452, RIP:<7.MONITOR>SCLINK.MAC.7,   4-Feb-88 17:13:28 by GSCOTT
@@ -218,7 +229,7 @@
 ;DNET:SCLINK.MAC[10,36,MON,NEW], 22-Sep-1983 20:55:00, Edit by TARL
 ;MCO 10971 - Grand Re-merge of the -10/-20 sources
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1984, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1984, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -238,24 +249,24 @@
 
 ;TITLE SCLINK - Session Control Layer Control for DECnet-36
 	SUBTTL V.Brownell & W.Nichols/Tarl
-	SEARCH D36PAR,SCPAR,MACSYM
+	SEARCH D36PAR		;[9172]
 	SALL
 
 	ENTRY SCTL,SCTINI
 
 IFN FTOPS10,<
 .CPYRT<
-COPYRIGHT (C) 1988 BY DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+COPYRIGHT (C) 1984,1990 BY DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
 >
 > ;END IFN FTOPS10
 
 IFN FTOPS20,<
-	SEARCH PROLOG
+	SEARCH PROLOG,SCPAR	;[9172]
 	TTITLE SCLINK,,< - Session Control Layer for DECnet-36>
 	>
 
 IFN FTOPS10,<
-	SEARCH F,S
+	SEARCH F,S,SCPAR,MACSYM	;[9172]
 	TITLE SCLINK - Session Control Layer Control for DECnet-36
 	$RELOC
 	>
@@ -289,34 +300,34 @@ IFN FTOPS10,<
 ;    9. SCTL's Interlock
 ;        9.1    Queuing Version  . . . . . . . . . . . . . . .  52
 ;        9.2    Waiting Version  . . . . . . . . . . . . . . .  53
-;        9.3    Flag Version . . . . . . . . . . . . . . . . .  54
+;        9.3    Flag Version . . . . . . . . . . . . . . . . .  55
 ;   10. SCTULK - SCTL's Interlock
-;       10.1    Unlock Checks  . . . . . . . . . . . . . . . .  55
+;       10.1    Unlock Checks  . . . . . . . . . . . . . . . .  56
 ;   11. NSP.
-;       11.1    Function Dispatch Table  . . . . . . . . . . .  56
+;       11.1    Function Dispatch Table  . . . . . . . . . . .  57
 ;       11.2    Wait Check Tables
-;           11.2.1    Definitons . . . . . . . . . . . . . . .  57
-;           11.2.2    "Before" NSP. table  . . . . . . . . . .  58
-;           11.2.3    "After" NSP. table . . . . . . . . . . .  59
-;           11.2.4    Routines . . . . . . . . . . . . . . . .  60
-;       11.3    SCTNSF - The Entry to SCLINK from SCMUUO . . .  61
-;       11.4    NSFRE - REset all links  . . . . . . . . . . .  67
-;       11.5    NSFEA - Enter Active State . . . . . . . . . .  68
-;       11.6    NSFEP - Enter Passive State  . . . . . . . . .  71
-;       11.7    NSFRI - Read Connect Information . . . . . . .  72
-;       11.8    NSFAC - Accept the Connect . . . . . . . . . .  73
-;       11.9    NSFRJ - Reject the Connect . . . . . . . . . .  75
-;       11.10   NSFRC - Read Connect Confirm Information . . .  76
-;       11.11   NSFSD - Synchronous Disconnect . . . . . . . .  77
-;       11.12   NSFAB - Abort and Release  . . . . . . . . . .  79
-;       11.13   NSFRD - Read Disconnect Data . . . . . . . . .  80
-;       11.14   NSFRL - Release the Channel  . . . . . . . . .  81
-;       11.15   NSFRS - Read the Channel Status  . . . . . . .  82
-;       11.16   NSFIS - Send Interrupt Data  . . . . . . . . .  83
-;       11.17   NSFIR - Receive Interrupt Data . . . . . . . .  85
-;       11.18   NSFDS - Send Normal Data . . . . . . . . . . .  87
-;       11.19   NSFDR - Receive Normal Data  . . . . . . . . .  91
-;       11.20   NSFSQ - Set Quotas and Goals . . . . . . . . .  93
+;           11.2.1    Definitons . . . . . . . . . . . . . . .  58
+;           11.2.2    "Before" NSP. table  . . . . . . . . . .  59
+;           11.2.3    "After" NSP. table . . . . . . . . . . .  60
+;           11.2.4    Routines . . . . . . . . . . . . . . . .  61
+;       11.3    SCTNSF - The Entry to SCLINK from SCMUUO . . .  62
+;       11.4    NSFRE - REset all links  . . . . . . . . . . .  69
+;       11.5    NSFEA - Enter Active State . . . . . . . . . .  70
+;       11.6    NSFEP - Enter Passive State  . . . . . . . . .  73
+;       11.7    NSFRI - Read Connect Information . . . . . . .  74
+;       11.8    NSFAC - Accept the Connect . . . . . . . . . .  75
+;       11.9    NSFRJ - Reject the Connect . . . . . . . . . .  77
+;       11.10   NSFRC - Read Connect Confirm Information . . .  78
+;       11.11   NSFSD - Synchronous Disconnect . . . . . . . .  79
+;       11.12   NSFAB - Abort and Release  . . . . . . . . . .  81
+;       11.13   NSFRD - Read Disconnect Data . . . . . . . . .  82
+;       11.14   NSFRL - Release the Channel  . . . . . . . . .  83
+;       11.15   NSFRS - Read the Channel Status  . . . . . . .  84
+;       11.16   NSFIS - Send Interrupt Data  . . . . . . . . .  85
+;       11.17   NSFIR - Receive Interrupt Data . . . . . . . .  87
+;       11.18   NSFDS - Send Normal Data . . . . . . . . . . .  89
+;       11.19   NSFDR - Receive Normal Data  . . . . . . . . .  93
+;       11.20   NSFSQ - Set Quotas and Goals . . . . . . . . .  95
 	Subttl	Table of Contents (page 2)
 
 ;		     Table of Contents for SCLINK
@@ -324,53 +335,53 @@ IFN FTOPS10,<
 ;				  Section		      Page
 ;
 ;
-;       11.21   NSFRQ - Read Quotas and Goals  . . . . . . . .  94
-;       11.22   NSFJS - Set Job Quotas and Goals . . . . . . .  95
-;       11.23   NSFJR - Read Job Quotas and Goals  . . . . . .  96
-;       11.24   NSFPI - Set PSI Reason Mask  . . . . . . . . .  97
-;   12. RETFLW - Return current flow controls  . . . . . . . .  98
-;   13. SNDDRQ - Send Data Requests  . . . . . . . . . . . . .  99
-;   14. RLSLNK - Release a Link  . . . . . . . . . . . . . . . 100
+;       11.21   NSFRQ - Read Quotas and Goals  . . . . . . . .  96
+;       11.22   NSFJS - Set Job Quotas and Goals . . . . . . .  97
+;       11.23   NSFJR - Read Job Quotas and Goals  . . . . . .  98
+;       11.24   NSFPI - Set PSI Reason Mask  . . . . . . . . .  99
+;   12. RETFLW - Return current flow controls  . . . . . . . . 100
+;   13. SNDDRQ - Send Data Requests  . . . . . . . . . . . . . 101
+;   14. RLSLNK - Release a Link  . . . . . . . . . . . . . . . 102
 ;   15. LLINKS Calls
-;       15.1    Entry Vector Table . . . . . . . . . . . . . . 101
-;       15.2    SCTRIB - Reserve Input Buffer  . . . . . . . . 102
-;       15.3    SCTUCG - Uncongestion Call . . . . . . . . . . 103
-;       15.4    SCTLCI - Connect Initiate Call . . . . . . . . 104
-;       15.5    The Vectored Call Entry Point SCTL . . . . . . 107
-;       15.6    SCCCR - Connect Confirmed call from NSP  . . . 108
-;       15.7    SCDIR - Disconnect Initiate received call  . . 109
-;       15.8    SCDCR - Disconnect Confirm received call . . . 110
-;       15.9    SCODN - Output done call . . . . . . . . . . . 111
-;       15.10   SCSEG - Segment received call  . . . . . . . . 112
-;       15.11   SCDRQ - Data request received call . . . . . . 113
-;       15.12   SCNCF - No confidence in port call . . . . . . 114
-;       15.13   SCNRS - No resources call  . . . . . . . . . . 115
-;       15.14   SCCLS - Close Completed call . . . . . . . . . 116
-;       15.15   SCNLK - No link call . . . . . . . . . . . . . 117
-;       15.16   SCNCM - No communication call  . . . . . . . . 118
-;       15.17   SCNRN - Not in Run State call  . . . . . . . . 119
-;       15.18   SCCAK - Got a Connect ACK  . . . . . . . . . . 120
+;       15.1    Entry Vector Table . . . . . . . . . . . . . . 103
+;       15.2    SCTRIB - Reserve Input Buffer  . . . . . . . . 104
+;       15.3    SCTUCG - Uncongestion Call . . . . . . . . . . 106
+;       15.4    SCTLCI - Connect Initiate Call . . . . . . . . 107
+;       15.5    The Vectored Call Entry Point SCTL . . . . . . 110
+;       15.6    SCCCR - Connect Confirmed call from NSP  . . . 111
+;       15.7    SCDIR - Disconnect Initiate received call  . . 112
+;       15.8    SCDCR - Disconnect Confirm received call . . . 113
+;       15.9    SCODN - Output done call . . . . . . . . . . . 114
+;       15.10   SCSEG - Segment received call  . . . . . . . . 115
+;       15.11   SCDRQ - Data request received call . . . . . . 116
+;       15.12   SCNCF - No confidence in port call . . . . . . 117
+;       15.13   SCNRS - No resources call  . . . . . . . . . . 118
+;       15.14   SCCLS - Close Completed call . . . . . . . . . 119
+;       15.15   SCNLK - No link call . . . . . . . . . . . . . 120
+;       15.16   SCNCM - No communication call  . . . . . . . . 121
+;       15.17   SCNRN - Not in Run State call  . . . . . . . . 122
+;       15.18   SCCAK - Got a Connect ACK  . . . . . . . . . . 123
 ;   16. Subroutines
-;       16.1    CHKABO - Check SLABO flag  . . . . . . . . . . 121
-;       16.2    CHKPPN - Check self PPN for validity . . . . . 122
-;       16.3    FREMSG - Free a message block  . . . . . . . . 123
-;       16.4    CONBUF - Invoke Conservative Buffering . . . . 124
-;       16.5    FNDSLB - Find SLB given a channel number . . . 125
-;       16.6    FNDSBI - Find SLB from SLBid . . . . . . . . . 126
-;       16.7    FRESLB - Deallocate a SLB  . . . . . . . . . . 127
-;       16.8    FRECBP - Free Connect Block  . . . . . . . . . 128
-;       16.9    CDMCBP - Copy User Data from Message Block . . 129
-;       16.10   CPMSCB - Copy User Data from Message Block . . 130
-;       16.11   FRESJB - Deallocate a SJB  . . . . . . . . . . 131
-;       16.12   MAKSLB - Create a SLB, filling in defaults . . 132
-;       16.13   MAKSJB - Create a SJB, filling in defaults . . 134
-;       16.14   SCSSTS/CHKSTS - Set Status & Inform PSISER . . 135
-;       16.15   SCTWKQ - Queue a Link for later call to SCTPSQ 137
-;       16.16   SLBMAT - Pattern match connect to passive SLBs 138
-;       16.17   CDBMAT - Match Two Connect Blocks  . . . . . . 139
-;       16.18   STRMAT - Pattern Matcher . . . . . . . . . . . 142
-;       16.19   STPTMR - Stop the Connect Initiate Timer . . . 143
-;       16.20   STRTIM - Start the Connect Initiate Timer  . . 144
+;       16.1    CHKABO - Check SLABO flag  . . . . . . . . . . 124
+;       16.2    CHKPPN - Check self PPN for validity . . . . . 125
+;       16.3    FREMSG - Free a message block  . . . . . . . . 126
+;       16.4    CONBUF - Invoke Conservative Buffering . . . . 127
+;       16.5    FNDSLB - Find SLB given a channel number . . . 128
+;       16.6    FNDSBI - Find SLB from SLBid . . . . . . . . . 129
+;       16.7    FRESLB - Deallocate a SLB  . . . . . . . . . . 130
+;       16.8    FRECBP - Free Connect Block  . . . . . . . . . 133
+;       16.9    CDMCBP - Copy User Data from Message Block . . 134
+;       16.10   CPMSCB - Copy User Data from Message Block . . 135
+;       16.11   FRESJB - Deallocate a SJB  . . . . . . . . . . 136
+;       16.12   MAKSLB - Create a SLB, filling in defaults . . 137
+;       16.13   MAKSJB - Create a SJB, filling in defaults . . 139
+;       16.14   SCSSTS/CHKSTS - Set Status & Inform PSISER . . 140
+;       16.15   SCTWKQ - Queue a Link for later call to SCTPSQ 142
+;       16.16   SLBMAT - Pattern match connect to passive SLBs 143
+;       16.17   CDBMAT - Match Two Connect Blocks  . . . . . . 144
+;       16.18   STRMAT - Pattern Matcher . . . . . . . . . . . 147
+;       16.19   STPTMR - Stop the Connect Initiate Timer . . . 150
+;       16.20   STRTIM - Start the Connect Initiate Timer  . . 151
 	Subttl	Table of Contents (page 3)
 
 ;		     Table of Contents for SCLINK
@@ -378,39 +389,39 @@ IFN FTOPS10,<
 ;				  Section		      Page
 ;
 ;
-;       16.21   TMRREJ - Send a Reject with Reason RSNNRO  . . 145
-;       16.22   BLDCTX - Build connect message . . . . . . . . 146
-;       16.23   PRSCTX - Parse a connect message . . . . . . . 150
-;       16.24   CPYS2M - Copy string block to message segment  154
-;       16.25   CPYM2S - Copy message data to string block . . 155
-;       16.26   SCTGSS - Get segment size for a destination  . 156
-;       16.27   SCTCSS - Check segment size for a destination  157
+;       16.21   TMRREJ - Send a Reject with Reason RSNNRO  . . 152
+;       16.22   BLDCTX - Build connect message . . . . . . . . 153
+;       16.23   PRSCTX - Parse a connect message . . . . . . . 157
+;       16.24   CPYS2M - Copy string block to message segment  161
+;       16.25   CPYM2S - Copy message data to string block . . 162
+;       16.26   SCTGSS - Get segment size for a destination  . 163
+;       16.27   SCTCSS - Check segment size for a destination  164
 ;   17. Node name/number database
-;       17.1    Initialize . . . . . . . . . . . . . . . . . . 158
-;       17.2    Lock/unlock database . . . . . . . . . . . . . 159
-;       17.3    Add a node . . . . . . . . . . . . . . . . . . 160
-;       17.4    Address to name  . . . . . . . . . . . . . . . 161
-;       17.5    Name to address  . . . . . . . . . . . . . . . 162
-;       17.6    Name to NO block . . . . . . . . . . . . . . . 163
-;       17.7    Default area # . . . . . . . . . . . . . . . . 164
-;       17.8    Hash routine . . . . . . . . . . . . . . . . . 165
-;       17.9    Get a bucket . . . . . . . . . . . . . . . . . 166
-;       17.10   SCTANL - Add a loopback node name  . . . . . . 167
-;       17.11   SCTN2L - Convert name to loop circ . . . . . . 168
-;       17.12   SCTL2N - Convert loopback circuit  . . . . . . 169
-;       17.13   SCTCKL - Check for loopback node . . . . . . . 170
+;       17.1    Initialize . . . . . . . . . . . . . . . . . . 165
+;       17.2    Lock/unlock database . . . . . . . . . . . . . 167
+;       17.3    Add a node . . . . . . . . . . . . . . . . . . 168
+;       17.4    Address to name  . . . . . . . . . . . . . . . 169
+;       17.5    Name to address  . . . . . . . . . . . . . . . 171
+;       17.6    Name to NO block . . . . . . . . . . . . . . . 172
+;       17.7    Default area # . . . . . . . . . . . . . . . . 173
+;       17.8    Hash routine . . . . . . . . . . . . . . . . . 174
+;       17.9    Get a bucket . . . . . . . . . . . . . . . . . 175
+;       17.10   SCTANL - Add a loopback node name  . . . . . . 176
+;       17.11   SCTN2L - Convert name to loop circ . . . . . . 177
+;       17.12   SCTL2N - Convert loopback circuit  . . . . . . 178
+;       17.13   SCTCKL - Check for loopback node . . . . . . . 179
 ;   18. Network management
-;       18.1    Dispatch . . . . . . . . . . . . . . . . . . . 171
-;       18.2    SET/CLEAR/READ parameter . . . . . . . . . . . 172
-;       18.3    Return list of entity ids  . . . . . . . . . . 173
-;       18.4    Map node address to node name  . . . . . . . . 174
-;       18.5    Map node name to node address  . . . . . . . . 175
-;       18.6    Check loopback node name . . . . . . . . . . . 176
+;       18.1    Dispatch . . . . . . . . . . . . . . . . . . . 180
+;       18.2    SET/CLEAR/READ parameter . . . . . . . . . . . 181
+;       18.3    Return list of entity ids  . . . . . . . . . . 182
+;       18.4    Map node address to node name  . . . . . . . . 183
+;       18.5    Map node name to node address  . . . . . . . . 184
+;       18.6    Check loopback node name . . . . . . . . . . . 185
 ;       18.7    Event
-;           18.7.1    Invalid message  . . . . . . . . . . . . 177
-;           18.7.2    CSSE event . . . . . . . . . . . . . . . 178
-;   19. Local SCTL Storage . . . . . . . . . . . . . . . . . . 179
-;   20. End of SCLINK  . . . . . . . . . . . . . . . . . . . . 180
+;           18.7.1    Invalid message  . . . . . . . . . . . . 186
+;           18.7.2    CSSE event . . . . . . . . . . . . . . . 187
+;   19. Local SCTL Storage . . . . . . . . . . . . . . . . . . 188
+;   20. End of SCLINK  . . . . . . . . . . . . . . . . . . . . 189
 	SUBTTL SCLINK Interface Document (RUNOFF source)
 
 comment `
@@ -419,11 +430,11 @@ comment `
 
 .hl1 Register Definitions
 
-Since DECnet-36 is designed to be used in both TOPS-10 and TOPS-20, it
-must fail to use the standard register definitions of at least one
-host operating system.  Therefore, DECnet-36 uses its own register
-definitions.  The register names have been chosen to fit in as best as
-is reasonable with the two target operating systems.
+Since DECnet-36 is designed to be used in both TOPS-10 and TOPS-20, it must
+fail to use the standard register definitions of at least one host operating
+system.  Therefore, DECnet-36 uses its own register definitions.  The register
+names have been chosen to fit in as best as is reasonable with the two target
+operating systems.
 
 The names are as follows:
 
@@ -453,9 +464,9 @@ These assignments are subject to change.
 
 The DECnet-36 registers FREE1, FREE2 and FREE3 are renamed to different names
 by the different DECnet-36 modules.  All DECnet-36 registers other than T1
-through T6 are treated as preserved registers.  DECnet-36 does not use
-register zero (FREE0).  DECnet-36 defines six temporary registers in order to
-use them for EXTEND instructions such as MOVSLJ.
+through T6 are treated as preserved registers.  DECnet-36 does not use register
+zero (FREE0).  DECnet-36 defines six temporary registers in order to use them
+for EXTEND instructions such as MOVSLJ.
 
 .hl1 Data Structure Definitions
 
@@ -1945,6 +1956,7 @@ IFN FTOPS10,<			;EXTERNAL FOR SMP INTERLOCK BREAKER
 
 ;These are some local AC defintions for Session Control.
 
+	SJB=P3			;[8948] SJB points to session control job block
 	SL=FREE1		;SL POINTS TO THE CURRENT SC LINK BLOCK
 	SA=FREE2		;SA POINTS TO THE ARGUMENT BLOCK
 	PURGE FREE1,FREE2	;WE DON'T NEED THIS SYMBOL ANYMORE
@@ -2337,7 +2349,7 @@ SCTLW1:	AOSE SCTLOK		;TEST AND SET THE INTERLOCK
 	JRST SCTLW1		;ITS LOCKED, SPIN UNTIL ITS FREED
 	APRID SCTLKO		;SET THE OWNER OF THE INTERLOCK
 >;END IFN FTOPS10		; CAN ONLY BE COMPETING WITH ANOTHER
-				; PROCESSOR ON TOPS10
+				; PROCESSOR ON TOPS10
 IFN FTOPS20,<
 SCTLW1:	CSKED			;ASSURE WE GET THROUGH THIS QUICKLY
         AOSN SCTLOK		;TEST AND SET THE INTERLOCK
@@ -2359,14 +2371,14 @@ SCTLWB:	SKIPL SCTLOK		;IS SESSION CONTROL LOCK FREE YET?
 
 SCTLW2:	BUG.(CHK,SCTBWK,SCLINK,SOFT,<SCTNSF call from sched without lock>,,<
 
-Cause:	The DECnet entry point SCTNSF has been called from scheduler
-	level when the Session Control interlock was locked.
+Cause:	The DECnet entry point SCTNSF has been called from scheduler level when
+	the Session Control interlock was locked.  All scheduler level routines
+	which call SCTNSF should first check SCTLOK.  If SCTLOK is not -1, then
+	the caller should wait for the next scheduler cycle before calling
+	SCTNSF.  Inspect the stack to find out who the offender is.
 
-Action:	All scheduler level routines which call SCTNSF should first
-	check SCTLOK.  If SCTLOK is not -1, then the caller should
-	wait for the next scheduler cycle before calling SCTNSF.
-	Inspect the stack to find out who the offender is.
-
+Action:	If this bug is reproducible, set it dumpable and send in an SPR along
+	with how to reproduce the problem.
 >)
 	  RET			;LET CALLER WORRY ABOUT NO DECNET ACTION
 
@@ -2948,18 +2960,18 @@ SCTNR1:	IFSTATE T2,RJ
 	IFSTATE T2,DR
 	  SCERR %NEDBO,SCTNIE,<Disconnected by Object>
 SCTNR2:	SCERR %NEREJ,SCTNIE,<Unspecified Reject Reason>
-
-
+
 ;Here with an error code in T1.
 
 SCTNIE:	SKIPN T1		;IS THERE AN ERROR CODE?
 	BUG.(CHK,SCLNZE,SCLINK,SOFT,<Passing zero error code to SCMUUO>,,<
 
-Cause:	The routine that is supposed to store an error code
-	for the user is zero.  This is an illegal value.
+Cause:	The routine that is supposed to store an error code for the user is
+	zero.  This is an illegal value.  To solve this, find who called SCTNIE
+	with T1/ 0 and correct the caller's behavior.
 
-Action:	Find who called SCTNIE with T1/ 0 and correct the caller's behavior.
-
+Action:	If this bug is reproducible, set it dumpable and send in an SPR along
+	with how to reproduce the problem.
 >)
 	STOR T1,SAERR,(SA)	;STORE THE ERROR TYPE
 	SKIPLE SL		;DON'T UPDATE STATUS IF WE HAVE NO SLB
@@ -3238,6 +3250,14 @@ NSFEC1:	SETONE SLFSL,(SL)	;FREE THE SLB AFTER THE "AFTER" PROCESSING
 NSFEP:	TRACE SC,<Performing Enter Passive (.NSFEP)>
 	CALL MAKSLB		;MAKE A SLB
 	 SCERR %NEALF,RTN,<Allocation failure>
+	SKIPGE FORKX		;[8948] Must be fork context
+	IFSKP.			;[8948] If so,
+	  OPSTR <SKIPN >,SJMXP,(SJB) ;[8948] Does SJB have a maximum?
+	  IFSKP.		;[8948] If so, check channel limit
+	    OPSTR <CAMLE T1,>,SJMXP,(SJB) ;[8948] Too many channels already?
+	    SCERR %NERES,NSFEPC,<Resource failure, all channels in use> ;[8948]
+	  ENDIF.		;[8948]
+	ENDIF.			;[8948]
 	STOR T1,SAACH,(SA)	;STORE THE CHANNEL FOR USER
 
 ; Get the Object type and if format 0, store the source (SLSOB) object type
@@ -4703,16 +4723,18 @@ PURGE SV
 ;routine returns failure, LLINKS will keep the message, unACKed, and
 ;will try to send it to Session Control again when the memory manager
 ;tells LLINKS that congestion has been relieved.
-
+
 	XRESCD
 SCTRIB:	OPSTR <CAME T1,>,SLSLB,(T1) ;IS THIS A LEGIT SLB POINTER?
 	BUG.(CHK,SCLRIB,SCLINK,SOFT,<Bad SCTRIB call from LLINKS>,<<T1,ADDR>>,<
 
-Cause:	LLINKS has called SCTRIB for permission to send a message to SCLINK
-	and has passed an invalid SLB address in T1.  The data structures
-	for this logical link are inconsistent.
+Cause:	LLINKS has called SCTRIB for permission to send a message to SCLINK and
+	has passed an invalid SLB address in T1.  The data structures for this
+	logical link are inconsistent.  Find out what is in LLINK's ELSCB and
+	why its not an SLB pointer.
 
-Action:	Find out what is in LLINK's ELSCB and why its not an SLB pointer.
+Action:	If this bug is reproducible, set it dumpable and send in an SPR along
+	with how to reproduce the problem.
 
 Data:	ADDR - The bad SLB pointer
 
@@ -5330,9 +5352,11 @@ FREMSG:	MOVE T1,MB		;POINT TO THE MESSAGE BLOCK
 
 CONBUF:	BUG.(INF,SCLCBN,SCLINK,SOFT,<Phase-II buffering not implemented>,,<
 
-Cause:	Conservative buffering is not yet implemented.
-	We should never have a logical link open to a phase II node.
+Cause:	Conservative buffering is not yet implemented.  We should never have a
+	logical link open to a phase II node.
 
+Action:	If this bug is reproducible, set it dumpable and send in an SPR along
+	with how to reproduce the problem.
 >)
 	SETONE SLPH2,(SL)	;MARK LINK AS A PHASE II LINK
 	MOVX T1,FCM.SG		;DO SEGMENT FLOW CONTROL ONLY
@@ -5367,12 +5391,13 @@ FNDSLB:	JUMPLE T1,RTN		;IF NEGATIVE OR ZERO, RETURN FAILURE
 	OPSTR <CAME SL,>,SLSLB,(SL) ;MAKE SURE IT POINTS TO AN SLB
 	BUG.(CHK,SCLSPF,SCLINK,SOFT,<SLB self pointers messed up in FNDSLB>,<<T1,CHAN>,<T2,SJBPTR>>,<
 
-Cause:	The DECnet data structures for this link are inconsistent.
-	If this happens more than once, submit a SPR.
+Cause:	The DECnet data structures for this link are inconsistent. 
+
+Action:	If this bug is reproducible, set it dumpable and send in an SPR along
+	with how to reproduce the problem.
 
 Data:	CHAN - The DECnet channel number
 	SJBPTR - Pointer to the SJB
-
 >,RTN)
 	TMNE <SLFSL,SLLBC>,(SL)	;IS IT SCHEDULED FOR DESTRUCTION?
 	RET			;YES, DON'T LET ON THAT ITS HERE
@@ -5411,10 +5436,12 @@ FRESLB:	SAVEAC <P1,P2>
 	OPSTR <SKIPN P2,>,SLSJB,(SL) ;LOAD UP THE JOB BLK POINTER
 	BUG.(CHK,SCLSLB,SCLINK,SOFT,<SLB bad at FRESLB>,<<SL,SLBPTR>>,<
 
-Cause:	There is no Session Control Job Block (SJB) for this Session
-	Control Link Block (SLB).  This error could have happened at
-	any time during the life of the link after it was actively
-	transferring data.
+Cause:	There is no Session Control Job Block (SJB) for this Session Control
+	Link Block (SLB).  This error could have happened at any time during
+	the life of the link after it was actively transferring data.
+
+Action:	If this bug is reproducible, set it dumpable and send in an SPR along
+	with how to reproduce the problem.
 
 Data:	SLBPTR/ pointer to the SLB that lacked a SJB pointer
 
@@ -5425,17 +5452,17 @@ Data:	SLBPTR/ pointer to the SLB that lacked a SJB pointer
 	CAME SL,(T4)		;MAKE SURE THERE'S ONE THERE
 	BUG.(CHK,SCLTFS,SCLINK,SOFT,<Tried to free wrong SLB>,<<SL,SLBPTR>>,<
 
-Cause:	The channel table entry didn't point to the correct SLB.
-	There is an internal inconsistency in the DECnet data
-	structures for this link.  
+Cause:	The channel table entry didn't point to the correct SLB.  There is an
+	internal inconsistency in the DECnet data structures for this link.
 
-Action:	Submit a SPR if this happens more than once.
+Action:	If this bug is reproducible, set it dumpable and send in an SPR along
+	with how to reproduce the problem.
 
 Data:	SLBPTR - Pointer to the bad SLB
 
 >,RTN)
 	SETZM (T4)		    ;ZERO CHANNEL TABLE ENTRY
-
+
 	XMOVEI P1,SS.INQ+SL.NSL(SL) ;POINT TO NORMAL SUBLINK'S INPUT Q
 	CALL CLNQUE		    ;GET RID OF ALL MESSAGES ON THE QUEUE
 	XMOVEI P1,SS.INQ+SL.OSL(SL) ;SAME FOR OTHER SUBLINK'S INPUT Q
@@ -5461,7 +5488,7 @@ Data:	SLBPTR - Pointer to the bad SLB
 	MOVNS T3		;# OTHER DIRECTION
 	ADDM T3,DCNRSB		;#UPDATE RESERVED BUFFER COUNT
 FRESL1:	D36ON			;#END CRITICAL SECTION
-
+
 ;Here we remove this SLB from the PSQ if it had a PSI waiting.
 
 	TMNN SLPSI,(SL)		;ON THE PSI Q?
@@ -5618,9 +5645,12 @@ FRESJ1:	SKIPE (T1)		;IS THERE AN ENTRY THERE?
 	BUG.(CHK,SCLTFJ,SCLINK,SOFT,<Freeing SJB with SLB entries existing>,<<P1,SJBPTR>>,<
 
 Cause:	FRESJB was called to free up a SJB.  However, there are still active
-	links in use for this SJB.  This should never happen, and there is
-	an internal inconsistency in the DECnet data structures.  Submit a
-	SPR if this happens more than once.
+	links in use for this SJB.  This should never happen, and there is an
+	internal inconsistency in the DECnet data structures.  Submit a SPR if
+	this happens more than once.
+
+Action:	If this bug is reproducible, set it dumpable and send in an SPR along
+	with how to reproduce the problem.
 
 Data:	SJBPTR - Pointer to the SJB
 
@@ -6124,7 +6154,7 @@ STRMAT:	JUMPE T1,RSKP		;NULL PATTERN MATCHES EVERYTHING
 	MOVX T4,<POINT 8,(P2)>	; TO SOURCE STRING ALSO
 	MOVE P0,P		;SAVE THE STACK POINTER
 	ADJSP P0,4		;THIS IS ZERO LEVEL
-
+
 STRMT1:	ADJSP P,4		;SAVE THE
 	DMOVEM T1,-3(P)		; SOURCE AND
 	DMOVEM T3,-1(P)		; PATTERN DESCRIPTORS
@@ -6158,7 +6188,7 @@ STRMT2:	SOJL T1,[SOJL T3,STRMTS	;IF BOTH STRINGS ARE NULL, RETURN SUCCESS
 	XORI T5,(T6)		;COMPARE THE CHARACTERS
 	TRNN T5,177		; BUT ONLY LOOK AT LOW 7 BITS
 	JRST STRMT2		;IF THEY MATCH, COMPARE NEXT CHARACTERS
-
+
 ;Here when characters don't match.
 
 STRMT3:	CAMN P,P0		;ARE WE AT LEVEL ZERO?
@@ -6183,9 +6213,12 @@ STRMTS:	 SETZ T6,		;SIGNAL SUCCESS
 	CAME P,P0		;I GET PARANOID ABOUT STACKS
 	BUG.(CHK,SCLSMS,SCLINK,SOFT,<STRMAT messed up the stack pointer>,,<
 
-Cause:	This BUG is for debugging purposes only and will not be present in
+Cause:	At the end of routine STRMAP, the stack pointer should have reset to
+	the value in P0.   It did not.  This BUGCHK will not be present in
 	a production monitor.
 
+Action:	If this bug is reproducible, set it dumpable and send in an SPR along
+	with how to reproduce the problem.
 >,RTN)
   >
 	JUMPN T6,RTN		;GIVE BAD RETURN ON FAILURE
@@ -6719,9 +6752,13 @@ SCTNIN:
 Cause:	SCLINK called ASGVAS to assign virtual address space for the node
 	name/address database. Since the requested memory is non-resident,
 	this should always succeed. However, ASGVAS gave a fail return.
->,RTN,<DB%NND>)			;[7.1210] and return error
 
+Action:	If this bug is reproducible, set it dumpable and send in an SPR along
+	with how to reproduce the problem.
+>,RTN,<DB%NND>)			;[7.1210] and return error
+
 ;Success return from ASGVAS, T1 has address of first location
+
 	MOVEM T1,HSHTAB		;Save hash table address
 	ADDI T1,SCNHSZ		;Add hash table size
 	MOVEM T1,ADRTAB		;Save node address table address
@@ -6954,13 +6991,16 @@ LSCTA2N:			;Entry point if already locked
 
 Cause:	The node database SCLA2N failed an internal consistency check.
 
+Action:	If this bug is reproducible, set it dumpable and send in an SPR along
+	with how to reproduce the problem.
+
 Data:	NOD - NO pointer in ADRTAB
 
 >,RTN)
   >
 	LOAD T1,NONAM,(T2)	;Get node name
 	RETSKP			; and return with T1 and T2
-
+
 ;SCTA21 - map non-local node address
 SCTA21:
 

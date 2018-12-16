@@ -1,3 +1,11 @@
+; Edit= 9047 to SCJSYS.MAC on 28-Dec-88 by WADDINGTON (TCO none)
+;Remove edit 9042. It doesn't work. Fixing it properly in SCJSYS would cause
+;other programs to break.
+; Edit= 9042 to SCJSYS.MAC on 13-Dec-88 by WADDINGTON
+;Generate a "Connect Interrupt" if "Data Interrupts" are not enabled, and the
+;previous state was "Connect Wait".
+; Edit= 8938 to SCJSYS.MAC on 24-Aug-88 by RASPUZZI
+;Remove annoying helper line from source code.
 ; UPD ID= 8615, RIP:<7.MONITOR>SCJSYS.MAC.4,  11-Feb-88 18:30:59 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 286, RIP:<7.MONITOR>SCJSYS.MAC.3,  11-Nov-87 12:21:12 by MCCOLLUM
@@ -2284,7 +2292,6 @@ DNETIN:	STOR T1,SAWAI,(SAB)	;SET WAIT FLAG
 	LOAD T1,FLLNK,(JFN)	;PUT PORT
 	STOR T1,SAACH,(SAB)	; NUMBER INTO SAB
 	CALL SCLFNC		;GET SOME BYTES FROM DECNET
-;[7244] Change 1 line at DNETIN:+30	hmp	17-Feb-86
 	 NOP			;[7244]
 	JUMPN T1,[SETZM FILBCI(JFN) ;FAILED. SAY NOTHING RECEIVED.
 	          SETZRO PTPSI,(PRT) ; AND CLEAR PSI-PENDING FLAG

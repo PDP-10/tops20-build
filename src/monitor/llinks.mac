@@ -1,3 +1,11 @@
+; Edit= 9172 to LLINKS.MAC on 22-Jun-90 by GSCOTT
+;Insure the AC save routines in APRSRV are used by always SEARCHing PROLOG
+;before any SEARCH of MACSYM so that the proper USRSAV macro (from PROLOG) is
+;used in the SAVEAC macro.
+; Edit= 8937 to LLINKS.MAC on 23-Aug-88 by LOMARTIRE
+;Spell MONITR correctly in ACTION field of BUGs!
+; Edit= 8918 to LLINKS.MAC on 18-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8542, RIP:<7.MONITOR>LLINKS.MAC.3,   9-Feb-88 17:04:07 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; *** Edit 7205 to LLINKS.MAC by PALMIERI on 2-Dec-85, for SPR #20968 (TCO 6-1-1561)
@@ -174,7 +182,7 @@
 ;MCO 10971 - Grand Re-merge of the -10/-20 sources
 ;TITLE	LLINKS - Network Services Layer of Phase III DECnet V042
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -194,11 +202,11 @@
 
 	SUBTTL W. G. Nichols
 
-	SEARCH D36PAR,SCPAR,MACSYM
+	SEARCH D36PAR		;[9172]
 
 IFN FTOPS10,<
 .CPYRT<
-COPYRIGHT (C) 1984 BY DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+COPYRIGHT (C) 1984,1990 BY DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
 >
 	$RELOC			;Set up code and data segments according
 > ;END IFN FTOPS10
@@ -219,10 +227,10 @@ COPYRIGHT (C) 1984 BY DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
 
 IFN FTOPS10,<
 	TITLE LLINKS - Network Services Layer of Phase IV DECnet
-	SEARCH F,S
+	SEARCH F,S,SCPAR,MACSYM	;[9172] 
 	>
 IFN FTOPS20,<
-	SEARCH PROLOG
+	SEARCH PROLOG,SCPAR	;[9172]
 	TTITLE (LLINKS,,< - Network Services Layer of Phase IV DECnet>)
 	>
 
@@ -1242,16 +1250,19 @@ NSPLWB:	SKIPL NSPLOK		;IS NSP LOCK FREE YET?
 	JRST 1(T4)		;YES, WAKE UP FORK
 	XRESCD
 
-NSPLW2:	BUG.(CHK,LLIBWK,LLINKS,SOFT,<SCTNSF call from sched w/o lock>,<<T6,CALLER>>,<
+NSPLW2:	BUG.(CHK,LLIBWK,LLINKS,SOFT,<NSPLCW called without lock while NOSKED or in scheduler>,<<T6,CALLER>>,<
 
-Cause:	The DECnet entry point NSP has been called from scheduler
-	level when the NSP interlock was locked.  This should never
-	happen.
+Cause:	The DECnet entry point NSPLCW has been called while the NSP interlock
+	was locked and the process is NOSKED or the scheduler performed the
+	call.  This should never happen.
 
-Action:	Inspect the stack to find out who the offender was.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and inspect the 
+	stack to find out who the offender was.
 
 Data:	CALLER - The address of the routine that requested the interlock
-
 >)
 	  RET			;LET CALLER WORRY ABOUT NO DECNET ACTION
 
@@ -1598,9 +1609,12 @@ NSISEG:	LOAD T1,MBAR1,(MB)	;RESTORE CALLER'S ARGS TO ACS T1 & T2
 	BUG.(CHK,LLIQIN,LLINKS,SOFT,<Queued interrupt message illegal>,<<EL,ELPTR>,<ES,ESPTR>,<MB,MBPTR>>,<
 
 Cause:	LLINKS was asked to transmit two interrupt messages simultaneously.
-	A maximum of one is allowed.  This is a software problem.  Please
-	submit a SPR if it happens more than once, and include a dump of the
-	system and the additional data.
+	A maximum of one is allowed.  This is a software problem.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	ELPTR - Address of EL block
 	ESPTR - Address of ES block
@@ -2046,14 +2060,17 @@ PRCXM2:	CALL SNDATA		;SEND A DATA MESSAGE
 PROCXI: BUG.(CHK,LLIIFC,LLINKS,SOFT,<Illegal flow control type>,<<EL,ELPTR>,<ES,ESPTR>,<MB,MBPTR>>,<
 
 Cause:	An illegal flow control type was requested on transmit.  This
-	should have been checked by a higher layer.  Inspect the stack
-	to find the path that caused the bad value.  Please submit a SPR
-	and include a dump and the additional data.
+	should have been checked by a higher layer.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Inspect the stack to find the 
+	path that caused the bad value.
 
 Data:	ELPTR - Pointer to EL block
 	ESPTR - Pointer to ES block
 	MBPTR - Pointer to message block
-
 >,PROCX1)
 
 ;Here when PROCXx couldn't send the message in MB for some reason.  MB
@@ -2817,15 +2834,18 @@ RCVSG1:	TMNE ESOTH,(ES)		;ASSURE WE'RE ON THE "NORMAL" SUBLINK
 Cause:	There is a duplicate interrupt message on the unacked interrupt 
 	receive queue.  This should not happen because the NSP interlock 
 	should not release with anything on the receive queue.
-  
-Action:	Either the interrupt flow control is wrong and more than one data 
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and consider that
+        either the interrupt flow control is wrong and more than one data 
 	request was sent or the remote node sent an interrupt message without  
 	a data request.
 
 Data:	ELPTR - Pointer to EL block
 	ESPTR - Pointer to ES block
 	MBPTR - Pointer to message block
-
 >,CLRSRQ)
 	LOAD T1,NMSGN,(MB)	;GET THIS MSG'S SEGMENT NUMBER
 	SOSGE T1		;CALC PREVIOUS NUMBER
@@ -3105,13 +3125,14 @@ Cause:	An illegal flow control type was found at PRCRQS when the receive
 	type, it should have been found by the message parsing routines.
 	Therefore this should never happen.
 
-Action:	If this happens more than once, please submit a SPR and include the
-	additional data and a dump of the system.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Inspect the stack to find the 
 
 Data:	ELPTR - Address of EL block
 	ESPTR - Address of ES block
 	MBPTR - Address of message block
-
 >,PRCRS1)
 	SUBTTL Message Receivers -- RCVLKS - Receive a Link Service Message
 
@@ -4187,18 +4208,19 @@ CHKRTM:
 RSNMSG:	LOAD T1,NMMGF,(MB)	;GET MESSAGE TYPE
 	LSH T1,-2		;SET UP TO READ MSGTBL (MESSAGE TABLE)
 	CAILE T1,RCVMAX		;IS IT A LEGAL MESSAGE TYPE?
-	BUG.(CHK,LLIPIM,LLINKS,SOFT,<PROCXQ found illegal message type>,<<MB,MBPTR>>,<
+	BUG.(CHK,LLIPIM,LLINKS,SOFT,<RSNMSG found illegal message type>,<<MB,MBPTR>>,<
 
 Cause:	A message that was being resent had a bad message type.  This means
 	that the message was overwritten while it was waiting on the resend
 	queue.  The message type was good when the message was sent the first
 	time.
 
-Action:	If this happens more than once, please submit a SPR with the
-	additional data and a dump of the system.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Inspect the stack to find the 
 
 Data:	MBPTR - Pointer to the message block describing the bad message
-
 >,SNDATA)
 	TMNN RTFLO,+MSGTBL(T1)	;THIS MESSAGE TYPE FLOW CONTROLLED?
 	CALLRET SNDATA		;NO, SEND IT IMMEDIATELY
@@ -4436,11 +4458,10 @@ IFN FTORC,<
 	SETZ T3,		;Default T3 in case MB pointer is zero
 	SKIPE T1		;Is it?
 	LOAD T3,NMMAG,(T1)	;Get magical debug word
-	BUG.(CHK,LLIORQ,LLINKS,SOFT,<ORQ is non-empty at port close>,<<T1,MBADR>,<T2,ORCNT>,<T3,MAGIC>>,
-<
+	BUG.(CHK,LLIORQ,LLINKS,SOFT,<ORQ is non-empty at port close>,<<T1,MBADR>,<T2,ORCNT>,<T3,MAGIC>>,<
 
-This BUG. only appears in DEBUG monitors.
-
+Cause:	This BUG. only appears in DEBUG monitors.  It will have to be 
+	documented if it ever appears in a non-DEBUG monitor.
 >)
 	RET			;Just return after BUGCHK. Will loop each jiffy
 				;and decrement ELCLC to greater negative #s
@@ -4572,8 +4593,8 @@ RETBF1:	LOAD T1,ESLAR,(ES)	;GET LAST ACK RECEIVED
 	BUG.(CHK,LLILMA,LLINKS,SOFT,<RETBUF left LAR # LMA>,,<
 
 Cause:	This BUG is for debugging purposes only and will not be present in
-	a production monitor.
-
+	a production monitor.  It will have to be documented if it is ever
+	decided that it should appear in a non-DEBUG monitor.
 >)
 	STOR T1,ESLMA,(ES)	;TRY TO RECOVER
 >;END OF IFN FTPARANOID
@@ -5251,17 +5272,17 @@ INIHSH:	SKIPG T1,NSPHTS		;GET THE HASH TABLE SIZE
 Cause:	The monitor has a bad value for the hash table size.
 
 Action:	Rebuild or patch the monitor with a positive value in NSPHTS.
-
+	This value only resides in LLINKS.MAC so only source sites can
+	rebuild the monitor.
 >,RTN)
 	CALL DNGWDZ		;GET A HASH TABLE
-	  BUG.(HLT,LLIHTG,LLINKS,SOFT,<INIHSH cant get a hash table>,,<
+	  BUG.(HLT,LLIHTG,LLINKS,SOFT,<INIHSH can't get a hash table>,,<
 
 Cause:	The routine that initializes the LLINKS link hash table failed to get
 	memory for the hash table.  If the value for the hash table size is
 	reasonable, this should never fail.
 
 Action:	Check that the contents of NSPHTS is a reasonable value.
-
 >,RTN)
 	MOVEM T1,NSPHTB		;STORE ADDRESS OF TABLE
 	RET			;DNGWDZ ZEROS WORDS DELIVERED
@@ -5406,11 +5427,14 @@ FNSPD1:	  BUG.(CHK,LLIFNS,LLINKS,SOFT,<SCTL passed bad NSPpid>,<<EL,ELPTR>>,<
 Cause:	Session control gave LLINKS a bad ID.  This is a coding error
 	in SCLINK, or a memory manager problem.
 
-Action:	Inspect the stack to find out how the monitor got here.
-	Inspect the ELB to see if it otherwise looks like an ELB.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and inspect 
+	the stack to find out how the monitor got here.  Inspect the ELB 
+	to see if it otherwise looks like an ELB.
 
 Data:	ELPTR - Pointer to the bad ELB
-
 >,RTN)
 	RETSKP				;OK RETURN
 	SUBTTL DSTPRT - Destroy a Port
@@ -5628,13 +5652,16 @@ UPDLY2:	IORM T2,NN.GDL(T4)	;WE'VE "GOT DELAY" NOW, THOUGH
 ;Changes T1,T2,T3,T4
 
 FREMSG:	SKIPG T1,MB		;PREPARE FOR DNFMSG
-	BUG.(CHK,LLIFZM,LLINKS,SOFT,<Tried to free zero msg>,,<
+	BUG.(CHK,LLIFZM,LLINKS,SOFT,<Tried to free zero message>,,<
 
 Cause:	FREMSG was requested to free a message.  However, the pointer
 	to the message block was zero.  This is a coding error in LLINKS.
 
-Action:	Inspect the stack to find out which routine called FREMSG.
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Inspect the stack to find out 
+	which routine called FREMSG.
 >,RTN)
 	TRASH MB,		;JUST BE CAREFUL
 	CALLRET DNFMSG		;FREE THE MESSAGE BLOCK
@@ -5789,9 +5816,10 @@ Cause:	LLINKS has requested that a message be returned from ROUTER
 	after transmission.  ROUTER just returned such a message to
 	LLINKS, but the count of outstanding messages was zero.
 
-Action:	This is a difficult problem.  If it persists, send a SPR
-	and include a dump of the system.
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	SETZRO ELORC,(EL)	;WEAK ATTEMPT TO RECOVER
 	RET			; and return
@@ -6515,6 +6543,11 @@ BADEVT:	BUG.(CHK,LLITNE,LLINKS,SOFT,<Unknown event at NSPEVT>,<<T1,EVC>,<T2,EVT>
 Cause:	The caller of the NSPEVT routine supplied a bad event class and type.
 	NSPEVT may be called by SCLINK as well as by LLINKS. The caller's
 	address is on the stack.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	EVC - Event class
 	EVT - Event type

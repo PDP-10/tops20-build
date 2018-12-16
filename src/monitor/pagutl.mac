@@ -1,5 +1,20 @@
-; UPD ID= 8709, RIP:<7.MONITOR>PAGUTL.MAC.17,   6-May-88 07:20:42 by LOMARTIRE
-;TCO 7.1285 - Prevent OFJFBDs by stopping CHKLAC from clearing OFN2XB
+; Edit= 9148 to PAGUTL.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9137 to PAGUTL.MAC on 15-Dec-89 by LOMARTIRE
+;Prevent CFTYAM BUGHLTs by getting write token in ASNOFN for new XB. 
+; Edit= 9039 to PAGUTL.MAC on 12-Dec-88 by RASPUZZI
+;Prevent CFSUSN BUGHLTs during a rename by balancing the call to CFSAWP with a
+;corresponding call to CFSFWT.
+; Edit= 9038 to PAGUTL.MAC on 9-Dec-88 by RASPUZZI
+;Prevent CFSOFB BUGHLTs. Also, obtain exclusive access when updating an OFN.
+; Edit= 9008 to PAGUTL.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8906 to PAGUTL.MAC on 16-Aug-88 by GSCOTT
+;Update BUG. documentation. 
+; Edit= 8869 to PAGUTL.MAC on 29-Jul-88 by LOMARTIRE, for SPR #21717
+;Prevent CFSOFB BUGHLTs by getting write token in UPDOFN 
+; Edit= 8840 to PAGUTL.MAC on 6-May-88 by LOMARTIRE, for SPR #21691 (TCO 7.1285)
+;Prevent OFJFBDs by stopping CHKLAC from clearing OFN2XB after 1st real open 
 ; UPD ID= 8611, RIP:<7.MONITOR>PAGUTL.MAC.16,  11-Feb-88 17:24:52 by GSCOTT
 ;More of TCO 7.1005 - Somehow I got the TCO numbers wrong in the comments.
 ; UPD ID= 8574, RIP:<7.MONITOR>PAGUTL.MAC.15,  11-Feb-88 16:52:43 by GSCOTT
@@ -748,7 +763,7 @@
 ;	MAKE SWPMWP WRITE-PROTECT RSCOD, TOO
 
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -1570,8 +1585,7 @@ PGRI4:				;RETURN HERE FROM PAGER TRAP
 	BLCAL. ASGVAS,<[0],[SECSIZ]> ;ASSIGN A SECTION FOR SCA
 	 BUG.(HLT,NOFSEC,PAGUTL,SOFT,<ASGVAS failure at startup>,,<
 
-Cause:	ASGVAS was called to get a free section for SCA at
-	startup but failed.
+Cause:	ASGVAS was called to get a free section for SCA at startup but failed.
 >)
 	HLRZM T1,EPGSEC
 	MOVE T1,EPGSEC
@@ -1793,10 +1807,10 @@ PGRIG2:	MOVX T1,PSASM!CSWRB	;INIT CST0
 
 PGRIX1:	BUG.(HLT,PGRIXM,PAGUTL,SOFT,<PGRINI - Boot overlaps resident tables>,,<
 
-Cause:	The values in BUTPHY indicate that BOOT has been left in pages
-	which are expected to be available for resident code or
-	storage areas.  This could be the result of a bad monitor build
-	or an attempt to run the monitor with insufficient memory.
+Cause:	The values in BUTPHY indicate that BOOT has been left in pages which
+	are expected to be available for resident code or storage areas.  This
+	could be the result of a bad monitor build or an attempt to run the
+	monitor with insufficient memory.
 >)
 
 ;TRNOFF - Routine to turn a page offline during PGRINI's memory scan
@@ -2180,7 +2194,7 @@ PGRI9:	MOVE T1,NRPMX		;INIT NRPMIN
 	LSH T1,-3
 	MOVEM T1,MAXBP
 	RET			;DONE
-
+
 ;SET SWAP SPACE PARAMETERS - CALLED FROM DRMINI AFTER DRUM SPACE KNOWN
 ;ALSO CALLED WHEN NEW PAGES APPEAR IN SYSTEM
 
@@ -2199,9 +2213,12 @@ SETSSP::MOVE B,TOTRC		;PREVENT NEW PRIVATE PAGES
 	  MOVE T2,TOTRC
 	  BUG.(CHK,SWPSTL,PAGUTL,SOFT,<Swap space too low at startup>,<<T1,SWPSIZ>,<T2,MEMSIZ>>,<
 
-Cause:	Insufficient swap space has been allocated for reasonable
-	operation.  The swapping space should be at least 4 times
-	the size of main (MOS/core) memory.
+Cause:	Insufficient swap space has been allocated for reasonable operation.
+	The swapping space should be at least 4 times the size of main
+	(MOS/core) memory.
+
+Action:	Rebuild the boot structure with more swapping space.  Supply at least
+	four times the amount of main memory for swapping.
 
 Data:	SWPSIZ - Size of swapping space allocated
 	MEMSIZ - Total MOS/core size
@@ -2317,7 +2334,6 @@ CKPPFH:	LOAD T2,TWCOD,KCPFCD	;GET REASON FOR FAULT
 
 Cause:	During a call to CHKPAG, a page fault occurred, and the error code did
 	not indicate non-existent memory.
-
 >)
 	XMOVEI T2,CHKPG1	;GO TO THE FAILURE CODE
 	MOVEM T2,KCPFOP		;SET UP PC
@@ -2351,11 +2367,10 @@ RESSM1:	LOAD T1,STGADR,TMPSMM(Q1) ;GET DRUM ADR FOR THIS PAGE
 	 BUG.(HLT,RSMFAI,PAGUTL,HARD,<RESSMM - Failed to assign swap mon page>,,<
 
 Cause:	The monitor is trying to restore the swappable monitor from the
-	swapping space after a system crash. It is unable to assign a
-	page in the swapping space to which a monitor page was previously
-	written. This code is executed only if the monitor is
-	manually started at location EVLDGO. This is not a recommended
-	procedure.
+	swapping space after a system crash.  It is unable to assign a page in
+	the swapping space to which a monitor page was previously written. This
+	code is executed only if the monitor is manually started at location
+	EVLDGO.  This is not a recommended procedure.
 >)
 	LOAD T1,STGADR,TMPSMM(Q1)
 	IOR T1,IMMPTR		;MAKE NEW PTR
@@ -2392,11 +2407,10 @@ SWPRSR:	SETZ 1,			;READ OPERATION
 	TLNN 2,(DRMAB)		;DRUM?
 	BUG.(HLT,ILCST1,PAGUTL,SOFT,<Illegal address in CST1 entry, cannot restart>,,<
 
-Cause:	The monitor is attempting to complete I/O that was taking place
-	when the system crashed. The backup address in the CST is
-	invalid for some core page. Note: This code is executed only
-	if the monitor is manually started at location EVRST. This is
-	not a recommended procedure.
+Cause:	The monitor is attempting to complete I/O that was taking place when
+	the system crashed.  The backup address in the CST is invalid for some
+	core page.  Note: This code is executed only if the monitor is manually
+	started at location EVRST.  This is not a recommended procedure.
 >)
 	CALL DRMIO
 	JRST SWPRS2
@@ -2500,16 +2514,15 @@ MAPPHP::EA.ENT			;RUN IN SECTION 1
 	CAMLE T2,NHIPG		;WITHIN KNOWN RANGE?
 	BUG.(HLT,XSCORE,PAGUTL,SOFT,<CST too small for physical core present>,,<
 
-Cause:	A routine has been called to map a specified core page to a
-	specified virtual page. The BUGHLT indicates that the caller
-	provided a page number of a core page that does not exist.
-	(The number is too large). This BUGHLT can occur if a monitor
-	that is built for less than 256K is booted on a machine whose
-	memory exceeds 256K.
+Cause:	A routine has been called to map a specified core page to a specified
+	virtual page.  The BUGHLT indicates that the caller provided a page
+	number of a core page that does not exist.  (The number is too large.)
+	This BUGHLT can occur if a monitor that is built for less than 256K is
+	booted on a machine whose memory exceeds 256K.
 
-Action:	If the monitor was built for less than 256K, and there
-	is more than 256K of memory on the system, rebuild the monitor
-	for the correct amount of memory.
+Action:	If the monitor was built for less than 256K, and there is more than
+	256K of memory on the system, rebuild the monitor for the correct
+	amount of memory.
 >)
 	CALL SETCPT		;MAP DESTINATION PT
 	SETZM T3		;NO SPECIAL ACCESS BITS
@@ -2835,8 +2848,12 @@ SETCPT::HLRZ 2,1		;GET PTN
 	SKIPE PSBM0+CPTPG	;ALREADY MAPPED?
 	BUG.(CHK,CPTMAP,PAGUTL,SOFT,<SETCPT - CPTPG already mapped>,,<
 
-Cause:	A routine was called to setup CPTPG while CPTPG was already setup.
-	All callers should call RELCPT if CPTPG is mapped.
+Cause:	A routine was called to setup CPTPG while CPTPG was already setup.  All
+	callers should call RELCPT if CPTPG is mapped.
+
+Action:	RELCPT has been called and the system continues to run.  If this
+	bug is reproducable, set it dumpable, and send in an SPR with the dump
+	and how to reproduce the problem.
 >)				;** MAKE THIS A BUGHLT IN THE FUTURE
 	CALL RELCPT		;** IF CPTMAP IS A BUGHLT REMOVE THIS
 	NOINT
@@ -3026,7 +3043,6 @@ OF0HLT:	BUG.(HLT,OFNZRO,PAGUTL,SOFT,<OFN zero was passed as argument>,,<
 Cause:	OFN 0 should never be passed as an argument.  
 
 Action:	Trace the stack and eliminate the illegal use of OFN 0.
-
 >)
 >				;End of IFN DEBUG
 	SAVEAC <Q1,Q2>		;GET A WORK REGISTER
@@ -3038,9 +3054,8 @@ Action:	Trace the stack and eliminate the illegal use of OFN 0.
 	TLNN Q1,(-OFSHR)	;DID IT OVERFLOW?
 UPSHRX:	BUG.(HLT,SHROFN,PAGUTL,SOFT,<UPSHR - OFN share count overflow>,,<
 	
-Cause:	The share count for an OFN has been incremented beyond the
-	maximum value. It should not be possible for a user program
-	to cause this.
+Cause:	The share count for an OFN has been incremented beyond the maximum
+	value.  It should not be possible for a user program to cause this.
 >)
 	RET		;NO. RETURN GOOD
 
@@ -3049,9 +3064,12 @@ SHRSPT:	MOVX Q1,USHR	;GET SHARE BIT FOR SPT
 	TLNN Q1,(-USHR)	;DID IT OVERFLOW?
 	BUG.(HLT,SPTSHR,PAGUTL,SOFT,<UPSHR - SPT share count overflow>,,<
 
-Cause:	The share count for an SPT slot (not an OFN) has been
-	incremented beyond the maximum value. This can be caused
-	by a pathological program.
+Cause:	The share count for an SPT slot (not an OFN) has been incremented
+	beyond the maximum value.  This can be caused by a pathological
+	program.
+
+Action:	If a user program cannot be found that is at fault, please send in an
+	SPR along with a dump and any information on reproducing the problem.
 >)
 	RET		;DONE
 
@@ -3069,8 +3087,8 @@ DWNSHR::
 	TDNN Q2,SPTO(Q1)	;FIRST CHECK FOR OVER DECREMENTING
 	BUG.(HLT,SHROFD,PAGUTL,SOFT,<DWNSHR - OFN share count underflow>,,<
 
-Cause:	A routine has been called to decrement the share count for
-	an OFN. The BUGHLT indicates that the count was already 0.
+Cause:	A routine has been called to decrement the share count for an OFN.  The
+	BUGHLT indicates that the count was already 0.
 >)
 	ADDM Q2,SPTO(Q1)	;DO THE DECREMENT
 	RET			;AND DONE
@@ -3210,11 +3228,13 @@ NLKTST::TMNE PLKMSK,@CST1X+T1	;PAGE LOCKED NOW?
 BADCPG::CAMGE T1,MONCOR		;RESIDENT PAGE?
 	BUG.(HLT,RPGERR,PAGUTL,HARD,<BADCPG - Fatal error in resident page>,,<
 
-Cause:	A hardware error (AR/ARX parity error or MB parity error) was
-	detected when the monitor referenced a page in memory that
-	contained part of the resident monitor. The monitor has printed
-	an analysis of the error on the CTY, and A SYSERR entry will be
-	created when the monitor is rebooted.
+Cause:	A hardware error (AR/ARX parity error or MB parity error) was detected
+	when the monitor referenced a page in memory that contained part of the
+	resident monitor.  The monitor has printed an analysis of the error on
+	the CTY, and A SYSERR entry will be created when the monitor is
+	rebooted.
+
+Action:	Field Service should check the system for a hardware problem.
 >)
 	NOSKED
 	MOVX T2,-PLKV
@@ -3250,14 +3270,15 @@ BADCP3:	MOVE T2,@CST2X+T1	;GET OWNER IDENT, FIND OFN IF ANY...
 		JUMPN T2,BADCP1	;GO MARK IT
 		BUG.(HLT,FRKPTE,PAGUTL,HARD,<BADCPG - Fatal error in fork PT page>,,<
 
-Cause:	A hardware error (AR/ARX parity error or MB parity error) was
-	detected when the monitor referenced a page in memory that
-	contained a process's page table. The monitor has printed
-	an analysis of the error on the CTY, and A SYSERR entry will be
-	created when the monitor is rebooted.
+Cause:	A hardware error (AR/ARX parity error or MB parity error) was detected
+	when the monitor referenced a page in memory that contained a process's
+	page table. The monitor has printed an analysis of the error on the
+	CTY, and A SYSERR entry is created when the monitor is rebooted.
+
+Action:	Field Service should check out the system.
 >)]
 BADCP1:	CAIL T2,NOFN		;ARE WE IN OFN SECTION OF SPTH ?
-	BUG. (HLT,MARK1,PAGUTL,SOFT,<BADCPG - Not an OFN>,<<T2,SPTIDX>,<T1,COREPG>>,<
+	BUG.(HLT,MARK1,PAGUTL,SOFT,<BADCPG - Not an OFN>,<<T2,SPTIDX>,<T1,COREPG>>,<
 
 Cause: An OFN is in error but the SPT index is not pointing to an OFN.
 
@@ -3316,9 +3337,9 @@ MRKMPG::CAML T1,MONCOR		;VALIDATE PAGE
 	CAMLE T1,NHIPG
 	BUG.(HLT,ILPAGN,PAGUTL,SOFT,<MRKMPG - Invalid page number>,,<
 
-Cause:	A routine has been called to mark a page as modified (to
-	set the CORMB flag in CST0). The BUGHLT indicates that the
-	core page number provided by the caller is invalid.
+Cause:	A routine has been called to mark a page as modified (to set the CORMB
+	flag in CST0).  The BUGHLT indicates that the core page number provided
+	by the caller is invalid.
 >)
 	SETONE CORMB,@CST0X+T1	;MARK IT
 	RET
@@ -3427,9 +3448,9 @@ MLKPG9:	CAMN T2,MMSPTN		;IN MONMAP?
 	SKIPE MMAP(T3)		;PAGE IS NON-EXISTENT?
 MLKPGX:	BUG.(HLT,ILPLK1,PAGUTL,SOFT,<MLKPG - Illegal arguments>,,<
 
-Cause:	A routine was called to create a page in the monitor's
-	address space. But the caller provided a page identifier that
-	pointed to an existing page.
+Cause:	A routine was called to create a page in the monitor's address space.
+	But the caller provided a page identifier that pointed to an existing
+	page.
 >)
 	MOVE T2,IMMPTR		;CONSTRUCT PTR WITH UNASSIGNED ADR
 	TXO T2,UAAB
@@ -3539,8 +3560,8 @@ MULKPG::PUSH P,2
 	TLNE 2,(NCORTM)		;PAGE NOW IN CORE?
 	BUG.(HLT,ILULK1,PAGUTL,SOFT,<MULKPG - Tried to unlock page not locked>,,<
 
-Cause:	A routine was called to unlock a core page, but the page was
-	not in core, indicating it could not have been locked.
+Cause:	A routine was called to unlock a core page, but the page was not in
+	core, indicating it could not have been locked.
 >)
 	CALL MULK1
 	POP P,2
@@ -3555,8 +3576,8 @@ MULK1:	EA.ENT			;RUN IN SECTION 1
 	TDNN 1,@CST1X+2		;LOCK COUNT NON-ZERO?
 	BUG.(HLT,ILULK2,PAGUTL,SOFT,<Tried to unlock page not locked>,,<
 
-Cause:	A routine was called to unlock a core page, but the page's
-	lock count was 0.
+Cause:	A routine was called to unlock a core page, but the page's lock count
+	was 0.
 >)
 	SKIPN INSKED
 	AOS NSKED		;PREVENT SCHED WHILE COUNTS BEING ADJUSTED
@@ -3584,9 +3605,9 @@ MULKMP::
 	CAME T3,MMSPTN		;AN MMAP PAGE?
 	BUG.(HLT,ILULK3,PAGUTL,SOFT,<MULKMP - Illegal monitor address>,,<
 
-Cause:	A routine was called to unlock a core page in the monitor's
-	address space but the caller provided a page identifier that did not
-	point to the monitor's map.
+Cause:	A routine was called to unlock a core page in the monitor's address
+	space but the caller provided a page identifier that did not point to
+	the monitor's map.
 >)
 	TLZ T1,-1		;SO INDEX BELOW WORKS
 	LOAD T1,STGADR,MMAP(T1)	;GET CORE ADDRESS
@@ -3599,11 +3620,10 @@ MULKCR::CAML 1,MONCOR		;LEGAL?
 	CAMLE 1,NHIPG
 	BUG.(HLT,ILULK4,PAGUTL,SOFT,<MULKCR - Illegal core page number>,,<
 
-Cause:	A routine was called to unlock a core page. The caller provided
-	a page number that was illegal because of one of the following:
+Cause:	A routine was called to unlock a core page. The caller provided a page
+	number that was illegal because of one of the following:
 
-	1. The page is never locked because it is part of the resident
-	   monitor
+	1. The page is never locked because it is part of the resident monitor.
 
 	2. The page does not exist in physical memory.
 >)
@@ -3683,9 +3703,8 @@ GETCPP::SAVEQ
 	TLNE 2,(NCORTM)		;IN CORE?
 GETCPX:	BUG.(HLT,PAGNIC,PAGUTL,SOFT,<GETCPP - Page not in core>,,<
 
-Cause:	A routine was called to convert a virtual address or page id
-	to its corresponding core page. But the page table is not in
-	core.
+Cause:	A routine was called to convert a virtual address or page id to its
+	corresponding core page.  However, the page table is not in core.
 >)
 	HRRZS T1		;Offset into page
 	HRRZS T2		;SAVE ONLY PAGE NUMBER
@@ -3970,10 +3989,10 @@ SETPP1::LOAD T1,FKPSB		;GET CORE ADR OF PSB
 	TXNE T1,NCORTM
 	BUG.(HLT,PSBNIC,PAGUTL,SOFT,<SETPPG - PSB not in core>,,<
 
-Cause:	The monitor is establishing the context for running a
-	process by making its per-process area part of the
-	monitor's map. It is about to copy the SPT entry for the
-	PSB into a special SPT slot but the PSB is not in core.
+Cause:	The monitor is establishing the context for running a process by making
+	its per-process area part of the monitor's map.  It is about to copy
+	the SPT entry for the PSB into a special SPT slot but the PSB is not in
+	core.
 >)
 	STOR T1,PAGUBA		;PUT IT IN DATAO WORD
 	MOVE T2,PSBBAS
@@ -3987,10 +4006,10 @@ Cause:	The monitor is establishing the context for running a
 	TXNE T1,NCORTM
 	BUG.(HLT,JSBNIC,PAGUTL,SOFT,<SETPPG - JSB not in core>,,<
 
-Cause:	The monitor is establishing the context for running a
-	process by making its per-job area part of the
-	monitor's map. It is about to copy the SPT entry for the
-	JSB into a special SPT slot. But the JSB is not in core.
+Cause:	The monitor is establishing the context for running a process by making
+	its per-job area part of the monitor's map.  It is about to copy the
+	SPT entry for the JSB into a special SPT slot.  However, the JSB is not
+	in core.
 >)
 	MOVE T2,JOBBAS
 	STOR T1,STGADR,SPT(T2)	;PUT IT IN MMAP BASE
@@ -4001,10 +4020,10 @@ Cause:	The monitor is establishing the context for running a
 	TXNE T1,NCORTM		;Page-table in core?
 	BUG.(HLT,JPTNIC,PAGUTL,SOFT,<SETPPG-PT for JSB not in core>,,<
 
-Cause:	The monitor is establishing the context for running a process by 
-	making the PT for its extended per-job area part of the monitor's map. 
-	It is about to copy the SPT entry for the extended JSB's page-table 
-	into a special SPT slot. But the page-table is not in core.
+Cause:	The monitor is establishing the context for running a process by making
+	the PT for its extended per-job area part of the monitor's map.  It is
+	about to copy the SPT entry for the extended JSB's page-table into a
+	special SPT slot.  However, the page-table is not in core.
 >)
 	MOVE T2,JPTBAS		;Get the magic SPT slot for our mapping game
 	STOR T1,STGADR,SPT(T2)	;PUT IT IN MMAP BASE
@@ -4128,11 +4147,11 @@ OFFSPQ::PIOFF			;INTERLOCK
 	CAIE T2,PSSPQ		;NOW ON THIS QUEUE?
 	BUG.(HLT,OFFSPE,PAGUTL,SOFT,<OFFSPQ - Page not on SPMQ>,,<
 
-Cause:	A routine has been called to remove a core page from the special
-	memory queue. If a page is on the queue, its age should be
-	PSSPQ. The BUGHLT indicates that the age is incorrect. The
-	entry may or may not actually be on the queue. The caller is
-	expected to ensure that the page is on the queue.
+Cause:	A routine has been called to remove a core page from the special memory
+	queue.  If a page is on the queue, its age should be PSSPQ.  The BUGHLT
+	indicates that the age is incorrect.  The entry may or may not actually
+	be on the queue.  The caller is expected to ensure that the page is on
+	the queue.
 >)
 	HRRZ T2,@CST3X+T1	;GET POINTERS
 	HLRZ T3,@CST3X+T1
@@ -5034,6 +5053,9 @@ DDXBI::
 
 Cause:	DDXBI was called to swap in a forced out index block but the index
 	block is bad.
+
+Action:	Field Service should run SPEAR to examine the SYSERR file for errors on
+	the boot structure.
 >)
 	ENDIF.
 	; ..
@@ -5098,37 +5120,63 @@ UPDOFN::STKVAR <OFN>
 	CALL CHKDMO		;SEE IF DISMOUNTED
 	 RET			;IT IS. IGNORE REQUEST.
 	HRRZ A,OFN		;GET OFN
-	CALL LCKOFN		;LOCK OFN AGAINST CHANGES
+	CALL LCKOFN		;[9038][8869] (T1/) Lock OFN
 	MOVX B,OFNWRB		;SEE IF OFN MODIFIED
 	HRRZ A,OFN		;GET BACK OFN
 	TDNN B,SPTH(A)
 	JRST UPDOFX		;NOT MODIFIED, DO NOTHING
+;[9038]
+;At this point, it has been determined that the OFN is modified. So,
+;before we update the disk, let's get the write token (which we should
+;already have (in theory).
+
+	SETO B,			;[9038] Want it exclusive (B <> 0)
+	CALL CFSAWP		;[9038] (T1,T2/) Get it exclusive
+	MOVE A,OFN		;[9038] Get OFN back
 	LOAD A,STRX,(A)		;GET STRUCTURE NUMBER
 	CALL UPDBTB		;UPDATE BIT TABLE
 	HRRZ A,OFN		;GET OFN AGAIN
 	CALL UPDOF0		;WRITE INDEX BLOCK
+	MOVE A,OFN		;[9039] And continue unlocking OFN
+	CALL CFSFWT		;[9039] (T1/) Undo what we did with the token
 UPDOFX:	MOVE A,OFN
 	CALL ULKOFN		;UNLOCK OFN
 	RET
+
+	ENDSV.			;[9038]
 
 ;UPDATE OFN IF NECESSARY.
 ;OFN LOCKED. T1/ OFN
 ;RETURNS: +1 ALWAYS
 ;	RH OF T1 PRESERVED (I.E. THE OFN)
 
-UPDOFI:	HRRZS T1		;GET RH ONLY
+UPDOFI:	STKVAR <SOFN>		;[9038] OFN hiding place
+	HRRZS T1		;GET RH ONLY
+	MOVEM T1,SOFN		;[9038] Save OFN here
 	MOVX T2,OFNWRB		;SEE IF OFN NEEDS UPDATING
 	TDNN T2,SPTH(T1)	;DOES IT?
 	RET			;NO
 	MOVE T2,T1		;YES. GET OFN
 	CALL CHKDMO		;SEE IF STILL MOUNTED
 	 RET			;NO. ALL DONE THEN
-	PUSH P,T1		;YES. SAVE OFN
+;[9038]
+;At this point, it has been determined that the OFN is modified. So,
+;before we update the disk, let's get the write token (which we should
+;already have (in theory).
+
+	SETO T2,		;[9038] Want it exclusive (T2 <> 0)
+	CALL CFSAWP		;[9038] (T1,T2/) Get it exclusive
+	MOVE T1,SOFN		;[9038] Get OFN back
 	LOAD T1,STRX,(T1)	;GET STRUCTURE NUMBER
 	CALL UPDBTB		;UPDATE THE BTB
-	MOVE T1,0(P)		;GET BACK OFN
+	MOVE T1,SOFN		;[9038] Get back OFN
 	CALL UPDOF0		;UPDATE THE OFN
-	CALLRET PA1		;AND DONE
+	MOVE T1,SOFN		;[9038] Get the OFN back
+	CALL CFSFWT		;[9039] (T1/) Free up our token usage
+	MOVE T1,SOFN		;[9039] Get OFN back before returning
+	RET			;[9038] Done
+
+	ENDSV.			;[9038]
 
 ;SCAN INDEX BLOCK AND WRITE IMAGE TO DISK
 ;ASSUMES OFN LOCKED AGAINST CHANGES
@@ -5144,17 +5192,17 @@ UPDOFI:	HRRZS T1		;GET RH ONLY
 UPDOF0::SAVEP			;SAVE P1-P6
 	CAILE A,0		;ENSURE LEGAL OFN
 	CAIL A,NOFN
-	BUG.(HLT,NOTOFN,PAGUTL,SOFT,<UPDOF0 - ARG NOT OFN>,,<
+	BUG.(HLT,NOTOFN,PAGUTL,SOFT,<UPDOF0 - Updating file argument not OFN>,,<
 
-Cause:	A routine has been called to write an updated index block for a file  
-	onto the disk. However, the identifier that was provided by the caller  
+Cause:	A routine has been called to write an updated index block for a file
+	onto the disk. However, the identifier that was provided by the caller
 	is not a valid id for a file.  (It is not an OFN.)
 >)
 	TMNE OFNCSH,(T1)	;[7247] Is this a cached OFN?
 	BUG.(HLT,UPDCSH,PAGUTL,SOFT,<UPDOF0 - Update of cached OFN>,,<
 
-Cause:	A routine has been called to write an updated index block for a file  
-	onto the disk. However, the OFN is cached and the index block should
+Cause:	A routine has been called to write an updated index block for a file
+	onto the disk.  However, the OFN is cached and the index block should
 	have been updated when it got cached, not once it is cached.
 >)				;[7247] Yes, error!
 	MOVEM A,P1		;KEEP OFN AROUND
@@ -5211,13 +5259,23 @@ UOFN6:	AOBJN P2,UOFN1		;SCAN ALL XB
 	AOS DSKWR		;COUNT WRITES FOR STATISTICS
 	EXCH A,P3		;SAVE ERROR BITS, GET CORE PAGE
 	CALL MULKPG		;UNLOCK PAGE
-	SKIPE P3		;ERROR ON WRITE?
-	BUG.(CHK,XBWERR,PAGUTL,HARD,<UPDOFN - Disk write error on XB>,,<
+	IFN. P3			;[8906] Error on write?
+	  LOAD T1,STRX,(P1)	;[8906] Yes, get the structure number
+	  BUG.(CHK,XBWERR,PAGUTL,HARD,<UPDOFN - Disk write error on XB>,<<T1,STRX>>,<
 
-Cause:	UPDOFO was called to scan an index block and write the image to
-	disk. This BUG indicates that there has been a disk write error on
-	the index block.
->,,<DB%NND>)			;[7.1210] 
+Cause:	UPDOFO was called to scan an index block and write the image to disk.
+	This BUG indicates that there has been a disk write error on the index
+	block for a file.
+
+Action:	Field Service should run SPEAR to check the SYSERR file for disk
+	problems.  The additional data is the structure number having the
+	problem.  The easiest way to determine the structure name from the
+	structure number is to count down the structures listed in a
+	INFORMATION AVAILABLE command, skipping "DSK".
+
+Data:	STRX - Structure number
+>,,<DB%NND>)			;[8906][7.1210] 
+	ENDIF.			;[8906]
 
 UOFNX:	MOVEI A,0
 	MOVEI B,FPG2A
@@ -5273,13 +5331,17 @@ UOFN4:	OKSKED
 
 UOFBPP:	BUG.(HLT,ILPPT1,PAGUTL,HARD,<UPDOFN - Bad pointer in page table>,,<
 
-Cause:	The monitor is updating the disk index block for a file.
-	The index block contains an address of a file page that is
-	incorrect for one of the following reasons:
+Cause:	The monitor is updating the disk index block for a file.  The index
+	block contains an address of a file page that is incorrect for one of
+	the following reasons:
 
 	1. It is a memory address of non-existent memory or in the
 	   resident monitor.
 	2. There is no disk address for the page.
+
+Action:	This problem can be caused by bad hardware; Field Service should check
+	the system.  If the hardware is not at fault, send in a SPR along with
+	a dump and any information on how to reproduce the problem.
 >)
 	OKSKED
 	JRST UOFNX		;RETURN WITHOUT WRITING XB
@@ -5421,11 +5483,10 @@ UPGS0:	MOVEI B,0(B)		;GET COUNT ONLY
 	CAILE A,PGSIZ		;BEYOND END OF PT?
 	BUG.(HLT,PTOVRN,PAGUTL,SOFT,<UPDPGS - Count too large>,,<
 
-Cause:	A routine has been called to update pages of a file on the disk 
-	to which a specified index block (OFN) points. The caller
-	provides a starting page and a count. The BUGHLT occurs
-	because the sum of the two extends beyond the end of the
-	index block.
+Cause:	A routine has been called to update pages of a file on the disk to
+	which a specified index block (OFN) points.  The caller provides a
+	starting page and a count.  The BUGHLT occurs because the sum of the
+	two extends beyond the end of the index block.
 >)
 
 	MOVN B,B
@@ -5646,10 +5707,9 @@ ASNOFN::BLSUB. (<FLSTG,OSTRN,ODIRN,DREMP,XB2DAT>,<IFLG,EFLG>) ;[7356]
 	SKIPN STRTAB(FX)	;YES. DOES THE STRUCTURE EXIST?
 	BUG.(HLT,STRBAD,PAGUTL,SOFT,<ASOFN - Illegal structure number>,,<
 
-Cause:	A routine was called to assign an OFN (index block). The
-	caller provided a structure number that was invalid, either
-	because that number can never exist or because it does not
-	exist now.
+Cause:	A routine was called to assign an OFN (index block).  The caller
+	provided a structure number that was invalid, either because that
+	number can never exist or because it does not exist now.
 >)
 ASOFC:	NOSKED
 ASOFCO:	TMNN DSKAB,FLSTG	;DISK?
@@ -5791,14 +5851,14 @@ BGCTYP:	CALL LGTAD		;Get time
 	  MOVEM T1,INFTMR	;STORE AS TIME OF NEXT BUGINF
 	  BUG.(INF,NOOFN,PAGUTL,SOFT,<ASOF4 - Attempt to create new OFN failed - no more OFNs available>,,<
 
-Cause:	As a result of an OPENF, an attempt has been made to create a new
-	OFN.  This attempt fails because the system has no more OFNs 
-	available for use.  The user will receive an OPNX10 error.  This 
-	BUGINF will be issued at most once every 30 minutes regardless of 
-	how many OPENF attempts are made during the time the OFN space is 
-	exhausted.
+Cause:	As a result of an OPENF, an attempt has been made to create a new OFN.
+	This attempt fails because the system has no more OFNs available for
+	use.  The user receives an OPNX10 error.  This BUGINF is
+	issued once every 30 minutes regardless of how many OPENF
+	attempts are made during the time the OFN space is exhausted.
 
-Action:	If more OFN space is desired, increase the value of NOFN.
+Action:	If more OFN space is desired, increase the value of NOFN in STG and
+	rebuild the monitor.
 >,,<DB%NND>)			;[7.1210] 
 	ENDIF.
 	MOVEI 1,OPNX10		;SAY 'NO ROOM'
@@ -5868,10 +5928,9 @@ ASOF7:	MOVE T1,XB2DAT		;[7247] Store second level data
 	   CAME T2,T3		;[7247] The same? Should be since cached
 	   BUG.(HLT,OCSPTH,PAGUTL,SOFT,<ASOFN - SPTH values disagree>,,<
 
-Cause:	We are assigning an OFN which is cached and notice that the old
-	value of SPTH does not match what was just written.  This is a 
-	bug because the cached OFN should not have changed its index block
-	address.
+Cause:	We are assigning an OFN which is cached and notice that the old value
+	of SPTH does not match what was just written.  This is a bug because
+	the cached OFN should not have changed its index block address.
 >)				;[7247] Not the same - error!
 	ENDIF.			;[7247] 
 	STOR T1,OFOPC,(Q2)	;[7247] Count of openers
@@ -5892,7 +5951,9 @@ Cause:	We are assigning an OFN which is cached and notice that the old
 	CSKED
 	TMNE OFNLCF,IFLG	;[7247] Was this OFN "cached"?
 	IFSKP.			;[7247] No
-	  SETZM T2		;[7247] Get file state correct
+	  SETZM T2		;[7247] Get file state correct - assume readonly
+	  TXNE Q1,DSKNB		;[9137] New index block?
+	  SETOM T2		;[9137] Yes, get write access - prevents CFTYAMs
 	  CALL CFSAWP		;[7247] ""
 	ENDIF.			;[7247] 
 	HRRZ T1,Q2		;GET BACK THE OFN
@@ -5977,20 +6038,18 @@ ASCHK9:	MOVEM T1,EFLG		;[7356]AND SAVE
 	ENDIF.
 ASCK10:	MOVE T1,EFLG		;[7356]GET ERROR INDICATOR
 	JRST ASOFXB
-
+
 ;ERROR IN ALLOCATION TABLE
-
 
 ASG6X:	BUG.(HLT,OVFLOW,PAGUTL,SOFT,<ASOFN - Allocation table overflow>,,<
 
-Cause:	The monitor maintains information for disk quota enforcement
-	in two parallel tables called the allocation tables. These
-	contain one entry for each directory to which at least one OFN
-	is assigned (that has at least one file open). The size
-	of these tables is the maximum number of OFN's; therefore even
-	if every OFN were associated with a unique directory, there
-	should be enough room in the allocation tables. The BUGHLT
-	indicates that the tables have overflowed.
+Cause:	The monitor maintains information for disk quota enforcement in two
+	parallel tables called the allocation tables.  These contain one entry
+	for each directory to which at least one OFN is assigned (that has at
+	least one file open).  The size of these tables is the maximum number
+	of OFNs; therefore even if every OFN were associated with a unique
+	directory, there should be enough room in the allocation tables.  The
+	BUGHLT indicates that the tables have overflowed.
 >)
 
 
@@ -6144,7 +6203,7 @@ CHKACC:	BLSUB. <EOFN,NEWB>
 		MOVEM T1,SPTH(Q1)  ;[7283]  Restore corrected status
 		XOR T2,SPTH(Q1) ;IF NONE, THIS IS LIKE A FIRST OPEN
 		ANDX T2,FILWB+THAWB+OFNDUD+OFN2XB
-		IORM T2,SPTH(Q1);[7.1285] Set the bits
+		IORM T2,SPTH(Q1);[8840] Set the bits
 		RETSKP 		;[7283] OK
 	ENDIF.			;[7283]
 	MOVE T1,SPTH(Q1)
@@ -6353,9 +6412,9 @@ OFNSR2:	LOAD T3,OFNNXT,(T3)
 
 OFNSRE:	 BUG.(HLT,OFNBDB,PAGUTL,SOFT,<OFN bad data base>,,<
 
-Cause:	There are multiple causes of this BUGHLT. They all indicate some
-	error in the monitors internal OFN data. The cause of the BUGHLT
-	can be found by examining the dump.
+Cause:	There are multiple causes of this BUGHLT.  They all indicate some error
+	in the monitors internal OFN data.  The cause of the BUGHLT can be
+	found by examining the dump.
 >)
 
 
@@ -6384,15 +6443,17 @@ DASOFN::
 	 TDNE CX,@CST1X+T2	;[7356]IS IT?
 	 BUG.(HLT,OFNBLC,PAGUTL,SOFT,<OFN has bad lock count>,,<
 
-Cause:	DASOFN was called to delete an OFN slot but the page table's lock
-	count in CST1 is greater than one. This likely indicates that some
-	of this OFN's pages have not yet been written to disk.
+Cause:	DASOFN was called to delete an OFN slot but the page table's lock count
+	in CST1 is greater than one.  This likely indicates that some of this
+	OFN's pages have not yet been written to disk.
 
-Action:	Look at the caller to DASOFN. This routine should either call
-	SCNOFN to write the pages to disk or should not be calling DASOFN
-	at all.
+Action:	Submit an SPR along with a dump and how the problem can be reproduced.
+	When looking at the dump, look at the caller to DASOFN.  This routine
+	should either call SCNOFN to write the pages to disk or should not be
+	calling DASOFN at all.
 >)				;[7356]NO.
 	ENDIF.			;[7356]
+
 	SETZM SPTH(T1)		;FLUSH GIVEN ENTRY
 	CALL DASALC		;CLEAR ALLOC DATA
 	SETZRO OFNSHC,(T1)	;CLEAR SHARE COUNT IN THE OFN
@@ -6760,11 +6821,11 @@ RELOF7:	TXNE Q1,DELOF		;[7247] Deleting?
 	SKIPN 1
 	BUG.(HLT,NOADXB,PAGUTL,SOFT,<RELOFN - No disk address for XB>,,<
 
-Cause:	A routine has been called to release an OFN. The OFN is the
-	identifier for the index block of a file that is being closed.
-	This routine forces the index block into memory. The backup
-	address for the index block should be on the disk. The BUGHLT
-	indicates that the backup address is not on the disk.
+Cause:	A routine has been called to release an OFN.  The OFN is the identifier
+	for the index block of a file that is being closed.  This routine
+	forces the index block into memory.  The backup address for the index
+	block should be on the disk.  The BUGHLT indicates that the backup
+	address is not on the disk.
 >)
 	MOVE 2,XBX		;RESTORE FLAGS
 	MOVE C,OFNX		;GET STRUCTURE NUMBER
@@ -6836,12 +6897,15 @@ RELOF2:	CALL ULKOFN		;[7283] (T1/)Unlock OFN
 
 CLROFN::STKVAR <SVACS>
 	TMNE OFNCSH,(T1)	;[7247] Cached?
-	BUG.(CHK,CSHCLR,PAGUTL,HARD,<CLROFN - CACHED OFN FOUND AT CLROFN>,,<
+	BUG.(CHK,CSHCLR,PAGUTL,HARD,<CLROFN - Cached OFN found at CLROFN>,,<
 
-Cause:	The monitor is removing an OFN by calling CLROFN. It is found that 
-	the OFN is "cached". CLROFN calls FRECFS and this is incorrect for
-	cached OFNs since FRECFS has already been called. This BUG is for
-	debugging and the OFN deassignment does not proceed.
+Cause:	The monitor is removing an OFN by calling CLROFN.  It is found that the
+	OFN is "cached".  CLROFN calls FRECFS and this is incorrect for cached
+	OFNs since FRECFS has already been called.  This BUG is for debugging
+	and the OFN deassignment does not proceed.
+
+Action:	If this problem can be reproduced, set the bug dumpable, and send in an
+	SPR along with the dump and how to reproduce the problem.
 >,R)				;[7247] 
 ;   IFN CFSCOD,<
 	MOVEM T1,SVACS
@@ -6909,10 +6973,17 @@ SCNOF2:	AOBJN W1,SCNOF3		;SCAN XB
 
 RLBAD:	BUG.(CHK,ILIBPT,PAGUTL,HARD,<Bad pointer type in index block>,,<
 
-Cause:	SCNOFN was called to scan an index block and move all its pages to
-	disk but the index block contains a pointer that is not an
-	immediate pointer.
+Cause:	SCNOFN was called to scan an index block and move all its pages to disk
+	but the index block contains a pointer that is not an immediate
+	pointer.
 
+Action:	This problem is usually seen when there is a hardware problem with a
+	disk or channel.  Field Service should run SPEAR to read the SYSERR
+	file and check for problems.
+
+	However, if the hardware checks out and the problem is reproducable,
+	set this bug dumpable and submit an SPR along with the dump and how to
+	reproduce the problem.
 >,,<DB%NND>)			;[7.1210] 
 	SETO 1,			;SAY FILE NOT CLOSED
 	RET			;RETURN BAD
@@ -7017,9 +7088,9 @@ OC.CH1:	MOVEM T1,OFN		;[7247] Save OFN
 	  BUG.(CHK,CSHSCF,PAGUTL,SOFT,<Unable to flush cached pages to disk>,,<
 
 Cause:	An OFN is being cached so SCNOFK was called to write its pages to disk
-	but not flush them from memory.  However, SCNOFK was not able to 
-	write the OFN pages to disk.  This BUGCHK should have followed a
-	ILIBPT BUGCHK since this is the only way that SCNOFK can fail.
+	but not flush them from memory.  However, SCNOFK was not able to write
+	the OFN pages to disk.  This BUGCHK should have followed a ILIBPT
+	BUGCHK since this is the only way that SCNOFK can fail.
 >)				;[7400][7247] Could not cache the OFN
 	  ECSKED		;[7400] Undo CSKED from above
 	  SETO T1,		;[7400] Say file not closed
@@ -7099,8 +7170,8 @@ OC.UN1:	CSKED			;[7247] Go CSKED because DASOFN will go ECSKED
 	TXNE T2,NCORTM		;[7247] In core now?
 	BUG.(HLT,UCXBNC,PAGUTL,SOFT,<Uncaching OFN not in core>,,<
 
-Cause:	An OFN is being uncached but the storage address is not a core
-	address.  It should be since it is cached.
+Cause:	An OFN is being uncached but the storage address is not a core address.
+	It should be since it is cached.
 >)				;[7247] No!
 	CALL SCNOFN		;[7247] (T1/T1)Call SCNOFN
 	 JFCL			;[7247] Unused return
@@ -7110,8 +7181,8 @@ Cause:	An OFN is being uncached but the storage address is not a core
 	BUG.(HLT,UCHMOD,PAGUTL,SOFT,<OFN is modified while uncaching>,,<
 
 Cause:	An OFN is being uncached but the system believes that it has been
-	modified.  This is bad because there should be no users of this
-	cached OFN.
+	modified.  This is bad because there should be no users of this cached
+	OFN.
 >)				;[7247] Error - OFN has been modified!?
 	CALL DASOFN		;[7247] (T1)Delete OFN and ALLOC entry go ECSKED
 	MOVE T1,OFN		;[7247] 
@@ -7328,7 +7399,7 @@ MRKOF4:	NOSKED			;GAIN CONTROL OF THE SYSTEM
 	  SKIPE T2		;Do they contain something?
 	  BUG.(HLT,SPTHNZ,PAGUTL,SOFT,<SPTH flags non-zero and address zero>,,<
 
-Cause:	The monitor is scanning SPTH for OFN entries to mark.  It assumes that 
+Cause:	The monitor is scanning SPTH for OFN entries to mark.  It assumes that
 	when the address is zero, the flag bits will be also.  For this OFN
 	entry, the flag bits were non-zero but the address was zero.
 >)				;Yes, report inconsistency
@@ -7529,14 +7600,13 @@ ASSPTL::SAVEQ			;SAVE REGISTERS
 ASSPT::	SKIPG 1,FRESPT		;ANY FREE CELLS?
 	BUG.(HLT,SPTFL1,PAGUTL,SOFT,<SPT completely full>,,<
 
-Cause:	The monitor is attempting to assign to a process a slot in the
-	non-OFN part of the SPT tables. Normally a linked list points to
-	the free slots. The header is now 0, indicating either that there
-	is confusion in the list or there is not available slot. The
-	monitor normally protects against this event by refusing to
-	assign additional SPT slots when the available number falls
-	below a fixed minimum. This BUGHLT indicates a failure of
-	this mechianism or corruption of the free list.
+Cause:	The monitor is attempting to assign to a process a slot in the non-OFN
+	part of the SPT tables.  Normally a linked list points to the free
+	slots.  The header is now 0, indicating either that there is confusion
+	in the list or there is not available slot.  The monitor normally
+	protects against this event by refusing to assign additional SPT slots
+	when the available number falls below a fixed minimum.  This BUGHLT
+	indicates a failure of this mechianism or corruption of the free list.
 >)
 	HRRZ 1,0(1)
 	EXCH 1,FRESPT
@@ -7556,11 +7626,10 @@ DESPT::	CALL DWNSHR		;DECREMENT SHARE COUNT
 	SKIPE 1			;IS IT NOW UNSHARED?
 	BUG.(HLT,SHRNO0,PAGUTL,SOFT,<DESPT - Share count non-zero>,,<
 
-Cause:	The monitor is attempting to deassign a slot in the non-OFN
-	part of the SPT tables. The caller is expected to have ensured
-	that the SPT slot is no longer in use. The BUGHLT indicates
-	that the share count for the SPT slot is non-zero, indicating
-	that some process is using the slot.
+Cause:	The monitor is attempting to deassign a slot in the non-OFN part of the
+	SPT tables.  The caller is expected to have ensured that the SPT slot
+	is no longer in use.  The BUGHLT indicates that the share count for the
+	SPT slot is non-zero, indicating that some process is using the slot.
 >)
 	POP P,1			;YES. RESTORE SPT
 	LOAD 2,STGADR,SPT(1)	;GET STORAGE ADDRESS
@@ -7575,11 +7644,10 @@ Cause:	The monitor is attempting to deassign a slot in the non-OFN
 	SKIPE 1			;BE SURE NOTHING LEFT TO DELETE
 	BUG.(HLT,PTDEL,PAGUTL,SOFT,<DESPT - PT not deleted>,,<
 
-Cause:	The monitor is attempting to deassign a slot in the non-OFN
-	part of the SPT tables. It assumes that the slot was used as a
-	page table. The BUGHLT occurs because the SPT entry or its
-	backup address is on disk. The caller probably has used the
-	wrong routine in releasing an OFN.
+Cause:	The monitor is attempting to deassign a slot in the non-OFN part of the
+	SPT tables.  It assumes that the slot was used as a page table.  The
+	BUGHLT occurs because the SPT entry or its backup address is on disk.
+	The caller probably has used the wrong routine in releasing an OFN.
 >)
 	POP P,1
 	MOVEI 1,SPT(1)		;CONSTRUCT PTR
@@ -7590,15 +7658,14 @@ Cause:	The monitor is attempting to deassign a slot in the non-OFN
 
 DESPX1:	BUG.(HLT,PAGLCK,PAGUTL,SOFT,<DESPT - Page locked>,,<
 
-Cause:	The monitor is attempting to deassign a slot in the non-OFN
-	part of the SPT tables. The caller is expected to ensure that
-	the SPT is no longer in use. The BUGHLT indicates that the
-	SPT slot is associated with a page that has been locked into
-	memory even though the SPT share count is 0. This indicates
-	an inconsistency in the monitor's data base. Probably the page
-	was used as a page table, and not all its page pointers were
-	cleared properly. A page table is locked in memory once for
-	each page in memory to which it points.
+Cause:	The monitor is attempting to deassign a slot in the non-OFN part of the
+	SPT tables.  The caller is expected to ensure that the SPT is no longer
+	in use.  The BUGHLT indicates that the SPT slot is associated with a
+	page that has been locked into memory even though the SPT share count
+	is 0.  This indicates an inconsistency in the monitor's data base.
+	Probably the page was used as a page table, and not all its page
+	pointers were cleared properly.  A page table is locked in memory once
+	for each page in memory to which it points.
 >)
 
 ;ASSIGN FORK STORAGE BLOCK (JSB, PSB, UPT)

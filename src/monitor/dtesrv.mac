@@ -1,3 +1,8 @@
+; Edit= 9020 to DTESRV.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8889 to DTESRV.MAC on 12-Aug-88 by RASPUZZI
+;Update BUG. documentation.
+; Edit= 8836 to DTESRV.MAC on 27-Apr-88 by GSCOTT (TCO 7.1280)
 ; UPD ID= 8706, RIP:<7.MONITOR>DTESRV.MAC.9,  25-Apr-88 13:41:39 by GSCOTT
 ;TCO 7.1280 - Remove edit 7449 (fix to power fail restart on DN60s), since 
 ; you can't reliably load a DN60 with edit 7449 installed.   A better fix
@@ -1264,8 +1269,8 @@ TO10DN:	STKVAR<OSTATE>		;WORD TO SAVE OLD STATE
 	JRST DODMSG		;YES. GO DO THE MESSAGE THEN
 	BUG.(CHK,DTETIP,DTESRV,HARD,<DTETDN - TO-10 done received with no transfer in progress>,<<A,DTE>>,<
 
-Cause:	The KL received indication from the DTE that a TO-10 trasnfer has
-	completed but the DTE status did not indicate that a trasnfer was
+Cause:	The KL received indication from the DTE that a TO-10 transfer has
+	completed but the DTE status did not indicate that a transfer was
 	in progress.
 
 Action:	If the problem persists, call Field Service.
@@ -3530,9 +3535,9 @@ DTPOL4:	LOAD D,CMVRR,(B)	;GET PROTOCOL VERSION
 	JRST DTPOL3		;YES. ASSUME WE WILL SEE THE INTERRUPT
 	BUG.(INF,DT11DN,DTESRV,HARD,<DTECHK - 10 lost TO11DN interrupt>,,<
 
-Cause:	This BUG is not documented yet.
+Cause:	TOPS-20 has some how lost the TO-11 done interrupt.
 
-
+Action:	Call field service and have them check out the DTE.
 >)
 	PUSH P,A		;SAVE DTE POINTER
 	CALL TO11DN		;GO FAKE THE INTERRUPT
@@ -4016,7 +4021,7 @@ RELOD3:	JE DTRLD,(A),RELOD4	;THIS ONE NEED ATTENTION?
 	LOAD C,CMVRR,(C)	;Get protocol version
 	SKIPN DTBUGX		; Skip this if we aren't interested
 	CAIE C,MCPRON		;If DECnet, no buginf
-	 BUG.(INF,DN20ST,DTESRV,HARD,<DTESRV - DN20 stopped>,<<B,DTENO>>,<
+	BUG.(INF,DN20ST,DTESRV,HARD,<DTESRV - DN20 stopped>,<<B,DTENO>>,<
 
 Cause:	A DN20 has crashed.
 
@@ -4125,8 +4130,9 @@ RELD11:	XCT D			;WAIT
 
 Cause:	SETSPD failed to run correctly after a FE reload. 
 
-Action:	Report this bughlt to software engineering.
-
+Action:	It is possible that all of the job 0 forks are in use and the monitor
+	could not start another one to run SETSPD. If this is not the case,
+	the submit an SPR reporting this problem.
 >)
 >				;END OF DTESW
 	 JFCL			;CAN'T HELP IT
@@ -4919,7 +4925,8 @@ BTIPR:	CAIGE Q2,DTEN		;VALID DTE-20 SPECIFIED ?
    REPEAT 0,<
 	BUG.(INF,DTEIPR,DTESRV,SOFT,<DTESRV - Protocol initialized on DTE>,<<T1,DTENUM>>,<
 
-Cause:	BOOT JSYS was executed to initialize protocol.
+Cause:	BOOT% JSYS was executed to initialize protocol. This BUG is not
+	assembled into the monitor and should not occur in the field.
 
 Data:	DTENUM - the DTE number
 

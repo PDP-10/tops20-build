@@ -1,3 +1,7 @@
+; Edit= 9021 to SWPALC.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8940 to SWPALC.MAC on 25-Aug-88 by GSCOTT
+;Update BUG. documentation. 
 ; UPD ID= 8625, RIP:<7.MONITOR>SWPALC.MAC.2,  11-Feb-88 18:36:40 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 2189, SNARK:<6.1.MONITOR>SWPALC.MAC.12,   5-Jun-85 11:08:30 by MCCOLLUM
@@ -100,9 +104,9 @@ DRMAS2:	SKIPE C,@A		;GET BITS
 	AOBJN B,DRMAS2		;NO, GO TO NEXT WORD
 DRMBUG:	BUG.(HLT,DRMIBT,SWPALC,HARD,<DRMASN - Bit table inconsistent>,,<
 
-Cause:	During the assignment of drum a page, DRMCNT for a track showed
-	there was space on that track.  There was no free space available
-	according to the bit table for the track, however.
+Cause:	During the assignment of drum a page, DRMCNT for a track showed there
+	was space on that track.  However, there was no free space available 
+	according to the bit table for the track. 
 >)
 
 DRMAS1:	MOVE C,BITS(D)		;GET THE BIT JUST FOUND
@@ -202,6 +206,9 @@ DASDRM::SE1CAL
 
 Cause:	DASDRM was called to deassign a drum address, but the drum address
 	provided by the caller is invalid or already unassigned.
+
+Action:	If this BUGCHK can be reproduced, change it to a BUGHLT and submit an
+	SPR along with instructions on reproducing the problem.
 >)
 	RET
 
@@ -262,9 +269,9 @@ DRMAM4:	AOBJN Q1,DRMAM2		;LOOP OVER TRACKS
 	JUMPG Q2,DRMAM6		;TRY AGAIN UNLESS N NOW 0
 	BUG.(HLT,DRMNFR,SWPALC,HARD,<DRMAM - Cannot find page when DRMFRE non-0>,,<
 
-Cause:	During assignment of multiple contiguous drum addresses,
-	DRMFRE said there was space on the drum.  However, none
-	of the DRMCNT's for each track showed any free space.
+Cause:	During assignment of multiple contiguous drum addresses, DRMFRE said
+	there was space on the drum.  However, none of the DRMCNT's for each
+	track showed any free space.
 >)
 
 ;HERE WHEN HAVE A TRACK WITH .GE. N FREE PAGES.  PAGES MAY OR MAY NOT
@@ -368,18 +375,21 @@ GDSTX::
 	TDNN CX,0(P)		;CHECK THE CALLING PC
 	BUG.(HLT,GDSTX0,SWPALC,SOFT,<GDSTX Called from section 0>,<<0(P),PC>>,<
 
-Cause:	A routine in SWPALC that provides an address in the DST was called
-	from section 0 on a machine that runs extended addressing. This
-	is dangerous because the routine returns a 30-bit address, and the
-	caller will probably use the address in an index register, thus
-	losing the section number.
+Cause:	A routine in SWPALC that provides an address in the DST was called from
+	section 0 on a machine that runs extended addressing.  This is
+	dangerous because the routine returns a 30-bit address, and the caller
+	will probably use the address in an index register, thus losing the
+	section number.
 
-Action:	It is essential that any code that references the DST run in a non-zero
-	section. The long-term solution is to study the entire stack and make
-	all the code run in section 1. For the short term, it may be possible
+	It is essential that any code that references the DST run in a non-zero
+	section.  The long-term solution is to study the entire stack and make
+	all the code run in section 1.  For the short term, it may be possible
 	to insert an SE1CAL at the beginning of the routine that called GDSTX.
 	Note that this may lead to other problems, including slower performance
-	and ILMNRF BUGHLT's.
+	and ILMNRF BUGHLTs.
+
+Action:	If this BUGCHK can be reproduced, change it to a BUGHLT and submit an
+	SPR along with instructions on reproducing the problem.
 
 Data:	PC - the PC from which GDSTX was called
 
@@ -488,13 +498,16 @@ SWPINI::
 	CAILE A,NDST		;CHECK AGAINST DST
 	BUG.(HLT,DST2SM,SWPALC,SOFT,<SWPINI - DST too small>,,<
 
-Cause:	There are more pages for swapping than there are entries in the
-	DST.
+Cause:	There are more pages for swapping than there are entries in the DST.
+
+Action:	Either rebuild the monitor after changing STG.MAC to have a larger
+	value for NDST or use a boot structure with less swapping pages.
 >)
 	MOVEM A,DRMFRE
 	CALL SETSSP		;SETUP LIMITS BASED ON DRUM SPACE
 	SKIPG DRUMP		;REAL DRUM ON SYSTEM?
 	RET			;NO, DON'T ASSIGN RESERVED ADDRESSES
+
 	PUSH P,Q1
 	MOVSI Q1,-NDRMBA	;SETUP TO ASSIGN BAD ADDRESSES
 DRMIN2:	MOVE A,DRMBAT(Q1)	;GET A BAD ADDRESS
@@ -502,8 +515,13 @@ DRMIN2:	MOVE A,DRMBAT(Q1)	;GET A BAD ADDRESS
 	CALL DRMASA		;ASSIGN THE ADDRESS
 	 BUG.(CHK,ASGSWB,SWPALC,SOFT,<SWPINI - Cannot assign bad address>,,<
 
-Cause:	Cannot assign bad drum address because it is an illegal
-	address or already assigned.
+Cause:	Cannot assign bad drum address because it is an illegal address or
+	already assigned.
+
+Action:	There could be a problem with the boot structure on this system.  If
+	this problem is reproducable with a healthy boot structure, and this
+	BUGCHK can be reproduced, change it to a BUGHLT and submit an SPR along
+	with instructions on reproducing the problem.
 >)
 	AOBJN Q1,DRMIN2
 DRMIN1:	POP P,Q1

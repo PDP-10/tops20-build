@@ -1,14 +1,50 @@
-; UPD ID= 8716, RIP:<7.MONITOR>LATSRV.MAC.24,  19-May-88 16:53:36 by WADDINGTON
-;TCO 7.1289 - Fix TCO 7.1281: Don't diddle with the UNUID flags at interrupt
-;level.  Diddle with them at scheduler level in XMTDON (where the buffer
-;gets released...) Otherwise, there's a big window where we might release
-;it twice, resulting in a COMMMS bughalt.
-; UPD ID= 8707, RIP:<7.MONITOR>LATSRV.MAC.23,   3-May-88 14:56:35 by WADDINGTON
-;TCO 7.1281 - Interlock the multicast message template so that we don't get bad
-;multicast messages.
-; UPD ID= 8695, RIP:<7.MONITOR>LATSRV.MAC.22,  12-Apr-88 09:47:25 by WADDINGTON
-;TCO 7.1270 - LATOP% .LARHC Interrupts don't.  We're pulling the PSI channel
-;from the wrong location.
+; Edit= 9172 to LATSRV.MAC on 22-Jun-90 by GSCOTT
+;Insure the AC save routines in APRSRV are used by always SEARCHing PROLOG
+;before any SEARCH of MACSYM so that the proper USRSAV macro (from PROLOG) is
+;used in the SAVEAC macro.
+; Edit= 9165 to LATSRV.MAC on 20-Apr-90 by GSCOTT
+;Save T1 at LTEXF for TTYSRV and clear TTSFG and TTRXF when sending flow
+;control to LAT server in the LAT multiplexor code. 
+; Edit= 9146 to LATSRV.MAC on 9-Feb-90 by GSCOTT
+;Turning off TT%PGM didn't really work on LAT terminals because the LAT server
+;was not being told to turn off flow control in both directions, which makes
+;the LAT session go into passall mode, because the definiton of SL.DXF was
+;wrong. Also removes edit 9144. 
+; Edit= 9130 to LATSRV.MAC on 26-Oct-89 by WADDINGTON
+;Add edit numbers (9130) left out in edit 9129...
+; Edit= 9129 to LATSRV.MAC on 26-Oct-89 by WADDINGTON
+;Clean up the handling of LATISTs. T2 was almost never set up correctly. Make
+;LATISTs more useful for debugging by displaying the offending PC and Ethernet
+;address of the offending server. Don't go through ILLSLT multiple times.
+; Edit= 9126 to LATSRV.MAC on 3-Oct-89 by GSCOTT
+;Don't CFOBF% at LOG21 unless the SOBE% loop times out, don't clear SBDLP at
+;CSBDAV, remove edit 9120 as it was a bad idea.
+; Edit= 9083 to LATSRV.MAC on 24-Mar-89 by GSCOTT, for SPR #22061
+;SMON and TMON function 74 should just set and clear LASDEF and not HNLAS.
+; Edit= 9068 to LATSRV.MAC on 7-Feb-89 by GSCOTT
+;Return "server:port" string when NTINF% done on LAT terminal line.
+; Edit= 8979 to LATSRV.MAC on 6-Oct-88 by WADDINGTON, for SPR #22245
+;Eliminate unnecessary LATNSC type 12s on inactive circuits.
+; Edit= 8974 to LATSRV.MAC on 30-Sep-88 by GSCOTT
+;Prevent LAPRBF BUGCHKs on systems without an NIA20. Add routines SMFLTS and
+;TMFLTS which implement SMON and TMON function 74. 
+; Edit= 8937 to LATSRV.MAC on 23-Aug-88 by LOMARTIRE
+;Spell MONITR correctly in ACTION field of BUGs!
+; Edit= 8917 to LATSRV.MAC on 18-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
+; Edit= 8852 to LATSRV.MAC on 2-Jun-88 by WADDINGTON
+;Add routine VCRCHK. This routine checks a LAT name for valid characters. Call
+;VCRCHK after the name has been moved from the user's space to the monitor's
+;space. Return LATX07 if the name contains invalid characters.
+; Edit= 8845 to LATSRV.MAC on 19-May-88 by WADDINGTON (TCO 7-0-1289)
+;Fix TCO 7.1281 - Don't diddle with the UNUID flags at interrupt level. Move
+;the UNUID flags code back to XMTDON (where the buffer is released...)
+;Otherwise, there's a great big window where the buffer can be released twice!
+; Edit= 8838 to LATSRV.MAC on 3-May-88 by WADDINGTON (TCO 7-0-1281)
+;Interlock the multicast message so we don't corrupt the multicast buffer
+; Edit= 8824 to LATSRV.MAC on 12-Apr-88 by WADDINGTON (TCO 7-0-1270)
+;TCO 7.1270 - LATOP% .LARHC Interrupts don't. We're getting the PSI channel
+;number from the wrong place in the argument block.
 ; UPD ID= 8664, RIP:<7.MONITOR>LATSRV.MAC.21,  23-Feb-88 16:18:47 by MCCOLLUM
 ;TCO 7.1240 - Set DLL.FL when retransmitting unacknowledged messages.
 ; UPD ID= 8646, RIP:<7.MONITOR>LATSRV.MAC.20,  18-Feb-88 11:41:39 by WADDINGTON
@@ -358,7 +394,7 @@
 ; UPD ID= 507, SNARK:<6.1.MONITOR>LATSRV.MAC.3,   7-May-84 14:10:04 by WEISBACH
 ;First Version
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1985, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1985, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -384,8 +420,7 @@ IFNDEF FTOPS10,<FTOPS10==0>
 	SALL
 
 IFN FTOPS20,<
-	SEARCH	MACSYM,MONSYM,PROLOG,TTYDEF
-	SEARCH	NIPAR
+	SEARCH PROLOG,TTYDEF,NIPAR	;[9172]
 
 	TTITLE (LATSRV,,< -- LAT-20 Terminal Host>)
 
@@ -396,7 +431,7 @@ IFN FTOPS10,<
 	SEARCH	F,S,D36PAR,MACSYM
 	SEARCH	ETHPRM
 
-.CPYRT<1985,1988>
+.CPYRT<1985,1990>
 	TITLE	LATSER -- LAT-10 Terminal Host
 
 	$RELOC
@@ -411,51 +446,52 @@ IFN FTOPS10,<
 ;				  Section		      Page
 ;
 ;
-;    1. TOPS20 definitions . . . . . . . . . . . . . . . . . .   6
-;    2. Definitions
-;        2.1    TOPS-10
-;            2.1.1    Redefinitions of TOPS-20 Things  . . . .   7
-;            2.1.2    LATOP. UUO . . . . . . . . . . . . . . .   8
-;            2.1.3    Error Codes  . . . . . . . . . . . . . .  10
-;            2.1.4    KS10 conditionals  . . . . . . . . . . .  11
-;            2.1.5    Symbol purging macros  . . . . . . . . .  12
-;            2.1.6    Accumulators . . . . . . . . . . . . . .  13
-;        2.2    Literals
-;            2.2.1    Circuit Parameters . . . . . . . . . . .  15
-;            2.2.2    Slot Parameters  . . . . . . . . . . . .  16
-;        2.3    Data Structures  . . . . . . . . . . . . . . .  17
-;            2.3.1    Host Node (HN) Block . . . . . . . . . .  18
-;            2.3.2    Circuit Block (CB) . . . . . . . . . . .  19
-;            2.3.3    Slot Block (SB)  . . . . . . . . . . . .  21
-;            2.3.4    Pending Request Block (PR) . . . . . . .  22
-;            2.3.5    Miscellaneous  . . . . . . . . . . . . .  23
-;        2.4    External References  . . . . . . . . . . . . .  24
-;        2.5    MIN.,MAX.,MAXENT Macros  . . . . . . . . . . .  25
-;        2.6    Local Variables  . . . . . . . . . . . . . . .  26
-;    3. LATOP% JSYS
-;        3.1    Dispatch . . . . . . . . . . . . . . . . . . .  27
-;        3.2    Set/Clear Functions
-;            3.2.1    SSERVC . . . . . . . . . . . . . . . . .  33
-;        3.3    SET/CLEAR SERVICE  . . . . . . . . . . . . . .  35
-;        3.4    Set/Clear Functions
-;            3.4.1    CSERVC . . . . . . . . . . . . . . . . .  36
-;            3.4.2    SETRTX . . . . . . . . . . . . . . . . .  37
-;            3.4.3    SETNNM . . . . . . . . . . . . . . . . .  38
-;            3.4.4    SETNID/CLRNID  . . . . . . . . . . . . .  39
-;            3.4.5    SETCOD . . . . . . . . . . . . . . . . .  40
-;        3.5    SET MAXIMUM CIRCUITS . . . . . . . . . . . . .  42
-;        3.6    Show Characteristics of Host . . . . . . . . .  45
-;        3.7    Show Terminal Connects . . . . . . . . . . . .  47
-;        3.8    Show Adjacent Servers  . . . . . . . . . . . .  50
-;        3.9    Show Counters  . . . . . . . . . . . . . . . .  51
-;        3.10   Zero counters  . . . . . . . . . . . . . . . .  52
-;        3.11   Request Host-Initiated Connect . . . . . . . .  54
-;        3.12   Terminate Host-Initiated Connects  . . . . . .  72
-;        3.13   Show Host-Initiated Connects . . . . . . . . .  75
-;        3.14   Utility Routines
-;            3.14.1   FNDSRV . . . . . . . . . . . . . . . . .  78
-;            3.14.2   GTSRVR . . . . . . . . . . . . . . . . .  79
-;            3.14.3   SCMPAR String Compare  . . . . . . . . .  80
+;    1. Definitions
+;        1.1    TOPS-20  . . . . . . . . . . . . . . . . . . .   6
+;        1.2    TOPS-10
+;            1.2.1    Redefinitions of TOPS-20 Things  . . . .   7
+;            1.2.2    LATOP. UUO . . . . . . . . . . . . . . .   8
+;            1.2.3    Error Codes  . . . . . . . . . . . . . .  10
+;            1.2.4    KS10 conditionals  . . . . . . . . . . .  11
+;            1.2.5    Symbol purging macros  . . . . . . . . .  12
+;            1.2.6    Accumulators . . . . . . . . . . . . . .  13
+;            1.2.7    AC Save Macros . . . . . . . . . . . . .  14
+;        1.3    Literals
+;            1.3.1    Circuit Parameters . . . . . . . . . . .  15
+;            1.3.2    Slot Parameters  . . . . . . . . . . . .  16
+;        1.4    Data Structures  . . . . . . . . . . . . . . .  19
+;            1.4.1    Host Node (HN) Block . . . . . . . . . .  20
+;            1.4.2    Circuit Block (CB) . . . . . . . . . . .  22
+;            1.4.3    Slot Block (SB)  . . . . . . . . . . . .  24
+;            1.4.4    Pending Request Block (PR) . . . . . . .  25
+;            1.4.5    Miscellaneous  . . . . . . . . . . . . .  26
+;        1.5    External References  . . . . . . . . . . . . .  27
+;        1.6    MIN.,MAX.,MAXENT Macros  . . . . . . . . . . .  28
+;        1.7    Local Variables  . . . . . . . . . . . . . . .  29
+;    2. LATOP% JSYS
+;        2.1    Dispatch . . . . . . . . . . . . . . . . . . .  30
+;        2.2    Set/Clear Functions  . . . . . . . . . . . . .  36
+;            2.2.1    Set Service  . . . . . . . . . . . . . .  38
+;            2.2.2    Clear Service  . . . . . . . . . . . . .  40
+;            2.2.3    Retransmit Limit . . . . . . . . . . . .  41
+;            2.2.4    Host Name  . . . . . . . . . . . . . . .  42
+;            2.2.5    Identification String  . . . . . . . . .  43
+;            2.2.6    Group Codes  . . . . . . . . . . . . . .  44
+;        2.3    Set Maximum Circuits . . . . . . . . . . . . .  46
+;        2.4    Show Characteristics of Host . . . . . . . . .  49
+;        2.5    Show Terminal Connects . . . . . . . . . . . .  51
+;        2.6    Show Adjacent Servers  . . . . . . . . . . . .  54
+;        2.7    Show Counters  . . . . . . . . . . . . . . . .  56
+;        2.8    Zero Counters  . . . . . . . . . . . . . . . .  57
+;        2.9    Request Host-Initiated Connect . . . . . . . .  59
+;        2.10   Terminate Host-Initiated Connects  . . . . . .  79
+;        2.11   Show Host-Initiated Connects . . . . . . . . .  83
+;        2.12   Utility Routines
+;            2.12.1   FNDSRV . . . . . . . . . . . . . . . . .  86
+;            2.12.2   VCRCHK . . . . . . . . . . . . . . . . .  88
+;            2.12.3   GTSRVR . . . . . . . . . . . . . . . . .  89
+;            2.12.4   SCMPAR String Compare  . . . . . . . . .  90
+;            2.12.5   UBFCHK . . . . . . . . . . . . . . . . .  91
 	Subttl	Table of Contents (page 2)
 
 ;		     Table of Contents for LATSRV
@@ -463,50 +499,50 @@ IFN FTOPS10,<
 ;				  Section		      Page
 ;
 ;
-;    4. TOPS-10
-;        4.1    SCNSER Interface
-;            4.1.1    LDBISR Dispatch  . . . . . . . . . . . .  82
-;        4.2    NETOP. Functions . . . . . . . . . . . . . . .  83
-;    5. LATINI - LAT Initialization  . . . . . . . . . . . . .  85
-;    6. Subroutine CWHLAT - Type a server spec for WHERE comma  90
-;    7. Multicast Transmitter  . . . . . . . . . . . . . . . .  92
-;    8. Routine to check/compute the Dynamic Rating  . . . . .  93
-;    9. Routines to Build the Host Multicast Message
-;        9.1    BMCFXD . . . . . . . . . . . . . . . . . . . .  94
-;        9.2    BMCFXD . . . . . . . . . . . . . . . . . . . .  95
-;        9.3    BMCNID . . . . . . . . . . . . . . . . . . . .  96
-;        9.4    BMCSRV . . . . . . . . . . . . . . . . . . . .  97
-;        9.5    BMCRAT . . . . . . . . . . . . . . . . . . . .  98
-;   10. Multicast Transmit Check Routine . . . . . . . . . . .  99
-;   11. Build the START Message Template . . . . . . . . . . . 100
-;   12. LATCBR - LAT DLL Callback Routinea . . . . . . . . . . 101
-;   13. LAINTR - Interrupt Level Virtual Circuit Message Recei 102
-;   14. LAINTX - Interrupt Level Virtual Circuit Message Recei 103
-;   15. LARSCH - Scheduler Level Virtual Circuit Message Recei 104
-;   16. LATLSC - Ethernet Link State Change Callback . . . . . 106
-;   17. Message Receiver - HMSTRT  . . . . . . . . . . . . . . 108
-;   18. HSTRCB . . . . . . . . . . . . . . . . . . . . . . . . 109
-;   19. CBINIT - Circuit Block Initialization  . . . . . . . . 110
-;   20. CMNIAD - Find CB base on NI address  . . . . . . . . . 111
-;   21. HMRUN  . . . . . . . . . . . . . . . . . . . . . . . . 113
-;   22. HSTRCB . . . . . . . . . . . . . . . . . . . . . . . . 115
-;   23. HMSTOP . . . . . . . . . . . . . . . . . . . . . . . . 116
-;   24. HMSTAT - Receive Status Message  . . . . . . . . . . . 118
-;   25. HMINFO - Receive Response Information Message  . . . . 122
-;   26. Message Transmit Routines  . . . . . . . . . . . . . . 124
-;       26.1    XMTMSG . . . . . . . . . . . . . . . . . . . . 131
-;       26.2    XMTDON . . . . . . . . . . . . . . . . . . . . 132
-;   27. Receive Message Handling Routines  . . . . . . . . . . 133
-;   28. Transmit Message Handling Routines . . . . . . . . . . 134
-;   29. Slot Demultiplexor - LSDMUX  . . . . . . . . . . . . . 136
-;   30. HSSTRT - Process a START SLOT Message  . . . . . . . . 137
-;   31. Slot Processing Routines - STOP Slots  . . . . . . . . 141
-;   32. Slot Processing Routines - DATA_A,DATA_B Slots . . . . 142
-;   33. Slot Block Allocation and Deallocation Routines  . . . 144
-;   34. Subroutines
-;       34.1    NGVLDB - Give an LDB back to SCNSER  . . . . . 150
-;   35. Slot Multiplexor - Main Loop . . . . . . . . . . . . . 152
-;   36. BLDMSL . . . . . . . . . . . . . . . . . . . . . . . . 155
+;    3. TOPS-10
+;        3.1    SCNSER Interface - LDBISR Dispatch . . . . . .  92
+;        3.2    NETOP. Functions . . . . . . . . . . . . . . .  93
+;    4. LATINI - LAT Initialization  . . . . . . . . . . . . .  95
+;    5. TOPS-10
+;        5.1    CWHLAT - Type a server spec for WHERE command  104
+;        5.2    TCSTR Type a counted ASCII string  . . . . . . 105
+;        5.3    LATSEC Once A Second Code  . . . . . . . . . . 106
+;    6. Multicast Transmitter  . . . . . . . . . . . . . . . . 107
+;        6.1    Compute Dynamic Rating . . . . . . . . . . . . 109
+;        6.2    Build Fixed Part of Multicast Message  . . . . 110
+;        6.3    Build Multicast Message Group Codes  . . . . . 111
+;        6.4    Build Node Name/Descriptor . . . . . . . . . . 112
+;        6.5    Build Available Services Data  . . . . . . . . 113
+;        6.6    Update Current Service Ratings . . . . . . . . 114
+;        6.7    Multicast Transmit Check . . . . . . . . . . . 115
+;    7. Build the START Message Template . . . . . . . . . . . 116
+;    8. LATCBR - LAT DLL Callback Routinea . . . . . . . . . . 117
+;    9. LAINTR - Interrupt Level Virtual Circuit Message Recei 118
+;   10. LAINTX - Interrupt Level Virtual Circuit Message Recei 119
+;   11. LARSCH - Scheduler Level Virtual Circuit Message Recei 120
+;   12. LATLSC - Ethernet Link State Change Callback . . . . . 124
+;   13. HMSTRT - Process Host Start Message  . . . . . . . . . 126
+;   14. HSTRCB - Find CB for Received Start Message  . . . . . 127
+;   15. CBINIT - Circuit Block Initialization  . . . . . . . . 128
+;   16. CMNIAD - Find CB base on NI address  . . . . . . . . . 130
+;   17. HMRUN - Process a Host Run Message . . . . . . . . . . 132
+;   18. HSTRCB - Find CB for received Run/Stop Message . . . . 134
+;   19. HMSTOP - Process Host Stop Message . . . . . . . . . . 135
+;   20. Routines to Terminate Circuit on Error . . . . . . . . 136
+;   21. HMSTAT - Process Status Message  . . . . . . . . . . . 138
+;   22. HMINFO - Receive Response Information Message  . . . . 142
+;   23. Message Transmit Routines
+;       23.1    Transmit Start Message . . . . . . . . . . . . 144
+;       23.2    Transmit LAT Message . . . . . . . . . . . . . 152
+;       23.3    Transmit Done  . . . . . . . . . . . . . . . . 154
+;   24. Receive Message Handling Routines  . . . . . . . . . . 155
+;   25. Transmit Message Handling Routines . . . . . . . . . . 157
+;   26. Slot Demultiplexor . . . . . . . . . . . . . . . . . . 160
+;       26.1    Start Slot . . . . . . . . . . . . . . . . . . 162
+;       26.2    Stop Slots . . . . . . . . . . . . . . . . . . 169
+;       26.3    Data_A/Data_B Slots  . . . . . . . . . . . . . 170
+;   27. Slot Block Allocation and Deallocation Routines  . . . 172
+;   28. NTINF% JSYS Support  . . . . . . . . . . . . . . . . . 180
 	Subttl	Table of Contents (page 3)
 
 ;		     Table of Contents for LATSRV
@@ -514,22 +550,23 @@ IFN FTOPS10,<
 ;				  Section		      Page
 ;
 ;
-;   37. Slot Formatting Routines
-;       37.1    XSLSTA . . . . . . . . . . . . . . . . . . . . 159
-;       37.2    XSLSTP . . . . . . . . . . . . . . . . . . . . 160
-;       37.3    XSLDTA . . . . . . . . . . . . . . . . . . . . 161
-;       37.4    XSLDTB . . . . . . . . . . . . . . . . . . . . 164
-;   38. Queue Handling Routines  . . . . . . . . . . . . . . . 167
-;   39. Buffer Handling Routines
-;       39.1    Transmit Buffers . . . . . . . . . . . . . . . 169
-;       39.2    Receive Buffers  . . . . . . . . . . . . . . . 173
-;   40. SCNSER DEVICE DEPENDANT ROUTINES . . . . . . . . . . . 174
-;   41. TTYSRV DEVICE DEPENDENT ROUTINES . . . . . . . . . . . 176
-;   42. More SCNSER device dependant routines  . . . . . . . . 177
-;   43. General Utility Routines . . . . . . . . . . . . . . . 178
-;   44. LAGTCR - LAT memory management routines  . . . . . . . 179
-;   45. End of LATSRV  . . . . . . . . . . . . . . . . . . . . 182
-	SUBTTL TOPS20 definitions
+;   29. Slot Multiplexor
+;       29.1    Main Loop  . . . . . . . . . . . . . . . . . . 182
+;       29.2    Build Run Message Slots  . . . . . . . . . . . 185
+;       29.3    Format Start Slot  . . . . . . . . . . . . . . 189
+;       29.4    Format Stop Slot . . . . . . . . . . . . . . . 190
+;       29.5    Format Data_A Slot . . . . . . . . . . . . . . 191
+;       29.6    Format Data_B Slot . . . . . . . . . . . . . . 196
+;   30. Queue Handling Routines  . . . . . . . . . . . . . . . 200
+;   31. Buffer Handling Routines
+;       31.1    Transmit Buffers . . . . . . . . . . . . . . . 202
+;       31.2    Receive Buffers  . . . . . . . . . . . . . . . 206
+;   32. SCNSER Device Dependant Routines . . . . . . . . . . . 208
+;   33. TTYSRV Device Dependent Routines . . . . . . . . . . . 211
+;   34. General Utility Routines . . . . . . . . . . . . . . . 213
+;   35. Memory Management Routines . . . . . . . . . . . . . . 214
+;   36. End of LATSRV  . . . . . . . . . . . . . . . . . . . . 219
+	SUBTTL Definitions -- TOPS-20
 
 IFN FTOPS20,<
 
@@ -543,7 +580,6 @@ DEFINE XBLTUX (AC<T1>),<XCT 2,[EXTEND AC,[XBLT]]>
 
 > ;END IFN FTOPS20
 	SUBTTL Definitions -- TOPS-10 -- Redefinitions of TOPS-20 Things
-
 
 IFN FTOPS10,<
 
@@ -679,7 +715,6 @@ IFN FTOPS10,<
 	.LAIRP==23	;[7.1120]Inconsistent or illegal request parameters
 	SUBTTL Definitions -- TOPS-10 -- Error Codes
 
-
 					;Still in IFN FTOPS10
 
 DEFINE ITERR (ERRCOD),<
@@ -805,8 +840,9 @@ FREEAC <W,M,P1,P2,P3,P4,J>	;These are all the ACs available for ACVAR
 				;Explicitly do NOT use "U" since it is used
 				;for the normal TOPS-10 function to point to
 				;an LDB throughout the code
-					;Still in IFN FTOPS10
-	SUBTTL Definitions -- Title
+	SUBTTL Definitions -- TOPS-10 -- AC Save Macros
+
+				;Still in IFN FTOPS10
 
 
 DEFINE ACVAR (LIST)<
@@ -888,7 +924,6 @@ DEFINE .ENAV1 (ARGS)<
 
 	SUBTTL Definitions -- Literals -- Slot Parameters
 
-
 ;
 ;LAT Slot Types
 ;
@@ -927,18 +962,20 @@ DEFINE .ENAV1 (ARGS)<
 	SE.RES==5		;Insufficient resources available
 	SE.ENQ==^D12		;[7.1120]Entry is not in queue
 	SE.CSR==^D15		;[7.1120]Corrupted solicit request
-;
+
 ; DATA_B Slot Control Flag Bit Definitions
-; Low order bit always set to enable "HOSTSYNC" flow control ala VAX
-; Other bits Enables/Disables "TTSYNC" in VAX terms.
+;[9146]	0001 - enable LAT server input flow characters
+;[9146]	0010 - disable LAT server input flow characters
+;[9146]	0100 - enable LAT server output flow characters
+;[9146]	1000 - disable LAT server output flow characters
 
 	SL.EXF==^B0101		;[7.1039]Enable XON/XOFF recognition in server
-	SL.DXF==^B1001		;[7.1039]Disable XON/XOFF recognition in server
+	SL.DXF==^B1010		;[9146] Disable XON/XOFF recognition in server
 
 ; Connect id's for pending requests have a random portion (determined by
 ; the array PRRAND) and a fixed protion (the index into PRVECT and 
 ; PRRAND).
-;
+
 	PR.NDX==000377		;[7.1120]The LO eight-bits are the index
 	PR.RAN==000377		;[7.1120]The HO eight-bits are random
 	PR%RAN==<PR.RAN>B27	;[7.1120]Here is the position of PR.RAN
@@ -960,6 +997,7 @@ IFN FTOPS20,<
 	RI%NDS==1		;[7.1120]Node is disabled
 	RI%NSS==2		;[7.1120]No such service
 	RI%CMD==4		;[7.1120]Node can accept a command message
+
 ;
 ;Miscellaneous Constants
 ;
@@ -1053,7 +1091,7 @@ ENDSTR
 ;Host Node Data Structures
 ;
 
-BEGSTR	GB			;SERVICE BLOCK
+BEGSTR GB			;SERVICE BLOCK
 	WORD RAT		;Service Rating.
 	HWORD NC		;Count of bytes in service name.
 	HWORD LC		;Count of bytes in service description
@@ -1061,7 +1099,7 @@ BEGSTR	GB			;SERVICE BLOCK
 	WORD HID,<<ML.SID+4>/5>	;Storage for up to 64 bytes of service id.
 ENDSTR
 
-BEGSTR	HN			;HOST NODE Data Base
+BEGSTR HN			;HOST NODE Data Base
 	FIELD FLG,^D18
 	 BIT RUN		;NI run state
 	 BIT ANY		;Reconstruct of START msg necessary
@@ -1089,6 +1127,7 @@ BEGSTR	HN			;HOST NODE Data Base
 	HWORD TIM		;Virtual circuit timer initial value (ms)
 	HWORD MTI		;Multicast timer initial value (sec)
 ;END OF PARAMETERS DISPLAYED BY .LASCH
+
 	HWORD RAT		;Host node dynamic rating
 	HWORD PRG		;Host progress timer
 	HWORD NRB		;Number of receive buffers allocated
@@ -1114,14 +1153,14 @@ BEGSTR	HN			;HOST NODE Data Base
 	WORD SRV,<GB.LEN*MXHSRV>;Storage for service blocks
 ENDSTR
 
-BEGSTR	AC,HN.LST		;ACCESS CODES
+BEGSTR AC,HN.LST		;ACCESS CODES
 	WORD LNG		;Access code string length in bytes
 	WORD COD,^D32		;Storage for 256 bit bit-mask
 ENDSTR
 
 ;LAT Circuit counters for all servers
 
-BEGSTR	HC,AC.LST
+BEGSTR HC,AC.LST
 	WORD RCV		;Messages received
 	WORD XMT		;Messages transmitted
 	WORD RTR		;Messages retransmitted
@@ -1202,7 +1241,7 @@ ENDSTR
 	SUBTTL Definitions -- Data Structures -- Slot Block (SB)
 
 
-BEGSTR	SB
+BEGSTR SB
 	WORD LNK,2		;Queue link word (must be first)
 	FIELD FLG,^D18		;Flags
 				;*** Beginning of bits to be kept in order ***
@@ -1380,7 +1419,6 @@ TMPBLK:	BLOCK TMPLNG		;Temporary block for LATOP.
 	TMPGB==TMPBLK+1
 
 >;end IFN FTOPS10
-
 	SUBTTL LATOP% JSYS -- Dispatch
 
 
@@ -1524,7 +1562,7 @@ DEFINE XX (CODE,DISP,FLAG,MNSZ),<
 ; Generate function flags table
 ;
 FNCDSF:	FNC			;[7.1120]
-	SUBTTL LATOP% JSYS -- Set/Clear Functions -- SSERVC
+	SUBTTL LATOP% JSYS -- Set/Clear Functions
 
 
 ;LASET - Set LAT host parameters.
@@ -1568,7 +1606,8 @@ LASET0:	HLRZ T3,TBFLGS-1(T1)	;Change flags to set.
 	XCT TBEXEC-1(T1)	;Do the store.
 	RETSKP
 
-	LF%RNG==1B1		;Do range check on parameter value to set
+
+	LF%RNG==1B1		;Do range check on parameter value to set
 	LF%LOK==1B2		;Lock the database before setting parameter
 	LF%CLR==1B3		;Parameter may be cleared.
 
@@ -1590,7 +1629,7 @@ TBEXEC:	BLOCK <MXSPAR-MNSPAR+1>
 	PARTB. (NNM,0,0,0,<JRST SETNNM>,0)
 	PARTB. (NID,0,0,0,<JRST SETNID>,LF%CLR!<HNNDD_^D18>)
 	PARTB. (SRV,0,0,0,<JRST SSERVC>,LF%CLR)
-	SUBTTL LATOP% JSYS -- SET/CLEAR SERVICE
+	SUBTTL LATOP% JSYS -- Set/Clear Functions -- Set Service
 
 ;SSERVC - Set LAT Service
 ;
@@ -1621,6 +1660,9 @@ SSERVC:	SAVEAC <P3,P4>
 	  RETBAD ()		;Out of range
 	  STOR T3,GBRAT,+TMPGB	;Store the rating
 	ENDIF.
+	;..
+	;..
+
 	TXNN T1,LA%DSC		;Set the description?
 	IFSKP.
 	  TXO P4,HNSVD		;Description change flag
@@ -1647,8 +1689,7 @@ IFN FTOPS10,<
 	XBLT. T1
 	RETSKP
 
-	SUBTTL LATOP% JSYS -- Set/Clear Functions -- CSERVC
-
+	SUBTTL LATOP% JSYS -- Set/Clear Functions -- Clear Service 
 
 ;CSERVC - Clear LAT service.
 ;
@@ -1677,7 +1718,7 @@ CSRVC0:	OPSTRM <SOS>,HNNSV,(Q2)	;One service less.
 	IORM T1,HN.FLG(Q2)	;Indicate service changed.
 	RETSKP
 
-	SUBTTL LATOP% JSYS -- Set/Clear Functions -- SETRTX
+	SUBTTL LATOP% JSYS -- Set/Clear Functions -- Retransmit Limit
 
 
 ;SETRTX - Set the retransmit limit.
@@ -1697,7 +1738,7 @@ IFN FTOPS10,<
 	STOR T2,HNRTX,(Q2)	;Store the value in jiffies
 > ;End IFN FTOPS10
 	RETSKP			;
-	SUBTTL LATOP% JSYS -- Set/Clear Functions -- SETNNM
+	SUBTTL LATOP% JSYS -- Set/Clear Functions -- Host Name
 
 
 ;SETNNM - Set LAT host name.
@@ -1728,7 +1769,7 @@ IFN FTOPS10,<
 	XBLT. T1		; ...
 	RETSKP
 
-	SUBTTL LATOP% JSYS -- Set/Clear Functions -- SETNID/CLRNID
+	SUBTTL LATOP% JSYS -- Set/Clear Functions -- Identification String
 
 
 ;SETNID/CLRNID - Set/Clear host identification string.
@@ -1762,7 +1803,7 @@ IFN FTOPS10,<
 CLRNID:	SETZRO HNIDC,(Q2)	;Clear the string count
 	RETSKP
 
-	SUBTTL LATOP% JSYS -- Set/Clear Functions -- SETCOD
+	SUBTTL LATOP% JSYS -- Set/Clear Functions -- Group Codes
 
 
 ; SETCOD - Set/clear access codes
@@ -1837,7 +1878,8 @@ BITSWP:	SAVEAC <P1>
 	MOVE T1,P1		;Return swapped byte in T1
 	RET
 
-	SUBTTL	LATOP% JSYS -- SET MAXIMUM CIRCUITS
+	SUBTTL	LATOP% JSYS -- Set Maximum Circuits
+
 ;[7.1164] Add routine SETMAC
 ;SETMAC - Set Maximum Circuits
 ;Call:	T2/ New Maximum Circuits value
@@ -1952,7 +1994,7 @@ LASCH:	SAVEAC <P1,P2,P3>
 		   EXP <LMRFSI,,MXHSRV>
 		   EXP <LHPRID,,0>]
 	XBLTXU T1
-
+
 ;Move the access code words
 ;
 	MOVEI P3,^D32		;Number of bytes for the access codes
@@ -1967,7 +2009,8 @@ LASCH:	SAVEAC <P1,P2,P3>
 	  SOJG P3,TOP.		;Do all bytes
 	HRRZI T3,1(P1)		;Make user pointer an address again.
 	ENDDO.
-;Move Host node name and host node description
+
+;Move Host node name and host node description
 ;
 	MOVEI T1,<<ML.NNM+4>/5+<ML.DSC+4>/5+1> ;[7.1039]
 	XMOVEI T2,HN.NMC(Q2)	;[7.1039]Address of node name and description
@@ -2128,6 +2171,8 @@ IFN FTOPS10,<
 	  XBLTXU T1		;Move to user space
 	  RETSKP		;Return successfully.
 	ENDIF.
+	;..
+	;..
 
 	LOAD T1,HNNCC,(Q2)	;Get the number of allocated circuit blocks
 	IMULI T1,<<<ML.SYS+4>/5>+3>;Compute space needed in user's buffer
@@ -2177,7 +2222,7 @@ LASCO:	UMOVE T1,.LAQUA(Q1)	;Get server name requested
 	XBLTXU T1
 	RETSKP
 
-	SUBTTL LATOP% JSYS -- Zero counters
+	SUBTTL LATOP% JSYS -- Zero Counters
 
 
 ;LAZCO - Zero LAT Counters.
@@ -2321,9 +2366,8 @@ IFN FTOPS10,<
 	ANDI T2,JOBMSK##	;Save the job number
 	STOR T2,PRJOB,(P2)	;
 > ;End IFN FTOPS10
-
-				; ..
-				; ..
+	;..
+	;..
 
 ; Get the server name, service name, and port name.
 ;
@@ -2342,6 +2386,8 @@ IFN FTOPS20,<
 	SKIPE T2		; or port name?
 	TRNA 			;Yes, all is well
 	RETBAD (LATX07)		;No, invalid or unknown service name
+	;..
+	;..
 
 ; Format the Solicit Information message.
 ;
@@ -2492,9 +2538,8 @@ PRREL:	ANDI T1,PR.NDX		;Throw away the random portion
 	IDIVI T1,^D36		;Get the PRBITS index and bit number
 	MOVE T2,BITS(T2)	;Get a bit to set with
 	IORM T2,PRBITS(T1)	;Set the bit to indicate that it is free
-	RET			;
-
-
+	RET
+
 ;[7.1120]
 ;PRDEL - Delete a PRVECT entry.
 ;
@@ -2511,6 +2556,13 @@ PRDEL:	SAVEAC <P1>		;
 Cause:	A Pending Request block was about to be deleted that still had a
 	Slot block attached to it.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
+Data:	PRBLOK - Address of pending request block
+	SBBLOK - Address of slot block
 >)
 	ENDIF.
 	OPSTR <SKIPE T1,>,PRCID,(P1) ;Is there a PRVECT index number?
@@ -2787,7 +2839,7 @@ PRWAI1:	LOAD T1,PRSTS,(P1)	;Get the status of the connection
 	RET			;No, return
 	MOVX T1,EV.LAT		;LAT event
 	LOAD J,PRJOB,(P1)	;Get the job number
-	SNCALL (ESLEEP##,MCSEC0) ;[7.yyyy](T1,J)Go to sleep
+	SNCALL (ESLEEP##,MCSEC0) ;[7.1024](T1,J)Go to sleep
 	JRST PRWAI1		;Awake for some reason: check connection
 > ;End IFN FTOPS10
 ;[7.1120]
@@ -2957,9 +3009,7 @@ XLTIMO:	LOAD T1,PRSTA,(Q1)	;Get the current (internal) state
 				; we will never go through here again
 	SUBTTL LATOP% JSYS -- Terminate Host-Initiated Connects
 
-
 	XSWAPCD			;[7.1120]
-
 ;[7.1120]
 ;LATHC - Terminate host-initiated connects.
 ;
@@ -3043,7 +3093,7 @@ IFN FTXMON,<
 	XRESCD
 > ;End IFN FTXMON
 > ;End IFN FTOPS10
-
+
 ;[7.1120]
 ;JBTHC - Terminate all of the host-initiated connects for a specified job.
 ;Note: To be called NOINT with the database locked.
@@ -3286,7 +3336,11 @@ IFN FTOPS20,<
 	CALL UMVAZS		;(T1-T3/T3)Move the string to exec space
 	 RETBAD (LATX07)	;Service name too long
 	STOR T3,GBNC,+TMPGB	;Store the count of service name from user
-
+	XMOVEI T1,TMPGB+GB.NAM	;[8852]Pointer to service name
+	TXO T1,<OWGP. 7,0>	;[8852] ...
+	CALL VCRCHK		;[8852](T1)Check for valid characters
+	 RETBAD (LATX07)	;[8852]Service name contains invalid characters
+
 ;Loop through all service blocks looking for a name match.
 ;
 	XMOVEI P2,HN.SRV(Q2)	;Address of start of service blocks
@@ -3329,6 +3383,56 @@ FSFALS:	MOVEI T1,.LASET		;If service name not found and the function
 	MOVE T1,P2		;Return service block address for new entry.
 	RETSKP
 
+	SUBTTL LATOP% JSYS -- Utility Routines -- VCRCHK
+
+;[8852]The following mask defines which characters are allowed in "names" as
+;defined by the LAT protocol.  A 1-bit implies that the character is
+;allowed.  0 implies that the character is invalid.  The following
+;characters are allowed in LAT names: 
+;
+;	"$" 	(dollar sign)
+;	"-"	(hyphen)
+;	"."	(period)
+;	"_"	(underscore)
+;	"0"-"9" (numerals)
+;	"A"-"Z" (upper case letters)
+;	"a"-"z" (lower case letters) 
+;
+;It should be noted that LAT also allows 8-bit characters from the DEC
+;Multinational character set to be used in LAT names.  This is not currently
+;supported in the TOPS-10/20 LAT implementation.
+
+	RADIX 2
+;	00000000111111112222222233333333
+;	01234567012345670123456701234567 !"#
+VCRMSK:	000000000000000000000000000000000000
+;	$%&'()*+,-./0123456789:;<=>?@ABCDEFG
+	100000000110111111111100000001111111
+;	HIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijk
+	111111111111111111100001011111111111
+;	lmnopqrstuvwxyz{}~ 
+	111111111111111000000000000000000000
+	VCRLEN==.-VCRMSK
+	RADIX 8
+
+;VCRCHK - Valid Character Checker for LAT names
+;[8852]
+; T1/ Byte pointer to the name to be checked
+;	CALL VCRCHK
+; Return: +1 - Name contains invalid characters
+;	  +2 - Name is valid (or contains no characters)
+; Uses T1, T2, and T3
+
+VCRCHK:	DO.
+	  ILDB T2,T1		;Get a byte in T2
+	  JUMPE T2,RSKP		;Null byte? If so, we're done
+	  IDIVI T2,^D36		;T2 gets offset, T3 gets bitnumber
+	  MOVE T3,BITS(T3)	;Convert bit number to mask
+	  CAIG T2,VCRLEN	;Are we still in the mask?
+	  TDNN T3,VCRMSK(T2)	;Is this a valid character
+	  RET			;No
+	  LOOP.			;Yes, go get another
+	ENDDO.
 	SUBTTL LATOP% JSYS -- Utility Routines -- GTSRVR
 
 ;GTSRVR - Routine to get the circuit block address for a particular
@@ -3418,7 +3522,9 @@ UPPERC:	CAIL T1,"a"
 	SKIPA
 	SUBI T1,40
 	RET
-;UBFCHK - Routine to check if user supplied buffer large enough
+	SUBTTL LATOP% JSYS -- Utility Routines -- UBFCHK
+
+;UBFCHK - Routine to check if user supplied buffer large enough
 ;This routine added by 7.1039.  It supercedes LABFCK.
 ; Call:
 ;	T1/ Minimum size required of user buffer
@@ -3452,7 +3558,7 @@ MAKPTR:	MOVE T2,T1		;Make a proper pointer in case the user
 IFN FTOPS10,<
 	PURGE Q1,Q2		;undefine TOPS-20 ACs
 > ;End IFN FTOPS10
-	SUBTTL TOPS-10 -- SCNSER Interface -- LDBISR Dispatch
+	SUBTTL TOPS-10 -- SCNSER Interface - LDBISR Dispatch
 
 
 	RESCD
@@ -3560,7 +3666,8 @@ IFN FTXMON,<
 	ENTRY LATINI		;Kepp LINK happy in library search mode
 
 XRENT	(LATINI,G)		;[7.1024]LATINI::, XLATIN::
-
+	SKIPN NIHERE		;[8974] Do we have an NIA20 today?
+	RET			;[8974] Nope
 	ACVAR <HN,XB,W1,W2>	;Reserve AC for Host Node data base address
 	MOVEI T1,HC.LST		;Get memory for the Host Node (HN) tables
 	CALL MMGTZW		;(T1/T1)Get zeroed memory
@@ -3571,19 +3678,21 @@ XRENT	(LATINI,G)		;[7.1024]LATINI::, XLATIN::
 	MOVEI T1,CBMAXI		;Get storage for CBVECT
 	CALL MMGTZW		;(T1/T1)
 	 JRST INIRES		;Resource failure.
-; Circuit block index numbers start with one (not zero).
-; When used as an index into the CBVECT array, the first
-; word of the array is never used, and the address of the
-; last CB is written in some other block.
+
+; Circuit block index numbers start with one (not zero).  When used as an index
+; into the CBVECT array, the first word of the array is never used, and the
+; address of the last CB is written in some other block.
+
 	SOS T1			;Save the address minus one:
 	MOVEM T1,CBVECT		; circuit block indices start with one.
 	MOVEI T1,NTTLAH		;Get storage for SBVECT
 	CALL MMGTZW		;(T1/T1)
 	 JRST INIRES		;Resource failure.
-; Slot block index numbers start with one (not zero).
-; When used as an index into the SBVECT array, the first
-; word of the array is never used, and the address of the
-; last SB is written in some other block.
+
+; Slot block index numbers start with one (not zero).  When used as an index
+; into the SBVECT array, the first word of the array is never used, and the
+; address of the last SB is written in some other block.
+
 	SOS T1			;Save the address minus one: 
 	MOVEM T1,SBVECT		;slot block indices start with one.
 	MOVEI T1,PRMAXI		;[7.1120]
@@ -3597,12 +3706,11 @@ XRENT	(LATINI,G)		;[7.1024]LATINI::, XLATIN::
 	SOS T1			;[7.1120]Save address minus one:
 	MOVEM T1,PRRAND		;[7.1120] PRRAND indices start with one
 
-IFN FTOPS10,<
-;
-;	Now carve up the core we got at ONCE time
-;	The free core pool will be turned into a
-;	linked list of fixed length buffers from which we can allocate
-;	transmit and receive buffers.
+IFN FTOPS10,<
+
+; Now carve up the core we got at ONCE time.  The free core pool will be turned
+; into a linked list of fixed length buffers from which we can allocate
+; transmit and receive buffers.
 
 	SETZRO QLFWD,+LATFRE	;Clear out the queue
 	SETZRO QLBWD,+LATFRE
@@ -3615,6 +3723,9 @@ XRENT	(LATINI,G)		;[7.1024]LATINI::, XLATIN::
 	MOVE T1,LATNAM##	;Get our node name
 	CALL CVTNOD		;Convert to ASCII
 >;END IFN FTOPS10
+
+;Default fields in the HN block with data found elsewhere in the monitor.
+
 	DMOVE T1,OURNAM		;Get the local host name
 	DMOVEM T1,HN.NAM(HN)	;Store in HN block
 	MOVE T1,OURCNT		;Host name length in characters
@@ -3644,6 +3755,9 @@ IFN FTOPS10,<
 	MOVEI T1,JIFSEC##	;Virtual circuit time in jiffies
 	STOR T1,HNRTX,(HN)	;
 > ;End IFN FTOPS10
+	;..
+	;..
+
 	MOVEI T2,^D30		;Default host multicast timer (sec)
 	STOR T2,HNMTI,(HN)
 	MOVEI T1,^D10000	;[7.1120]Default command message retry time (ms)
@@ -3653,6 +3767,7 @@ IFN FTOPS10,<
 	STOR T1,HNCMT,(HN)	;[7.1120]
 	MOVEI T1,^D5		;[7.1120]Default command message retry limit
 	STOR T1,HNCMX,(HN)	;[7.1120]
+
 	MOVE T1,LASDEF		;[7.1039]Get the default LAT Access State
 	STOR T1,HNLAS,(HN)	;[7.1039] and store it
 	CAIN T1,LS.OFF		;[7.1039]If def. state = on, start transmitting
@@ -3666,13 +3781,16 @@ IFN FTOPS20,<
 	STOR T1,HNMXC,(HN)	
 	MOVEI T1,MAXACC		;[7.1164]
 	STOR T1,HNMAC,(HN)	;[7.1039]And maximum active circuits
-	MOVEI T1,CBMAXI		;Get a random number in the range or 1 to
+	MOVEI T1,CBMAXI		;Get a random number in the range or 1 to
 	CALL RANDOM		; (T1/T1)maximum value of circuit block index
 	STOR T1,HNNXI,(HN)	;Store as next CB index to assign
 	MOVEI T1,NTTLAH		;Default max number of simultaneous connects
 	STOR T1,HNMCO,(HN)
 	MOVEI T1,^D32		;Number of access code bytes
 	STOR T1,ACLNG,(HN)
+
+;Default the group codes.
+
 IFN FTOPS20,<
 	MOVSI T1,(1B7)		;Set group 0 on
 	MOVEM T1,AC.COD(HN)	;Store as first byte of access codes
@@ -3690,6 +3808,7 @@ IFE FTXMON,<
 	BLT T1,AC.COD+7(HN)	;Move the bytes
 > ;END IFE FTXMON
 > ;END IFN FTOPS10
+
 	MOVEI T1,1
 	STOR T1,HNNSV,(HN)	;Default number of host services offered
 	XMOVEI W1,HN.SRV(HN)	;Address of the host service blocks
@@ -3707,12 +3826,15 @@ IFE FTXMON,<
 	XMOVEI T2,HN.ID(HN)	;[7.1039]Get address of host descriptor
 	XMOVEI T3,GB.HID(W1)	;[7.1039]And address of service descriptor
 	XBLT. T1		;[7.1039]Make service descriptor same as host
+
+;Build multicast message.
+
 	XMOVEI XB,HN.MCM(HN)	;Address of the multicast message block
 	MOVE T1,[BYTE (8)11,0,53,0,(4)0];Store multicast address
 	MOVE T2,[BYTE (8)0,17,0,0]; ...
 	OPSTRM <DMOVEM T1,>,UNDAD,+UNB.OF(XB);09-00-2B-00-00-0F
 	SETO T1,0		;Use random number for incarnation count
-	CALL BMCFXD		;(T1,HN,XB)Build fixed part of message
+	CALL BMCFXD		;(T1,HN,XB)Build fixed part of message
 	CALL BMCACS		;(HN,XB)Enter the host access code string
 	CALL BMCNID		;(HN,XB)Enter the host node name and descriptn
 	CALL BMCSRV		;(HN,XB)Build the services
@@ -3730,12 +3852,16 @@ IFN FTOPS20,<
 	MOVEI T2,PRWMSK		;[7.1120]Get addr of scheduler test table
 	CALL BITOF		;[7.1120](T1,T2)Initialize to all zeros
 >;END IFN FTOPS20
+
 	SETZRO UNCHN,+UNB.OF(XB);For now, later must read channel list
 	SETZRO UNPAD,+UNB.OF(XB);We use padding
 	MOVEI T1,^B0110000000000100 ;Protocol ID is 60-04
 	STOR T1,UNPRO,+UNB.OF(XB)
 	XMOVEI T1,LATCBR	;Callback routine address
 	STOR T1,UNCBA,+UNB.OF(XB)
+
+;Let NISRV know we are all ready to proceed.
+
 	MOVX T1,NU.OPN		;NISRV Open function
 	XMOVEI T2,UNB.OF(XB)	;Use this for open as well
 IFN FTOPS20,<
@@ -3753,17 +3879,21 @@ IFN FTOPS10,<
 	   TRN			;Will have to get buffers later
 	ENDIF.
 	RET
-INIRES:
-	BUG. (CHK,LATINE,LATSRV,SOFT,<LATINI failed to initialize>,,<
+
+;Here if we couldn't get enough memory to initialize LAT.
+
+INIRES:	BUG. (CHK,LATINE,LATSRV,SOFT,<LATINI failed to initialize>,,<
 
 Cause:	Could not obtain sufficient memory for the LAT host databases.
 
-Action:	Determine why there is so little resident memory available at system
-	startup.
-
-Data:	HN.LST words for the host node database, CBMAXI words for CBVECT,
-	and NTTLAH words for SBVECT.
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump in order to
+        determine why there is so little resident memory available at system
+	startup.  The values to consider are: HC.LST words for the host node 
+	database, CBMAXI words for CBVECT, NTTLAH words for SBVECT, and
+	PRMAXI words for PRVECT and PRRAND.
 >)
 	SKIPE T1,LAHNDB		;Start with a clean slate when we try
 	CALL MMFREE		; (T1)to initialize later...
@@ -3808,7 +3938,7 @@ BITON1:	JUMPE P1,RTN		;Zero bits left: return
 	SETCA T2,		;Yes. T2 = ~T2
 	MOVEM T2,(T3)		;Use it
 	RET			;
-	SUBTTL Subroutine CWHLAT - Type a server spec for WHERE command
+	SUBTTL TOPS-10 -- CWHLAT - Type a server spec for WHERE command
 
 ;CWHLAT - Types a server spec given a LATSRV-owned LDB.
 ;
@@ -3851,7 +3981,8 @@ CWHLAT::POP	P,T1		;Can't call SE1ENT with junk on stack!
 	POP P,T2		;Get TTY name
 	CALL PRNAME##		; and type it.
 	CALLRET PCRLF##		;and return
-					;Still in IFN FTOPS10
+	SUBTTL TOPS-10 -- TCSTR Type a counted ASCII string
+					;Still in IFN FTOPS10
 
 ; Routine TCSTR - type a counted ASCII string
 ;
@@ -3868,6 +3999,7 @@ TCST1:	ILDB T3,T2		;Get a character
 	RET			; and return
 
 	XRESCD
+	SUBTTL TOPS-10 -- LATSEC Once A Second Code
 
 ; Once-A-Second code
 ;
@@ -3889,21 +4021,25 @@ LATSEC:	SKPCPU (0)		;SKIP IF WE'RE ON POLICY CPU
 XRENT	(LATXMC,G)		;[7.1024]LATXMC::, XLATXM::
 
 	ACVAR <HN,XB,W1,W2>
-	MOVE HN,LAHNDB		;Get the HN data base address
-	SETZM LATMCT		;[7.1281]Clear the timer
-	CALL GETRBF		;[7.1281](HN)Post more receive bufs if needed
-	 TRN			;[7.1281]Not necessary.
-	XMOVEI XB,HN.MCM(HN)	;[7.1281]Get the address of the multicast msg
-	LOAD T1,UNUID,+UNB.OF(XB) ;[7.1281]Get the UID field
-	TXNE T1,DLL.FL		;[7.1281]If DLL.FL is lit then we don't want
-	RET			;[7.1281] to step on the buffer.  Back soon.
+	SKIPN HN,LAHNDB		;[8974] Get the HN data base address
+	RET			;[8974] No NI on this system
 	LOAD T1,HNMTI,(HN)	;Reset the multicast timer
 IFN FTOPS20,<
 	IMULI T1,^D1000		;Convert from seconds to milliseconds
 >;END IFN TOPS20
-	MOVEM T1,LATMCT		;
+	MOVEM T1,LATMCT		;Store new multicast timer
 	CALL CHKXMC		;(HN)Transmit the multicast this time?
 	 RET			;No.
+	CALL GETRBF		;[8974](HN) Post more receive buffers if needed
+	 TRN			;[8974] Not necessary.
+	XMOVEI XB,HN.MCM(HN)	;[8974] Get the address of the multicast msg
+	LOAD T1,UNUID,+UNB.OF(XB) ;[8974] Get the UID field
+	TXNN T1,DLL.FL		;[8974] Is DLL.FL lit?
+	IFSKP.			;[8974] Yes, wait till it is off
+	  SETZM LATMCT		;[8974] Clear the timer
+	  RET			;[8974] Come back real soon to check again
+	ENDIF.			;[8974] If DLL.FL is off, continue
+
 	CALL DYNRAT		;(HN)Check if dynamic rating needs update.
 	OPSTR <SKIPE W1,>,HNCFL,(HN);If nothing changed in HN database
 	OPSTR <SKIPL>,HNLOK,(HN); or something changed by db id locked
@@ -3947,7 +4083,7 @@ IFN FTOPS10,<
 >
 	 TRN			;Ignore error
 	RET			;Return
-	SUBTTL Routine to check/compute the Dynamic Rating
+	SUBTTL Multicast Transmitter -- Compute Dynamic Rating
 
 ;DYNRAT - Routine to check/compute the Dynamic Rating
 
@@ -3969,7 +4105,7 @@ IFN FTOPS10,<
 	MOVEI T1,1		;No dynamic rating for TOPS-10
 >;END IFN FTOPS10
 	RET
-	SUBTTL Routines to Build the Host Multicast Message -- BMCFXD
+	SUBTTL Multicast Transmitter -- Build Fixed Part of Multicast Message
 
 ;BMCFXD - Build fixed portion of the multicast message
 
@@ -4015,7 +4151,7 @@ BMCFXD:	STKVAR <INCFLG>		;Save the incarnaction
 	MOVEI T1,1		;No, indicate not accepting new sessions.
 	OPSTRM <IDPB T1,>,UNBFA,+UNB.OF(XB)
 	RET
-	SUBTTL Routines to Build the Host Multicast Message -- BMCFXD
+	SUBTTL Multicast Transmitter -- Build Multicast Message Group Codes
 
 ;BMCACS - Enter Access Codes into the Multicast Message - BMCACS
 
@@ -4036,9 +4172,9 @@ BMCACS:
 	MOVX T2,<POINT 8,AC.COD(HN)> ;Source string byte pointer
 	CALL PTCST0		;(XB,T1,T2)Transfer the string to the message
 	RET
-	SUBTTL Routines to Build the Host Multicast Message -- BMCNID
+	SUBTTL Multicast Transmitter -- Build Node Name/Descriptor
 
-;BMCNID - Enter Access Codes into the Multicast Message - BMCNID
+;BMCNID - Build node name and descriptor part of multicast message
 
 ;Call:	HN/ Host Node Data Base Address
 ;	XB/ Address of the multicast message block in HN
@@ -4052,8 +4188,7 @@ BMCACS:
 ; routine is called, the rest of the multicast message must be rebuilt.  This
 ; routine does not modify the message count.
 
-BMCNID:
-	MOVX T1,<POINT 8,<SBF.OF+^D12/4+^D32/4>(XB),7> ;Node name starts here
+BMCNID:	MOVX T1,<POINT 8,<SBF.OF+^D12/4+^D32/4>(XB),7> ;Node name starts here
 	STOR T1,UNBFA,+UNB.OF(XB) ;Store as byte pointer to message buffer
 	LOAD T1,HNNMC,(HN)	;Host name count
 	MOVX T2,<POINT 7,HN.NAM(HN)> ;Source string byte pointer
@@ -4062,7 +4197,7 @@ BMCNID:
 	MOVX T2,<POINT 7,HN.ID(HN)> ;Move the host node id string to the
 	CALL PTCST0		; (XB,T1,T2)m.c. message
 	RET
-	SUBTTL Routines to Build the Host Multicast Message -- BMCSRV
+	SUBTTL Multicast Transmitter -- Build Available Services Data
 
 ;BMCSRV - Build the Available Host Services Data - BMCSRV
 
@@ -4108,7 +4243,7 @@ SRVLP:	OPSTR <SKIPGE T1,>,GBRAT,(W2) ;Get the service rating
 	MOVEI T1,1_^D8+1	;Service class 1 only
 	CALL LAP2BY		;(XB,T1)
 	RET
-	SUBTTL Routines to Build the Host Multicast Message -- BMCRAT
+	SUBTTL Multicast Transmitter -- Update Current Service Ratings
 
 ;BMCRAT - Update the MC Msg with the current service ratings - BMCRAT
 
@@ -4140,7 +4275,7 @@ RATLP:	OPSTR <SKIPGE T1,>,GBRAT,(W2) ;Get the service rating
 	ADDI W2,GB.LEN		;Address of next block
 	SOJN W1,RATLP		;Loop through all services
 	RET
-	SUBTTL Multicast Transmit Check Routine
+	SUBTTL Multicast Transmitter -- Multicast Transmit Check
 
 ;CHKXMC - Check for Transmit of Multicast Message
 
@@ -4220,7 +4355,8 @@ BLDSTM:	SAVEAC <W1>
 ;	Normal return
 
 LATCBR:	ACVAR <HN,XB,RB>	;Reserve some registers
-	MOVE HN,LAHNDB		;Get the host node data base address
+	SKIPN HN,LAHNDB		;[8974] Get the host node data base address
+	RET			;[8974] No NIA20 on this system
 	MOVE T4,T3		;Save NISRV's error register
 	CAIL T1,MINCBF		;Validate the callback function code
 	CAIG T1,MAXCBF
@@ -4228,10 +4364,14 @@ LATCBR:	ACVAR <HN,XB,RB>	;Reserve some registers
 	BUG. (CHK,LATICB,LATSRV,SOFT,<LATCBR called from NISRV with illegal callback function code>,<<T1,CODE>>,<
 
 Cause:	NISRV has called the LATSRV callback routine with an invalid function
-	code.
+	code.  This indicates a problem in NISRV.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	CODE - Function code
-
 >)
 ;[7.1024]
 ;[7.1024] **WARNING** If ILLCBR is moved out of PSECT XRCOD then the
@@ -4332,11 +4472,11 @@ IFN FTOPS10,<
 
 ;LARSCH - Complete circuit message processing at scheduler level
 
-IFN FTOPS10,<			;[7.yyyy]
-	RESCD			;[7.yyyy]
-LATSTO::SKPCPU	(0)		;[7.yyyy]On policy CPU?
-	RET			;[7.yyyy]No, do nothing
-;	CALLRET LARSCH		;[7.yyyy]Yes, fall into LARSCH
+IFN FTOPS10,<			;[7.1024]
+	RESCD			;[7.1024]
+LATSTO::SKPCPU	(0)		;[7.1024]On policy CPU?
+	RET			;[7.1024]No, do nothing
+;	CALLRET LARSCH		;[7.1024]Yes, fall into LARSCH
 > ;End IFN FTOPS10
 
 XRENT	(LARSCH,G)		;[7.1024]LARSCH::, XLARSC::
@@ -4350,7 +4490,8 @@ XRENT	(LARSCH,G)		;[7.1024]LARSCH::, XLARSC::
 IFN FTOPS10,<
 	SETZM LATWFB		;Say we don't want more buffers yet
 >
-
+	;..
+
 MSGNXT:	OPSTR <SKIPN T2,>,HNSCQ,(HN);Get first element on the scheduler Q
 	CALLRET LAMUX		;No more so call the slot multiplexor
 	OPSTR <SKIPN T3,>,UELW1,(T2);Get new head or queue if any
@@ -4376,10 +4517,14 @@ MSGNXT:	OPSTR <SKIPN T2,>,HNSCQ,(HN);Get first element on the scheduler Q
 	  BUG. (CHK,LATIMT,LATSRV,SOFT,<LAT Illegal Message Type>,<<T1,MSGTYP>>,<
 
 Cause:	The LAT virtual circuit message was received with a message type out
-	of range.
+	of range.  This indicates a protocol problem.
 
-Data:	MSGID - Message type
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
+Data:	MSGTYP - Message type
 >)
 	ELSE.
 	  TRNE T2,MSB.FL	;[7.1155]Test the Master/Slave bit
@@ -4393,8 +4538,7 @@ Data:	MSGID - Message type
 	ENDIF.
 MSGDON:	CALL RELRBF		;(RB)Ignore for now
 	JRST MSGNXT
-
-
+
 	MIN. (MINMTY,<MT.RUN,MT.STA,MT.STP,MT.STS,MT.RIN>) ;[7.1120]Minimum message type code
 	MAX. (MAXMTY,<MT.RUN,MT.STA,MT.STP,MT.STS,MT.RIN>) ;[7.1120]Maximum message type code
 
@@ -4486,10 +4630,9 @@ MSBGN:	OPSTR <ILDB T1,>,UNBFA,+UNB.OF(RB)
 	CALL LAG2BY		;Get the ACK/SEQ field from msg
 	MOVEM T1,MSGACK		; (2 bytes, unsigned)
 	RET			;
-	SUBTTL Message Receiver - HMSTRT
+	SUBTTL HMSTRT - Process Host Start Message
 
-
-;HMRUN - Process a Host START Message
+;HMSTRT - Process a Host START Message
 ;
 ; RB/ Address of receive buffer
 ; CB/ Address of circuit block
@@ -4531,7 +4674,7 @@ IFN FTOPS10,<
 	ADDM T1,LATWFB		;No, ask for some more
 >;END IFN FTOPS10
 	RET
-	SUBTTL 	HSTRCB
+	SUBTTL HSTRCB - Find CB for Received Start Message
 
 ;HSTRCB - Find the circuit block for a received START msg on a LAT host.
 
@@ -4611,10 +4754,13 @@ CBINIT:	MOVEI T1,MSTMSI		;Check to see if the message is at least
 	STOR T1,CBNBF,(CB)	; queued by remote for this circuit
 	OPSTR <ILDB T1,>,UNBFA,+UNB.OF(RB);Remote's circuit timer value
 	STOR T1,CBCTI,(CB)	;
+	;..
+	;..
+
 	OPSTR <ILDB T1,>,UNBFA,+UNB.OF(RB);Remote's keep-alive timer value
 	STOR T1,CBKTI,(CB)	;
 IFN FTOPS20,<
-	IMULI	T1,^D2000 	;Convert to ms and multiply by 2 (fudge factor)
+	IMULI T1,^D2000 	;Convert to ms and multiply by 2 (fudge factor)
 >
 IFN FTOPS10,<
 	IMULI T1,JIFSEC##	;Convert from seconds to jiffies
@@ -4699,8 +4845,7 @@ CBGNX0:	AOS T2			;Increment the next available index
 	JRST CBGNX0		;No, try next
 	STOR T2,HNNXI,(HN)	;Store new "next assignable index"
 	RET
-	SUBTTL HMRUN
-
+	SUBTTL HMRUN - Process a Host Run Message
 
 ;HMRUN - Process a Host RUN Message
 ;
@@ -4765,18 +4910,35 @@ ACKDON:	OPSTR <SKIPN>,CBAKQ,(CB);If all messages ack'd
 	SETONE CBMRS,(CB)	;Indicate we must respond to this msg "soon"
 	CALL LSDMUX		;(RB)Go process all slots in the RUN message
 	IFNSK.			;Invalid slot type returned.
-	  BUG. (INF,LATIST,LATSRV,SOFT,<LAT Illegal Slot Type>,<<T2,SLTID>>,<
+	  OPSTR <DMOVE T3,>,UNSAD,+UNB.OF(RB) ;[9130]Get address in T3 & T4
+	  BUG. (INF,LATIST,LATSRV,SOFT,<LAT Illegal Slot Received>,<<T1,PC>,<T2,SLTID>,<T3,HIADDR>,<T4,LOADDR>>,<
 
-Cause:	LAT Slot received with Slot type out of range.
+Cause:	An illegal LAT slot has been received.  Normally, this indicates a
+	protocol violation by the remote server.  We can get here on one of
+	the following conditions:
+
+	A run message ended prematurely in the middle of a slot,
+	The Slot type is out of range,
+	The Slot type is undefined,
+	The Slot type is REJECT,
+	The source or destination id is zero,
+	The Slot byte count is out of range,
+	Something other than interactive service class was requested,
+	The Local Slot ID is out of range, or
+	A Slot was received even though no credits had been extended.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	SLTID - Slot ID
-
 >)
 	  MOVEI T1,CE.ILL	;Set up stop reason code.
 	  CALL MTTSTP		;(T1,XB,RB,CB)Illegal slot, kill the circuit
 	ENDIF.
 	RET			;All slots processed, return receive buffer
-	SUBTTL 	HSTRCB
+	SUBTTL HSTRCB - Find CB for received Run/Stop Message
 
 ;HRUNCB - Find the circuit block for a received RUN/STOP msg on a LAT host.
 
@@ -4811,8 +4973,7 @@ HRUNCB:	SKIPN CB,MSGDID		;Index to CB from received message
 	 JSP T2,ILLMES		;Non-existent CB. Treat as illegal message.
 HRNFND:	OPSTRM <AOS>,CCRCV,(CB)	;Increment per-server count
 	RETSKP			;Found the CB
-	SUBTTL HMSTOP
-
+	SUBTTL HMSTOP - Process Host Stop Message
 
 ;HMSTOP - Process a Host STOP Message
 ;
@@ -4834,7 +4995,7 @@ HMSTOP:	CALL MSBGN		;[7.1120](RB)Parse the beginning
 	RET			;[7481]Yes, just ignore it.
 	CALLRET CBKILL		;[7481](CB)Release all CB resources and
 				;[7481] put it on the inactive queue
-
+	SUBTTL Routines to Terminate Circuit on Error
 
 ; Routines to terminate a circuit because of some error.  T1 contains
 ; the error to be entered into the STOP message.
@@ -4866,9 +5027,18 @@ NIHALT:	MOVEI T1,CE.NIH		;NI halted
 	SETZ T2,0		;PC meaningless
 	JRST INFSTP
 >;END IFN FTOPS20
+
+;[8979]There are two paths into INVRUN: One if there is no CB.  The other
+;if there is an id mismatch between the circuit block and the run message.
+;In that case, T3 contains CBRID.  If CBRID is zero, this implies that the
+;CB has been moved to the inactive queue.  If CBRID is nonzero then we have
+;a real live protocol violation and we fall thru to the LATNSC.  We should
+;only get this LATNSC on active circuits.
+INVRUN: MOVEI T1,CE.INV		;Invalid message
+	JUMPE CB,MTTSTP		;[8979]No circuit block, go quietly
+	JUMPE T3,MTTSTP		;[8979]Inactive circuit block, go quietly
+;	JRST INFSTP		;[8979]Real LATNSC - invalid run message
 
-INVRUN:	MOVEI T1,CE.INV		;Invalid message
-	JRST INFSTP
 INFSTP:	OPSTR <DMOVE T3,>,UNSAD,+UNB.OF(RB) ;[7.1227]GET ADDRESS IN T3 & T4
 	BUG. (INF,LATNSC,LATSRV,SOFT,<LAT Host node stopped circuit>,<<T1,CODE>,<T2,PC>,<T3,HIADDR>,<T4,LOADDR>>,<
 
@@ -4892,14 +5062,18 @@ Action:	Look at the Reason Code in T1 and the PC in T2.  This error, if
 	CE.SKW==11		;Protocol version skew
 	CE.INV==12		;Invalid Message
 
+        If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
-Data:	CODE - Reason code
-	PC - PC
+Data:	CODE   - Reason code
+	PC     - PC
 	HIADDR - High order 32 bits of Ethernet address
 	LOADDR - Low order 16 bits of Ethernet address
 >)				;[7369]
 	JRST MTTSTP
-	SUBTTL HMSTAT - Receive Status Message
+	SUBTTL HMSTAT - Process Status Message
 
 
 ;[7.1120]
@@ -5114,7 +5288,7 @@ HMIRJ2:	MOVX T1,.LASCS		;Frump up a "Start slot can not be sent"
 	MOVE T1,SB		;[7.1174]Point T1 to PR block
 	CALLRET PRWAKE		;[7.1174][7.1120](T1)Wake the job
 
-	SUBTTL Message Transmit Routines
+	SUBTTL Message Transmit Routines -- Transmit Start Message
 
 ;MTTSTR - transmit a START message
 
@@ -5156,8 +5330,7 @@ IFN FTOPS10,<
 	  SETZRO HNCIP,(HN)	;Release the lock
 	ENDIF.
 	RET
-
-
+
 ;[7481]
 ;CBKILL - Kill a circuit by releasing all slots and buffers
 ;
@@ -5369,7 +5542,7 @@ BMSGHD:	MOVE T2,NSLOTS		;Number of slots in message
 	IOR T1,T2
 	CALL LAP2B0		;(XB,T1)
 	RET
-	SUBTTL Message Transmit Routines -- XMTMSG
+	SUBTTL Message Transmit Routines -- Transmit LAT Message
 
 ;XMTMSG - Transmit a LAT Message
 
@@ -5407,6 +5580,9 @@ XMTMS0:	STOR T1,UNPID,+UNB.OF(XB);Store in xmit buffer
 	STOR XB,UNRID,+UNB.OF(XB);Remember the buffer address
 	MOVEI T1,UNA.EV
 	STOR T1,UNADS,+UNB.OF(XB);Tell NISRV we are using EXEC virtual memory
+	;..
+	;..
+
 	MOVX T1,NU.XMT		;NI transmit function code
 	XMOVEI T2,UNB.OF(XB)	;UN block address
 IFN FTOPS20,<
@@ -5428,7 +5604,7 @@ IFN FTOPS10,<
  	  OPSTRM <SOS>,CBDLL,(CB);Failed so put back count where is was
 	ENDIF.
 	RET
-	SUBTTL Message Transmit Routines -- XMTDON
+	SUBTTL Message Transmit Routines -- Transmit Done
 
 ;XMTDON - Message Transmitter Transmit Done Scheduler Level Routine
 
@@ -5470,7 +5646,7 @@ LAG2BY:	MOVX T1,-2		;Amount to decrement the count by
 	LSH T2,^D8		;Shift high order byte left
 	IOR T1,T2		;Make a 16-bit quantity
 	RET			;Return with result
-
+
 ;GTCSTR - Move Counted String from a Message
 
 ;Call:	T1/ Maximum count to move
@@ -5526,7 +5702,7 @@ LAP2B0:	MOVE T2,T1		;In order to return T1 preserved.
 	LSH T2,-^D8		;Shift hi byte into position
 	OPSTR <IDPB T2,>,UNBFA,+UNB.OF(XB);High order byte goes to b buffer
 	RET
-
+
 ;PTCSTR - put counted string to message buffer
 
 ;Call:	XB/ Address of the transmit buffer
@@ -5575,7 +5751,7 @@ RBPOST:	MOVEI T2,LMRFSI		;Size of the buffer
 	XMOVEI T2,UNB.OF(T1)	;UN block address
 	MOVX T1,NU.RCV		;Post receive buffer function code
 IFN FTOPS20,<
-	CALL	DLLUNI##
+	CALL DLLUNI##
 >
 IFN FTOPS10,<
 	SNCALL	(DLLUNI##,MCSEC1)
@@ -5585,16 +5761,20 @@ IFN FTOPS20,<
 	  BUG. (CHK,LAPRBF,LATSRV,SOFT,<Specify Receive Buffer Failure>,<<T1,DLLERC>>,<
 
 Cause:	LATSRV received an error from NISRV while attempting to post a
-	receive buffer.
+	receive buffer.  This indicates a problem in NISRV.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	DLLERC - Error code returned by NISRV
-
 >)
 >;END IFN FTOPS20
 	  RET
 	ENDIF.
 	RETSKP
-	SUBTTL Slot Demultiplexor - LSDMUX
+	SUBTTL Slot Demultiplexor
 
 ;LSDMUX - Process all slots in a received RUN message
 ;
@@ -5619,8 +5799,9 @@ NXTSLT:	OPSTR <ILDB T2,>,UNBFA,+UNB.OF(RB);Get the destination id
 	AOS T1,T2		;Round up to the nearest even number
 	TRZ T1,1		; since they may be 1 pad byte in slot
 	SUBI T3,SLHDSZ(T1)	;Subtract the total slot size
-	MOVEM T3,SLTCNT		;[7.1120]Save the byte count left in message
-	JUMPL T3,ILLSLT		;Error if message has ended prematurely
+	MOVEM T3,SLTCNT		;Save the byte count left in the message
+	SKIPGE T3		;[9130]Save the byte count left in message
+	JSP T1,ILLSLT		;[9130]Error: Message has ended prematurely
 	OPSTR <ILDB T2,>,UNBFA,+UNB.OF(RB);Get the slot type/credits/reason
 	MOVEM T2,SLTTYP
 	ADJBP T1,UN.BFA+UNB.OF(RB);Point to next slot
@@ -5628,9 +5809,9 @@ NXTSLT:	OPSTR <ILDB T2,>,UNBFA,+UNB.OF(RB);Get the destination id
 	LSH T2,-4		;Shift off the credits field
 	CAIL T2,MINSTY		;Range check slot type
 	CAILE T2,MAXSTY
-	CALLRET ILLSLT		;Slot ID out of range, illegal slot
-	CALL @SLTDSP-MINSTY(T2)	;Dispatch to proper routine
-	JRST ILLSLT
+	JSP T1,ILLSLT		;[9130]Slot type out of range, illegal slot
+	XCT SLTDSP-MINSTY(T2)	;[9130]Dispatch to proper routine
+	 RET			;[9130]Oh well.  Life's tough in the big city.
 	SOSG NSLOTS		;Indicate one less slot to process
 	RETSKP			;Count went to zero, so done.
 	MOVE T1,SLTCNT		;[7.1120]Restore the byte count
@@ -5638,24 +5819,29 @@ NXTSLT:	OPSTR <ILDB T2,>,UNBFA,+UNB.OF(RB);Get the destination id
 	MOVE T1,SLTEPT		;Get pointer to next slot's data
 	MOVEM T1,UN.BFA+UNB.OF(RB);and force pointer to there
 	JRST NXTSLT		;Still some left, go do next
+
+;
+;[9130]Here is the slot dispatch table, indexed by slot type
+;
+SLTDSP:	CALL HSDATA		;[9130]Data A slot
+	JSP T1,ILLSLT		;[9130]Undefined
+	JSP T1,ILLSLT		;[9130]    "
+	JSP T1,ILLSLT		;[9130]    "
+	JSP T1,ILLSLT		;[9130]    "
+	JSP T1,ILLSLT		;[9130]    "
+	JSP T1,ILLSLT		;[9130]    "
+	JSP T1,ILLSLT		;[9130]    "
+	JSP T1,ILLSLT		;[9130]    "
+	CALL HSSTRT		;[9130]Start Slot
+	CALL HDRDAT		;[9130]Data B Slot
+	CALL IGNSLT		;[9130]Attention Slot
+	JSP T1,ILLSLT		;[9130]Reject Slot
+	CALL HSSTOP		;[9130]Stop Slot
+;
+;[9130]The slot dispatch table ends here
+;
 
-SLTDSP:	XADDR. HSDATA		;[7.1052]Data A slot
-	XADDR. RTN		;[7.1052]Undefined
-	XADDR. RTN		;[7.1052]    "
-	XADDR. RTN		;[7.1052]    "
-	XADDR. RTN		;[7.1052]    "
-	XADDR. RTN		;[7.1052]    "
-	XADDR. RTN		;[7.1052]    "
-	XADDR. RTN		;[7.1052]    "
-	XADDR. RTN		;[7.1052]    "
-	XADDR. HSSTRT		;[7.1052]Start Slot
-	XADDR. HDRDAT		;[7.1052]Data B Slot
-	XADDR. IGNSLT		;[7.1052]Attention Slot
-	XADDR. RTN		;[7.1052]Reject Slot
-	XADDR. HSSTOP		;[7.1052]Stop Slot
-
-	SUBTTL	HSSTRT - Process a START SLOT Message
-
+	SUBTTL Slot Demultiplexor -- Start Slot
 
 ;HSSTRT - Process a START SLOT message.
 ;
@@ -5668,13 +5854,14 @@ SLTDSP:	XADDR. HSDATA		;[7.1052]Data A slot
 
 HSSTRT:	SKIPE SLTSID		;Source ID 0 is illegal
 	SKIPE SLTDID		;Destination ID of non-0 is illegal
-	CALLRET ILLSLT		;Report an illegal slot received
+	JSP T1,ILLSLT		;[9130]Report an illegal slot received
 	MOVNI T1,3		;[7.1120]Number of bytes to be read
 	ADDB T1,UN.BSZ+UNB.OF(RB) ;[7.1120]Update the byte count
-	JUMPL T1,ILLSLT		;[7.1120]Negative: illegal slot
+	SKIPGE T1		;[9130]Negative?
+	JSP T1,ILLSLT		;[9130]Yes, illegal slot
 	OPSTR <ILDB T2,>,UNBFA,+UNB.OF(RB);Get the service class requested
 	CAIE T2,SCITTY		;Only interactive terminal class permitted
-	CALLRET ILLSLT		;If not, slot is illegal.
+	JSP T1,ILLSLT		;[9130]If not, slot is illegal.
 	CALL SBALOC		;(CB/SB)Allocate a slot block
 	 RETSKP			;Ignore since server should persist and we
 				; assume we should almost always get an SB
@@ -5710,7 +5897,6 @@ HSSTR1:	SOSL T1,UN.BSZ+UNB.OF(RB) ;[7.1039]Count down bytes in slot
 	 JRST HSSTR2		;[7.1039]Ran out of message
 	JRST HSSTR1		;[7.1039]Get next parameter from slot
 
-
 ; Come here when the START SLOT has been parsed.  Check to see whether 
 ; or not the values are correct and the resources are available.
 ;
@@ -5732,6 +5918,9 @@ HSSTR2:	OPSTRM <AOS>,HNCON,(HN)	;[7.1120]Increment the number of connects
 HSSTR3:	LOAD T1,HNCON,(HN)	;[7.1120]Get the number of connects.
 	OPSTR <CAMLE T1,>,HNMCO,(HN);Check if maximum exceeded.
 	JRST SLRESF		;No additional sessions permitted.
+	;..
+	;..
+
 IFN FTOPS10,<
 	MOVE T1,STATES##	;Get system states word
 	TRNE T1,ST.NRT		;Are remote TTYs allowed?
@@ -5751,7 +5940,7 @@ IFN FTOPS10,<
 	MOVX T1,SBSTR!SBFCC	;Flag this slot as waiting to send a START
 	CALL SSBDAV		;(T1/SB) and a DATA_B slot when MUX runs.
 	RETSKP			;Return success
-
+
 
 ; Table of states for the PRVECT entries
 ;
@@ -5767,7 +5956,8 @@ HSSDSP:	XADDR. SLCSRF		;(0) Halt
 	XADDR. SLUSRF		;(9) Cancel
 HSSMAX==.-HSSDSP-1
 IF1,<IFL <HSSMAX-SS.MAX>,<PRINTX ?Entries missing in HSSDSP>>
-; Come here to reject the START SLOT for various reasons.
+
+; Come here to reject the START SLOT for various reasons.
 ;
 SLUSRF:	SKIPA T2,[SE.USR]	;[7.1120]User requested disconnect
 SLSHUT:	MOVX T2,SE.SHU		;[7.1120]System shutdown in progress
@@ -5790,7 +5980,8 @@ SLREJ0:	STOR T2,SBREA,(SB)	;[7.1120]Save the rejection code
 	MOVX T1,SBREJ		;[7.1120]Make this slot waiting to send 
 	CALL SSBDAV		;[7.1120](T1,SB) a REJECT SLOT
 	RETSKP			;[7.1120]
-;[7.1039]
+
+;[7.1039]
 ; Dispatch table of routines to deal with parameters from start slot
 ;
 SBPRTB:	XADDR. IGCSTR		;[7.1039](0)Ignore ones we don't know about
@@ -5800,7 +5991,6 @@ SBPRTB:	XADDR. IGCSTR		;[7.1039](0)Ignore ones we don't know about
 	XADDR. IGCSTR		;[7.1120](4)Server name
 	XADDR. GETPRN		;[7.1039](5)Port name
 SBPRMX=.-SBPRTB-1
-
 
 ;[7.1120]
 ;GETFLG - Get pertinent START SLOT flags.
@@ -5817,8 +6007,7 @@ GETFLG:	SOS UN.BSZ+UNB.OF(RB)	;Ignore the byte count
 	RETSKP			;No, return
 	SETONE SBDLP,(SB)	;Yes, set the bit in the SB
 	RETSKP			;
-
-
+
 ;[7.1120]
 ;LINKPR - Link this start slot to a pending request block.
 ;
@@ -5848,8 +6037,7 @@ LINKP1:	MOVX T1,SE.ENQ		;Reject code: entry not in queue
 	RETSKP			;
 LINKP2:	SETONE SBPRA,(SB)	;Invalid connect id: return with
 	RETSKP			; minus one as the address
-
-
+
 REPEAT 0,<
 ;[7.1120]Delete this routine
 ;GETSRN - Get server name.
@@ -5888,7 +6076,7 @@ GETPRN:	MOVE T2,[POINT 7,SB.PRN(SB)] ;Get object port name
 	ENDIF.
 	SETZ T1,		;Error: return with character count zero
 	RET			;
-	SUBTTL Slot Processing Routines - STOP Slots
+	SUBTTL Slot Demultiplexor -- Stop Slots
 
 ;HSSTOP - Process a STOP Slot.
 ;
@@ -5901,7 +6089,7 @@ HSSTOP:	SKIPN T2,SLTDID		;Destination ID cannot be zero
 	CALLRET IGNSLT		; but if it is zero, just ignore it.
 	SKIPN SLTSID		;Source ID must be zero
 	CAILE T2,NTTLAH		;Is the SBVECT index in range?
-	CALLRET ILLSLT		;No. Slot is illegal
+	JSP T1,ILLSLT		;[9130]No. Slot is illegal
 	MOVE T1,SBVECT		;Get the slot block address from
 	ADD T1,T2		; the destination slot id
 	SKIPE SB,(T1)		;If the SB address is zero
@@ -5909,7 +6097,7 @@ HSSTOP:	SKIPN T2,SLTDID		;Destination ID cannot be zero
 	JRST IGNSLT		; ignore the slot since already gone.
 	CALL RELSB		;(CB,SB)Release all slot resources	
 	RETSKP			;Return success
-	SUBTTL Slot Processing Routines - DATA_A,DATA_B Slots
+	SUBTTL Slot Demultiplexor -- Data_A/Data_B Slots
 
 ;HSDATA - Process a DATA_A Slot
 ;
@@ -5942,7 +6130,7 @@ NXSLCH:	OPSTR <ILDB T3,>,UNBFA,+UNB.OF(RB);Get a character.
 
 HDRDAT:	SKIPE T2,SLTDID		;Destination ID cannot be zero
 	CAILE T2,NTTLAH		; or greater than maximum slot index
-	CALLRET ILLSLT		;Illegal slot
+	JSP T1,ILLSLT		;[9130]Illegal slot
 	MOVE T3,SLTSID		;Source ID from the slot
 	MOVE T1,SBVECT		;Get the address of the SB
 	ADD T1,T2		; based on the remote slot id from 
@@ -5960,7 +6148,7 @@ HDRDAT:	SKIPE T2,SLTDID		;Destination ID cannot be zero
 	SKIPN UN.BSZ+UNB.OF(RB)	;[7.1120]Do remote credit check only if there was
 	RETSKP			; data in the slot.
 	OPSTR <SOSGE T3,>,SBRCR,(SB) ;Decrement the receive credits
-	JRST ILLSLT		;Illegal, server sent data with no credits	
+	JSP T1,ILLSLT		;[9130]Illegal, server sent data but no credits
 	STOR T3,SBRCR,(SB)	;Store back updated credits count
 	SKIPE T3		;If receive credits have gone to zero,
 	IFSKP.			; then indicate we need to grant more credits
@@ -6023,7 +6211,7 @@ SBAGO:	HRRZS T4		;Clear out left half
 SSBDAV:	SKIPGE T2,SB.FLG(SB)	;Is there already data available?
 	IFSKP.			;No, so set it now
 	  OPSTRM <AOS>,CBSDC,(CB);Increment number of slots waiting
-	  TLO T2,400000		; and indicate this slot now waiting	 
+	  TXO T2,SBSDP		;[9126] and indicate this slot now waiting
 	ENDIF.
 	IOR T2,T1		;OR in new reason for waiting
 	MOVEM T2,SB.FLG(SB)	; and store back
@@ -6042,7 +6230,7 @@ CSBDAV:	SKIPL T2,SB.FLG(SB)	;Is "data available" already clear?
 	TXNE T2,SBSMSK		;Are all bits off now?
 	IFSKP.
 	  OPSTRM <SOS>,CBSDC,(CB)
-	  MOVEI T2,0
+	  TXZ T2,SBSDP!SBSMSK	;[9126] Clear the bits looked at in BLDMSL
 	ENDIF.
 	HLLM T2,SB.FLG(SB)
 	RET
@@ -6096,6 +6284,7 @@ RELTT:	DYNST			;No controlling job so we must release the
 	CALLX (MSEC1,TTYDE0)	;[7.1024] the dynamic data base here.
 	 TRN			;TTYSRV already reports this.
 >;end IFN FTOPS20
+
 IFN FTOPS10,<
 	OPSTR <SKIPN U,>,SBTDB,(SB)	;Is there a terminal data base
 	JRST RELSB0		;No, go just release the SB resources
@@ -6238,8 +6427,7 @@ GETTDB:	SAVEAC <F,J,W>		;[7.1120]SCNSER/NETSER WILL USE THESE
 ;
 	SNCALL (TTFGRT##,MCSEC1)	;GO FORCE .HELLO/.RESTART
 	RETSKP 			;SUCCESS RETURN
-	SUBTTL Subroutines -- NGVLDB - Give an LDB back to SCNSER
-
+
 					;Still in IFN FTOPS10
 
 ;NGVLDB - Give an LDB back to SCNSER
@@ -6255,12 +6443,13 @@ NGVLDB:	SETZM LDBLAT##(U)	;CLEAR OUT BY-NOW-STALE POINTER
 	XJRST [MCSEC1+FRELDB##]	;RETURN LDB TO SCNSER FREE POOL
 
 >;END IFN FTOPS10
-;LHRRH - LAT device dependent "return remote host" code
+	SUBTTL NTINF% JSYS Support 
+
+;LHRRH - LAT device dependent "return remote host" code
 ;
-; Given the line #, returns the originating hostname, line and
-; network type. Places this info in the users NTINF% .NWRRH
-; argument block.  NTINF has already checked the user arguments
-; for validity.
+; Given the line #, returns the originating server name, port name, and network
+; type.  This routine places this info in an argument block given to us by the
+; NTINF JSYS.  NTINF has already checked the user arguments for validity.
 ;
 ; Call with T1/ address of internal arg block
 ;
@@ -6275,47 +6464,84 @@ NGVLDB:	SETZM LDBLAT##(U)	;CLEAR OUT BY-NOW-STALE POINTER
 ; Returns + 1 on error with T1/ error code
 ;	  + 2 on success
 
+;[9068] ACs used in this routine
+;	Q1/ address of returned arg block
+;	Q2/ SB
+;	Q3/ CB
+
 IFN FTOPS20,<
 XRENT	(LHRRH,G)		;[7.1024]LHRRH::, XLHRR::
 
-	SASUBR <UAB>
-	MOVEM T1,UAB		;SAVE OUTPUT POINTER
-	MOVX T4,NW%LAT		;SET NETWORK TYPE
-	DPB T4,[POINT 9,.NWTTF(T1),17] ;STORE NETWORK TYPE
-	MOVE T2,.NWLIN(T1)	;GET DYNAMIC DATA ADR
-	NOSKED			;PROTECT SB/CB FROM CHANGING BENEATH US
-	MOVE T2,TTDEV(T2)	;GET SB ADDRESS
-	JUMPE T2,LHRRH3
-	LOAD T3,SBCBA,(T2)	;GET CB ADDRESS
-	JUMPE T3,LHRRH3
-	LOAD T4,CBDNI,(T3)	;GET NI ADDRESS (WORD 1)
-	MOVEM T4,.NWNNU(T1)
-	LOAD T4,CBDNI,+1(T3)	;GET NI ADDRESS (WORD 2)
-	MOVEM T4,.NWNNU+1(T1)
-	MOVE T2,T3		;SAVE CB ADDRESS IN T2
-	LOAD T3,CBRSC,(T3)	;GET COUNT OF CHARACTERS
-	JUMPE T3,LHRRH3		;IF ZERO - NO HOST NAME
-	CAML T3,.NWABC(T1)	;MAKE SURE NO MORE THAN MAX
-	MOVE T3,.NWABC(T1)	;ENFORCE IT
-	MOVE T1,.NWNNP(T1)	;GET POINTER TO OUTPUT STRING
-	OPSTR <XMOVEI T2,>,CBSNM,(T2) ;GET ADR OF REMOTE NAME STRING
-	TXO T2,<OWGP. 7,>	;FORM BYTE POINTER TO BUFFER
-	EXCH T1,T2		;PUT POINTER WHERE MMVAZS WANTS THEM
-	CALL MMVAZS		;COPY THE STRING
-LHRRH2:	SETZ T1,
-	IDPB T1,T2		;DEPOSIT A NULL
-	MOVE T1,UAB		;GET POINTER TO USER ARG BLOCK
-	MOVX T2,NW%NNN		;GET "NO NODE NAME KNOWN" FLAG
-	SKIPN T3		;GOT A NODE NAME ?
-	IORM T2,.NWTTF(T1)	;NO - SET THE "NO NODE NAME KNOWN" FLAG
-	OKSKED			;DONE WITH SB/CB
-	RETSKP
+	SAVET			;[9068] Save temps
+	SAVEQ			;[9068]  and save the Qs
+	MOVEM T1,Q1		;[9068] Save pointer to user's argument block
 
-LHRRH3:	MOVE T2,.NWNNP(T1)	;GET POINTER TO OUTPUT STRING
-	SETZ T3,		;NO NODE NAME
-	CALLRET LHRRH2		;UPDATE HOSTNAME STRING, AND RETURN
+;Return network type of LAT.
+
+	MOVX T4,NW%LAT		;Load the network connection type
+	DPB T4,[POINT 9,.NWTTF(Q1),17] ;[9068] Store network type
+
+;Make byte pointer to returned name string in T1.
+
+	MOVE T1,.NWNNP(Q1)	;[9068] Load byte pointer
+	TLC T1,-1		;[9068] Make an ASCII pointer to the
+	TLCN T1,-1		;[9068]  area if the user 
+	HRLI T1,(<POINT 7,0>)	;[9068]   supplied -1,,addr
+
+;Find CB and SB for this terminal.
+
+	MOVE T2,.NWLIN(Q1)	;[9068] Get dynamic data address
+	NOSKED			;Protect SB/CB from changing beneath us
+	MOVE Q2,TTDEV(T2)	;[9068] Get SB address
+	JUMPE Q2,LHRRH3		;[9068] Jump if none there
+	LOAD Q3,SBCBA,(Q2)	;[9068] Get CB address if any
+	JUMPE Q3,LHRRH3		;[9068] None there, return no name
+
+;We now have the SB in Q2 and CB in Q3, return server's ethernet address.
+
+	DMOVE T3,CB.DNI(Q3)	;[9068] Load NI address words
+	DMOVEM T3,.NWNNU(Q1)	;[9068]  and save them in returned block
+
+;Now return the "server:port" as the origin.
+
+	MOVE T3,.NWABC(Q1)	;[9068] Load user's max count of characters
+	OPSTR <XMOVEI T2,>,SBSRN,(Q2) ;[9068] Get address of server name
+	TXO T2,<OWGP. 7>	;[9068] Make it a one word gloal byte pointer
+	CALL LHRRH5		;[9068] (T1,T2,T3/T1,T3) Copy that string
+	LOAD T2,SBPRC,(Q2)	;[9068] Load count of characters in port name
+	IFG. T2			;[9068] If there was a positive count
+	  MOVE T2,[POINT 7,[ASCIZ\:\]] ;[9068] Load pointer to seperator
+	  CALL LHRRH5		;[9068] (T1,T2,T3/T1,T3) Copy seperator string
+	  OPSTR <XMOVEI T2,>,SBPRN,(Q2) ;[9068] Get address of port name
+	  TXO T2,<OWGP. 7>	;[9068] Make it a one word global byte pointer
+	  CALL LHRRH5		;[9068] (T1,T2,T3/T1,T3) Copy the port name 
+	ENDIF.			;[9068] Finished with port name output
+
+;String has been copied to user, return our T1, insure null at end of string.
+
+LHRRH2:	MOVEM T1,.NWNNP(Q1)	;[9068] Save byte pointer back for user
+	SETZ T2,		;[9068] Load null 
+	IDPB T2,T1		;[9068] Deposit a null at end of string
+	OKSKED			;Done with SB/CB so allow others to run
+	RETSKP			;Success return
+
+;Here if we can't get the host name, return name not known flag.
+
+LHRRH3:	MOVX T2,NW%NNN		;[9068] Get "no node name known" flag
+	IORM T2,.NWTTF(T1)	;[9068] Set the "no node name known" flag
+	JRST LHRRH2		;[9068]  and return
+
+;Local routine to copy bytes from one place to another.
+;Call LHRRH5 with T1/ destination pointer, T2/ source pointer, T3/ max chars
+;Returns +1 always, with T1-T3 updated, T4 smashed 
+
+LHRRH4:	IDPB T4,T1		;[9068] Store a character
+LHRRH5:	ILDB T4,T2		;[9068] Load source byte
+	JUMPE T4,R		;[9068] Return if its a null
+	SOJG T3,LHRRH4		;[9068] Jump to store the byte
+	RET			;[9068] Retun now no more room today
 >;END IFN FTOPS20
-	SUBTTL Slot Multiplexor - Main Loop
+	SUBTTL Slot Multiplexor -- Main Loop
 
 ;LAMUX Slot Multiplexor Main Loop
 ;
@@ -6343,8 +6569,8 @@ LANXCB:	JUMPE CB,RTN		;All CBs processed, return
 	JRST MXNXCB		; ...
 	OPSTR <SKIPE>,CBSBQ,(CB);[7.1039]If there are no slots for this circuit
 	IFSKP.			;[7.1039] kill it and look at the next one
-	  CALL	IDLHLT		;[7.1039]()
-	  JRST	MXNXCB		;[7.1039]
+	  CALL IDLHLT		;[7.1039]()
+	  JRST MXNXCB		;[7.1039]
 	ENDIF.			;[7.1039]
 	LOAD T1,HNLAS,(HN)	;Get the current access state.
 	CAIN T1,LS.OFF		;If the access state is now off,
@@ -6354,7 +6580,8 @@ LANXCB:	JUMPE CB,RTN		;All CBs processed, return
 	 JRST MXNXCB		;Continue with next circuit.
 	TMNN CBMRN,(CB)		;Must we go balanced (reply to server) now?
 	JRST LMNMRN		;No
-; We have received a message from the server and must respond message now.  If
+
+; We have received a message from the server and must respond message now.  If
 ; there is a free transmit buffer and there is slot data waiting to be sent,
 ; then build the slots in a large MSD transmit buffer and send it.  If the MSD
 ; buffer is not available or there is no slot data waiting, just send a RUN
@@ -6423,7 +6650,7 @@ MXNXC1:	MOVE T1,TODCLK		;Get the current time
 	CAML T1,T2		;Have we hit limit yet?
 MXNXC2:	CALL LCLHLT		;Yes, we have not heard from the server
 	JRST MXNXCB		;in a long time, so kill the circuit.
-	SUBTTL BLDMSL
+	SUBTTL Slot Multiplexor -- Build Run Message Slots
 
 ;BLDMSL - Build RUN Message Slots
 ;
@@ -6530,7 +6757,7 @@ SLLNTB:	EXP <SZ.SHD+SZ.REJ,,SZ.SHD+SZ.REJ> ;[7.1052]Reject
 	EXP <SZ.SHD+SZ.SDB,,SZ.SHD+SZ.SDB> ;[7.1052]Data B
 	EXP <SZ.SHD+SZ.SSP,,SZ.SHD+SZ.SSP> ;[7.1052]Stop
 
-	SUBTTL Slot Formatting Routines -- XSLSTA
+	SUBTTL Slot Multiplexor -- Format Start Slot
 
 ;XSLSTA - Format a START Slot in the Transmit Buffer
 ;
@@ -6576,7 +6803,7 @@ XSLREJ:	CALL XBFCHK		;Do we have a transmit buffer yet?
 	CALL CSBDAV		; and entirely completed.
 	CALL RELSB		;Release the slot.
 	RETSKP			;That's all there is to a REJECT slot.
-	SUBTTL Slot Formatting Routines -- XSLSTP
+	SUBTTL Slot Multiplexor -- Format Stop Slot
 
 ;XSLSTP - Format a STOP Slot in the Transmit Buffer
 ;
@@ -6615,7 +6842,7 @@ XSLATT:	CALL XBFCHK		;Do we have a transmit buffer yet?
 	MOVX T1,SBFOU		;Indicate that this slot request successfully
 	CALL CSBDAV		; and entirely completed.
 	RETSKP
-	SUBTTL Slot Formatting Routines -- XSLDTA
+	SUBTTL Slot Multiplexor -- Format Data_A Slot
 
 ;XSLDTA - Format a DATA_A Slot in the Transmit Buffer
 ;
@@ -6647,7 +6874,7 @@ IFN FTOPS20,<
 	    LOAD W1,SBMDS,(SB)	;Maximum allowed by remote is less.
 	  ENDIF.
 	ENDIF.
-
+
 ; Determine if the remote needs more credits and if we can give him any.  If
 ; he doesn't or we can't and there is no terminal output data to be sent(count
 ; from above is 0) , exit without building the slot since there is no need to
@@ -6718,7 +6945,7 @@ IFN FTOPS10,<
 	  OPSTR <CAMLE W1,>,SBMDS,(SB) ;Compare with maximum DATA_A slot size
 	  LOAD W1,SBMDS,(SB)	;Maximum allowed by remote is less.
 	ENDIF.
-
+
 ; Determine if the remote needs more credits and if we can give him any.
 ; If he doesn't or we can't and there is no terminal output data to be
 ; sent, exit without building the slot since there is no need to send
@@ -6806,7 +7033,7 @@ XSLDA2:	POP P,T2		;retrieve pointer to slot header
 	RETSKP
 >;END IFN FTOPS10
 
-	SUBTTL Slot Formatting Routines -- XSLDTB
+	SUBTTL Slot Multiplexor -- Format Data_B Slot
 
 ;XSLDTB - Format a DATA_B Slot in the Transmit Buffer
 ;
@@ -6835,7 +7062,8 @@ IFN FTOPS10,<
 	MOVEI T1,SL.DXF		;Assume disabling XOFF recognition	
 IFN FTOPS20,<
 	LOAD T2,SBTDB,(SB)	;Get the terminal data base address
-	TMNE TT%PGM,TTFLGS(T2)	
+	SETZRO <TTSFG,TTRXF>,(T2) ;[9165] Insure these flags are clear
+	TMNE TT%PGM,TTFLGS(T2)	;[9165] Skip if disabling XON/XOFF (page mode)
 >;end IFN FTOPS20
 IFN FTOPS10,<
 	LOAD U,SBTDB,(SB)	;Get LDB address
@@ -6850,6 +7078,9 @@ IFN FTOPS10,<
 	MOVX T1,SBFCC
 	CALL CSBDAV
 	RETSKP
+
+;Routine to build the slot header.
+;Returns +1 always.
 
 BSLTHD:	MOVE T3,T1		;Save input arg
 	LOAD T1,SBLID,(SB)	;Remote slot ID
@@ -6859,9 +7090,7 @@ BSLTHD:	MOVE T3,T1		;Save input arg
 	MOVE T1,T3		;Get original argument back
 	CALL LAP2B0		;Enter count/slot type/credits
 	RET
-
 
-
 ;CRECHK - Remote Credit Check Routine
 ;
 ;Call:	SB/ Slot Block Address
@@ -6900,7 +7129,6 @@ IFN FTOPS20,<
 	JUMPE T1,[SETONE TTFWK,(T4);None, so can't grant more so force
 		  JRST RTN]	; the process to wake.
 >;end IFN FTOPS20
-
 IFN FTOPS10,<
 	MOVEI T1,TTIWRN##	;Get max characters for an input buffer
 	SUB T1,LDBTIC##(U)	;Minus number that have been echoed
@@ -6908,19 +7136,18 @@ IFN FTOPS10,<
 	IDIVI T1,MXSLSI		;Compute number of slot buffer that would fit
 	JUMPE T1,RTN		;None, so can't grant more.
 >;end IFN FTOPS10
-
 	CAMLE T1,T3		;Make sure he never gets a total of more than
 	MOVE T1,T3		; the maximum allowed.
 	RETSKP
-
 
 
 IGNSLT:	SETZM UN.BSZ+UNB.OF(RB)	;[7.1120]Force data to be ignored.
 	RETSKP			;This is a good return.
 
-ILLSLT:	OPSTRM <AOS>,HCISR,(HN)	;Increment host count
+ILLSLT:	MOVE T2,SLTDID		;[9130]Get the slot index
+	OPSTRM <AOS>,HCISR,(HN)	;Increment host count
 	OPSTRM <AOS>,CCISR,(CB)	; and the per-server count
-ILLSLX:	RET			;Give a bad return
+	RET			;[9130]Give a bad return
 
 	SUBTTL Queue Handling Routines
 
@@ -7164,7 +7391,7 @@ IFN FTOPS10,<
 >
 
 	ENDSV.
-
+
 ;RELRBF - Release a Receive buffer
 ;
 ;Call:	RB/ Address of the buffer to release
@@ -7192,7 +7419,8 @@ IFN FTOPS20,<
 	OPSTRM <SOS>,HNNRB,(HN)	;Reduce the number of receive buffers
 	RET
 
-	SUBTTL SCNSER DEVICE DEPENDANT ROUTINES
+	SUBTTL SCNSER Device Dependant Routines
+
 IFN FTOPS10,<
 ;
 ;	TOPS10 does not call a device dependant routine for each output
@@ -7234,86 +7462,7 @@ LATCHP:	ANDCAM T3,LDBBYT##(U)	;Turn off CHP bit to show we checked
 	RET
 >;end IFN FTOPS10
 	ENDAV.
-
-	SUBTTL TTYSRV DEVICE DEPENDENT ROUTINES
-IFN FTOPS20,<
-
-XRENT	(LTSTRO,G)		;[7.1024]LTSTRO::, XLTSTR::
-
-	MOVX T1,SBOUT
-	SETONE TTOTP,(T2)	;Set output active
-	JRST LTSSDC
-
-XRENT	(LTCOBF,G)		;[7.1024]LTCOBF::, XLTCOB::
-
-	MOVX T1,SBFOU
-	JRST LTSSDC
-
-XRENT	(LTEXF,G)		;[7.1024]LTEXF::, XLTEXF::
-
-	MOVX T1,SBFCC
-LTSSDC:	ACVAR <HN,XB,RB,CB,SB,W1,W2>
-	NOSKD1
-	CHNOFF DLSCHN
-	SKIPN SB,TTDEV(T2)	;Get the slot data base from TDB if not 0
-	JRST LTSSD0
-	MOVE CB,SB.CBA(SB)	;Get the circuit data base from slot block.
-	SAVEAC <T2>		;TTYSRV needs T2 returned intact
-	CALL SSBDAV
-LTSSD0:	CHNON DLSCHN
-	OKSKD1
-	RET
-
-; TTYSRV Device Dependent Routine to see if SENDAL should be done on this
-; line. 
-; Call:	T2/ Line Number
-;	Non-skip Return/ Skip SENDALL to this Line
-;	Skip Return    / Do SENDALL to this Line
-
-XRENT	(LTSALL,G)		;[7.1024]LTSALL::, XLTSAL::
-
-	SKIPG TTACTL(T2)	;Is line fully active?
-	RET			;No, don't do SENDALL
-	RETSKP			;Yes, do the SENDALL
-
-; TTYSRV device dependent routine to perform hang-up action
-;
-;Call:	T2/ Line Number
-
-XRENT	(LTHNGU,G)		;[7.1024]LTHNGU::, XLTHNG:
-	SAVEAC <T2>		;Caller wants this back intact
-	CALLX (MSEC1,STADYN)	;[7.1024]Get the dynamic data base
-	 RET			;There is none
-	MOVX T1,SBSTO		;Mark to send STOP slot if necessary
-	CALL LTSSDC		;(CALLRET won't work here)
-	RET
-
-; TTYSRV device dependent routine to see if output is possible on a line
-;
-; Call:	T2/ TDB Address
-;	Non-skip Return/ Output not possible
-;	Skip Return    / Output possible
-
-XRENT	(LTTCOU,G)		;[7.1024]LTTCOU::, XLTTCO::
-
-	RETSKP
-
-; TTYSRV device dependent routine to set LAT Host terminal lines as 
-; high speed lines.
-;
-;RETSKP always with:
-;	T3/ ^D9600 to simulate high speed output
-;	T4/ IBFRC1 the high speed terminal characteristics word
-
-XRENT	(LTSOF,G)		;[7.1024]LTSOF::, XLTSOF::
-
-	MOVEI T3,^D9600		;Fake 9600 baud
-	MOVE T4,IBFRC1		;High speed buffer word
-	RETSKP			;Always
->;end IFN FTOPS20
-
-	SUBTTL  More SCNSER device dependant routines
-
+
 IFN FTOPS10,<
 ;Routine LTHNGU - LAT "disconnect" function
 ;Called by SCNSER thru ISRREM entry point in dispatch vector with
@@ -7356,7 +7505,83 @@ LTSSDC:	ACVAR <HN,XB,RB,CB,SB,W1,W2>
 LTSSD0:	ETHULK			;Release interlock
 	RET
 >;end IFN FTOPS10
-				
+	SUBTTL TTYSRV Device Dependent Routines
+
+IFN FTOPS20,<
+
+XRENT	(LTSTRO,G)		;[7.1024]LTSTRO::, XLTSTR::
+
+	MOVX T1,SBOUT
+	SETONE TTOTP,(T2)	;Set output active
+	JRST LTSSDC
+
+XRENT	(LTCOBF,G)		;[7.1024]LTCOBF::, XLTCOB::
+
+	MOVX T1,SBFOU
+	JRST LTSSDC
+
+XRENT	(LTEXF,G)		;[7.1024]LTEXF::, XLTEXF::
+	SAVEAC <T1>		;[9165] TTYSRV needs T1 preserved
+	MOVX T1,SBFCC
+LTSSDC:	ACVAR <HN,XB,RB,CB,SB,W1,W2>
+	NOSKD1
+	CHNOFF DLSCHN
+	SKIPN SB,TTDEV(T2)	;Get the slot data base from TDB if not 0
+	JRST LTSSD0
+	MOVE CB,SB.CBA(SB)	;Get the circuit data base from slot block.
+	SAVEAC <T2>		;TTYSRV needs T2 returned intact
+	CALL SSBDAV
+LTSSD0:	CHNON DLSCHN
+	OKSKD1
+	RET
+	
+; TTYSRV Device Dependent Routine to see if SENDAL should be done on this
+; line. 
+; Call:	T2/ Line Number
+;	Non-skip Return/ Skip SENDALL to this Line
+;	Skip Return    / Do SENDALL to this Line
+
+XRENT	(LTSALL,G)		;[7.1024]LTSALL::, XLTSAL::
+
+	SKIPG TTACTL(T2)	;Is line fully active?
+	RET			;No, don't do SENDALL
+	RETSKP			;Yes, do the SENDALL
+
+; TTYSRV device dependent routine to perform hang-up action
+;
+;Call:	T2/ Line Number
+
+XRENT	(LTHNGU,G)		;[7.1024]LTHNGU::, XLTHNG:
+	SAVEAC <T2>		;Caller wants this back intact
+	CALLX (MSEC1,STADYN)	;[7.1024]Get the dynamic data base
+	 RET			;There is none
+	MOVX T1,SBSTO		;Mark to send STOP slot if necessary
+	CALL LTSSDC		;(CALLRET won't work here)
+	RET
+
+; TTYSRV device dependent routine to see if output is possible on a line
+;
+; Call:	T2/ TDB Address
+;	Non-skip Return/ Output not possible
+;	Skip Return    / Output possible
+
+XRENT	(LTTCOU,G)		;[7.1024]LTTCOU::, XLTTCO::
+
+	RETSKP
+
+; TTYSRV device dependent routine to set LAT Host terminal lines as 
+; high speed lines.
+;
+;RETSKP always with:
+;	T3/ ^D9600 to simulate high speed output
+;	T4/ IBFRC1 the high speed terminal characteristics word
+
+XRENT	(LTSOF,G)		;[7.1024]LTSOF::, XLTSOF::
+
+	MOVEI T3,^D9600		;Fake 9600 baud
+	MOVE T4,IBFRC1		;High speed buffer word
+	RETSKP			;Always
+>;end IFN FTOPS20
 
 	SUBTTL General Utility Routines
 
@@ -7399,8 +7624,9 @@ GTCHCT:	SETZ T1,0
 >;END IFN FTOPS20
 
 	ENDAV.
-	SUBTTL LAGTCR - LAT memory management routines
+	SUBTTL Memory Management Routines
 
+IFN FTOPS10,<
 ;
 ;	Subroutine to tell COMMON how much core LAT needs at ONCE time
 ;
@@ -7412,7 +7638,6 @@ GTCHCT:	SETZ T1,0
 ;		 for each possible open circuit: MAXXBF transmit buffers
 ;		  + 1 receive buffer
 
-IFN FTOPS10,<
 
 ;	MAX.(BUFSIZ,<RBFSIZ,XBFSIZ>)	;BUFSIZ is size of largest buffer
 ;	BUFSIZ==BUFSIZ+QL.LEN		;we need + 2 words for linking list
@@ -7422,8 +7647,6 @@ IFN FTOPS10,<
 				;Luckily, the actual size of a buffer
 				;is slightly smaller than a page.
 	NBUFS==<1+<MAXXBF+1>>	;
-;
-
 
 	$CSUB
 LAGTCR::
@@ -7449,6 +7672,7 @@ CHKWFB:	SKIPE T1,LATWFB		;Do we want any more buffers?
 	HRLI T1,(MS.DCN)	;Section to allocate from
 	XMOVEI T2,CHKRFB	;Callback routine address
 	XJRST [MCSEC1+GETCLP##]	;Ask for the space
+
 ;
 ;	CHKRFB - Routine called when VMSER gave us memory
 ;		If so, link it into free buffer list
@@ -7513,7 +7737,7 @@ While trying to return a buffer, LATSRV discovered it had been overwritten.>)
 	AOS LATNFB		;Count one more buffer available
 	CALLRET QUE1WB		;For re-use
 > ;END IFN FTOPS10
-
+
 MMGTZW:
 IFN FTOPS20,<
 	CALLRET DNGWDZ		;[7.1024]
@@ -7537,7 +7761,7 @@ IFN FTOPS10,<
 	XMOVEI T2,-1(T1)	;Point to block-1
 	HRRZ T1,(T2)		;Which contains length of block
 	XJRST [MCSEC1+GIVEWS##]	;and give it back to ethernet free pool.
-;
+
 ;	Subroutine to convert SIXBIT nodename to ASCII
 ;
 ;Call:	T1/ SIXBIT node name

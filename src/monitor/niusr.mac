@@ -1,3 +1,7 @@
+; Edit= 9009 to NIUSR.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8929 to NIUSR.MAC on 23-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8568, RIP:<7.MONITOR>NIUSR.MAC.3,  11-Feb-88 11:43:23 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; *** Edit 7454 to NIUSR.MAC by RASPUZZI on 16-Apr-87, for SPR #21586
@@ -408,14 +412,13 @@ CLOTST:	LOAD T1,FKST2,(FX)	; Get portal block pointer
 ; Here on failure from NISRV close function
 
 NIUCL1:	CAIE T1,UNRES%		; Resource error?
-	 BUG. (HLT,NIJECL,NIUSR,SOFT,<Error closing portal>,<<T1,ERROR>>,<
+	 BUG.(HLT,NIJECL,NIUSR,SOFT,<Error closing portal>,<<T1,ERROR>>,<
 
 Cause:	NISRV returned an error when we tried to close a portal.  The error
 	code was not UNRES% (Resource error), which is the only one that may
 	occur.
 
 Data:	ERROR - The returned error code
-
 >)
 	CALL RELCSH		; Try to shake a little loose
 	 TRNA			;  No memory in cache, sleep for a while
@@ -1227,15 +1230,14 @@ CREPO3:	SKIPN (T2)		; Is this slot in use?
 	DADD T1,[EXP 1,1]	; Increment address and count
 	CAIG T1,MAXPOR		; Did we run off the end of the portal list?
 	 JRST CREPO3		;  Nope, try again
-	BUG. (HLT,NIJPMU,NIUSR,SOFT,<Portal List messed up>,<<P1,PRLIST>>,<
+	BUG.(HLT,NIJPMU,NIUSR,SOFT,<Portal List messed up>,<<P1,PRLIST>>,<
 
 Cause:	NIUSR was attempting to create a portal and install it in the portal
 	list.  According to PLNUM, there were some free spots in the portal
 	list.  An exhaustive search of the list was not able to find
-	a free slot.  This is an inconsistency.
+	a free slot.  This is inconsistent.
 
 Data:	PRLIST - Portal list address
-
 >,CREDIE)
 
 CREPO2:	MOVEM PR,(T2)		; Make portal list point to portal block
@@ -1924,13 +1926,12 @@ FNDPOR:	SKIPN T2,UPLIST		; Get the pointer to his portal list
 	OPSTR <SKIPN T1,>,PLLIS,-1(T2) ; Fetch address of our portal block
 	 RETBAD NIENSP		;  No such portal
 	OPSTR <CAME T1,>,PRCHK,(T1) ; Should be equal to the PR block address
-	 BUG. (HLT,NIJIPB,NIUSR,SOFT,<Illegal Portal Block>,<<T1,JOBPR>>,<
+	 BUG.(HLT,NIJIPB,NIUSR,SOFT,<Illegal Portal Block>,<<T1,JOBPR>>,<
 
 Cause:	NIUSR did not find a proper portal block pointer in the job's portal
 	list.
 
 Data:	JOBPPR - Job's portal list address
-
 >,RTN)
 	RETSKP
 

@@ -1,3 +1,7 @@
+; Edit= 8997 to PHYM2.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8908 to PHYM2.MAC on 16-Aug-88 by GSCOTT
+;Update BUG. documentation. 
 ; UPD ID= 8587, RIP:<7.MONITOR>PHYM2.MAC.6,  11-Feb-88 16:55:31 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8434, RIP:<7.MONITOR>PHYM2.MAC.5,   4-Feb-88 15:02:06 by GSCOTT
@@ -140,11 +144,11 @@
 ;    4. Dispatch For TM02  . . . . . . . . . . . . . . . . . .   7
 ;    5. TM02 Initializing Routine  . . . . . . . . . . . . . .   9
 ;    6. Start I/O Routine  . . . . . . . . . . . . . . . . . .  12
-;    7. RH20 Command Done Interrupt  . . . . . . . . . . . . .  15
-;    8. Error Retry Entry Point  . . . . . . . . . . . . . . .  25
-;    9. Routine To Poll Slaves To See If Done Rewind . . . . .  30
-;   10. TM02 Function Table  . . . . . . . . . . . . . . . . .  33
-;   11. End of PHYM2 . . . . . . . . . . . . . . . . . . . . .  36
+;    7. RH20 Command Done Interrupt  . . . . . . . . . . . . .  16
+;    8. Error Retry Entry Point  . . . . . . . . . . . . . . .  28
+;    9. Routine To Poll Slaves To See If Done Rewind . . . . .  35
+;   10. TM02 Function Table  . . . . . . . . . . . . . . . . .  38
+;   11. End of PHYM2 . . . . . . . . . . . . . . . . . . . . .  41
 	SUBTTL Parameters
 
 ;DRIVE REGISTERS USED IN DATAO'S
@@ -426,7 +430,7 @@ INIUNI:	STKVAR <MTINDX>		;INDEX TO MTCUTB
 INIUN1:	AOBJP T3, [BUG.(INF,TM2N2S,PHYM2,HARD,<PHYM2 - More drives than table space, excess ignored>,,<
 
 Cause:	The number of tape drives on the system exceeds the value of MTAN.
-	All drives after MTAN will be ignored.
+	All drives after MTAN are ignored.
 
 Action:	To accommodate more tape drives, the monitor must be rebuilt with a
 	larger value of MTAN.
@@ -504,12 +508,14 @@ TM2SIO:	SAVEQ
 	SKIPE T1		;SAVE TIME IF FRAMES=BYTES
 	IMUL T2,T1		;CALCULATE # FRAMES
 	JRST TM2DO		;WE'RE A DATA OPERATION
-
+
 BADSIO:	BUG.(CHK,PM2SIO,PHYM2,HARD,<PHYM2 - Illegal function at start IO>,,<
 
 Cause:	The IORB function code provided to TM2SIO is less than or equal to
 	zero or the short form (PAGEM) request bit is set in the IORB.
 
+Action:	If this BUGCHK is reproducable, set it dumpable, and send in an SPR
+	with the dump and how to reproduce the problem.
 >)
 	MOVX T1,IS.ERR!IS.NRT!IS.DVE	;MARK AN ERROR OCCURED
 	IORM T1,IRBSTS(P4)	;IN IORB
@@ -648,14 +654,22 @@ DORTY:	TXNE Q1,TB.RD		;IN READ?
 
 ;HERE WHEN DONE INTERRUPT AND NO SAVED UDB
 
-TM2INU:	BUG.(CHK,TM2NUD,PHYM2,HARD,<PHYM2 - Channel Done interrupt but no unit active>,<<P1,CDBADR>,<P2,KDBADR>>,<
+TM2INU:	HRRZ T1,CDBADR(P1)	;[8908] Get channel number
+	HRRZ T2,TM2ADR(P2)	;[8908] Get TM02 address
+	BUG.(CHK,TM2NUD,PHYM2,HARD,<PHYM2 - Channel done interrupt but no unit active>,<<T1,CDBADR>,<T2,TM2ADR>>,<
 
-Cause:	A command done interrupt was issued by an RH20 channel but there
-	was no unit active on that channel.
+Cause:	A command done interrupt was issued by an RH20 channel but there was no
+	unit active on that channel.  If an OVRDTA had previously occured, and
+	the device finally responds, this BUGINF happens.  This usually
+	indicates a hardware failure.
 
-Data:	CDBADR - CDB address
-	KDBADR - KDB address
->,,<DB%NND>)			;[7.1210] 
+Action:	Field Service should check the devices on the channel listed in the
+	additional data; any channel/controller/unit listed in OVRDTA BUGCHKs
+	should be suspected.
+
+Data:	CDBADR - channel number
+	KDBADR - controller number
+>,,<DB%NND>)			;[8908][7.1210] 
 	JRST POPPOL		;CLEAN UP STACK
 
 CKCONI:	TXNN Q1,TB.DOP		;DATA OPERATION?
@@ -682,11 +696,13 @@ NODERS:	SKIPGE P5,TU6HDN(P3)	;GET DENSITY FROM HARDWARE
 	SKIPGE T3,MTBFMT(T3)	;AGAIN?
 	JRST [	BUG.(CHK,TM2IDM,PHYM2,HARD,<PHYM2 - Illegal data mode at Done interrupt>,<<T3,MODE>>,<
 
-Cause:	The TM02/3 IORB data mode is invalid or illegal when a done
-	interrupt occurs.
+Cause:	The TM02/3 IORB data mode was invalid or illegal when a done interrupt
+	occurs.
+
+Action:	There is probably a TM02/3 hardware problem that should be checked by
+	Field Service.
 
 Data:	MODE - TM02/3 data mode at done interrupt
-
 >)
 		MOVEI T3,0	;ACT LIKE WORDS
 		JRST .+1]
@@ -773,15 +789,23 @@ TM2ATN:	PUSH P,Q2		;SAVE Q2
 	HRRZ Q1,UDBADR(P3)	;GET UNIT ADDRESS
 	MOVE P3,TM2ADR(P2)	;GET KONTROLLER ADDRESS
 	HRRZ T1,CDBADR(P1)	;GET CHANNEL ADDRESS
-	BUG.(INF,TM2UNA,PHYM2,HARD,<PHYM2 - Done interrupt and UDB not active>,<<P3,UDBADR>,<T1,CDBADR>>,<
+	BUG.(INF,TM2UNA,PHYM2,HARD,<PHYM2 - Done interrupt and UDB not active>,<<T1,CDBADR>,<P3,UDBADR>>,<
 
-Cause:	Unit is not active at done interrupt.
+Cause:	The TM02/3 driver got a done interrupt from a unit, but did not believe
+	that the unit was active.  If an OVRDTA had previously occured, and the
+	device finally responds, this BUGINF will happen.  This usually
+	indicates a hardware failure.
 
-Data:	UDBADR - UDB address
-	CDBADR - CDB address
->)
+Action:	Field Service should check the devices on the channel listed in the
+	additional data; any channel/controller/unit listed in OVRDTA BUGCHKs
+	should be suspected.
+
+Data:	CDBADR - CDB address
+	UDBADR - UDB address
+>)				;[8908]
 	SETZB P3,KDBACT(P2)	;RESET SAVED UDB
 	JRST POPPOL		;AND GO POLL
+
 CKNDOP:	CALL SETIRB		;GET CURRENT IORB
 	HRRZ Q1,UDBERR(P3)	;GET FUNCTION CODE
 	SKIPN Q1		;IN ERROR RECOVERY?
@@ -900,10 +924,13 @@ FTLCHK:	MOVX Q1,IS.DVE!IS.DTE	;READY TO CLEAR THESE BITS
 	SKIPG Q1,TM2FTB(T4)	;VALID?
 	JRST [	BUG.(CHK,TM2IF2,PHYM2,HARD,<PHYM2 - Illegal function on command done>,<<Q1,FNC>>,<
 
-Cause:	FTLCHK detected an illegal function code either in the IORB or
-	UDBERR at command done.
+Cause:	FTLCHK detected an illegal function code either in the IORB or UDBERR
+	at command done for a TM02/3 based tape drive.
 
-Data:	FNC - TM02/3 function code
+Action:	If this BUGCHK is reproducable, set it dumpable, and send in an SPR
+	with the dump and how to reproduce the problem.
+
+Data:	FNC - TM02/3 driver function code
 >)
 		JRST FTLERR]
 	MOVSI T2,(DO.ER)	;GET ERROR REGISTER
@@ -914,6 +941,7 @@ Data:	FNC - TM02/3 function code
 	TXNN T1,ER.COR!ER.CS!ER.FCE!ER.NSG!ER.LRC!ER.INC ;YES. ANY TAPE MOTION?
 	JRST FTLERR		;NOT FORMAT ERR, OR FORMAT AND NO TAPE MOTION
 	JRST DOPCK		;FAKE FORMAT ERROR, RETRY
+
 FTLERR:	CALL TM2RDR		;READ ALL REGISTERS
 	MOVE T1,TM2REG+DR.ER(P2) ;GET ERROR REG AGAIN
 	TXNE T1,ER.UNS		;UNS ERR?
@@ -976,7 +1004,7 @@ TM2ERR:	SAVEQ
 	JRST ABTNOS		;YES, WE ALREADY HAVE BEGIN DATA
 	AOS (P)			;SKIP RET FROM LOD1 - DONE WITH IORB
 	JRST LOD1		;LOAD UP ERR BLK FOR FATAL ERR
-
+
 				;DO RETRY
 TMERTY:	HLR T4,T4		;COPY LH OF FNTBL
 	TRZ T4,777770		;SAVE ONLY RETRY INDEX IN RH
@@ -988,6 +1016,9 @@ TMERTY:	HLR T4,T4		;COPY LH OF FNTBL
 
 Cause:	An error occured during a TM02/3 operation but the retry type for
 	the function code is illegal.
+
+Action:	If this BUGCHK is reproducable, set it dumpable, and send in an SPR
+	with the dump and how to reproduce the problem.
 
 Data:	RTYBPT - Retry byte pointer
 >)
@@ -1074,6 +1105,9 @@ NOTCKP:	CAIE T3,16		;END OF RETRY?
 Cause:	An illegal function code was encountered during a TM02/3 retry
 	operation.
 
+Action:	If this BUGCHK is reproducable, set it dumpable, and send in an SPR
+	with the dump and how to reproduce the problem.
+
 Data:	FNC - Retry function code
 >)
 		JRST ABTNOS]	;IMAGINE FATAL
@@ -1083,14 +1117,16 @@ Data:	FNC - Retry function code
 ;SHOULD RETRY EVERY MIN OR SO
 	 JRST ABTNOS		;COULDN'T START UP RETRY OPERATION
 	RET			;AND WAIT
-
-
+
 RTYNOE:	TXNE T1,IS.NRT		;HARD ERRS SHOULDN'T EVER GET HERE
 	BUG.(CHK,TM2HER,PHYM2,HARD,<TM2ERR - IS.HER set on successful retry>,,<
 
 Cause:	A retry operation has been completed succesfully but bit IS.HER
-	indicating a hard error was set in the IORB. Error recovery should
+	indicating a hard error was set in the IORB.  Error recovery should
 	not be done for hard errors.
+
+Action:	If this BUGCHK is reproducable, set it dumpable, and send in an SPR
+	with the dump and how to reproduce the problem.
 >,,<DB%NND>)			;[7.1210] 
 	MOVX T1,IS.ERR		;WE DID IT! CLEAR ERR BIT
 	ANDCAM T1,IRBSTS(P4)	;AND SKP RETURN
@@ -1107,8 +1143,12 @@ CNFERR:	HRRZ T1,UDBADR(P3)	;GET UNIT NUMBER
 	HRRZ T3,CDBADR(P1)	;GET CHANNEL NUMBER
 	BUG.(CHK,TM2RFU,PHYM2,HARD,<PHYM2 - Error recovery confused>,<<T1,UNIT>,<Q1,CONT>,<T3,CHAN>>,<
 
-Cause:	The error recovery process has become confused. This could be
-	caused by a malfunction in the hardware.
+Cause:	The error recovery process has become confused. This could be caused by
+	a malfunction in the hardware.
+
+Action:	Field Service should check out the hardware.  If the hardware checks
+	out, and this BUGCHK is reproducable, set it dumpable, and send in an
+	SPR with the dump and how to reproduce the problem.
 
 Data:	UNIT - Unit number
 	CONT - Controller number
@@ -1281,7 +1321,10 @@ RDYCLR:	SUB T2,KDBIUN(P2)	;SUBT AOBJN POINTER BASE
 	SOJN P4,POLAGN		;BEGIN POLL AGAIN (THANX TO MATEL ENG)
 	BUG.(CHK,TM2CCI,PHYM2,HARD,<PHYM2 - TM02 SSC or SLA won't clear>,,<
 
-Cause:	11 (octal) attempts to clear a TM02 SSC or SLA have failed.
+Cause:	11 (octal) attempts to clear a TM02/3 SSC or SLA have failed.
+
+Action:	This is a hardware problem.  Field Service should check out the TM02 or
+	TM03 controller.
 >,,<DB%NND>)			;[7.1210] 
 	JRST TM2BCK		;HOPE AND HOPE
 

@@ -1,3 +1,9 @@
+; Edit= 8994 to FUTILI.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8937 to FUTILI.MAC on 23-Aug-88 by LOMARTIRE
+;Spell MONITR correctly in ACTION field of BUGs!
+; Edit= 8915 to FUTILI.MAC on 18-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8521, RIP:<7.MONITOR>FUTILI.MAC.6,   9-Feb-88 15:36:36 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 245, RIP:<7.MONITOR>FUTILI.MAC.5,   4-Nov-87 16:40:26 by MCCOLLUM
@@ -393,11 +399,15 @@ ULKSTR::
 ULKST1::
 	CSKED			;CRITICAL REGION
 	MOVE T1,STRTAB(T1)	;ADDRESS OF SDB FOR THIS STRUCTURE
-	JE STRLK,(T1),[BUG.(CHK,ULKSTZ,FUTILI,HARD,<Overly decremented structure lock>,,<
+	JE STRLK,(T1),[BUG.(CHK,ULKSTZ,FUTILI,SOFT,<Overly decremented structure lock>,,<
 
 Cause:	ULKST1 was called to unlock a structure but the lock count was
 	already zero.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 		JRST ULKST2]
 	DECR STRLK,(T1)		;DECREMENT LOCK COUNT
@@ -850,12 +860,18 @@ GETLOK::SAVET
 		MOVE T2,-6(P)	;NO - GET CALLER'S ADDRESS
 		BUG.(CHK,LOKINT,FUTILI,SOFT,<Lock being locked while OKINT>,<<T1,LOCK>,<T2,CALLER>>,<
 
-Cause:	A routine is locking a lock while OKINT.
+Cause:	A routine is locking a lock while OKINT.  This is dangerous since 
+	allowing interrupts can cause the lock to be held indefinetly or 
+	lock ownership to be lost.
 
-Action:	Make the process be NOINT for the duration of the lock being
-	locked.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  The dump shows which routine
+	is OKINT while attempting to get the lock.  Make the routine go 
+	NOINT for the duration of the lock being locked.
 
-Data:	LOCK - Lock index and flags
+Data:	LOCK   - Lock index and flags
 	CALLER - Caller's address
 >)
 		POP P,T2
@@ -913,11 +929,19 @@ RELLOK::SAVET
 		MOVE T2,-6(P)	;NO - GET CALLER'S ADDRESS
 		BUG.(CHK,ULKINT,FUTILI,SOFT,<Lock being unlocked while OKINT>,<<T1,LOCK>,<T2,CALLER>>,<
 
-Cause:	A routine is unlocking a lock while OKINT.
+Cause:	A routine is unlocking a lock while OKINT.  This is dangerous since 
+	allowing interrupts can cause the lock to be held indefinetly or 
+	lock ownership to be lost.  The process should have been NOINT when
+	it acquired the lock or a LOKINT BUGCHK would have resulted.
 
-Action:	Make the process be NOINT for the duration of the lock being locked.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  The dump shows which routine
+	is OKINT while attempting to get the lock.  Make the routine go 
+	NOINT for the duration of the lock being locked.
 
-Data:	LOCK - Lock index and flags
+Data:	LOCK   - Lock index and flags
 	CALLER - Caller's address
 >)
 		POP P,T2

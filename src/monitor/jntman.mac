@@ -1,3 +1,8 @@
+; Edit= 9036 to JNTMAN.MAC on 15-Nov-88 by RASPUZZI
+;Make sure that the system's name gets sent over during PHYKLP START/STACK/ACK
+;sequence. Also, when the NODE% JSYS changes the name, have the local system
+;notify remote systems. Finally, make CLUDGR send over the node name in the
+;last 2 words of the optional connection data. I'm out of breath.
 ; UPD ID= 8533, RIP:<7.MONITOR>JNTMAN.MAC.7,   9-Feb-88 16:24:04 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8349, RIP:<7.MONITOR>JNTMAN.MAC.5,  19-Jan-88 13:41:20 by MCCOLLUM
@@ -257,7 +262,7 @@ NDSLN:	MOVE T1,CAPENB		;GET CURRENTLY ENABLED CAPABILITIES
 	MOVE T1,[POINT 7,OURNAM] ;Make sixbit
 	CALL <XENT PUTSIX>	;[7.1185](T1,T2/T1) node name
 	STOR T1,IBNAM,+IBBLK	;  and store in IB block
-
+	CALL CLNODC		;[9036] (/) Notify cluster people
 	RETSKP			;SUCCESS
 
 	SUBTTL	.NODE - The NODE JSYS -- NDGLN - Get Local Node Name

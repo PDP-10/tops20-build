@@ -1,5 +1,22 @@
-; UPD ID= 8708, RIP:<7.MONITOR>PAGEM.MAC.12,   3-May-88 16:44:28 by RASPUZZI
-;TCO 7.1282 - Prevent NSKDIS BUGHLTs out of SECMAP.
+; Edit= 9148 to PAGEM.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9053 to PAGEM.MAC on 6-Jan-89 by RASPUZZI
+;Prevent low-life cretinous slogs from causing ILMNRFs out of SMAP% (SECMAP)
+;when mapping a file to a process, modifying the file and then unmapping it.
+;This corrects a deficiency in TCO 7.1167.
+; Edit= 9010 to PAGEM.MAC on 8-Nov-88 by RASPUZZI
+;Have PGRTRP decide whether we are at PI level or scheduler level first before
+;handling the page fault as a user generated trap. 
+; Edit= 8987 to PAGEM.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8968 to PAGEM.MAC on 13-Sep-88 by RASPUZZI, for SPR #22247
+;Prevent NSKDT2 BUGCHKs by going NOINT at least once in SECMAP.
+; Edit= 8925 to PAGEM.MAC on 22-Aug-88 by GSCOTT
+;Stray "c" at PFAUL7+1 causes ILLUUOs. 
+; Edit= 8906 to PAGEM.MAC on 16-Aug-88 by GSCOTT
+;Update BUG. documentation. 
+; Edit= 8839 to PAGEM.MAC on 3-May-88 by RASPUZZI, for SPR #21881 (TCO 7.1282)
+;Prevent NSKDIS BUGHLTs in SECMAP.
 ; UPD ID= 8663, RIP:<7.MONITOR>PAGEM.MAC.11,  22-Feb-88 18:49:25 by GSCOTT
 ;TCO 7.1238 - Set SWDDEL and SWEDEL normally not dumpable.
 ; UPD ID= 8573, RIP:<7.MONITOR>PAGEM.MAC.10,  11-Feb-88 16:51:31 by GSCOTT
@@ -682,7 +699,7 @@
 ;	PGRINI - SET UP RSCOD WRITE-PROTECTED IF DBUGSW IS 2
 ;	MAKE SWPMWP WRITE-PROTECT RSCOD, TOO
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -797,10 +814,9 @@ MSCANP::PUSH P,B		;SAVE ARG
 	CAIG 3,0		;LEGAL?
 	BUG.(HLT,ILOFN1,PAGEM,SOFT,<MSCANP - Illegal OFN>,,<
 
-Cause:	A routine has been called to scan the pages of a file to find
-	the first non-zero page. Its arguments include an OFN
-	associated with the file. The BUGHLT occurs because the caller
-	has passed a 0.
+Cause:	A routine has been called to scan the pages of a file to find the first
+	non-zero page. Its arguments include an OFN associated with the file.
+	The BUGHLT occurs because the caller has passed a 0.
 >)
 	CALL SETXB1		;MAP INDEX BLOCK
 	HRRZ T4,T1
@@ -848,10 +864,9 @@ MRP4:	HLRZ 2,1		;GET PT IDENTIFIER
 	CAIG T3,0
 	BUG.(HLT,ILPTN1,PAGEM,SOFT,<MRPACS - Illegal PTN>,,<
 
-Cause:	A routine has been called to determine the possible access to a
-	page. Its arguments include the SPT index for the page table
-	associated with the page. The BUGHLT occurs because the caller has
-	passed a 0.
+Cause:	A routine has been called to determine the possible access to a page.
+	Its arguments include the SPT index for the page table associated with
+	the page.  The BUGHLT occurs because the caller has passed a 0.
 >)
 	CALL SETXB1		;MAP PT
 	HLRZ T3,T1
@@ -1047,11 +1062,10 @@ SPHYPT::ASUBR <DEST,SRC,ACCB,AT4>
 	CAIGE T4,NOFN		;SOURCE MUST NOT BE OFN
 	BUG.(HLT,PPGOFN,PAGEM,SOFT,<SPHYPT - Destination is OFN>,<<T4,OFN>>,<
 
-Cause:	SPHYPG or SPHYPG has been given an destination argument which
-	is an OFN.  This type of mapping may only be done into
-	non-file page tables.
+Cause:	SPHYPG or SPHYPG has been given an destination argument which is an
+	OFN.  This type of mapping may only be done into non-file page tables.
 
-Data:	OFN - The OFN.
+Data:	OFN - The OFN
 >)
 
 	SKIPE INSKED
@@ -1077,9 +1091,9 @@ Data:	OFN - The OFN.
 	ELSE.
 	BUG.(HLT,SPGNLK,PAGEM,SOFT,<SPHYPG - Page not locked>,<<T2,PAGE>>,<
 
-Cause:	SPHYPG or SPHYPT requires a locked physical page to map.
-	The argument given is either not a physical core page or
-	is not locked.
+Cause:	SPHYPG or SPHYPT requires a locked physical page to map.  The argument
+	given is either not a physical core page or is not locked.  This is 
+	usually a software problem.
 
 Data:	PAGE - Offending argument.
 >)
@@ -1183,10 +1197,10 @@ MSETM2:	CALL RELCXB		;RELEASE SOURCE PT
 MSEINT:	CAIN T1,PAGPTN		;BUGHLT IF PAGE TABLE ENTRY WAS NONZERO.
 	BUG.(HLT,PTNON0,PAGEM,SOFT,<SETPT0 - Previous contents NON-0>,,<
 
-Cause:	A routine has been called to change the map for a page of a
-	process. The caller is expected to have unmapped any previous
-	contents of the page. The BUGHLT indicates that the page table
-	contains a non-zero pointer for the page.
+Cause:	A routine has been called to change the map for a page of a process.
+	The caller is expected to have unmapped any previous contents of the
+	page. The BUGHLT indicates that the page table contains a non-zero
+	pointer for the page.
 >)
 	MOVEI 2,.ICILI		;ERROR CHANNEL
 	CAIN 1,IOX11		;QUOTA EXCEEDED?
@@ -1220,7 +1234,7 @@ SPSCH:	ASUBR <DEST,SRC,ACCB>
 	BUG.(HLT,SPSCHF,PAGEM,SOFT,<SPSCH - Destination is file>,<<T1,ID>>,<
 
 Cause:	A file page identifier has been passed to SPSCH as the destination
-	page.
+	page.  The destination must be a memory page locked in core.
 
 Data:	ID - OFN.PN of offending identifier
 >)
@@ -1379,11 +1393,10 @@ DMOINT::SKIPE INSKED		;SCHED LEVEL?
 
 SETMPX::BUG.(HLT,SECEX1,PAGEM,SOFT,<SETMPG - Attempt to map non-ex section>,,<
 
-Cause:	A routine has been called to modify a process's map for one
-	or more pages. A virtual address was provided. The caller is
-	expected to provide a valid address. The BUGHLT indicates that
-	a section that does not exist in the process's map was
-	specified.
+Cause:	A routine has been called to modify a process's map for one or more
+	pages.  A virtual address was provided.  The caller is expected to
+	provide a valid address.  The BUGHLT indicates that a section that does
+	not exist in the process's map was specified.
 >)
 
 ;SET PAGE TABLE (FOR PROCESS OR FILE)
@@ -1471,11 +1484,10 @@ SETP5A:	CAME 1,2		;DON'T ALLOW MAP TO SELF
 	TXNE 2,<<^-SPTM>B17+777000> ;LEGAL PTN AND PN?
 	BUG.(HLT,ILSRC,PAGEM,SOFT,<Illegal source identifier given to SETPT>,,<
 
-Cause:	A routine has been called to change the map for a page. The
-	caller is expected to provide an identifier for the source
-	that is of the form (SPT index,,page number). The BUGHLT
-	indicates that the right half of the identifier contains an illegal
-	value (that exceeds 777).
+Cause:	A routine has been called to change the map for a page. The caller is
+	expected to provide an identifier for the source that is of the form
+	(SPT index,,page number). The BUGHLT indicates that the right half of
+	the identifier contains an illegal value (that exceeds 777).
 >)
 	MOVE 3,ARG3		;GET FLAGS
 	TXNE 3,PM%MVP		;MOVE OF PAGE REQUESTED?
@@ -1514,11 +1526,10 @@ Cause:	A routine has been called to change the map for a page. The
 	CAIN 4,INDCOD		;INDIRECT?
 	BUG.(HLT,ILXBP,PAGEM,SOFT,<SETPT - Bad pointer in XB>,,<
 
-Cause:	A routine has been called to change the map for a page of a
-	process. The page is being mapped to a file page. The BUGHLT
-	indicates that the index block for the file contains an indirect
-	pointer in memory. Only share pointers and immediate pointers
-	are legal for index blocks.
+Cause:	A routine has been called to change the map for a page of a process.
+	The page is being mapped to a file page.  The BUGHLT indicates that the
+	index block for the file contains an indirect pointer in memory.  Only
+	share pointers and immediate pointers are legal for index blocks.
 >)
 	CAIN 4,SHRCOD		;ALREADY SHARED?
 	JRST SETMP3		;YES, GO USE SAME POINTER
@@ -1614,21 +1625,20 @@ SETP6:	SAVEAC <T2,T3,T4>
 SETMXB:	CAIL 2,SSPT		;LEGAL NUMBER?
 	BUG.(HLT,ILSPTI,PAGEM,SOFT,<Illegal SPT index given to SETMXB>,,<
 
-Cause:	A routine has been called to change the map for a page. The
-	caller provided a source identifier for a page table (an SPT
-	index) rather than a single page. The BUGHLT indicates that
-	the source identifier is an invalid SPT index, larger than the
-	maximum value allowed.
+Cause:	A routine has been called to change the map for a page. The caller
+	provided a source identifier for a page table (an SPT index) rather
+	than a single page. The BUGHLT indicates that the source identifier is
+	an invalid SPT index, larger than the maximum value allowed.
 >)
 	HLRZ 3,1		;GET DESTINATION PTN
 	CAIGE 3,NOFN		;FILE?
-	BUG.(HLT,ILDEST,PAGEM,HARD,<Illegal destination identifier to SETMPG or SETPT>,,<
+	BUG.(HLT,ILDEST,PAGEM,SOFT,<Illegal destination identifier to SETMPG or SETPT>,,<
 
-Cause:	A routine has been called to change the map for a page. The
-	caller provided a source identifier for a page table (an SPT
-	index) rather than a single page. The BUGHLT indicates that
-	the caller provided a file page as a destination. This is
-	illegal when the source is a page table.
+Cause:	A routine has been called to change the map for a page. The caller
+	provided a source identifier for a page table (an SPT index) rather
+	than a single page. The BUGHLT indicates that the caller provided a
+	file page as a destination. This is illegal when the source is a page
+	table.
 >)
 	HRRZ 3,2
 	MOVE 2,SHRPTR		;CONSTRUCT SHARE PTR TO INDEX BLOCK
@@ -1640,15 +1650,14 @@ Cause:	A routine has been called to change the map for a page. The
 SETMP6:	SKIPG 4,FRESPT		;ASSIGN NEW SPT SLOT
 	BUG.(HLT,SPTFL2,PAGEM,SOFT,<SPT completely full>,,<
 
-Cause:	A routine has been called to change the map for a page of a
-	process. The page is being mapped to a file page that is not
-	already shared. The code is going to create an entry for the
-	file page in the SPT so that the destination can have a
-	share pointer. The choice of a share pointer over an indirect
-	pointer was made because the count of available SPT slots
-	exceeded a threshold. The BUGHLT occurred because the head
-	of the queue of free SPT slots contains a zero, indicating
-	that there are no free slots. This means that there is an
+Cause:	A routine has been called to change the map for a page of a process.
+	The page is being mapped to a file page that is not already shared.
+	The code is going to create an entry for the file page in the SPT so
+	that the destination can have a share pointer.  The choice of a share
+	pointer over an indirect pointer was made because the count of
+	available SPT slots exceeded a threshold.  The BUGHLT occurred because
+	the head of the queue of free SPT slots contains a zero, indicating
+	that there are no free slots.  This means that there is an
 	inconsistency in the monitor's data.
 >)
 	HRRZ 4,0(4)		;GET CDR
@@ -1663,14 +1672,13 @@ Cause:	A routine has been called to change the map for a page of a
 	CAME 2,@CST2X+6		;CHECK OLD OWNERSHIP
 	BUG.(HLT,CST2I1,PAGEM,SOFT,<Page table core pointer and CST2 fail to correspond>,,<
 
-Cause:	A routine has been called to change the map for a page of a
-	process. The page is being mapped to a file page that is not
-	already shared. The code is going to create an entry for the
-	file page in the SPT so that the destination can have a
-	share pointer. The page pointer in the index block contains
-	a core address. The BUGHLT indicates that the owner of the
-	core page is not the file page that points to it. This means
-	that there is an inconsistency in the monitor's data.
+Cause:	A routine has been called to change the map for a page of a process.
+	The page is being mapped to a file page that is not already shared.
+	The code is going to create an entry for the file page in the SPT so
+	that the destination can have a share pointer.  The page pointer in the
+	index block contains a core address.  The BUGHLT indicates that the
+	owner of the core page is not the file page that points to it.  This
+	means that there is an inconsistency in the monitor's data.
 >)
 	MOVEM 4,@CST2X+6	;RECORD NEW LOCATION OF CORE ADDRESS
 	HLRZ 6,2		;YES, UPDATE LOCK COUNT FOR
@@ -1697,14 +1705,14 @@ SETP2:	ANDX 3,STGADM
 SETMP3:	HRRZ T3,T2
 	LOAD 3,SPTX,CXBPGA(T3)	;GET SPT INDEX
 	CAME 2,SPTH(3)		;ALL OK?
-	BUG.(HLT,ILSPTH,PAGEM,SOFt,<SETPT - SPTH inconsistent with XB>,,<
+	BUG.(HLT,ILSPTH,PAGEM,SOFT,<SETPT - SPTH inconsistent with XB>,,<
 
-Cause:	A routine has been called to change the map for a page of a
-	process. The page is being mapped to a file page for which
-	the index block has a share pointer. The share pointer points
-	to an SPT slot. The BUGHLT indicates that the SPT slot is not
-	owned by the file page whose map word points to it. This
-	indicates an inconsistency in the monitor's data.
+Cause:	A routine has been called to change the map for a page of a process.
+	The page is being mapped to a file page for which the index block has a
+	share pointer. The share pointer points to an SPT slot.  The BUGHLT
+	indicates that the SPT slot is not owned by the file page whose map
+	word points to it.  This indicates an inconsistency in the monitor's
+	data.
 >)
 	EXCH T1,T3		;GET ACS MOVED AROUND
 	CALL CHKSHC		;CHECK THE CURRENT SHARE COUNT
@@ -1767,14 +1775,13 @@ MVPT0:	DMOVE T1,MVPTA1		;RESTORE ACS IF RESTART
 	CAME 2,@CST2X+4		;YES, CHECK CST CONSISTENCY
 	BUG.(HLT,CST2I2,PAGEM,SOFT,<MVPT - CST2 inconsistent>,,<
 
-Cause:	A routine has been called to move a page from one page table
-	to another. The source page table has an immediate pointer to
-	a page in memory. The BUGHLT indicates that the CST entry for
-	that page contains a different owner from the source identifier that
-	points to it. This indicates an inconsistency in the monitor's
-	data.
+Cause:	A routine has been called to move a page from one page table to
+	another.  The source page table has an immediate pointer to a page in
+	memory.  The BUGHLT indicates that the CST entry for that page contains
+	a different owner from the source identifier that points to it.  This
+	indicates an inconsistency in the monitor's data.
 >)
-	MOVEM 1,@CST2X+4		;NOTE NEW LOCATION OF POINTER
+	MOVEM 1,@CST2X+4	;NOTE NEW LOCATION OF POINTER
 	CALL MVLK		;MOVE THE PT LOCK COUNT
 	HRRZ 1,2
 	MOVE 1,CXBPGA(1)	;GET CORE PAGE NUMBER
@@ -2096,11 +2103,11 @@ RELMPZ:	HRRZS T1,T3		;GET XB INDEX
 	CAME 3,@CST2X+1		;CONFIRM OLD OWNERSHIP
 	BUG.(HLT,CST2I3,PAGEM,SOFT,<Page table core pointer and CST2 fail to correspond>,,<
 
-Cause:	A routine has been called to remove a page from a process's
-	map. The map contains a share pointer to a file page. The
-	SPT entry to which the map points contains a core page number.
-	The BUGHLT indicates that the CST entry for that core page
-	does not point back to the SPT entry.
+Cause:	A routine has been called to remove a page from a process's map.  The
+	map contains a share pointer to a file page. The SPT entry to which the
+	map points contains a core page number.  The BUGHLT indicates that the
+	CST entry for that core page does not point back to the SPT entry.
+	This is an inconsistancy in the monitor's database.
 >)
 	MOVEM 4,@CST2X+1	;YES, CHANGE RECORD OF OWNING PT
 	HLRZ 3,4		;PTN OF OWNING PT
@@ -2430,16 +2437,16 @@ SCNPT4:	AOBJN W1,SCNPT1		;LOOP THROUGH THE PAGE
 SCNPT8:	BUG.(HLT,SCPT01,PAGEM,SOFT,<SCNPT - Entry is not an immediate pointer>,,<
 
 Cause:	A routine has been called to release all pages to which a specified
-	page table points. The caller must ensure that all pointers
-	are immediate pointers to core with no disk backup. The BUGHLT
-	indicates that a pointer was not an immediate pointer.
+	page table points.  The caller must ensure that all pointers are
+	immediate pointers to core with no disk backup.  The BUGHLT indicates
+	that a pointer was not an immediate pointer.
 >)
 SCNPT9:	BUG.(HLT,SCPT02,PAGEM,HARD,<SCNPT - Page was not deleted>,,<
 
 Cause:	A routine has been called to release all pages to which a specified
-	page table points. The caller must ensure that all pointers
-	are immediate pointers to core with no disk backup. The BUGHLT
-	indicates that a page had backup on disk.
+	page table points.  The caller must ensure that all pointers are
+	immediate pointers to core with no disk backup.  The BUGHLT indicates
+	that a page had backup on disk.
 >)
 
 	ENDAV.			;END ACVAR
@@ -2469,7 +2476,7 @@ Cause:	A routine has been called to release all pages to which a specified
 ;	SECTION DOESN'T EXIST (0)
 
 SECMAP::ASUBR<SID,SECN,SECACS,SECSPT>	;SAVE ARGS
-	STKVAR <SOFN,PTNPN>	;[7.1282] Temporary holding cells
+	STKVAR <SOFN,PTNPN>	;[8839] Temporary holding cells
 	NOSKED			;PREVENT INTERRUPTION
 	MOVE T1,T2		;GET DESTINATION PT
 	CALL SETCPT		;MAP IT
@@ -2482,9 +2489,10 @@ SECMAP::ASUBR<SID,SECN,SECACS,SECSPT>	;SAVE ARGS
 	  CAIE T3,INDCOD	;[7.1167]NO, MUST BE INDIRECT
 	  BUG.(HLT,BADPTR,PAGEM,SOFT,<Bad section pointer - SECMAP>,,<
 
-Cause:	The section pointer being deleted was not one of the
-	types (share or indirect) expected.
->)
+Cause:	A caller to SECMAP is trying to delete a section pointer and the
+	section pointer being deleted was not one of the types (share or
+	indirect) expected.
+>)				;[7.1167]
 	  LOAD T1,SPTX,T2	;[7.1167]CAN ALWAYS DELETE
 	  CALL DWNSHR		;[7.1167](T1/) Decrement the share count
 	  JRST SECMA1		;[7.1167]
@@ -2497,40 +2505,41 @@ Cause:	The section pointer being deleted was not one of the
 	  IFSKP.		;[7.1167]Yes
 	    MOVEM T1,SECSPT	;[7.1167]Save the OFN
 
-;[7.1282]
+;[8839]
 ;Nota bene - This code simulates LCKOFN. It has to be done
 ;in line because LCKOFN expects to be called OKSKED and it
 ;therefore, goes NOSKED. It can't handle nested NOSKEDs
 
-SECMP2:	    MOVX T2,SPTLKB	;[7.1282] Get OFN lock bit
-	    TDNN T2,SPTH(T1)	;[7.1282] Is OFN locked now?
-	    IFSKP.		;[7.1282] If so,
-	      CALL WTOFNS	;[7.1282] (T1/) Go OKSKED and wait for OFN to be freed
-	      NOSKED		;[7.1282] Prevent interruptions
-	      MOVE T1,SECSPT	;[7.1282] Retrieve the OFN
-	      JRST SECMP2	;[7.1282] And see if OFN is locked
-	    ENDIF.		;[7.1282]
-	    CSKED		;[7.1282] Be critical, (undone by ULKOFN)
-	    MOVEM T1,SOFN	;[7.1282] Save OFN
-	    MOVEM T4,PTNPN	;[7.1282] Save PTN,,PN
-	    SETZ T2,		;[7.1282] Get shared access (0=shared)
-	    CALL CFSAWP		;[7.1282] (T1,T2/) Acquire token
-	    MOVE T1,SOFN	;[7.1282] Get OFN back
-	    MOVX T2,SPTLKB	;[7.1282] Get the lock bit
-	    TDNN T2,SPTH(T1)	;[7.1282] Someone lock this OFN behind our back?
-	    IFSKP.		;[7.1282] If so,
-	      CALL CFSFWT	;[7.1282] (T1/) Undo resource acquisition
-	      ECSKED		;[7.1282] No longer critical
-	      MOVE T4,PTNPN	;[7.1282] Restore this
-	      MOVE T1,SOFN	;[7.1282] And OFN
-	      JRST SECMP2	;[7.1282] And start this over again
-	    ENDIF.		;[7.1282]
+SECMP2:	    MOVX T2,SPTLKB	;[8839] Get OFN lock bit
+	    TDNN T2,SPTH(T1)	;[8839] Is OFN locked now?
+	    IFSKP.		;[8839] If so,
+	      CALL WTOFNS	;[8839] (T1/) Go OKSKED and wait for OFN to be freed
+	      NOSKED		;[8839] Prevent interruptions
+	      MOVE T1,SECSPT	;[8839] Retrieve the OFN
+	      JRST SECMP2	;[8839] And see if OFN is locked
+	    ENDIF.		;[8839]
+	    CSKED		;[8839] Be critical, (undone by ULKOFN)
+	    MOVEM T1,SOFN	;[8839] Save OFN
+	    MOVEM T4,PTNPN	;[8839] Save PTN,,PN
+	    SETZ T2,		;[8839] Get shared access (0=shared)
+	    CALL CFSAWP		;[8839] (T1,T2/) Acquire token
+	    MOVE T1,SOFN	;[8839] Get OFN back
+	    MOVX T2,SPTLKB	;[8839] Get the lock bit
+	    TDNN T2,SPTH(T1)	;[8839] Someone lock this OFN behind our back?
+	    IFSKP.		;[8839] If so,
+	      CALL CFSFWT	;[8839] (T1/) Undo resource acquisition
+	      ECSKED		;[8839] No longer critical
+	      MOVE T4,PTNPN	;[8839] Restore this
+	      MOVE T1,SOFN	;[8839] And OFN
+	      JRST SECMP2	;[8839] And start this over again
+	    ENDIF.		;[8839]
 
-;[7.1282]
+;[8839]
 ;At this point, no one locked the OFN behind our backs. So, it is
 ;legally and morally ours. Let's take it!
 
-	    IORM T2,SPTH(T1)	;[7.1282] Lock the OFN
+	    NOINT		;[8968] No interrupts (undone by ULKOFN)
+	    IORM T2,SPTH(T1)	;[8839] Lock the OFN
 	    CALL GETSHR		;[7.1167](T1/T1)Get the OFN share count
 	    SOSE T1		;[7.1167]Is it going to zero?
 	    IFSKP.		;[7.1167]Yes, so let's cache it
@@ -2545,6 +2554,11 @@ SECMP2:	    MOVX T2,SPTLKB	;[7.1282] Get OFN lock bit
 	      CALL ULKP3	;[7.1167](T3/)Unlock the index block
 	      CALL ULKOFN	;[7.1167](T1/)Unlock the OFN
 	      CALL RELCXB	;[7.1167](/)Unmap the index block
+	      SKIPE PSBM0+CPTPG	;[9053] Did OFN cacheing destroy our map?
+	      IFSKP.		;[9053] If it did,
+	        MOVE T1,SECN	;[9053] Get the page table location back
+	        CALL SETCPT	;[9053] And now map it back in
+	      ENDIF.		;[9053]
 	      OKSKED		;[7.1167]Go OKSKED
 	      JRST SECMA1	;[7.1167]
 	    ENDIF.		;[7.1167]
@@ -2786,15 +2800,12 @@ FPTAX2:	LOAD Q2,VSECNO,T1	;GET SECTION NUMBER
 	CAILE Q2,HGHSEC
 ILLFPT::BUG.(HLT,ILFPTE,PAGEM,SOFT,<ILLFPT - Illegal section number referenced>,,<
 
-Cause:	A routine was called to translate a virtual address into an
-	internal identifier. The BUGHLT indicates that the caller provided a
-	monitor address that contained an invalid section number. This
-	can mean any of the following:
-
-	1. The section number is larger than the maximum possible.
-
-	2. On a machine that does not support extended addressing, a
-	non-zero section number was provided.
+Cause:	A routine was called to translate a virtual address into an internal
+	identifier. The BUGHLT indicates that the caller provided a monitor
+	address that contained an invalid section number.  This can mean one of
+	the following: (1) The section number is larger than the maximum
+	possible section or (2) On a machine that does not support extended
+	addressing, a non-zero section number was provided.
 >)
 	HRRZ T2,FPTABL(Q2)	;DISPATCH TO APPROPRIATE ROUTINE
 	JRST 0(T2)
@@ -2809,10 +2820,10 @@ FPTA0::	CAIL Q1,PSVARP		;WHICH PART OF MONITOR?
 	CAIGE FX,0		;GOOD FORK HERE?
 FPTMX1:	BUG.(HLT,FPTMXX,PAGEM,SOFT,<FPTA - Process address in sched context>,<<T1,ADR>>,<
 
-Cause:	FPTA has been called in scheduler context and given an address
-	that is part of the process/job context area.
+Cause:	FPTA has been called in scheduler context and given an address that is
+	part of the process/job context area.
 
-Data:	ADR - Given address.
+Data:	ADR - Given address
 >)
 	LOAD T1,FKPSB		;GET PSB IDENT
 	JRST FPTAR
@@ -2919,13 +2930,13 @@ FPTMSS::SKIPN T1,MSECTB(Q2)	;HAVE A SECTION POINTER?
 	IFSKP.
 	  BUG.(HLT,ILESCD,PAGEM,SOFT,<Monitor section pointer not shared>,<<T1,POINTER>,<Q2,SECTION>>,<
 
-Cause:	A pointer for a monitor section has been found that is not a
-	share pointer.  Only share pointers are expected.  If other
-	pointer types are used, this code must be enhanced.  It is possible 
-	that the monitor section table has been clobbered.
+Cause:	A pointer for a monitor section has been found that is not a share
+	pointer.  Only share pointers are expected.  If other pointer types are
+	used, the code at FPTMSS must be enhanced.  It is possible that the
+	monitor section table has been clobbered.
 
-Data:	POINTER - The pointer.
-	SECTION - The monitor section for which it was found.
+Data:	POINTER - The pointer
+	SECTION - The monitor section for which it was found
 >)
 	ENDIF.
 	HRRZ T1,T1		;SHARE POINTER, USE SPT INDEX
@@ -2948,10 +2959,10 @@ REMFPB::SKIPN DELPGQ		;[7303] ANY PAGES ON DELETED PAGE QUEUE?
 	SKIPE T1		;COMPLETELY DELETED?
 	BUG.(HLT,PGNDEL,PAGEM,SOFT,<REMFPB - Page not completely deleted>,,<
 
-Cause:	A page has been marked as partially deleted and placed on a
-	queue. The routine that processes the queue has found that the
-	page still has a backup on disk. The routine that marked the
-	page should have deleted all backup pages.
+Cause:	A page has been marked as partially deleted and placed on a queue.  The
+	routine that processes the queue has found that the page still has a
+	backup on disk.  The routine that marked the page should have deleted
+	all backup pages.
 >)
 	JRST REMFPB		;DO ALL PAGES
 
@@ -3356,13 +3367,15 @@ SOSWSP:	SAVEAC <T2,FX>
 	LOAD T2,FKCSIZ		;GET CURRENT COUNT
 	SOJL T2,[BUG.(CHK,WSPNEG,PAGEM,HARD,<SOSWSP - WSP negative>,<<FX,FORK>,<T2,FKCSIZ>>,<
 
-Cause:	SOSWSP has been been called to decrement the working set size of
-	the current fork by one. In so doing, the working set size would
-	become negative. This indicates a problem with the monitor's
+Cause:	SOSWSP has been been called to decrement the working set size of the
+	current fork by one.  If this was done, the working set size would
+	become negative.  This indicates a problem with the monitor's
 	calculation of the fork's working set size since it should never be
-	negative.
+	negative.  The working set size has not been decremented.
 
-Action:	The working set size has not been decremented.
+Action:	There is a problem in PAGEM or SCHED with working set size management.
+	If this problem can be reproduced, set this BUG dumpable and get a
+	dump to send in with an SPR.
 
 Data:	FORK - Fork number
 	FKCSIZ - Current size of working set (RH of FKWSP)
@@ -3688,12 +3701,15 @@ SWPOG2:	HRRZ P1,@SWPLST		;GET LIST OF PAGES TO DO
 	IFNSK.			;ERROR?
 	  BUG.(CHK,SMGFUL,PAGEM,SOFT,<Can't swap multiple pages (drum is full)>,,<
 
-Cause:	The monitor is attempting to swap a group of core pages to the
-	drum. There is no space available.  The general handling
-	of drum assignments should insure that there are always a
-	few pages available for "critical" assignments such as
-	this case. It is possible that some user program could overtax 
-	the normal reserves and cause this failure.
+Cause:	The monitor is attempting to swap a group of core pages to the drum.
+	There is no space available.  The general handling of drum assignments
+	should insure that there are always a few pages available for
+	"critical" assignments such as this case. It is possible that some user
+	program could overtax the normal reserves and cause this failure.
+
+Action:	If this problem is seen often and no user program can be found to blame
+	for running out of swapping space, set this bug dumpable, get a dump
+	and send in an SPR describing how to reproduce the problem.
 >)				;YES, THE DRUM IS FULL
 	  POP P,P2		;RESTORE ACS
 	  POP P,P1
@@ -3713,13 +3729,12 @@ SWPOG1:
 	CALL DRMASA		; ADDRESS IN SEQUENCE AND ASSIGN IT
 	 BUG.(HLT,ASGSW2,PAGEM,SOFT,<SWPOMG - Cannot assign reserved drum address>,,<
 
-Cause:	The monitor is swapping a group of pages to a set of contiguous
-	pages in the swapping space. The swapping space manager has
-	provided a starting address for a block of free pages. An attempt
-	to assign one of the pages has failed. This indicates an
-	inconsistency in the monitor's data or a race condition.
-	For example, a context switch may have occurred when it was
-	not expected.
+Cause:	The monitor is swapping a group of pages to a set of contiguous pages
+	in the swapping space.  The swapping space manager has provided a
+	starting address for a block of free pages.  An attempt to assign one
+	of the pages has failed.  This indicates an inconsistency in the
+	monitor's data or a race condition.  For example, a context switch may
+	have occurred when it was not expected.
 >)
 	MOVEI 1,0(P1)		;GET PAGE NUMBER
 	MOVE 2,SWPDAD		;GET NEW DRUM ADDRESS
@@ -3793,9 +3808,9 @@ SWPOT1:	TLNE T1,(NCORTM)       	;IN CORE?
 
 SWPTBD:	BUG.(HLT,ILPAG1,PAGEM,SOFT,<SWPOT0 - Invalid page>,,<
 
-Cause:	A routine was called to swap out a page in core. The BUGHLT
-	indicates that the caller provided a bad argument, resulting
-	in one of the following:
+Cause:	A routine was called to swap out a page in core.  The BUGHLT indicates
+	that the caller provided a bad argument, resulting in one of the
+	following:
 
 	1. The page is not in core.
 
@@ -3870,7 +3885,7 @@ SWPO2:	CALL CHPERR		;SEE IF PAGE HAS PARITY ERROR
 	CALL DRMIO		;INITIATE DRUM WRITE
 	AOS DRMWR		;COUNT DRUM WRITES FOR STATISTICS
 	RET
-
+
 ;OFN - MUST ALWAYS SWAP TO DRUM
 
 SWPOF1:	SKIPE T3		;[7247] OFN still shared and in use?
@@ -3882,6 +3897,10 @@ SWPOF1:	SKIPE T3		;[7247] OFN still shared and in use?
 Cause:	The monitor is attemping to swap an OFN and it has found that the
  	OFN share count is zero. When this happened, the OFN should have
 	been cached.  However, it is not cached.
+
+Action:	If this BUGHLT can be reproduced, set this bug dumpable and send in 
+	an SPR with a dump indicating how the problem can be reproduced.
+
 >)				;[7247] Report unexpected condition
 	  MOVE 1,2		;[7247] No. OFN is unused
 	  CALLRET CLROFN 	;[7247] So get rid of it
@@ -3916,18 +3935,26 @@ SWPO4:	HRRZ T4,T1
 		TXNE T3,OFNDUD	;SUPPRESSING DISK UPDATE?
 		JRST SWOFN	;YES. PUT IT ON SWAP SPACE
 		JRST BKUPD]	;NO. PUT IT ON THE DISK THEN
+
 SWOFN:	SKIPE NSWAPF		;SWAPPING ALLOWED?
 	RET			;NO, LEAVE PAGE
 	PUSH P,1
 	CALL DRMASN		;ASSIGN DRUM ADDRESS
 	 JRST [	BUG.(CHK,DRMFUL,PAGEM,SOFT,<Drum completely full>,,<
 
-Cause:	The monitor is attempting to swap a core page to the
-	drum. There is no space available.  The general handling
-	of drum assignments should insure that here are always a
-	few pages available for "critical" assignments such as
-	this case. It is possible that some user program could overtax 
-	the normal reserves and cause this failure.
+Cause:	The monitor is attempting to swap a core page to the drum.  There is no
+	space available.  The general handling of drum assignments should
+	insure that here are always a few pages available for "critical"
+	assignments such as this case.  
+
+Action:	When this bug is seen when reloading the system it can safely be
+	ignored.  It is possible that some user program could overtax the
+	normal reserves and cause this failure.
+
+	If no user program can be found to blame for running out of swapping
+	space, or this bug is seen whenever a particular system is being
+	reloaded this bug dumpable, get a dump and send in an SPR describing
+	how to reproduce the problem.
 >,,<DB%NND>)			;[7.1210] 
 		POP P,T1	;NO ROOM, LEAVE PAGE
 		RET]
@@ -3970,10 +3997,10 @@ BKUPD1:	HRRZ T2,T1
 
 BKUP7:	BUG.(HLT,BKUPDF,PAGEM,SOFT,<BKUPD - Bad CST1 entry or inconsistent CST>,,<
 
-Cause:	A routine has been called to swap a core page to disk or drum.
-	It has decided to swap to the disk. The BUGHLT indicates that
-	no back address was found in the CST. This usually indicates
-	bad data in the CST or a bad pointer in a page table.
+Cause:	A routine has been called to swap a core page to disk or drum.  It has
+	decided to swap to the disk. The BUGHLT indicates that no back address
+	was found in the CST.  This usually indicates bad data in the CST or a
+	bad pointer in a page table.
 >)
 
 BKUP3:	HRRZ T2,T1		;GET ONLY DESIRED INDEX BITS
@@ -4098,28 +4125,34 @@ PGRTRP::
    IFN KLFLG,<
 	DATAO PAG,SETMON	;SET MON AC BLOCK
    >
-	SKIPE INSKED		;IN THE SCHEDULER?
-	JRST KIPFS		;GO HANDLE IN PROPER HANDLER
-	AOSGE INTDF		;MUST BE NOINT
-	JRST [	BUG.(CHK,NSKDT2,PAGEM,SOFT,<PGRTRP - Bad NSKED or INTDF>,,<
+;Check for interrupt in progress and scheduler
 
-Cause:	When a page fault occurred, the running process's interrupt 
-	indicator had an abnormally low value. This could
-	cause interruptions when it should not. The monitor
-	has set the value to prevent interruptions, but this indicates
-	a bug in which too many OKINT's have been executed.
->)
-		SETZM INTDF	;FIX THE BAD VALUE
-		JRST .+1]	;AND PROCEED
+	SZPI 177B27		;[9010] From PI level?
+	JRST PIPTRP		;[9010] Yes. Go handle it then
+	SKIPE INSKED		;[9010] In the scheduler?
+	JRST KIPFS		;[9010] Go handle in proper handler
+	AOSL INTDF		;[9010] Try to go NOINT
+	IFSKP.			;[9010] If still not NOINT,
+	  BUG.(CHK,NSKDT2,PAGEM,SOFT,<PGRTRP - Bad NSKED or INTDF>,,<
+
+Cause:	When a page fault occurred, the running process's interrupt indicator
+	(INTDF) had an abnormally low value.  INTDF should never be less than
+	-1.  This abnormally low value could have let an interruption occur
+	during a page fault.  This indicates a bug in which too many OKINT's
+	have been executed.
+
+Action:	The monitor has zeroed INTDF to prevent interruptions during the page
+	fault.  If this bug can be reproduced, set it dumpable and submit an
+	SPR with a dump indicating how the bug can be reproduced.
+>)				;[9010] Big BUG!
+	  SETZM INTDF		;[9010] Fix the bad value and make good value
+	ENDIF.			;[9010] And continue
+	;..
 
-;Check for interrupt in progress
-
-	SZPI 177B27		;FROM PI ROUTINE?
-	JRST PIPTRP		;YES. GO HANDLE IT THEN
 
 ;Count nested traps. If this is the top level, save the stack pointer and
 ;set up P to point to TRAPSK stack.
-
+	;..
 	AOSE TRAPC		;FIRST TRAP?
 	JRST PGRTR2		;NO, RECURSIVE
 	MOVEM P,TRAPAP		;SAVE AC-P
@@ -4230,7 +4263,7 @@ PFAUL5:	MOVE T2,PFHFL		;GET FLAGS
 ;If page fail code indicates "hard" failure, go handle separately.
 
 PFAUL7:	MOVE FX,FORKX
-	MOVE T1,PFHPFW
+	MOVE T1,PFHPFW		;[8925]
 	TXNE T1,TWHPFF		;'HARD' FAILURE?
    IFN KLFLG,<
 	JRST [	LOAD T1,TWCOD,T1 ;YES, GET CODE
@@ -4243,7 +4276,7 @@ PFAUL7:	MOVE FX,FORKX
    IFN KCFLG,<
 	JRST [	BUG.(HLT,KCHARD,PAGEM,SOFT,<Hard page fault occurred - no code exists>,,<
 
-Cause:	A page fault occurred indicating hard error for a KC. No code exists
+Cause:	A page fault occurred indicating hard error for a KC.  No code exists
 	to handle this.
 >)]
    >				;END OF IFN KCFLG
@@ -4255,13 +4288,11 @@ Cause:	A page fault occurred indicating hard error for a KC. No code exists
    IFN KCFLG,<
 	LOAD T1,TWCOD,PFHCD	;GET PAGE FAIL CODE
 	CAIL T1,PFVCLN		;IS IT IN THE TABLE?
-PFHBUG:	BUG.(HLT,KCPFH8,PAGEM,HARD,<INVALID PAGE FAULT CODE>,,<
+PFHBUG:	BUG.(HLT,KCPFH8,PAGEM,HARD,<Invalid page fault code>,,<
 
 Cause:	A page fault occurred in which the "hard error" bit was not set, but
-	the code provided by the microcode was not within the range of
-	expected codes.
-
-Action:	Debug the microcode
+	the code provided by the microcode was not within the range of expected
+	codes.  This indicates a KC microcode problem.
 >)
 	JRST @PFHVEC(T1)	;GO HANDLE THE FAULT
    >				;END OF IFN KCFLG
@@ -4302,13 +4333,18 @@ PIPTRP:
 	CAIL T2,PECOD0		;AR OR ARX?
 	JSP T2,PFAID		;YES. GO ANALYIZE IT
    >				;END OF IFN KLFLG
-PIPTR1:	BUG.(HLT,PITRAP,PAGEM,SOFT,<Pager trap while PI in progress>,,<
+PIPTR1:	BUG.(HLT,PITRAP,PAGEM,SOFT,<Pager trap while PI in progress>,<<T1,PFW>>,<
 
-Cause:	A page fault occurred while a hardware interrupt was in progress.
-	This can be the result of hardware failure or a software bug. If
-	the page fail word indicates an AR or ARX parity error, the monitor
-	has printed an analysis of the problem on the CTY, and a SYSERR
-	entry will be created when the monitor is rebooted.
+Cause:	A page fault occurred while a hardware interrupt was in progress.  This
+	can be the result of hardware failure or a software bug.
+
+Action:	If the page fail word indicates an AR or ARX parity error, the monitor
+	has printed an analysis of the problem on the CTY, and a SYSERR entry
+	is created when the monitor is rebooted.  If it wasn't a AR/ARX
+	parity error, please submit an SPR along with the crash dump and any
+	other information on reproducing this bug.
+
+Data:	PFW - Page fault word.
 >)
 
 ;MEMORY DATA PARITY - DETECTED IN AR/ARX
@@ -4358,7 +4394,7 @@ ADRCMP:	SKIPE INSKED		;WEED OUT BUGS
 	BUG.(HLT,ABKSKD,PAGEM,SOFT,<Address break from scheduler context>,,<
 
 Cause:	A page failure occurred while the monitor was running in scheduler
-	context, and the page fail word indicated an address break. Address
+	context, and the page fail word indicated an address break.  Address
 	breaks can only be set in code that runs in process context.
 >)
 	MOVX T1,PC%AFI		;SET ADDRESS BREAK INHIBIT
@@ -4408,8 +4444,8 @@ UBPGF::	SKIPN SMFLAG		;CHECK FOR KS10
 	JRST ILWR		;YES -- ILLEGAL WRITE ERROR
 	BUG.(HLT,UBANXM,PAGEM,SOFT,<I/O NMX from Unibus device>,<<UPTPFW,PFW>,<UPTPFO,PC>>,<
 
-Cause:	The monitor tried to reference a non-existent device on the
-	UNIBUS. This BUGHLT occurs only on the 2020.
+Cause:	The monitor tried to reference a non-existent device on the UNIBUS.
+	This BUGHLT occurs only on the 2020.
 >)
 >
 
@@ -4460,11 +4496,11 @@ PFWRTF:	JRST PFAUL9			;GO FIND OUT THE REASON AND HANDLE IT
 PFBAGE:	BUG.(CHK,KCPFH1,PAGEM,HARD,<Unexpected page fault code (illegal age)>,,<
 
 Cause:	A page fault occurred in which the code indicated that a CST entry had
-	an illegal age when the corresponding virtual address existed in the  
-	hardware's translation buffer. We expect to clear the pager when we  
-	set an illegal age, so this condition should never occur.
+	an illegal age when the corresponding virtual address existed in the
+	hardware's translation buffer. We expect to clear the pager when we set
+	an illegal age, so this condition should never occur.
 
-Action:	No action is required. The monitor proceeds as if the translation did
+Action:	No action is required.  The monitor proceeds as if the translation did
 	not exist.
 >)
 	JRST PFILAG			;GO HANDLE LIKE ANY ILLEGAL AGE TRAP
@@ -4563,12 +4599,12 @@ PFILAG:	JRST PFAUL9
 PFMBZ:	BUG.(HLT,KCPFH4,PAGEM,SOFT,<MUST-BE-ZERO BITS ARE NON-ZERO>,,<
 
 Cause:	A page fault occurred indicating that must-be-zero bits are non-zero.
-	Most likely the monitor did an XJRSTF with some non-zero bits in
-	the reserved part of the flags word.
+	Most likely the monitor did an XJRSTF with some non-zero bits in the
+	reserved part of the flags word.
 
-Action:	Debug the code that set up the flags word. Most likely, it has stored
-	a section number from a PC word in the rightmost bits of the left
-	half of the flags word.
+Action:	Debug the code that set up the flags word. Most likely, it has stored a
+	section number from a PC word in the rightmost bits of the left half of
+	the flags word.
 
 >)
 
@@ -4583,20 +4619,20 @@ PFBPXC:	BUG.(CHK,KCPFH5,PAGEM,SOFT,<Illegal PXCT>,,<
 Cause:	A page fault occurred indicating that a PXCT was executed with the
 	current AC block and the previous AC block set to the same value.
 
-Action:	The monitor is not coded to run under these conditions. Most likely,
-	some new flags word contains 0 in the PAB and CAB fields. Find the
+Action:	The monitor is not coded to run under these conditions.  Most likely,
+	some new flags word contains 0 in the PAB and CAB fields.  Find the
 	code that did this, and correct it.
 
 >)
 
 ;Here for illegal physical effective address word
 
-PFBPMA:	BUG.(HLT,KCPFH6,PAGEM,SOFT,<ILLEGAL PHYSICAL EFFECTIVE ADDRESS WORD>,,<
+PFBPMA:	BUG.(HLT,KCPFH6,PAGEM,SOFT,<Illegal physical effective address word>,,<
 
 Cause:	A page fault occurred indicating that the microcode found a physical
 	effective address word with a 1 in bit 0 or bit 1.
 
-Action:	The monitor has made a physical reference with invalid data. Find the
+Action:	The monitor has made a physical reference with invalid data.  Find the
 	reference and correct it.
 
 >)
@@ -4616,11 +4652,11 @@ PFBOWG:	MOVEI T1,ARGX09		;ILLEGAL BYTE SIZE
 PFBINT:	BUG.(HLT,KCPFH7,PAGEM,SOFT,<Illegal interrput vector>,,<
 
 Cause:	A page fault occurred indicating that the microcode found a all-zero
-	interrupt vector word when attempting to give an interrupt. This
+	interrupt vector word when attempting to give an interrupt.  This
 	should cause an I/O page fail and not a normal page fault.
 
 Action:	Find the reason for the zero interrupt vector word (probably a software
-	bug). Also find out why the microcode gave a normal page fault for
+	bug).  Also find out why the microcode gave a normal page fault for
 	this condition.
 
 >)
@@ -5054,16 +5090,17 @@ TRP0R:	MOVSI T1,0(T2)		;SET PAGE NUMBER OF SCHEDULER TEST
 	NOSKED
 	JRST TRPRST		;RECHECK TRAP
 
-BADAGE:	BUG.(HLT,ILAGE,PAGEM,SOFT,<Bad age field in CST0>,,<
+
+BADAGE:	BUG.(HLT,ILAGE,PAGEM,SOFT,<Bad age field in CST0>,,<
 
 Cause:	The age of a memory page contains an unexpected value. One of the
 	following happened:
 
-	1. A page fault occurred and the age was either PSDEL or an
-	undefined age LESS THAN PSASN.
+	1. A page fault occurred and the age was either PSDEL or an undefined
+	age LESS THAN PSASN.
 
-	2. A process attempted to assign the page and its age was PSDEL,
-	PSSPQ, or an undefined age LESS THAN PSASN.
+	2. A process attempted to assign the page and its age was PSDEL, PSSPQ,
+	or an undefined age LESS THAN PSASN.
 >)
 
 ;HERE WHEN PAGE FAULTED ON WANTS TO BE REMOVED FROM AVAILABLE POOL
@@ -5141,17 +5178,20 @@ ILRF:	MOVEM T1,PFHTMP		;SAVE CHANNEL TEMPORARILY
 	SKIPE T4,TRPDSP		;TRAP DISPATCH SET?
 	JRST ILRF2		;YES
 	JXN T1,TWUSR,ILRFX	;OK IF REF TO USER MODE
-	BUG.(HLT,ILMNRF,PAGEM,SOFT,<Illegal reference to MON ADR SPACE>,<<T1,PFW>,<T2,FLAGS>,<T3,PC>>,<
+	BUG.(HLT,ILMNRF,PAGEM,SOFT,<Illegal reference to monitor address space>,<<T1,PFW>,<T2,FLAGS>,<T3,PC>>,<
 
-Cause:	The monitor made an illegal reference to an address in its map
-	and was not prepared to handle the error. The possible errors
-	include illegal read, write, and section number. See the page
-	fail word for the reason code.
+Cause:	The monitor made an illegal reference to an address in its map and was
+	not prepared to handle the error.  The possible errors include illegal
+	read, write, and section number.  See the page fail word for the reason
+	code.
 
-	This BUGHLT can also occur if an unrecoverable AR/ARX parity
-	error is detected on certain monitor references. In this
-	case, the analysis of the error will already have been
-	printed on the CTY.
+	This BUGHLT can also occur if an unrecoverable AR/ARX parity error is
+	detected on certain monitor references. In this case, the analysis of
+	the error has been printed on the CTY.
+
+Action:	If this BUGHLT was not preceeded by an unrecoverable AR/ARX parity
+	error, please submit an SPR with a dump and how to reproduce the
+	problem.
 
 Data:	PFW - Page Fail Word
 	FLAGS - PC flags
@@ -5235,9 +5275,12 @@ NPG:	MOVE T1,PFHPFW
 	    BUG.(CHK,PCIN0,PAGEM,SOFT,<PAGEM - PC has gone into section 0>,<<T2,PC>,<T1,PFW>>,<
 
 Cause:	A reference has been made to RSCOD or NRCOD in section 0.  This should
-	not happen because section 0 code cannot reference data in
-	extended sections.  As an expedient, the page being referenced
-	will be mapped to section 1 with an indirect pointer.
+	not happen because section 0 code cannot reference data in extended
+	sections.  As an expedient, the page being referenced is mapped to
+	section 1 with an indirect pointer.
+
+Action:	If this bug is reproducable, set it dumpable and send in an SPR along
+	with the dump and how to reproduce the problem.
 
 Data:	PC - PC
 	PFW - Page fail word
@@ -5353,11 +5396,10 @@ DRMSPC:	CAML T1,DRMFRE		;ENOUGH NOW?
 
 NPGBAD:	BUG.(HLT,ILPPT3,PAGEM,SOFT,<Bad pointer in page table>,,<
 
-Cause:	A page fault occurred because a process touched a page whose
-	map entry contained access bits of 0, indicating non-existent
-	page. But when the monitor mapped the page table, the page's
-	entry was not 0. A non-existent page should always be
-	represented by an all-zero entry.
+Cause:	A page fault occurred because a process touched a page whose map entry
+	contained access bits of 0, indicating non-existent page. But when the
+	monitor mapped the page table, the page's entry was not 0. A
+	non-existent page should always be represented by an all-zero entry.
 >)
 ;Here when write reference failed, and process has copy-on-write access.
 
@@ -5395,10 +5437,9 @@ WCPY:	MOVE T4,TRPID		;SAVE THE ORIGINAL IDENT
 	CAIG 2,NOFN
 	BUG.(HLT,IBCPYW,PAGEM,SOFT,<COPY - Write pointer in index block>,,<
 
-Cause:	A page fault occurred because a process attempted to write into
-	a page whose access was copy-on-write. The BUGHLT indicates that
-	the page table is an index block that should never have copy-
-	on-write access.
+Cause:	A page fault occurred because a process attempted to write into a page
+	whose access was copy-on-write.  The BUGHLT indicates that the page
+	table is an index block that should never have copy-on-write access.
 >)
 	CALL SETSPG		;MAP THE PT
 	HRRZ T3,T1		;ALLOW INDEXED REFERENCE IN SECTION 1
@@ -5877,8 +5918,8 @@ PFHEND:
 PGUNTD:	SKIPE TRAPC		;NESTED TRAP?
 	BUG.(HLT,PGUNDX,PAGEM,SOFT,<PGUNTD - In nested trap>,,<
 
-Cause:	There was an attempt to use a special untrap address while in 
-	a nested trap.
+Cause:	There was an attempt to use a special untrap address while in a nested
+	trap.  This is a software problem.
 >)
 	MOVE T3,PFHFL		;GET FLAGS
 	MOVE T4,PFHPC		;GET PC
@@ -5975,7 +6016,14 @@ ATP1R1:	LOAD T2,DIROFN		;GET OFN OF CURRENT DIRECTORY
 	      BUG.(CHK,SWPDIR,PAGEM,HARD,<Swap error in directory page>,<<T1,STRX>>,<
 
 Cause:	The monitor detected an error while swapping in a page with the same
-	OFN as the currently mapped directory. The directory will be marked.
+	OFN as the currently mapped directory.  The directory is marked.
+
+Action:	There is a hardware problem developing.  Field Service can run SPEAR
+	and check the SYSERR file to diagnose the problem.  The additional data
+	is the structure number having the problem.  The easiest way to
+	determine the structure name from the structure number is to count down
+	the structures listed in a INFORMATION AVAILABLE command, skipping
+	"DSK".
 
 Data:	STRX - Structure number
 >,,<DB%NND>)			;[7.1210] 
@@ -5988,7 +6036,7 @@ ATP1R2:	MOVEI T1,IOX5		;STORE ERROR CODE
 	CHKINT			;GET IT SEEN
 	POP P,2
 	JRST ATP1
-
+
 ;Read in progress. Wait for completion and recheck age
 
 ATP2:	MOVSI 1,0(2)
@@ -5998,7 +6046,7 @@ ATP2:	MOVSI 1,0(2)
 	HRRI T1,DSKRT
 	PDISMS			;RESCHEDULE UNTIL AVAILABLE
 	JRST AGES1		;CHECK AGE AGAIN
-
+
 ;Write in progress. Clear age so SWPDON won't put page on replaceable
 ;queue.
 
@@ -6041,10 +6089,10 @@ ATP1:	OPSTRM <AOS T1,>,FKCSIZ	;INCREASE OWNERSHIP COUNT
 	MOVN 1,1
 	CALL UPDSNR		;UPDATE SUMNR
 	JN FKWSL,,ATP1A		;MAKE SURE WS IN MEM
-	BUG.(CHK,FRKBAL,PAGEM,HARD,<AGESET - Fork not in BALSET>,,<
+	BUG.(CHK,FRKBAL,PAGEM,SOFT,<AGESET - Fork not in BALSET>,,<
 
-Cause:	While adding a page to a process's working set, AGESET detected
-	that the working set is not in memory.
+Cause:	While adding a page to a process's working set, AGESET detected that
+	the working set is not in memory.
 
 >)
 ATP1A:	ADJSP P,-1 		;FLUSH GARBAGE
@@ -6201,12 +6249,12 @@ QCHK::	SKIPN USRSPC		;USER SPACE CHECKING?
 	RETSKP			;NO
 	LOAD T2,ALOCX,(T1)	;GET INDEX INTO QUOTA TABLES
 	SKIPN T2		;GOOD THING TO CHECK
-	BUG.(HLT,NULQTA,PAGEM,SOFT,<QCHK - NO QUOTA INFO SETUP>,,<
+	BUG.(HLT,NULQTA,PAGEM,SOFT,<QCHK - No quota info setup>,,<
 
-Cause:	The monitor is checking the disk quota to see if a page can be
-	added to a file. However, this OFN's pointer into the allocation
-	tables is 0, an illegal value. Either the caller provided a bad
-	OFN, or the SPT entry for the OFN is incorrect.
+Cause:	The monitor is checking the disk quota to see if a page can be added to
+	a file.  However, this OFN's pointer into the allocation tables is 0,
+	an illegal value.  Either the caller provided a bad OFN, or the SPT
+	entry for the OFN is incorrect.
 >)
 	OPSTR <SKIPG>,PGLFT,(T2)
 	JRST QCHK2		;OVER QUOTA - CHECK PRIVS
@@ -7039,7 +7087,7 @@ FETPTR:	HLRZ T2,T1
 	IOR T1,T2		;[7.1002] Put page and offset together
 	PMOVE T1,T1		;[7.1002] Get word
 	RETSKP
-
+
 ;COLLECT SPECIAL FORK PAGE (PSB, ETC.)
 ; T1/ ID OF PAGE
 ;	CALL WSSFKP
@@ -7049,19 +7097,19 @@ WSSFKP:	LOAD Q2,STGADR,SPT(T1)	;GET ADR
 	TXNE Q2,NCORTM		;IN CORE?
 	BUG.(HLT,WSSPNC,PAGEM,SOFT,<WSSFKP - Fork special page not in core>,,<
 
-Cause:	The monitor is swapping out all pages of a process. It is
-	trying to swap out one of the special pages (JSB, PSB, etc.).
-	The page should be in core and locked, but it is not in core.
+Cause:	The monitor is swapping out all pages of a process.  It is trying to
+	swap out one of the special pages (JSB, PSB, etc.).  The page should be
+	in core and locked, but it is not in core.
 
 >)
 	LOAD T3,CSTAGE,+Q2
 	CAIGE T3,PSASN		;STILL ASSIGNED?
 	BUG.(HLT,WSSPNA,PAGEM,SOFT,<WSSFKP - Fork special page bad age>,,<
 
-Cause:	The monitor is swapping out all pages of a process. It is
-	trying to swap out one of the special pages (JSB, PSB, etc.).
-	The page should be in core and locked, but it is not
-	assigned (its age is LESS THAN PSASN).
+Cause:	The monitor is swapping out all pages of a process.  It is trying to
+	swap out one of the special pages (JSB, PSB, etc.).  The page should be
+	in core and locked, but it is not assigned (its age is less than
+	PSASN).
 >)
 	CALL ULKP6		;UNLOCK PAGE
 	CALLRET XGCRK1		;COLLECT IT
@@ -7362,7 +7410,7 @@ SWPIQ3:
 	BUG.(HLT,SPTPIC,PAGEM,SOFT,<SWPIN - SPT page already in core>,,<
 
 Cause:	A routine has been called to swap a page into core. The id for
-	the page indicates that it is a page table. The BUGHLT occurred 
+	the page indicates that it is a page table.  The BUGHLT occurred 
 	because the SPT entry for that page table already contains a core 
 	address.
 >)
@@ -7423,10 +7471,10 @@ SWPI3:	HLRZ 6,1		;GET OWNING PT OFN
 	TLNN 4,(NCORTM)
 	BUG.(HLT,PTAIC,PAGEM,SOFT,<SWPIN - PT page already in core>,,<
 
-Cause:	A routine has been called to swap a page into core. The id for
-	the page indicates that it is a data page. The BUGHLT
-	occurred because the entry in its page table contains a core
-	address.
+Cause:	A routine has been called to swap a page into core.  The id for the
+	page indicates that it is a data page.  The BUGHLT occurred because the
+	entry in its page table contains a core address.  This is a software
+	problem.
 >)
 	STOR 3,STGADR,CSWPGA(6)	;STORE NEW (CORE) ADDRESS
 	CALL RELSPG
@@ -7459,8 +7507,9 @@ SWPI5:	MOVEI 1,0(3)
 	TLNN 4,(DRMAB)		;DRUM?
 	BUG.(HLT,ILSWPA,PAGEM,SOFT,<SWPIN - Illegal swap address>,,<
 
-Cause:	A routine has been called to swap a page into core. The backup
-	address for the page is of an illegal format.
+Cause:	A routine has been called to swap a page into core.  The backup address
+	for the page is of an illegal format.  This indicates a software
+	problem.
 >)
 
 ;Read in from drum. Set up (core page,,scheduler test) to wait for read to
@@ -7621,9 +7670,9 @@ SWPERX:	MOVSI 2,(DWRBIT)	;WRITE BIT
    IFN DEBUG,<
 	  BUG.(CHK,SWDDEL,PAGEM,SOFT,<Swap read complete on a page already deleted>,<<T1,PAGE>>,<
 
-Cause: 	There was a swap read complete but the page home map location in CST2  
-	has been deleted.  This happens when the page is deleted.  The interrupt
-	is simply ignored since the page does not exist anymore.
+Cause: 	There was a swap read complete but the page home map location in CST2
+	has been deleted.  This happens when the page is deleted.  The
+	interrupt is simply ignored since the page does not exist anymore.
 
 Data:	PAGE - page number
 >,,<DB%NND>)			;[7.1238] 
@@ -7688,9 +7737,9 @@ SWPER1:	HLRZ B,@CST2X+A		;GET OWNING SPTN
    IFN DEBUG,<
 	  BUG.(CHK,SWEDEL,PAGEM,SOFT,<Swap error on a page already deleted>,<<T1,PAGE>>,<
 
-Cause: 	There was a swap read error but the page home map location in CST2 has 
-	been deleted.  This happens when the page is deleted.  The interrupt
-	is simply ignored since the page does not exist anymore.
+Cause:	There was a swap read error but the page home map location in CST2 has
+	been deleted.  This happens when the page is deleted.  The interrupt is
+	simply ignored since the page does not exist anymore.
 
 Data:	PAGE - page number
 >,,<DB%NND>)			;[7.1238] 
@@ -7737,50 +7786,75 @@ SWBOFN:	MOVX T3,OFNBAT		;GET BAT BIT
 	TXO T3,OFNWRB		;YES - INDICATE CHANGED
 	IORM T3,SPTH(T2)	; IN SPTH
 	RET
-
 
 ;DISPOSITION OF SWAP ERROR CASES
 
 SWPEX2:	BUG.(CHK,SWPIBE,PAGEM,HARD,<Swap error in index block>,,<
 
-Cause:	A hardware error occurred while the monitor was reading or
-	writing an index block either from the file space or the
-	swapping area.  Future attempts to read this block will generate
-	an error.  Future attempts to write it may produce the same
-	BUGCHK. The page will be marked in the BAT blocks.
+Cause:	A hardware error occurred while the monitor was reading or writing an
+	index block either from the file space or the swapping area.  Future
+	attempts to read this block generates an error.  Future attempts to
+	write it may produce the same BUGCHK.  The page is marked in the
+	BAT blocks.
+
+Action:	This problem can continue unless corrective action is taken.  If Field
+	Service can determine if there is a drive or media problem by running
+	SPEAR to examine the SYSERR file.  If there is a drive problem the
+	media (pack) may be ok.  If there is a media (pack) problem the media
+	should be replaced.
 >,,<DB%NND>)			;[7.1210] 
 	JRST SWPERX		;SHOULD CONTINUE OK
 
 SWPEX3:	BUG.(HLT,SWPMNE,PAGEM,HARD,<Swap error in swappable monitor>,,<
 
-Cause:	A hardware error occurred when the monitor was reading a page
-	of the swappable monitor from the swapping space.  A SYSERR
-	entry will be created when the monitor is rebooted, but the BAT
-	blocks will not be marked.
->)
+Cause:	A hardware error occurred when the monitor was reading a page of the
+	swappable monitor from the swapping space.  A SYSERR entry is 
+	created when the monitor is rebooted, but the BAT blocks are not 
+	marked.
 
+Action:	This problem can continue unless corrective action is taken.  Field
+	Service can determine if there is a drive or media problem by running
+	SPEAR to examine the SYSERR file.  The system reloads and 
+	continues to run while the problem gets worse.  If there is a drive
+	problem the media (pack) may be ok; if there is a media (pack) problem
+	the boot structure on this system should be replaced with a new one.
+>)
+
 SWPEX4:	AOS ERRSWP
 	BUG.(CHK,SWPPSB,PAGEM,HARD,<Swap error in PSB page>,,<
 
-Cause:	A hardware error occurred when the monitor was reading or writing
-	a page in a process's per-process area to or from the swapping
-	space.  The monitor will continue to run in an attempt to update
-	the BAT blocks, but will crash with a SWPXXX bughlt as soon as
-	the disk has been updated.  If the monitor is unable to update
-	the disk (in the case of the page having the error is needed to
-	update the bat blocks), the system will stop with a DDMPNR
-	BUGHLT, and the flag indicating that a serious swap error exists
-	will be set.
+Cause:	A hardware error occurred when the monitor was reading or writing a
+	page in a process's per-process area to or from the swapping space.
+	The monitor continues to run in an attempt to update the BAT
+	blocks, but crashes with a SWPxxx BUGHLT as soon as the disk has
+	been updated.  If the monitor is unable to update the disk (in the case
+	of the page having the error is needed to update the bat blocks), the
+	system stops with a DDMPNR BUGHLT, and the flag indicating that a
+	serious swap error exists is set.
+
+Action:	This problem can continue unless corrective action is taken.  Field
+	Service can determine if there is a drive or media problem by running
+	SPEAR to examine the SYSERR file.  If there is a drive problem the
+	media (pack) may be ok; if there is a media (pack) problem the boot
+	structure on this system should be replaced with a new one.
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
 SWPEX5:	BUG.(CHK,SWPJSB,PAGEM,HARD,<Swap error in JSB page>,,<
 
-Cause:	A hardware error occurred while the monitor was reading or
-	writing a page in a process's per-job area in the swapping
-	space. Future attempts to read this page will generate an error.
-	Future attempts to write it may produce the same BUGCHK. The
-	page will be marked in the BAT blocks.
+Cause:	A hardware error occurred while the monitor was reading or writing a
+	page in a process's per-job area in the swapping space.  Future
+	attempts to read this page generates an error.  Future attempts to
+	write it may produce the same BUGCHK.  The page is marked in the
+	BAT blocks.
+
+Action:	This problem can continue unless corrective action is taken.  The
+	system reloads and continues to run while the problem gets
+	worse.  Field Service can determine if there is a drive or media
+	problem by running SPEAR to examine the SYSERR file.  If there is a
+	drive problem the media (pack) may be ok; if there is a media (pack)
+	problem the boot structure on this system should be replaced with a new
+	one.
 >,,<DB%NND>)			;[7.1210] 
 	JRST SWPERX		;TRY TO CONTINUE
 
@@ -7791,45 +7865,61 @@ Cause:	A hardware error occurred when the monitor was reading or writing
 	a page from the file system or swapping space. The monitor is
 	unable to identify the owning page table.
 
-	The monitor will continue to run in an attempt to update the BAT
-	blocks, but will crash with a SWPXXX bughlt as soon as the disk
+	The monitor continues to run in an attempt to update the BAT
+	blocks, but crashes with a SWPxxx BUGHLT as soon as the disk
 	has been updated.  If the monitor is unable to update the disk
 	(in case the page having the error is needed to update the BAT
-	blocks), the system will stop with a DDMPNR BUGHLT, and the flag
-	indicating that a serious swap error exists will be set.
+	blocks), the system stops with a DDMPNR BUGHLT, and the flag
+	indicating that a serious swap error exists is set.
+
+Action:	This problem can continue unless corrective action is taken.  Field
+	Service can determine if there is a drive or media problem by running
+	SPEAR to examine the SYSERR file.  If there is a drive problem the
+	media (pack) may be ok; if there is a media (pack) problem the boot
+	structure on this system should be replaced with a new one.
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
 SWPEX7:	AOS ERRSWP
 	BUG.(CHK,SWPPT,PAGEM,HARD,<Swap error in unknown PT>,,<
 
-Cause:	A hardware error occurred when the monitor was reading or writing
-	a page table in the swapping space. The monitor is unable to
-	identify the page table.
+Cause:	A hardware error occurred when the monitor was reading or writing a
+	page table in the swapping space.  The monitor is unable to identify
+	the page table.
 
-	The monitor will continue to run in an attempt to update the BAT
-	blocks, but will crash with a SWPXXX bughlt as soon as the disk
-	has been updated.  If the monitor is unable to update the disk
-	(in the case of the page having the error is needed to update
-	the bat blocks), the system will stop with a DDMPNR BUGHLT, and
-	the flag indicating that a serious swap error exists will be
-	set.
+	The monitor continues to run in an attempt to update the BAT
+	blocks, but crashes with a SWPxxx BUGHLT as soon as the disk has
+	been updated.  If the monitor is unable to update the disk (in the case
+	of the page having the error is needed to update the bat blocks), the
+	system stops with a DDMPNR BUGHLT, and the flag indicating that a
+	serious swap error exists is set.
+
+Action:	There is a problem with the hardware.  Field Service should run SPEAR
+	and determine if there is a drive or media (pack) problem.  If there is
+	a drive problem the media may be OK; if there is a pack problem the
+	boot structure should be replaced.
 >,,<DB%NND>)			;[7.1210] 
 	RET
-
+
 SWPEX8:	AOS ERRSWP
-	BUG.(CHK,SWPUPT,PAGEM,HARD,<Swap error in UPT, or PSB>,,<
+	BUG.(CHK,SWPUPT,PAGEM,HARD,<Swap error in UPT or PSB>,,<
 
-Cause:	A hardware error occurred when the monitor was reading or
-	writing a special page (PSB, JSB or user page table) in the
-	swapping space.
+Cause:	A hardware error occurred when the monitor was reading or writing a
+	special page (PSB, JSB or user page table) in the swapping space.
 
-	The monitor will continue to run in an attempt to update the BAT
-	blocks, but will crash with a SWPXXX bughlt as soon as the disk
-	has been updated.  If the monitor is unable to update the disk
-	(in case the page having the error is needed to update the bat
-	blocks), the system will stop with a DDMPNR BUGHLT, and the flag
-	indicating that a serious swap error exists will be set.
+	The monitor continues to run in an attempt to update the BAT
+	blocks, but crashes with a SWPxxx BUGHLT as soon as the disk has
+	been updated.
+
+	If the monitor is unable to update the disk (in case the page having
+	the error is needed to update the bat blocks), the system stops
+	with a DDMPNR BUGHLT, and the flag indicating that a serious swap error
+	exists is set.
+
+Action:	There is a problem with the hardware.  Field Service should run SPEAR
+	and determine if there is a drive or media (pack) problem.  If there is
+	a drive problem the media may be OK; if there is a pack problem the
+	boot structure should be replaced.
 >,,<DB%NND>)			;[7.1210] 
 	RET
 
@@ -7856,8 +7946,8 @@ ULKP0:	MOVX T2,-PLKV
 	SKIPGE T2
 	BUG.(HLT,PLKMOD,PAGEM,SOFT,<Page lock overly decremented>,,<
 
-Cause:	The monitor decremented the lock count of a page past zero.
-	This indicates a software problem.
+Cause:	The monitor decremented the lock count of a page past zero.  This
+	indicates a software problem.
 >)
 	RET
 
@@ -7926,7 +8016,6 @@ ONRQ1:	AOS NRPLQ
 
 Cause:	ONRQ or OFRQ was called to put a page on the replaceable queue but
 	ONRQ1 has detected that the lock in CST1 for this page is not zero.
-
 >)				;[7356]YES. BAD NEWS
 	MOVEI 2,PSRPQ		;SET PAGE STATE
 	STOR 2,CSTAGE,+T1

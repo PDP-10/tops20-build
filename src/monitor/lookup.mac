@@ -1,3 +1,5 @@
+; Edit= 8921 to LOOKUP.MAC on 18-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8547, RIP:<7.MONITOR>LOOKUP.MAC.4,   9-Feb-88 17:05:00 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 27, RIP:<7.MONITOR>LOOKUP.MAC.3,  29-Jun-87 16:37:18 by RASPUZZI
@@ -426,7 +428,6 @@ Cause:	The monitor tried to get a pointer to the FDB of an output file, and
 	 BUG.(HLT,MDDJFN,LOOKUP,SOFT,<GETFDB - Called for non-MDD device>,,<
 
 Cause:	The monitor tried to get a FDB for a device other than a structure.
-
 >)
 	CALL FSTGFB		; TRY TO USE FDB ADR IN FILFDB(JFN)
 	 SKIPA			; THAT FDB ADR IS BAD

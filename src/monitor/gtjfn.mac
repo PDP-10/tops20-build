@@ -1,3 +1,18 @@
+; Edit= 9148 to GTJFN.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9082 to GTJFN.MAC on 22-Mar-89 by WONG, for SPR #22050 (TCO none)
+;GTJFN% doesn't check for bad byte pointers in the long form extended blocks.
+; Edit= 9041 to GTJFN.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 8937 to GTJFN.MAC on 23-Aug-88 by LOMARTIRE
+;Spell MONITR correctly in ACTION field of BUGs!
+; Edit= 8916 to GTJFN.MAC on 18-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
+; Edit= 8801 to GTJFN.MAC on 17-Mar-88 by RASPUZZI
+;Prevent ILMNRFs or RELBADs by having GNJFN% and JFNS% use the JFNLCK when
+;dealing with important information in the JFN block. 
 ; UPD ID= 8524, RIP:<7.MONITOR>GTJFN.MAC.11,   9-Feb-88 15:52:44 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8413, RIP:<7.MONITOR>GTJFN.MAC.10,   4-Feb-88 12:08:17 by GSCOTT
@@ -227,7 +242,7 @@
 ; UPD ID= 678, SNARK:<5.MONITOR>GTJFN.MAC.2,  19-Jun-80 15:14:03 by OSMAN
 ;tco 5.1070 - Prevent "Byte count too small" on DELETE of real long name
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -567,14 +582,32 @@ GTJFZ:	TQZ <STRF>		; No it does not
 	XCTU [TDNE A,.GJF2(D)]	; Want to find invisible files?
 	 TQO <IGIVF>		; Yes, flag that fact
 	XCTU [HRRZ A,.GJF2(D)]	;YES. GET SIZE OF EXTENDED BLOCK
+	CAIGE A,.GJCPP-.GJF2	;[9082]Do we have a count?
+	IFSKP.			;[9082]Yes
+	  UMOVE B,.GJCPP(D)	;[9082]Get the byte pointer
+	  TLC B,-1		;[9082]
+	  TLCN B,-1		;[9082]-1,,addr?
+	  IFSKP.		;[9082]No
+	    TXNE B,1B12		;[9082]Is bit 12 lit?
+	    ERRLJF (DESX1)	;[9082]Yes, not a one word byte pointer
+	  ENDIF.		;[9082]
+	ELSE.			;[9082]No count
+	  JRST USDFLT		;[9082]Go around the rest
+	ENDIF.			;[9082]
 	CAIGE A,.GJCPC-.GJF2	;IS THERE A COUNT GIVEN?
 	JRST USDFLT		;NO. GO AROUND THE REST
 	XCTU [SKIPG B,.GJCPC(D)] ;YES. IS IT NON-ZERO?
 	MOVEI B,DEFINP		;NO. USE THE DEFAULT
 	CAIGE A,.GJRTY-.GJF2	;HAVE A ^R BUFFER?
 	JRST USDFL1		;NO. GO ON THEN
-	XCTU [SKIPN .GJRTY(D)]	;IS THERE A ^R BUFFER?
+	XCTU [SKIPN A,.GJRTY(D)] ;[9082]IS THERE A ^R BUFFER?
 	JRST USDFL1		;NO. USE VALUE WE NOW HAVE
+	TLC A,-1		;[9082]
+	TLCN A,-1		;[9082]-1,,addr pointer?
+	IFSKP.			;[9082]No,
+	  TXNE A,1B12		;[9082]Is bit 12 lit?
+	  ERRLJF (DESX1)	;[9082]Yes, not a one word byte pointer
+	ENDIF.			;[9082]
 	SKIPA B,[MAXINP]	;YES. USE MAXIMUM VALUE
 USDFLT:	MOVEI B,DEFINP		;NO.GET DEFAULT
 USDFL1:	CAILE B,MAXINP		;WITHIN REASONABLE BOUNDS?
@@ -4204,7 +4237,11 @@ RELJFX:
 Cause:	Could not tell QUASAR of spooled file for output.
 
 Action:	See if QUASAR is running and check to see that the system has some
-	IPCF free space available.
+	IPCF free space available.  If the system appears to be normal and
+        if this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,,<DB%NND>)			;[7.1210] 
 
 RELJF0:	CALL RELJF3		;RELEASE COMMON STUFF
@@ -4529,7 +4566,7 @@ LENOK1:	MOVEI C,MAXSHT		;Get max size for a name
 ;RETURNS +1:	DO NOT QUOTE
 ;	 +2:	QUOTE IT
 
-QUOCHK:	SAVET			;CLOBBERS NO ACS
+QUOCHK::SAVET			;[9041] Clobbers no ACs
 	MOVE B,A		;GET CHAR INTO B FOR CPTAB
 	IDIVI B,^D36/CCSIZE	;GET CLASS CODE
 	LDB B,CPTAB(C)		;GET CODE
@@ -4800,16 +4837,21 @@ GNJMSK==STRSF+DIRSF+NAMSF+EXTSF+VERSF+RVERF+HVERF+LVERF+FXPRT+FXACT+FXTMP
 	ACVAR <JQ1,JQ2>
 	STKVAR <OFILUC,VERNUM>	;[7380] Old STR unique code and version
 	HRRZ JFN,1
+	NOINT			;[8801] Get the lock with no interruptions
+	LOCK JFNLCK		;[8801] Can't let anyone in
 	CALL CHKJFN
-	 RETERR()
+	 RETERR(,<UNLOCK JFNLCK	;[8801] Done with lock
+		  OKINT>)	;[8801] Interrupts are fine now
 	 JFCL
-	 RETERR(DESX4)
+	 RETERR(DESX4,<UNLOCK JFNLCK ;[8801] Lock finished
+		       OKINT>)	;[8801] And interrupts are OK
+	OKINT			;[8801] CHKJFN made us NOINT 1 too many times
 	TQNE <ASTF>
-	ERUNLK(DESX7)		; Output stars not allowed
+	ERUNLK(DESX7,<UNLOCK JFNLCK>) ;[8801] Output stars not allowed
 	TQNE <OPNF>
-	ERUNLK(OPNX1)
+	ERUNLK(OPNX1,<UNLOCK JFNLCK>) ;[8801] And file can't be open
 	LOAD JQ1,FLUC,(JFN)	;GET STRUCTURE UNIQUE CODE AT START
-	MOVEM JQ1,OFILUC		; SAVE OLD STR UNIQUE CODE
+	MOVEM JQ1,OFILUC	;SAVE OLD STR UNIQUE CODE
 	XCTU [HLLZ F1,1]
 	AND F1,[GNJMSK]		;KEEP ONLY CERTAIN BITS FROM USER
 	TXO F1,GNJFF		;REMEMBER THIS IS A GNJFN
@@ -4817,20 +4859,23 @@ GNJMSK==STRSF+DIRSF+NAMSF+EXTSF+VERSF+RVERF+HVERF+LVERF+FXPRT+FXACT+FXTMP
 	IFSKP.
 	  HLRZ A,FILNEN(JFN) 	;YES. GET NAME STRING
 	  CALL GNJFN3		;GO MAKE SURE IS BIG ENOUGH
-	   RETERR (GJFX22,<CALL UNLCKF>) ;NOT, AND NO MORE SPACE
+	   RETERR (GJFX22,<UNLOCK JFNLCK ;[8801] Release lock
+			   CALL UNLCKF>) ;[8801] Block too small, and none left
 	  HRLM A,FILNEN(JFN) 	;NEW STRING POINTER
 	ENDIF.
 	TXNN F1,EXTSF		;WANT TO STEP THE EXTENSION?
 	IFSKP.
 	  HRRZ A,FILNEN(JFN) 	;YES. GET EXTENSION STRING
 	  CALL GNJFN3		;GO MAKE SURE IS BIG ENOUGH
-	   RETERR (GJFX22,<CALL UNLCKF>) ;NOT BIG ENOUGH AND NO SPACE
+	   RETERR (GJFX22,<UNLOCK JFNLCK ;[8801] Release JFN lock
+			   CALL UNLCKF>) ;[8801] Block too small and no more
 	  HRRM A,FILNEN(JFN) 	;NEW STRING
 	ENDIF.
 	TXO STS,ASGF!TRNSF	;MARK AS TRANSITIONAL
 	TXZ STS,NAMEF		;AND MAKE IT APPEAR UNASSIGNED
 	MOVEM STS,FILSTS(JFN)	;AND IN THE JFN AS WELL
 	SETONE ASGF2,(JFN)	;[7384]LIGHT ASGF SHADOW BIT AS WELL
+	UNLOCK JFNLCK		;[8801] No we have indicated that the JFN is ours
 	CALL UNLCKF		;DO UNLOCK
 	;..
 	;..

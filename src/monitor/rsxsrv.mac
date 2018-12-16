@@ -1,3 +1,9 @@
+; Edit= 9148 to RSXSRV.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9116 to RSXSRV.MAC on 18-Jul-89 by GSCOTT
+;After a TTYSTP don't attempt to shut off the line if it is the CTY. 
+; Edit= 8933 to RSXSRV.MAC on 23-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8640, RIP:<7.MONITOR>RSXSRV.MAC.5,  11-Feb-88 20:16:52 by RASPUZZI
 ;TCO 7.1223 - Put back the ! that ended a comment. It got ripped out by
 ;	      previous edit.
@@ -248,7 +254,7 @@
 ;<4.MONITOR>TTFEDV.MAC.51,  1-Nov-79 17:15:09, EDIT BY MILLER
 ;Previous edit lines deleted
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -680,16 +686,23 @@ STPLNF:	JN TTSHU,(B),R		;DO NOTHING IF LINE ALREADY OFF
 	  SETONE TTWSO,(B)	;NO, REPORT IT VIA BUGINF
 	  BUG.(INF,TTYSTP,RSXSRV,HARD,<Line has been shut off because of excessive input rate>,<<T2,LINE>>,<
 
-Cause:	A terminal line on RSX20F is generating input at an excessive
-	rate.  It is being shut off for 3 seconds by having its input
-	speed set to 0. This can result from a noisy line which has a high
-	input baud rate.  If an EIA line, it may be too long and so picks
-	up electrical noise.
+Cause:	A terminal line on RSX20F console front end is generating input at an
+	excessive rate.  It is being shut off for 5 seconds by having its input
+	speed set to zero.  The high input rate can result from a noisy
+	terminal line which has a high input baud rate.  If an EIA line, it may
+	be too long and so picks up electrical noise.
 
-Action:	This problem can be prevented by eliminating the noise or reducing
-	the input speed.
->,,<DB%NND>)			;[7.1210] 
+Action:	The terminal line number specified in the additional data should be
+	checked.  This problem can usually prevented by eliminating the noise
+	or reducing the input speed.  If all connections to the terminal line
+	are tight and the line speed has not been changed recently, the front
+	end hardware should be checked by Field Service.
+
+Data:	LINE - Line being shut off
+>,,<DB%NND>)			;[9116][7.1210] 
 	ENDIF.
+	CAMN B,CTYLNO		;[9116] Is this the CTY?
+	RET			;[9116] Don't shut it off (may be a DH11 line)
 	SETONE TTSHU,(B)	;NOTE LINE SHUT OFF
 	MOVEI C,TTTOBL		;C/THE ROUTINE TO CALL
 	MOVEI A,^D5000		;5 SECONDS
@@ -1306,6 +1319,11 @@ DFNDLE:	 BUG.(INF,DLDEF,RSXSRV,HARD,<Logical name define failed for FE CTY>,,<
 
 Cause:	A CRLNM was performed to define the logical names for the FE but it
 	failed.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	AOBJN W1,DFNDLL		;DO THEM ALL
 	RET			;AND DOND

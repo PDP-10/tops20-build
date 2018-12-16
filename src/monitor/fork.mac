@@ -1,3 +1,17 @@
+; Edit= 9148 to FORK.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9119 to FORK.MAC on 24-Aug-89 by GSCOTT
+;Implement new GETOK functions .GODSK, .GOSJP, and .GOSPR. 
+; Edit= 9041 to FORK.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 9017 to FORK.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8937 to FORK.MAC on 23-Aug-88 by LOMARTIRE
+;Spell MONITR correctly in ACTION field of BUGs!
+; Edit= 8910 to FORK.MAC on 17-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8519, RIP:<7.MONITOR>FORK.MAC.5,   9-Feb-88 15:36:11 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 291, RIP:<7.MONITOR>FORK.MAC.4,  12-Nov-87 15:20:13 by WADDINGTON
@@ -383,7 +397,7 @@
 ;<4.1.MONITOR>FORK.MAC.238, 16-Nov-79 14:50:41, EDIT BY ENGEL
 ;PUT INTERNAL LINE NUMBER INTO T2 AT CALL TO STTOPF IN SCTT3
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -885,6 +899,8 @@ FFUSEC:	ASUBR <FFUA1,FFUA2>
 	MOVE 2,CAPENB
 	TRNN 2,SC%WHL+SC%OPR
 	ITERR(WHELX1)		;MUST BE PRIVILEGED
+	GTOKM(.GOSPR,<T1,T2>)	;[9119] Get permission from ACJ
+
 	CALL CKPRWV		;CHECK WORD FOR LEGALITY
 	 ITERR (ARGX22)		;INVALID BITS
 	CALL FLOCK		;LOCK THE FORK STRUCTURE
@@ -895,18 +911,21 @@ SPRI1:	UMOVE 2,2
 	HRRZ T2,SYSFK(T2)	;GET SYSTEM INDEX
 	CALL SETPRF		;INTERRUPT PROCESS
 	JRST CLFRET
-
+
 ;SET PRIORITY WORD FOR ANOTHER JOB
 ; 1/ JOB NUMBER
 ; 2/ PRIORITY WORD
 ;	SJPRI
 
 .SJPRI::MCENT
-	MOVE 2,CAPENB
 	CALL CKMMOD		;SEE IF MONITOR OR USER
-	 TRNE 2,SC%WHL+SC%OPR	;USER. SEE IF PRIVILEGED
-	SKIPA			;MONITOR OR PRIVILEGED
-	ITERR(WHELX1)
+	IFNSK.			;[9119] SJPRI was done from user mode today
+	  MOVE T3,CAPENB	;[9119] Load current capabilities
+	  TXNN T3,SC%WHL!SC%OPR	;[9119] Enough capabilites?
+	  ITERR(WHELX1)		;[9119] Wheel or operator required
+	  GTOKM(.GOSJP,<T1,T2>)	;[9119] Get permission from ACJ
+	ENDIF.			;[9119] End of user mode checks
+
 	CALL CKPRWV		;CHECK WORD FOR LEGALITY
 	 ITERR (ARGX22)		;INVALID BITS
 	CALL FLOCK		;GET FORK LOCK IN CASE THIS JOB
@@ -2732,7 +2751,6 @@ SUSFK:	SAVEAC <T1,T2>
 
 Cause:	Some routine in the monitor has erroneously tried to suspend
 	itself with SUSFK.
-
 >)
 SUSF6:	NOSKED
 	JE FKBLK,,SUSF4		;IS FORK BLOCKED NOW?
@@ -2922,6 +2940,10 @@ Cause:	Routine JFKRFH was erroneously called with a fork number which
 	is out of range.  The correct range is a value less than NUFKS.
 	JFKRFH changes a fork number into a fork handle.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	JRST JFKRH3		;ACT AS IF NOT FOUND
 JFKRH1:	MOVEI T2,.FHSLF		;CHECK IF SELF FIRST
@@ -3115,7 +3137,6 @@ Cause:	The MAPFKH routine calls itself recursively in order to
 	The MAP41F BUGHLT should never happen, and is merely a placeholder
 	for the impossible non-skip return from the recursive call to
 	MAPFKH.
-
 >)
 	HLRZ 1,0(P)		;GET FORK NUMBER BACK
 	XCT 1(P6)		;DO THIS FORK
@@ -3527,8 +3548,13 @@ Cause:	The FLOCK routine has encountered the nest count for the fork lock
 	locked for the first time.  This is probably due to some other
 	software not having cleared the nest count from some previous lock.
 
-Data:	JOB - Internal Job number whose fork discovered the non-zero
-	      nest count.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
+Data:	JOB    - Internal Job number whose fork discovered the non-zero
+	         nest count.
 	JBFORK - Jobwide fork index of the discovering fork.
 >)
 			SETZM FLKCNT
@@ -3567,12 +3593,28 @@ FLOCK3:	CALL FLKITT		;CHECK INTERRUPTABILITY
 	BUG.(CHK,FLKTIM,FORK,SOFT,<FLOCK - Fork lock timeout>,<<FORKN,JOBFRK>,<JOBNO,JOB>,<FLKOWN,OWNER>>,<
 
 Cause:	A fork has been waiting a "long time" for the fork lock.
-	This bugchk announces that the system is assuming that some fork has
+	This BUGCHK announces that the system is assuming that some fork has
 	neglected to unlock the fork lock and the waiting fork is being
 	given the lock even though someone else still has it.
 
 	The code could be in error here.  The measure of a "long time" is
 	calculated arbitrarily and can be changed. It is parameter FLKTMV.
+
+Action:	This BUG appears if the fork owning the lock is hung due
+	to some other event (unit offline, CFS voting freeze, etc.).  Usually,
+	this is not evidence of a real problem but just a temporary system
+	event which caused the fork timeout value to expire.  This BUG is
+	usually followed by a FLKNS BUGCHK since this fork acquires and
+	unlocks the lock and then the fork which had it before attempts
+	to unlock the lock and finds it already unlocked.  
+
+	There is no need to take any action due to this BUG unless a real
+	problem in the fork lock logic is suspected.  If action is desired,
+	first, try increasing FLKTMV in STG.MAC and rebuilding the monitor.
+	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	JOBFRK - Job fork number of fork desiring the lock
 	JOB    -  Internal Job number desiring the lock
@@ -3606,12 +3648,13 @@ Cause:	The routine FLOCK was called while the calling process was
 	nor was it the top fork of the job. This indicated a logic error
 	because if this fork was unable to aquire the lock it will DISMS
 	while NOINT. This can cause a deadly embrace where the fork which
-	owns the lock will not relenquish it until the fork which has dismissed
-	is interrupted which will never happen because the fork is NOINT.
+	owns the lock is not relenquish it until the fork which has dismissed
+	is interrupted which never happens because the fork is NOINT.
 
-Action: Change this into a BUGHLT and look at the resulting dump. This will
-	allow you to find the erroneous routine.
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	RET			;RETURN
 
@@ -3658,10 +3701,17 @@ FUNLK3:	BUG.(CHK,FLKNS,FORK,SOFT,<FUNLK - Lock not set>,<<FORKN,JOBFRK>>,<
 Cause:	The FUNLK routine, which unlocks the fork lock, detected that the
 	lock was already unlocked.  This should not be, since anyone
 	calling FUNLK to unlock the lock presumably first called FLOCK to
-	lock it.
+	lock it.  This BUG is usually preceded by a FLKTIM BUGCHK.  See
+	the description of FLKTIM for more details.
+
+Action:	No action is required for this BUG, especially if it was preceded
+	by a FLKTIM BUGCHK, unless a real problem in the fork lock logic is
+	suspected.  If this is the case, make the BUG dumpable and submit an 
+	SPR with the dump and a copy of MONITR.EXE.  If possible, include 
+	any known method for reproducing the problem and/or the state of the 
+	system at the time the BUG was observed.
 
 Data:	JOBFRK - Job fork number of fork desiring the lock
-
 >)
 	JRST FUNLK2
 
@@ -3986,9 +4036,8 @@ DASFKH:	PUSH P,2
    REPEAT 0,<
 	BUG.(CHK,NOXRFH,FORK,HARD,<DASFKH - Attempt to deassign nonexistant RFH, ignored>,,<
 
-Cause:	This BUG is not documented yet.
-
-Action:
+Cause:	This BUG is not assembled into the monitor.  When it is, complete 
+	documentation should be provided.
 
 >)  >	;END REPEAT 0
 	JRST PB4		;IGNORE ATTEMPT
@@ -4793,8 +4842,13 @@ NEWJTB:	MOVE T1,JTBFRE		;FREE STORAGE BIT TABLE
 
 Cause:	Word JTBFRE in the JSB has bit n on if JSYS trap block n is
 	available.  The NEWJTB routine assigns trap blocks, looking in JTBFRE
-	for a bit on.  If no bit is found to be on in JTBFRE, the NWJTBE bugchk
+	for a bit on.  If no bit is found to be on in JTBFRE, the NWJTBE BUGCHK
 	occurs.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	MOVE T3,BITS(T2)	;MARK BLOCK AS ASSIGNED
 	ANDCAM T3,JTBFRE

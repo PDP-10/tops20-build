@@ -1,3 +1,11 @@
+; Edit= 9171 to ROUTER.MAC on 22-Jun-90 by GSCOTT
+;Prevent ROUNAV BUGCHKs when an endnode suddenly becomes a router (bug turned
+;up by the DECrouter-2000 implementation); allocate a routing vector and give
+;BUGINF ROUTEU when this happens. 
+; Edit= 8988 to ROUTER.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8932 to ROUTER.MAC on 23-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8608, RIP:<7.MONITOR>ROUTER.MAC.4,  11-Feb-88 17:17:36 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8441, RIP:<7.MONITOR>ROUTER.MAC.3,   4-Feb-88 16:20:19 by GSCOTT
@@ -269,7 +277,7 @@
 ; UPD ID= 300, SNARK:<6.1.MONITOR>ROUTER.MAC.7,  20-Jan-84 15:51:24 by GLINDELL
 ;New event logger interface
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1984, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1984, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -290,7 +298,7 @@
       ;TITLE ROUTER - Routing Layer Service for DECnet-36  V050
 
 	SUBTTL V. Brownell & Anthony J. Rizzolo/Tarl/AJR/HMP 15 Jan 85
-	SEARCH D36PAR,MACSYM
+	SEARCH D36PAR		;[9171]
 	SALL
 
 	ENTRY RTRINI
@@ -302,7 +310,7 @@ IFN FTOPS20,<
 	>
 
 IFN FTOPS10,<
-	SEARCH F,S
+	SEARCH F,S,MACSYM	;[9171]
 	TITLE ROUTER - Routing Layer Service for DECnet-36
 >;END OF IFN FTOPS10
 	D36SYM			;SET UP D36 SPECIFIC PARAMETERS
@@ -386,31 +394,31 @@ IFN FTOPS10,<$RELOC>
 ;       36.9    RTCNIE - NI Endnode Hello message  . . . . . .  93
 ;   37. RTCILL - Illegal message received  . . . . . . . . . .  94
 ;   38. RTRBAV - Build adjacency's routing vector from routing  95
-;   39. RTCRME - Routing message error processor . . . . . . .  98
-;   40. RTRPNI - Parse a Message Header for NI Hello messages   99
-;   41. PSINFO - Parse the info field of Ethernet router hello 100
-;   42. RTRRCV - Read version information from message . . . . 101
-;   43. RTRHDP - Parse a Input Router Message Header . . . . . 102
-;   44. RTRCTD - Check for valid test pattern in Hello/Test me 105
-;   45. RTRGNA - Get node address from message header  . . . . 106
-;   46. PADSKP - Skip over pad bytes in an Ethernet message he 107
+;   39. RTCRME - Routing message error processor . . . . . . . 100
+;   40. RTRPNI - Parse a Message Header for NI Hello messages  101
+;   41. PSINFO - Parse the info field of Ethernet router hello 102
+;   42. RTRRCV - Read version information from message . . . . 103
+;   43. RTRHDP - Parse a Input Router Message Header . . . . . 104
+;   44. RTRCTD - Check for valid test pattern in Hello/Test me 107
+;   45. RTRGNA - Get node address from message header  . . . . 108
+;   46. PADSKP - Skip over pad bytes in an Ethernet message he 109
 ;   47. Network Management
-;       47.1    RTRNMX - Entry into Router . . . . . . . . . . 108
-;       47.2    Read/Set/Clear a parameter . . . . . . . . . . 109
-;       47.3    Common routine for parameters  . . . . . . . . 110
-;       47.4    Setup for loading parameter data . . . . . . . 111
-;       47.5    Qualified parameters . . . . . . . . . . . . . 112
-;       47.6    READ node/executor state . . . . . . . . . . . 113
-;       47.7    Read circuit state . . . . . . . . . . . . . . 114
-;       47.8    Set/Clear executor state . . . . . . . . . . . 115
-;       47.9    Set/Clear circuit state  . . . . . . . . . . . 116
-;       47.10   Show counters  . . . . . . . . . . . . . . . . 117
-;       47.11   Return list  . . . . . . . . . . . . . . . . . 118
-;       47.12   Show known/active nodes  . . . . . . . . . . . 119
-;       47.13   Show adjacent nodes  . . . . . . . . . . . . . 120
-;       47.14   Show active circuits . . . . . . . . . . . . . 121
-;       47.15   Show known circuits  . . . . . . . . . . . . . 122
-;       47.16   Return list of adjacencies on a circuit  . . . 123
+;       47.1    RTRNMX - Entry into Router . . . . . . . . . . 110
+;       47.2    Read/Set/Clear a parameter . . . . . . . . . . 111
+;       47.3    Common routine for parameters  . . . . . . . . 112
+;       47.4    Setup for loading parameter data . . . . . . . 113
+;       47.5    Qualified parameters . . . . . . . . . . . . . 114
+;       47.6    READ node/executor state . . . . . . . . . . . 115
+;       47.7    Read circuit state . . . . . . . . . . . . . . 116
+;       47.8    Set/Clear executor state . . . . . . . . . . . 117
+;       47.9    Set/Clear circuit state  . . . . . . . . . . . 118
+;       47.10   Show counters  . . . . . . . . . . . . . . . . 119
+;       47.11   Return list  . . . . . . . . . . . . . . . . . 120
+;       47.12   Show known/active nodes  . . . . . . . . . . . 121
+;       47.13   Show adjacent nodes  . . . . . . . . . . . . . 122
+;       47.14   Show active circuits . . . . . . . . . . . . . 123
+;       47.15   Show known circuits  . . . . . . . . . . . . . 124
+;       47.16   Return list of adjacencies on a circuit  . . . 125
 	Subttl	Table of Contents (page 3)
 
 ;		     Table of Contents for ROUTER
@@ -419,26 +427,26 @@ IFN FTOPS10,<$RELOC>
 ;
 ;
 ;   48. Network Management Event Interface
-;       48.1    Router Event Types . . . . . . . . . . . . . . 124
-;       48.2    Event Reason Definitions . . . . . . . . . . . 126
-;       48.3    RTNEVT - Event Reporter  . . . . . . . . . . . 127
-;       48.4    Event Parameter Processors . . . . . . . . . . 128
-;       48.5    Event Processor Subroutines  . . . . . . . . . 131
-;       48.6    Miscellaneous Event Processors . . . . . . . . 132
+;       48.1    Router Event Types . . . . . . . . . . . . . . 126
+;       48.2    Event Reason Definitions . . . . . . . . . . . 128
+;       48.3    RTNEVT - Event Reporter  . . . . . . . . . . . 129
+;       48.4    Event Parameter Processors . . . . . . . . . . 130
+;       48.5    Event Processor Subroutines  . . . . . . . . . 133
+;       48.6    Miscellaneous Event Processors . . . . . . . . 134
 ;   49. Miscellaneous Routines
-;       49.1    RTRSAO - Set Adjacency off line  . . . . . . . 134
-;       49.2    RTRZCB - Zap Circuit Block . . . . . . . . . . 135
-;       49.3    RTRZAA - Zap all Adjacancies associated with R 136
-;       49.4    RTRZAB - Zap an adjacency block  . . . . . . . 137
-;       49.5    RTRMCB - Make a Circuit Block  . . . . . . . . 139
-;       49.6    RTRGCB - Get Circuit Block Pointer . . . . . . 140
-;       49.7    CPYMSG - Copy all MSDs together  . . . . . . . 143
-;       49.8    RTRGBS - Get maximum blocksize . . . . . . . . 144
-;       49.9    RTRCBS - Get useable blocksize . . . . . . . . 145
-;       49.10   FREMSG - Toss a Message  . . . . . . . . . . . 146
-;       49.11   CKSNRM - Normalize Checksum  . . . . . . . . . 147
-;   50. Local Router Storage . . . . . . . . . . . . . . . . . 148
-;   51. End of ROUTER  . . . . . . . . . . . . . . . . . . . . 149
+;       49.1    RTRSAO - Set Adjacency off line  . . . . . . . 136
+;       49.2    RTRZCB - Zap Circuit Block . . . . . . . . . . 137
+;       49.3    RTRZAA - Zap all Adjacancies associated with R 138
+;       49.4    RTRZAB - Zap an adjacency block  . . . . . . . 139
+;       49.5    RTRMCB - Make a Circuit Block  . . . . . . . . 141
+;       49.6    RTRGCB - Get Circuit Block Pointer . . . . . . 142
+;       49.7    CPYMSG - Copy all MSDs together  . . . . . . . 145
+;       49.8    RTRGBS - Get maximum blocksize . . . . . . . . 146
+;       49.9    RTRCBS - Get useable blocksize . . . . . . . . 147
+;       49.10   FREMSG - Toss a Message  . . . . . . . . . . . 148
+;       49.11   CKSNRM - Normalize Checksum  . . . . . . . . . 149
+;   50. Local Router Storage . . . . . . . . . . . . . . . . . 150
+;   51. End of ROUTER  . . . . . . . . . . . . . . . . . . . . 151
 	SUBTTL Loose ends
 
 ;Fix events returned to NTMAN (poorly formatted)
@@ -1350,9 +1358,11 @@ RTRXMT:	MOVE T2,DCNSTA		;Get DECnet state
 Cause:	We have received a message from NSP to send.  However, the source node
 	address is not that of the local Router.
 
-Action:	Check in LLINKS or SCLINK to see how we got an invalid source node
-	address.
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Check in LLINKS or SCLINK to 
+	see how an invalid source node address occurred.
 >,FREMSG)
 
 CKLOOP:	LOAD T1,MBCHN,(MB)	;GET CHANNEL NUMBER (circuit id)
@@ -1364,6 +1374,10 @@ CKLOOP:	LOAD T1,MBCHN,(MB)	;GET CHANNEL NUMBER (circuit id)
 Cause:	There was a request to send a message on a particular circuit, however  
 	the circuit has never been intialized by the routing layer.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,FREMSG)
 	STOR RC,RMOCP,(MB)	;Store it as output circuit
 	LOAD AJ,RCAJQ,(RC)	;Get an adjacency pointer
@@ -1564,8 +1578,11 @@ Cause:	RTRFWD got through its Forward process and either did
 	not pick up a route or failed to flag a message which was for the
 	local node or an unreachable message.
 
-Action:	Look for corruption in the routing vector.
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and look for 
+	corruption in the routing vector.
 >,FREMSG)
 
 ;Here when destination node is out-of-range.
@@ -1579,13 +1596,18 @@ RTRFOR:	TMNE RMRQR,(MB)		;WAS RETURN REQUESTED
 
 Cause:	There is a request to forward a packet to a node whose address is
 	outside the range of our routing vector.  Either our NSP has given
-	a packet we cannot forward or we have received one from the wire.
+	a packet the monitor cannot forward or the monitor has received one 
+	from the wire.
 
-Action:	If the source is local check to see how NSP could give a packet
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+        at the time the BUG was observed.
+
+       	If the source is local check to see how NSP could give a packet
 	whose destination node address is greater than RTRMXN.  If the
 	source is remote then there is something wrong with its routing
 	database or algorithm.
-
 >,FREMSG)
 
 	LOAD T2,RCLID,(T2)	;Get device ID
@@ -1918,8 +1940,11 @@ R2NCAL:	SKIPN T4,MB		;HE WANTS THE MESSAGE BLOCK PTR IN T4
 Cause:	Somehow MB was trashed in the forward process.  It is unlikely
 	to get this far if RTRFWD rececived a bad MB.
 
-Action:	Look for faulty code in the forward process
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Look for faulty code in the 
+	forward process.
 >,RTN)
 	LOAD T1,MBDST,(MB)	;GET THE DESTINATION OF THIS MESSAGE
 	LDB T2,[POINTR(T1,RN%ARE)] ;GET THE AREA IN T2
@@ -1937,6 +1962,10 @@ R2NCL1:	ADD T1,RTRNRV		;GET NODE'S ENTRY IN "NORMAL" VECTOR
 Cause:	We have decided to return a message to the local NSP but the local
 	NSP was not the originator.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,R2NCLE)
 R2NCLE:	SETZRO RMODN,(MB)	;MAKE FREMSG TOSS THE MSG NOW
 	CALLRET FREMSG		;RETURN MSG BLK TO FREE POOL
@@ -2068,6 +2097,11 @@ CALKO1:	CAIE T1,DF.HLT		;IS THIS A HALT KONTROLLER FUNCTION?
 
 Cause:	CALKON was called with an illegal function code. The only allowed
 	values are DF.XMT, DF.OPN, and DF.CLS.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,RTN)
 
 	SETONE RCHLT,(RC)	;FLAG HALT TO BE DONE AT JIFFY LEVEL.
@@ -2447,10 +2481,14 @@ RTRSRB:	SETOM TOTALNF		; Indicate we need to send complete topology
 	SKIPN T1		;HAVE ONE TO USE?
 	 BUG.(CHK,ROUBSZ,ROUTER,SOFT,<Router circuit block size was zero on a running circuit>,,<
 
-Cause: The blocksize for a circuit is defaulted to RTRBSZ and updated which
+Cause:	The blocksize for a circuit is defaulted to RTRBSZ and updated with 
 	information from nodes on the circuit to determine a new minimum
 	blocksize for the circuit.  Somehow this ended up as zero.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,UPDLOP)
 	LOAD AJ,RCAJQ,(RC)	; No, then get pointer to only adjacency for
 				;  point-point or any for broadcast
@@ -2641,6 +2679,10 @@ RTRCK1:	SETZRO RNCHG,(P1)	;CLEAR OUT CHANGE FLAG
 Cause:	Somehow our internal reachability vector has been damaged since the
 	last rebuilding.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	MOVEM T1,RTRCKS		;STORE THE CHECKSUM
 	RET			;RETURN TO CALLER
@@ -3034,6 +3076,10 @@ RTREH3:	LOAD AJ,AJNXT,(AJ)	;Step to next adjacency
 Cause:	An adjacency block has been left in the queue of active adjacencies
 	but its state is unused.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,RTREH3)
 	LOAD T1,AJNAH,(AJ)	;Hi-order NI address
 	LOAD T2,AJNAL,(AJ)	; and the low-order
@@ -3188,9 +3234,8 @@ IFN FTPARANOIA,<
 Cause:	The module DNADLL and ROUTER get their function code from the D36PAR.
 	They must have been compiled from different UNVs.
 
-Action:	Compile from the same D36PAR.UNV
-
-  >,RTN)
+Action:	Compile from the same D36PAR.UNV.
+>,RTN)
 > ;END IFN FTPARANOIA
 	SAVEAC <MB,MS,RC,AJ,P1,P2,Q1,Q2>    ;SAVE SOME AC'S
 	STKVAR <DSPWRD>		; Place to save word from dispatch table
@@ -3208,8 +3253,12 @@ Cause:	DNADLL has called RTRDLE with a function requiring a message
 	block, and the pointer supplied (in T3) is either 0 or out of
 	range.
 
-Action:	Determine why DNADLL gave a bogus pointer since he
-	originally should have obtained it from us.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Determine why DNADLL gave a 
+	bogus pointer since it originally should have obtained it from 
+	the monitor.
 >,RTRDS9)
 IFN FTPARANOIA,<
 	CALL DNCHMB##		;ASK D36COM TO CHECK THIS POINTER FOR US
@@ -3838,15 +3887,15 @@ RTCRTE:	TRACE RTR,<Processing Routing message>
 	    CAXE T1,ADJ.LN	;Is it non-routing?
 	    IFSKP.
 	      LOAD T1,AJNAN,(AJ) ;Get address and give a buginf
-	      BUG.(INF,ROURFN,ROUTER,SOFT,<Routing message received from non-routing node>,<<T1,Address>>,<
+	      BUG.(INF,ROURFN,ROUTER,SOFT,<Routing message received from non-routing node>,<<T1,ADDRESS>>,<
 
-Cause:	We have received a routing message from a node we believe to be an
-	endnode so we will have no vector to store it in.
-	count.
+Cause:	The monitor has received a routing message from a node the monitor 
+	believe to be an endnode so the monitor has no vector to store it in.
 
 Action:	Check the address of the node and then see if it thinks it is a
 	routing/non-routing node.
 
+Data:	ADDRESS - Address of node
 >,FREMSG)
 	    ENDIF.
 	    CALL DNG1BY		; Get expected reserved byte
@@ -4074,9 +4123,8 @@ RHMASR:	SETO T1,		;Flag to indicate that this is a router hello
 	CAILE T1,^D236		;NUMBER MAKE SENSE
 	 BUG.(INF,ROURCE,ROUTER,SOFT,<Bad NI Router list message format>,,<
 
-Cause:	We have received a router hello message with more than 256 known
-	2-way adjacencies.
-
+Cause:	The monitor has received a router hello message with more than 256 
+	known 2-way adjacencies.
 >,FREMSG)
 
 ; RHMASR  continued
@@ -4180,7 +4228,10 @@ RTCILL:	MOVE T1,MB		; Setup for DNFMSG
 Cause:	The DLL received a bad message from another node or incorrectly copied
 	a message into the message block.
 
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,DNFMSG)
 	
 	SUBTTL RTRBAV - Build adjacency's routing vector from routing update
@@ -4202,10 +4253,14 @@ RTRBAV:	STKVAR <MSGLEN,VECMAX>
 RTRBA3:	CALL DNG2BY		;YES, THEN GET THE COUNT OF ENTRIES
 	 BUG. (CHK,ROUUOC,ROUTER,SOFT,<Unable to obtain count of nodes in Phase IV message>,,<
 
-Cause:	We have received what we think is a routing message that DNLENG said
-	has more bytes than we have read and when we try to read another two
-	DNG2BY says the count is exhausted.
+Cause:	The monitor has received a routing message that DNLENG indicates has 
+	more bytes than has been read.  When another read is attempted, DNLENG
+	indicates the count is exhausted.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,RTRBA9)
 	MOVE P2,T1		;SAVE THE COUNT
 	CALL DNG2BY		;Get two bytes of starting node ID
@@ -4216,32 +4271,35 @@ Cause:	We have received what we think is a routing message that DNLENG said
 Cause:	An adjacent node has sent a routing message with the start ID
 	that would cause indexing into the per adjacency vector past
 	the end of the vector.
-
 >,RTRBA9)
 	MOVNI T2,2		;Account for the bytes we just read
 	ADDM T2,MSGLEN		; 4 bytes = 2 entries
-	LOAD P1,AJRTV,(AJ)	;GET THE ADJACENCY ROUTING VECTOR POINTER
+
 
-	JUMPE P1,[
-	 BUG. (CHK,ROUNAV,ROUTER,SOFT,<An adjacency has no routing vector>,<<AJ,Adjacency block>>,<
+;[9171] Get the address of the routing vector for the Phase IV router.  If a
+;node was a non-routing node and now is a routing node, there will not be a
+;adjacency routing vector pointer, so we have to allocate one now.  Nonskip
+;from RTRBAU means there is no vector Victor (what's the clearance Clarence?)
 
-Cause:	A routing vector is built for each routing adjacency when the adjacency
-	block is created.  Either we didn't build one or we cleared the pointer
-	to it.
-
->,RTRBA9)]
+	CALL RTRBAU		;[9171] (/P1) Get the adjacency routing vector
+	 JRST RTRBA9		;[9171] Owie, bugchk issued
 	MOVE T3,P1		;Compute the last address in the
 	ADD T3,RTRMXN		; per adjacency vector that we can
 	MOVEM T3,VECMAX		; use
 	ADD P1,T1		;ADD IN THE STARTING NODE NUMBER
 	JRST RTRBA5		;SKIP PHASE III CODE
 
+;[9171] Get the address of the routing vector for the Phase III router.
+
 RTRBA4:	MOVE P2,MSGLEN		;GET THE MESSAGE LENGTH BACK
-	LOAD P1,AJRTV,(AJ)	;GET THE ADJACENCY ROUTING VECTOR POINTER
+	CALL RTRBAU		;[9171] (/P1) Get the adjacency routing vector
+	 JRST RTRBA9		;[9171] Wow, not enough freespace 
 	MOVE T3,P1		;Compute the last address in the
 	ADD T3,RTRMXN		; per adjacency vector that we can use
 	MOVEM T3,VECMAX
 	AOJ P1,			; Increment it to node 1
+
+;[9171] Validate the number of nodes in update.
 
 RTRBA5:	MOVE T1,P2		; Number of nodes in message or segment
 	TMNE AJPH4,(AJ)		; Phase IV node?
@@ -4250,15 +4308,14 @@ RTRBA5:	MOVE T1,P2		; Number of nodes in message or segment
 ;	CAMLE T1,RTRMXN		; More than we care to know about?
 	BUG.(CHK,ROURML,ROUTER,SOFT,<Stored routing message format error in RTRBAV>,<<T1,COUNT>>,<
 
-Cause:	We have received a P3 routing message with a negative count of nodes
-	in it or no checksum or a P4 routing message with a negative segment
-	count.
+Cause:	The monitor has received a P3 routing message with a negative count 
+	of nodes in it or no checksum or a P4 routing message with a negative 
+	segment count.
 
-Data:	Count - Count or checksum
-
+Data:	COUNT - Count or checksum
 >,RTRBA9)
 
-;RTRBAV - Continued from last page
+
 ;At this point P2 contains the number of entries in the routing message for
 ;Phase III messages or the number of entries in the segment for Phase IV.
 
@@ -4269,7 +4326,6 @@ Cause:	The number of bytes in the routing message did not correspond
 	to the length expected. This may be caused by reading too many 
 	bytes out of the message without decrementing the count of bytes 
 	read or caused by an improper routing message.
-
 >,RTRBA9)
 	CAMG P1,VECMAX		; Have we stepped past the end of the vector?
 	IFSKP.			;  A CAMG because vector size is RTRMXN+1
@@ -4298,6 +4354,60 @@ RTRBA9:	SKIPN HIADDR		; Any overflows?
 	  CALL RTCRTF		; Yes, EVENT - Partial routing update loss
 	ENDIF.
 	CALLRET FREMSG		; Return message block
+
+;[9171] Here from RTRBAV to get the address of the routing vector.  If a node
+;was a non-routing node and now is a routing node, there will not be a
+;adjacency routing vector pointer.  DECrouter-2000s come up as end nodes then
+;change to routers.  If there is none, we have to allocate one now.
+;Call only from RTRBAV with AJ/ set up
+;Returns +1 if there is no vector (Victor) and none was allocated
+;Returns +2 if RTV (now) exists with P1/ address
+
+RTRBAU:	LOAD P1,AJRTV,(AJ)	;[9171] Get adjacency routing vector pointer
+	JUMPN P1,RSKP		;[9171] Return now if we have one
+	SAVET			;[9171] Save the temps for a moment please
+	MOVE T1,RTRMXN		;[9171] Get the maximum node number
+	ADDI T1,1		;[9171] Add one for node zero 
+	CALL DNGWDZ		;[9171] (T1/T1) Get that many words
+	 BUG.(CHK,ROUNAV,ROUTER,SOFT,<An adjacency has no routing vector>,<<AJ,Adjacency block>>,<
+
+Cause:	A routing vector is built for each routing adjacency when the adjacency
+	block is created if the node is a router.  The monitor has discovered
+	that a routing node has supplied a routing update but there is no
+	routing vector.  This can happen if a node comes up as an endnode and
+	later changes to a router (DECrouter-2000s do this).  The monitor
+	attempted to create a routing vector but none could be created,
+	probably due to a lack of freespace.  The routing update is ignored.
+
+Action:	Reloading the system should clear up this problem.  It may be that
+	there is not enoug DECnet free space on the system.  If this BUG
+	persists and is reproducible, set this BUG dumpable and submit an SPR
+	with the dump, a copy of MONITR.EXE, and details about the local DECnet
+	configuration and DECnet applications.  Include any known method for
+	reproducing the problem and/or loading and state of the system at the
+	time the BUG was observed.
+
+Data:	AJ - Adjacency block
+>,RTN)				;[9171] Not much we can do but return +1
+	MOVE P1,T1		;[9171] Copy the address of the block
+	STOR P1,AJRTV,(AJ)	;[9171] Store the address of the routing vector
+	MOVE T2,RTRMXN		;[9171] Get the maximum number of nodes
+	ADD T2,T1		;[9171] For end of smear
+	MOVX T3,RNCHG!RNHOP!RNCST ;[9171] Get infh and infc and change flag
+	CALL DNSWDS		;[9171] (T1,T2,T3/) Smear the vector
+	LOAD T2,AJNAA,(AJ)	;[9171] Get area number of sender
+	LOAD T3,AJNAN,(AJ)	;[9171] Get node number of sender
+	BUG.(INF,ROUTEU,ROUTER,SOFT,<Endnode upgraded to router>,<<T2,AREA>,<T3,NODE>>,<
+
+Cause:	A routing vector is built for each routing adjacency when the adjacency
+	block is created if the node is a router.  The monitor has discovered
+	that a routing node has supplied a routing update but there is no
+	routing vector.  A routing vector has been created for this node.
+
+Data:	AREA - DECnet area number of node sending routing update
+	NODE - DECnet node number of node sending routing update
+>)				;[9171] Tell Greg something happened
+	RETSKP			;[9171] Return +2 with P1/ address
 
 ;Here to report the partial routing update loss.
 
@@ -4622,7 +4732,6 @@ RTRCTD:	SAVEAC <P1>
 
 Cause:	We received a hello message from a P3 node or a P4 endnode
 	that contained too many bytes of test data.
-
 >,FREMSG)
 
 ;Check to see if the test data is ok.
@@ -4635,7 +4744,6 @@ Cause:	We received a hello message from a P3 node or a P4 endnode
 		  BUG.(INF,ROUBTM,ROUTER,SOFT,<Bad Hello or Test message>,,<
 
 Cause:	We have received bad test data in a hello message.
-
 >,FREMSG)
 		  JRST .]	;LOOK AT ALL THE BYTES
 	CALL FREMSG		;FREE THE MESSAGE AND RETURN
@@ -4695,7 +4803,11 @@ IFN FTPARANOIA,<
 Cause:	The function code supplied by NTMAN is out of range of functions
 	supported by Router.
 
-Action:	Find routine in NTMAN supplying illegal function code and correct it.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Find routine in NTMAN supplying 
+	illegal function code and correct it.
 >,RNMXER (NF.MPE))
 >
 	SAVEAC <P1,P2,RC,AJ>
@@ -5356,10 +5468,13 @@ RTNEVT:  SETZ CX,
 	CAILE P2,RET.MX		;EVENT TYPE
 	BUG.(CHK,ROUUET,ROUTER,SOFT,<Unknown event type in RTNEVT>,,<
 
-Cause:	We supplied ourselves with a bad event code.
+Cause:	The monitor supplied us with a bad event code.
 
-Action:	Look for someone smashing T1 or a problem with the EVENTS macro
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Look for someone smashing T1 or 
+	a problem with the EVENTS macro.
 >,RTN)
 
 	MOVE P1,T2		;SAVE THE ENTITY-ID
@@ -5401,6 +5516,8 @@ RTNEV5:	MOVX T1,NE.LEN+<<EVTMLN+3>/4> ;GET ENOUGH FOR ARG BLOCK AND
 
 Cause:	DECnet has exhausted its free space.
 
+Action:	This BUG is informational and no action is required.  However, you may
+	wish to investigate why there is no more DECnet free space.
 >,RTN,<DB%NND>)			;[7.1210]
 	STOR P1,NEEID,(T1)	;PUT ENTITY-ID IN EVENT BLOCK
 	MOVE P1,T1		;SAVE THE POINTER TO THE BLOCK
@@ -5441,8 +5558,11 @@ RTEPKH:	STKVAR <MSGFLG>
 Cause:	We are attempting to read data from an MB to report in an event but
 	the caller failed to supply a message address.
 
-Action:	Check caller and see why it didn't supply a message block address.
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Check caller and see why it didn't 
+	supply a message block address.
 >,RTN)
 	MOVEI T1,0		;GET PARAMETER NUMBER
 	MOVEI T2,2		;GET NUMBER OF BYTES
@@ -5512,8 +5632,11 @@ RTEPKB:	SKIPN MB		;MUST HAVE A MESSAGE BLOCK HERE
 Cause:	We are attempting to read data from an MB to report in an event but
 	the caller failed to supply a message address.
 
-Action:	Check caller and see why it didn't supply a message block address.
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Check caller and see why it didn't 
+	supply a message block address.
 >,RTN)
 	MOVEI T1,1		;GET PARAMETER NUMBER
 	MOVEI T2,2		;GET NUMBER OF BYTES
@@ -6157,8 +6280,11 @@ FREMSG:	SKIPN T1,MB		;GET POINTER TO MESSAGE BLOCK
 
 Cause:	FREMSG called to free an MB but was given a zero pointer.
 
-Action:	Check caller and see why no MB address was supplied.
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Check caller and see why no MB 
+	address was supplied.
 >,RTN)
 
 	TMNE RMODN,(MB)		;DOES NSP WANT THIS BACK?

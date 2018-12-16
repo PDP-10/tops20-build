@@ -1,3 +1,15 @@
+; Edit= 9148 to DISC.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9101 to DISC.MAC on 8-Jun-89 by GSCOTT
+;Prevent looping with FILBATs if ERROR.SYS is damaged. 
+; Edit= 9094 to DISC.MAC on 30-May-89 by WONG, for SPR #22065 (TCO none)
+;Don't allow RNAMF% JSYS if file is set never delete (FB%NDL). 
+; Edit= 8995 to DISC.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8886 to DISC.MAC on 12-Aug-88 by RASPUZZI
+;Update BUG. documentation.
+; Edit= 8870 to DISC.MAC on 29-Jul-88 by LOMARTIRE, for SPR #21930
+;Prevent OPNX9 when file goes long and PT0 access is incorrect 
 ; UPD ID= 8642, RIP:<7.MONITOR>DISC.MAC.11,  16-Feb-88 13:46:07 by GSCOTT
 ;TCO 7.1225 - Prevent OFNLEN from going to 770000,,0 in UPDLEN
 ; UPD ID= 8504, RIP:<7.MONITOR>DISC.MAC.10,   9-Feb-88 14:54:04 by GSCOTT
@@ -253,7 +265,7 @@
 ;<4.1.MONITOR>DISC.MAC.39, 16-Nov-79 09:08:20, EDIT BY R.ACE
 ;TCO 4.1.1020 - MAKE .RNAMF UPDATE THE .FBCRE WORD OF THE FDB
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -636,7 +648,7 @@ DSKINS:	EA.ENT
 	CALL USTDIR
 	RET
 
-DSKINB:	BUG.(CHK,GTFDB1,DISC,SOFT,<DSKINS - GETFDB FAILURE.>,,<
+DSKINB:	BUG.(CHK,GTFDB1,DISC,SOFT,<DSKINS - GETFDB failure.>,,<
 
 Cause:	The newly created file data block to mark file as being temporary
 	cannot be found.
@@ -943,7 +955,6 @@ BP$005:				;BREAKPOINT FOR  GET EXISTING PTT
 	BUG.(HLT,NOPGT0,DISC,SOFT,<OPNLNG - No page table 0 in long file.>,,<
 
 Cause:	There is no page 0 for long file being opened.
-
 >)
 	LOAD B,STR,(JFN)	;GET STRUCTURE NUMBER FROM JFN BLOCK
 	TRNE F1,OF%RTD		;RESTRICTED ACCESS REQUESTED?
@@ -1104,14 +1115,15 @@ DMPLP:	SKIPL SVIOW1
 	IBP A			;GETS LOC OF FIRST WORD OF FILE
 	XSFM T2			;Get previous context section
 	TXNN T2,PCU		;User mode?
-	 BUG.(CHK,DMPIOM,DISC,SOFT,<DSKDM - I/O disk dump mode I/O called from monitor>,,<
+	BUG.(CHK,DMPIOM,DISC,SOFT,<DSKDM - I/O disk dump mode I/O called from monitor>,,<
 
 Cause:	DSKDMI or DSKDMO called and the previous context indicates
-	an exec mode DUMPI% or DUMPO% JSYS.  There aren't any.
+	an exec mode DUMPI% or DUMPO% JSYS, where there aren't any.
 
-Action:	Look at the code because something is broken.  It is also possible 
-	that some code has been changed to do dump mode I/O.
-
+Action:	If this becomes persistent, change this to a BUGHLT and submit
+	an SPR. Look at the code because something is broken.
+	It is also possible that some code has been changed to
+	do dump mode I/O.
 >)
 	ANDI T2,EXPCS		;Keep previous context section only
 	HRLZS T2		;Put in proper place
@@ -1324,7 +1336,7 @@ NEWLP1:
 	HRLZ T2,FILOFN(JFN)	;GET XB2DAT (PTT OFN,,0)
 	EXCH T2,SPTO4(T1) ;SAVE IT
 	SKIPE T2		;OK. CHECK FOR STRANGE RACES
-	 BUG.(HLT,LNGLNG,DISC,SOFT,<NEWLFP - File going long is already long>,,<
+	BUG.(HLT,LNGLNG,DISC,SOFT,<NEWLFP - File going long is already long>,,<
 
 Cause:	A file is becoming long for the first time. This BUG indicates that
 	the file is already long.
@@ -1457,10 +1469,10 @@ BP$008:				;BREAKPOINT FOR MAKE NEW PT IN LONG FILE
 	IOR A,IMMPTR		;CONSTRUCT STANDARD PTR
 	EXCH A,(B)		;CHECK FOR IMPOSSIBLE? RACES
 	SKIPE A			;SHOULD BE NEW
-	 BUG.(HLT,XTRAPT,DISC,SOFT,<NEWLFT - Extra page table in long file>,,<
+	BUG.(HLT,XTRAPT,DISC,SOFT,<NEWLFT - Extra page table in long file>,,<
 
 Cause:	The monitor is attempting to create a new file section in a long
-	file. This bughlt indicates that the page table slot in the super PT
+	file. This BUGHLT indicates that the page table slot in the super PT
 	already contains a pointer to a second level PT. This indicates a race
 	of some kind when a a new page table is created.
 >)
@@ -1724,6 +1736,10 @@ OFJBAD:	BUG.(HLT,OFJFBD,DISC,SOFT,<OFNJFN - OFNJFN found bad data>,,<
 
 Cause:	An OFN was found whose bits indicated that it was or was not a
 	secondary index block. SPTO4 was found to disagree.
+
+Action:	One already discovered cause of this BUGHLT is the accidental
+	clearing of the OFN2XB bit by CHKLAC. There may be other spots
+	in the monitor where this bit is handled incorrectly.
 >)
 
 
@@ -1832,17 +1848,17 @@ DSKCL0:	SKIPE DMFLG		;A DISMOUNTED STRUCTURE?
 	JRST [HRRZ T4,FILDDN(JFN) ;DIRECTORY NUMBER
 	      LOAD T2,STR,(JFN)	;STRUCTURE NUMBER
 	      MOVE T2,@STRTAB(T2) ;GET STRUCTURE NAME
-	      MOVX T3,FB%BAT	;GET BAT BIT
-	      TDNN T3,.FBCTL(T1) ;ALREADY SET?
+	      MOVE T3,.FBCTL(T1) ;[9101] Get old copy of .FBCTL
+	      SETONE FB%BAT,.FBCTL(T1) ;[9101] Turn on the BAT bit now
+	      TXNE T3,FB%BAT	;[9101] Skip if the bit already set
 	      BUG.(INF,FILBAT,DISC,HARD,<DSKCLZ - File marked as possibly bad>,<<T4,DIRNUM>,<T2,STR>>,<
 
 Cause:	A file is being closed and the OFN for the file contains a bit 
-	indicating a possible error. The file's FDB will be marked.
+	indicating a possible error. The file's FDB is marked.
 
 Data:	DIRNUM - directory number
 	STR - structure name in SIXBIT
 >,,<DB%NND>)			;[7.1210]
-	      IORM T3,.FBCTL(T1) ;MARK FILE
 	      JRST .+1]		;CONTINUE
 	TQNN <WRTF>		;NON-WRITE ACCESS?
 	JRST DSKCL4		;YES
@@ -1961,8 +1977,22 @@ NFACK1:	MOVE D,0(C)		;FETCH A WORD
 	RETSKP			;SUCCESS RETURN
 
 ;HERE TO CLOSE LONG FILE--FIRST COUNT PAGES
+;
+;[8870] Note:  The  write  bit  (FILWB)  must be passed to RELOFN when PT0 is
+;[8870] released to prevent OPNX9 errors from occurring. These can  occur  if
+;[8870] the  file  once  was  short  and was opened for read. Then, an append
+;[8870] occurs which makes the file go long and causes FILWB to be set in the
+;[8870] PTT and PT0. When the append is over, and the OFN  is  being  closed,
+;[8870] the  PTT  will be cached but the PT0 will not since there is still an
+;[8870] opener; the one which opened the file for read when it was short.  If
+;[8870] FILWB is not passed in to RELOFN, then PT0 will still reflect that it
+;[8870] is  open  for  write.  So, if another opener tries to open this file,
+;[8870] which is now long, CHKLAC will believe that there is already a writer
+;[8870] of PT0 and an OPNX9 will result.
 
 CNTLNG:	LOAD A,FLP0,(JFN)	;GET OFN OF PT0
+	TQNE <WRTF>		;[8870] File open for write?
+	TXO A,FILWB		;[8870] Yes, propagate bit
 	CALL RELOFN		;UNDO EXTRA COUNT
    REPEAT 0,<			;UNNEEDED INSTRUCTIONS FOLLOW
 	SKIPE DMFLG		;A DISMOUNTED STRUCTURE?
@@ -2204,7 +2234,6 @@ Cause:	A long file was being deleted and ASGOFN could not assign a system file
 	slots.
 
 Action:	If this happens frequently, rebuild the monitor with more OFN slots.
-
 >)
 	ENDTV.			;[7207] END TEMP STORAGE
 
@@ -2461,6 +2490,7 @@ DSKR3:	TXO A,THAWB
 	CALL GETFDB		;GET SOURCE FDB
 	 RETBAD (RNAMX7,<CALL DSKRE7>) ;SOURCE WENT AWAY
 	MOVEM A,SRCFDB		;SAVE SOURCE FDB
+	JN FBNDL,(A),[RETBAD (DELX13,<CALL DSKRE8>)] ;[9094]Don't allow rename
 	MOVE B,CAPENB		;ENABLED CAPS
 	TXNN B,SC%WHL!SC%OPR	;CHECK IF OK
 	SKIPN USRSPC		; OR JUST NO CHECKING
@@ -2574,7 +2604,6 @@ Cause:	The RNAMF JSYS has detected a monitor internal error. It has created
 	an FDB for the destination file, and an internal routine that
 	finds an FBD in a directory has returned with a failure,
 	indicating an inconsistency in the newly-created FDB.
-
 >)
 	MOVEM A,DSTFDB		;SAVE DESTINATION FDB LOC
 	SKIPL A,SRCOFN		;HAVE SOURCE OFN?
@@ -2590,7 +2619,7 @@ Cause:	The RNAMF JSYS has detected a monitor internal error. It has created
 		CALL OC.UNC	;[7.1067] (A/A)to force clearing of the disk alloc entry
 		 BUG.(CHK,UCLOFN,DISC,SOFT,<DSKREN - Attempt to uncache locked OFN>,,<
 Cause:	The RNAMF jsys has just renamed a file and then tried to uncache the
-	OFN.  This is to prevent a situation where directories will appear to
+	OFN.  This is to prevent a situation where directories appears to
 	have the wrong number of pages in use.  Somehow the file was locked
 	by another process.  This should not be possible.  If this persists
 	please change this to a BUGHLT and submit an SPR with a dump.
@@ -2904,6 +2933,10 @@ SPLOP1:	HLRZ B,FILDDN(JFN)	;[7118] GET DEVICE NAME STRING
 	 BUG.(CHK,NOUTF1,DISC,SOFT,<SPLOPN - NOUT of directory number failed>,,<
 
 Cause:	The NOUT JSYS failed in trying to open the spooled disk file.
+
+Action:	See what the JSYS error from NOUT% was and try to determine what
+	may be wrong. It is possible that the destination disk may be
+	having problems.
 >)
 	MOVEM A,SPLCUR		;[7118] SAVE POINTER AS CURRENT
 	RET		       	;[7118]       

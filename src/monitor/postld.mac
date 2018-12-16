@@ -1,3 +1,8 @@
+; Edit= 9148 to POSTLD.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9104 to POSTLD.MAC on 8-Jun-89 by GSCOTT
+;Set SYSTAD by using GTAD in POSTLD, not by getting the last write date of
+;MON:VERSIO.MAC which may be months or years old. 
 ; UPD ID= 8598, RIP:<7.MONITOR>POSTLD.MAC.8,  11-Feb-88 16:57:44 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8463, RIP:<7.MONITOR>POSTLD.MAC.7,   5-Feb-88 11:05:26 by GSCOTT
@@ -41,7 +46,7 @@
 ; UPD ID= 870, SNARK:<6.1.MONITOR>POSTLD.MAC.2,  11-Oct-84 09:55:15 by GLINDELL
 ;Rewrite POSTLD for 6.1 address space
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -324,8 +329,14 @@ PLDCOD:
 	SUBTTL	Monitor date and time
 
 ;RDTAD - read date and time of monitor (from VERSIO.MAC)
+;[9104] Use the data and time of NOW rather than VERSIO.MAC.
 
-RDTAD:	HRROI T1,[ASCIZ /MON/]	;See if MON: is defined
+RDTAD:	GTAD%			;[9104] Get current system date and time in T1
+	MOVEM T1,SYSTAD		;[9104] Store in SYSTAD
+	RET			;[9104]  and then return
+
+repeat 0,<			;[9104] This gives dates up to years old
+	HRROI T1,[ASCIZ /MON/]	;See if MON: is defined
 	STDEV%
 	IFSKP.			;Yes
 	  HRROI T2,[ASCIZ /MON:VERSIO.MAC/] ; -then get VERSIO from MON:
@@ -349,7 +360,7 @@ RDTAD:	HRROI T1,[ASCIZ /MON/]	;See if MON: is defined
 	ENDIF.
 	MOVEM T1,SYSTAD		;Store in SYSTAD
 	RET
-
+>				;[9104] End of REPEAT 0
 	SUBTTL	Check assembly symbols
 
 ;CHKREL - check the relationship between various symbols

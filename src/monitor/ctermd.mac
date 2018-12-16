@@ -1,3 +1,16 @@
+; Edit= 9148 to CTERMD.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9076 to CTERMD.MAC on 6-Mar-89 by JROSSELL
+;VMS servers do not support lower case input control (TT%LIC) so always insure
+;that this bit is not set when sending a CHARACTERISTICS message to a VMS
+;server. 
+; Edit= 9065 to CTERMD.MAC on 30-Jan-89 by JROSSELL, for SPR #21562
+;If MSGOUT returns failure don't assume that the link has gone away. Instead,
+;also check if the message may have been blocked. 
+; Edit= 9041 to CTERMD.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
 ; UPD ID= 8496, RIP:<7.MONITOR>CTERMD.MAC.2,   9-Feb-88 12:18:40 by GSCOTT
 ;TCO 7.1218 - Update copyright notice.
 ; UPD ID= 2250, SNARK:<6.1.MONITOR>CTERMD.MAC.16,  19-Jun-85 20:48:53 by MELOHN
@@ -22,7 +35,7 @@
 ;The bits in the CH.IND, RC.IND byte have been changed.
 ;note: size in the foundation data message is turned off for now
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -126,11 +139,16 @@ BEGSTR CH
 	 BIT TCI	;Sending input characters to TTYSRV
 	 BIT CTM	;CTERM INITIATE message has been received.
 	 BIT BIN	;Last message sent to server was Transparent (binary)
+	 BIT IIC	;[9065]CTERM Initialization not completed
+	 BIT SCM	;[9065]Send CHARACTERISTICS message
+	 BIT RCB	;[9065]Release the CDB after sending this message
 	FIELD FL1,18	;FLAGS:
 	 BIT EDT	;Remote server supports editing
 	 BIT LWI	;Remote server supports line width setting.
 	 BIT RTI	;Remote server supports remote TEXTI% prompts
-	WORD RBF,<<RBFCNT>/5>;^R (prompt) buffer 
+	WORD RBF,<<RBFCNT>/5> ;^R (prompt) buffer
+	WORD USR,<10>	;[9041] Remote username string
+	HWORD OST	;[9076]Operating system type of the server
 ENDSTR
 
 ;The CTERM line states

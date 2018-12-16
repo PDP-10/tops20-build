@@ -1,3 +1,19 @@
+; Edit= 9176 to APRSRV.MAC on 28-Jun-90 by GSCOTT
+;Add more SAVEAC routine to APRSRV, saving over a page of code in the monitor.
+; Edit= 9148 to APRSRV.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9070 to APRSRV.MAC on 16-Feb-89 by RASPUZZI
+;Prevent TODCLK from reaching the age of aquarius.
+; Edit= 9000 to APRSRV.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8970 to APRSRV.MAC on 20-Sep-88 by RASPUZZI
+;Prevent ILLUUO BUGHLTs when trying to recover from parity errors during page
+;fault. Basically, we need to set up MEMPP after we go PIOFF. This rectifies
+;the mistake made in edit 7447.
+; Edit= 8947 to APRSRV.MAC on 25-Aug-88 by GSCOTT
+;Update more BUG. documentation. 
+; Edit= 8872 to APRSRV.MAC on 10-Aug-88 by RASPUZZI
+;Update BUG. documentation again.
 ; UPD ID= 8477, RIP:<7.MONITOR>APRSRV.MAC.8,   9-Feb-88 11:48:37 by GSCOTT
 ;TCO 7.1218 - Update copyright notice.
 ; UPD ID= 8405, RIP:<7.MONITOR>APRSRV.MAC.7,   4-Feb-88 10:20:51 by GSCOTT
@@ -639,7 +655,7 @@
 ;<4.1.MONITOR>APRSRV.MAC.253,  6-Nov-79 05:45:43, EDIT BY R.ACE
 ;CHANGE NAMES OF ARGUMENTS TO ILLUUO BUGHLT
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -681,7 +697,7 @@ FX==Q3				;DEFINE AC FOR FKJSB
 
 	Subttl	Table of Contents
 
-;		     Table of Contents for COPYRIGHT
+;		     Table of Contents for APRSRV
 ;
 ;				  Section		      Page
 ;
@@ -689,25 +705,26 @@ FX==Q3				;DEFINE AC FOR FKJSB
 ;    1. Definitions  . . . . . . . . . . . . . . . . . . . . .   4
 ;    2. Generally Used Constants . . . . . . . . . . . . . . .  23
 ;    3. Utility routines . . . . . . . . . . . . . . . . . . .  25
-;    4. System Initialization  . . . . . . . . . . . . . . . .  43
-;    5. PI System Initialization . . . . . . . . . . . . . . .  49
-;    6. APR Interrupt Service  . . . . . . . . . . . . . . . .  55
-;    7. Memory Parity Error routines (KL only) . . . . . . . .  65
-;    8. Gather KL10 Status Block . . . . . . . . . . . . . . .  94
-;    9. Routines to handle BUGHLT, BUGCHK, BUGINF  . . . . . .  99
-;   10. Write to CTY when PI's are off . . . . . . . . . . . . 110
-;   11. Routines to switch protocols with front end  . . . . . 113
-;   12. Clock Service  . . . . . . . . . . . . . . . . . . . . 116
-;   13. DTE Control Routines . . . . . . . . . . . . . . . . . 121
-;   14. Cache Control  . . . . . . . . . . . . . . . . . . . . 123
-;   15. Context Handling Routines  . . . . . . . . . . . . . . 125
-;   16. Address Break  . . . . . . . . . . . . . . . . . . . . 151
-;   17. Pager Control Routines . . . . . . . . . . . . . . . . 157
-;   18. Page Fail Handler (Hard Error Codes and Unusual Cases) 173
-;   19. KA floating point simulation . . . . . . . . . . . . . 193
-;   20. Gfloat to Integer Conversion Simulation Routines . . . 200
-;   21. METER JSYS . . . . . . . . . . . . . . . . . . . . . . 204
-;   22. End of APRSRV  . . . . . . . . . . . . . . . . . . . . 205
+;    4. AC Save Routines . . . . . . . . . . . . . . . . . . .  38
+;    5. System Initialization  . . . . . . . . . . . . . . . .  46
+;    6. PI System Initialization . . . . . . . . . . . . . . .  52
+;    7. APR Interrupt Service  . . . . . . . . . . . . . . . .  58
+;    8. Memory Parity Error routines (KL only) . . . . . . . .  69
+;    9. Gather KL10 Status Block . . . . . . . . . . . . . . .  98
+;   10. Routines to handle BUGHLT, BUGCHK, BUGINF  . . . . . . 103
+;   11. Write to CTY when PI's are off . . . . . . . . . . . . 114
+;   12. Routines to switch protocols with front end  . . . . . 117
+;   13. Clock Service  . . . . . . . . . . . . . . . . . . . . 120
+;   14. DTE Control Routines . . . . . . . . . . . . . . . . . 125
+;   15. Cache Control  . . . . . . . . . . . . . . . . . . . . 127
+;   16. Context Handling Routines  . . . . . . . . . . . . . . 129
+;   17. Address Break  . . . . . . . . . . . . . . . . . . . . 155
+;   18. Pager Control Routines . . . . . . . . . . . . . . . . 161
+;   19. Page Fail Handler (Hard Error Codes and Unusual Cases) 177
+;   20. KA floating point simulation . . . . . . . . . . . . . 197
+;   21. Gfloat to Integer Conversion Simulation Routines . . . 204
+;   22. METER JSYS . . . . . . . . . . . . . . . . . . . . . . 208
+;   23. End of APRSRV  . . . . . . . . . . . . . . . . . . . . 209
 	SUBTTL Definitions
 
 ;CONI/CONO APR BIT DEFINITIONS
@@ -1401,12 +1418,15 @@ S0ENT1:	ADJSP P,-2		;FLUSH STACK
    IFN SEC0SW,<		;IF SECTION 0 CHECKING ENABLED
 $TSMS0::TXNE CX,EXSCBT		;NOW IN NON-0 SECTION?
 	JRST 0(CX)		;YES, ALL IS WELL
-	BUG.(CHK,MCSEC0,APRSRV,SOFT,<MONITOR CODE RUNNING IN SECTION 0>,<<CX,PC>>,<
+	BUG.(CHK,MCSEC0,APRSRV,SOFT,<Monitor code running in section 0>,<<CX,PC>>,<
 
-Cause:	Monitor code which should not be running in section 0 and does
-	not expect to run in section 0 has run in section 0.  This should 
-	be investigated and fixed. This is under the SEC0SW debug switch 
-	and should not be seen in the field.
+Cause:	Monitor code which should not be running in section 0 and does not
+	expect to run in section 0 has run in section 0.  This should be
+	investigated and fixed. This is under the SEC0SW debug switch and
+	should not be seen in the field.
+
+Action:	If this BUGCHK is reproducible, change it to a BUGHLT and send in an
+	SPR along with the dump and how to reproduce the problem.
 
 Data:	PC at which check was made.
 >)
@@ -1478,8 +1498,9 @@ SPCSNZ::
 XBLTAT::TLNE T1,-1		;MAKE SURE REASONABLE SIZE
 	BUG.(HLT,XBLTAL,APRSRV,SOFT,<XBLTA asked to copy too much>,<<T1,LENGTH>>,<
 
-Cause:	XBLTA was called with a 'length to BLT' of more than one section.
-	It is unlikely that the caller really intended to copy this much.
+Cause:	XBLTA was called with a 'length to BLT' of more than one section.  It
+	is unlikely that the caller really intended to copy this much and
+	usually indicates a software bug somewhere.
 
 Data:	LENGTH - Number of words XBLTA was asked to copy
 >)
@@ -1703,7 +1724,8 @@ ENTOV:	MOVE P,P6		;STACK OVERFLOW, UNDO ADD
 	DMOVE T3,-2(P)
 	ADJSP P,-5		;REMOVE STACK FRAME
 	RET			;RETURN APPROPRIATELY
-
+	SUBTTL AC Save Routines
+
 ;FACILITY TO SAVE ALL ACS.
 ;NORMALLY INVOKED BY ACSAV MACRO, = JSP CX,ACSAV0
 ;DUMMY RETURN PUT ON STACK TO DO AUTOMATIC RESTORE ON RETURN
@@ -1729,8 +1751,7 @@ ACRET0:: SKIPA			;NO-SKIP ENTRY
 	ADJSP P,-16		;CLEAR STACK
 	RET
 
-;ROUTINES TO SAVE P1-P6, OR Q1-Q3, OR Q1-Q3 AND P1-P6
-;CALLED WITH SAVEP, SAVEQ, AND SAVEPQ MACROS
+;Routine to save P1-P6, called with SAVEP or SAVEAC macro.
 
 SAVP::	ADJSP P,6		;NEED TO SAVE 6 REGS
 	DMOVEM P1,-5(P)
@@ -1745,6 +1766,8 @@ RESTP::	 SKIPA			;NON-SKIP RETURN
 	ADJSP P,-6		;FIX UP STACK
 	RET			;AND RETURN
 
+;Routine to save Q1-Q3, called with SAVEQ or SAVEAC macro.
+
 .SAV3::				;USED BY ACVAR FACILITY
 SAVQ::	ADJSP P,3		;NEED TO SAVE 3 REGS
 	DMOVEM Q1,-2(P)		;SAVE Q1 AND Q2
@@ -1756,6 +1779,8 @@ RESTQ::	 SKIPA			;NON-SKIP RETURN
 	MOVE Q3,0(P)		;RESTORE Q3
 	ADJSP P,-3		;CLEAN UP THE STACK
 	RET
+
+;Routine to save Q1-Q2 and P1-P6, called with SAVEPQ or SAVEAC macro.
 
    IFN Q3+1-P1,<PRINTX ?SAVPQ REQUIRES P1 TO FOLLOW Q3>
 
@@ -1776,7 +1801,7 @@ RESTPQ:: SKIPA			;NON-SKIP RETURN
 	ADJSP P,-11		;FIX UP STACK
 	RET
 
-;SAVE/RESTORE TEMP ACS
+;Routine to save T1-T4, called with SAVET or SAVEAC macro.
 
 SAVT::	ADJSP P,4		;NEED FOUR LOCATION
 	DMOVEM T1,-3(P)		;SAVE T1 AND T2
@@ -1839,7 +1864,8 @@ RESTT::	 SKIPA			;NO-SKIP RETURN
 	POP P,T1
 	RET
 
-.SAV12::PUSH P,T1
+
+.SAV12::PUSH P,T1
 	PUSH P,T2
 	PUSHJ P,0(CX)
 	 TRNA
@@ -1858,26 +1884,47 @@ RESTT::	 SKIPA			;NO-SKIP RETURN
 	POP P,T2
 	POP P,T1
 	RET
-
-;SUPPORT ROUTINES FOR AC VARIABLE FACILITY
 
-.SAV1::	PUSH P,Q1
+.SAV23::PUSH P,T2		;[9176] Save T2
+	PUSH P,T3		;[9176] And T3
+	CALL (CX)		;[9176] Callback
+	 CAIA			;[9176] Nonskip return
+	AOS -2(P)		;[9176] Skip return
+	POP P,T3		;[9176] Restore T3
+	POP P,T2		;[9176] Restore T2
+	RET			;[9176] Return to caller's caller
+
+.SAV1::	PUSH P,Q1		;Save Q1
 	PUSHJ P,0(CX)		;CONTINUE PROGRAM
 	 SKIPA
 	AOS -1(P)
 	POP P,Q1
 	POPJ P,
 
-.SAV2::	ADJSP P,2		;NEED TWO WORDS OF STACK
-	DMOVEM Q1,-1(P)		;SAVE REGS
-	PUSHJ P,0(CX)
-	 SKIPA
-	AOS -2(P)
-	DMOVE Q1,-1(P)		;RESTORE REGS
-	ADJSP P,-2		;CLEAN UP STACK
-	POPJ P,
+.SAV66::PUSH P,Q2		;[9176] Save Q2
+	CALL (CX)		;[9176] Call caller
+	 CAIA			;[9176] Nonskip return
+	AOS -1(P)		;[9176] Skip return
+	POP P,Q2		;[9176] Restore 
+	RET			;[9176] Return to caller's caller
 
-.SAV4::	ADJSP P,4		;NEED TO SAVE FOUR REGS
+.SAV77::PUSH P,Q3		;[9176] Save Q3
+	CALL (CX)		;[9176] Call caller
+	 CAIA			;[9176] Nonskip return
+	AOS -1(P)		;[9176] Skip return
+	POP P,Q3		;[9176] Restore 
+	RET			;[9176] Return to caller's caller
+
+.SAV2::	PUSH P,Q1		;[9176] Save Q1 
+	PUSH P,Q2		;[9176]  and Q2
+	CALL (CX)		;[9176] Call caller
+	 CAIA			;[9176] Skip return
+	AOS -2(P)		;[9176] Nonskip return
+	POP P,Q2		;[9176] Restore Q2
+	POP P,Q1		;[9176] Restore Q1
+	RET			;[9176] Return to caller's caller
+
+.SAV4::	ADJSP P,4		;Save Q1-Q3 and P1
 	DMOVEM Q1,-3(P)		;SAVE Q1 AND Q2
 	DMOVEM Q1+2,-1(P)	;SAVE Q3 AND P1
 	PUSHJ P,0(CX)
@@ -1888,7 +1935,18 @@ RESTT::	 SKIPA			;NO-SKIP RETURN
 	ADJSP P,-4		;CLEAN UP THE STACK
 	POPJ P,
 
-.SAV8::	ADJSP P,10		;NEED TO SAVE EIGHT REGS
+.SA568::PUSH P,Q1		;[9176] Save Q1 
+	PUSH P,Q2		;[9176]  and Q2
+	PUSH P,P1		;[9176]   and P1
+	CALL (CX)		;[9176] Call caller
+	 CAIA			;[9176] Skip return
+	AOS -3(P)		;[9176] Nonskip return
+	POP P,P1		;[9176] Restore P1
+	POP P,Q2		;[9176] Restore Q2
+	POP P,Q1		;[9176] Restore Q1
+	RET			;[9176] Return to caller's caller
+
+.SAV8::	ADJSP P,10		;Save Q1-Q3 and P1-P5
 	DMOVEM Q1,-7(P)
 	DMOVEM Q1+2,-5(P)
 	DMOVEM Q1+4,-3(P)
@@ -1902,13 +1960,61 @@ RESTT::	 SKIPA			;NO-SKIP RETURN
 	DMOVE Q1,-7(P)
 	ADJSP P,-10		;CLEAN UP THE STACK
 	POPJ P,
-
-.SAVP1::PUSH P,P1		; Save it on stack
+
+.SAVP1::PUSH P,P1		;Save P1 only
 	CALL 0(CX)		; Call the routine
 	 SKIPA			; +1 return
 	  AOS -1(P)		; Add to return PC
 	POP P,P1		; Restore old one
 	RET			; And return
+
+.SAV99::PUSH P,P2		;[9176] Save P2 only
+	CALL (CX)		;[9176] Call the routine
+	 CAIA			;[9176] +1 return
+	AOS -1(P)		;[9176] Add to return PC
+	POP P,P2		;[9176] Restore old one
+	RET			;[9176] and return
+
+.SAVAA::PUSH P,P3		;[9176] Save P3 only
+	CALL (CX)		;[9176] Call the routine
+	 CAIA			;[9176] +1 return
+	AOS -1(P)		;[9176] Add to return PC
+	POP P,P3		;[9176] Restore old one
+	RET			;[9176] and return
+
+.SAVBB::PUSH P,P4		;[9176] Save P4 only
+	CALL (CX)		;[9176] Call the routine
+	 CAIA			;[9176] +1 return
+	AOS -1(P)		;[9176] Add to return PC
+	POP P,P4		;[9176] Restore old one
+	RET			;[9176] and return
+
+.SAVCC::PUSH P,P5		;[9176] Save P5 only
+	CALL (CX)		;[9176] Call the routine
+	 CAIA			;[9176] +1 return
+	AOS -1(P)		;[9176] Add to return PC
+	POP P,P5		;[9176] Restore old one
+	RET			;[9176] and return
+
+.SAV89::PUSH P,P1		;[9176] Save P1 
+	PUSH P,P2		;[9176]  and P2
+	CALL (CX)		;[9176] Call back
+	 CAIA			;[9176] Nonskip return
+	AOS -2(P)		;[9176] Skip return
+	POP P,P2		;[9176] Restore the
+	POP P,P1		;[9176]  acs we saved
+	RET			;[9176] Return to caller's caller
+
+.SAV8A::PUSH P,P1		;[9176] Save P1 
+	PUSH P,P2		;[9176]  and P2
+	PUSH P,P3		;[9176]   and P3
+	CALL (CX)		;[9176] Call back
+	 CAIA			;[9176] Nonskip return
+	AOS -3(P)		;[9176] Skip return
+	POP P,P3		;[9176] Restore all
+	POP P,P2		;[9176]  of the acs
+	POP P,P1		;[9176]   we saved
+	RET			;[9176] Return to caller's caller
 
 	SUBTTL System Initialization
 
@@ -2198,10 +2304,12 @@ PIERR0:	PIOFF			;TURN OFF PIS
 	MOVE P,[IOWD XPISK,PIXSTK] ;GET A STACK
 	BUG.(HLT,PI0ERR,APRSRV,HARD,<Unvectored interrupt on channel 0>,,<
 
-Cause:	The monitor has received an unvectored hardware interrupt on PI
-	channel 0.  This is not supposed to happen. This could possibly
-	be faulty hardware generating incorrect PI requests.
+Cause:	The monitor has received an unvectored hardware interrupt on PI channel
+	0.  This is not supposed to happen.  This could possibly be faulty
+	hardware generating incorrect PI requests.
 
+Action:	Have Field Service check the system to make sure that it is functioning
+	properly.
 >)
 	HALT .			;JUST IN CASE
 
@@ -2212,10 +2320,13 @@ PIERR1:	PIOFF			;TURN OFF PIS
 	MOVE P,[IOWD XPISK,PIXSTK]
 	BUG.(CHK,PI1ERR,APRSRV,HARD,<Unexpected unvectored interrupt on channel 1>,,<
 
-Cause:	The monitor has received an unvectored hardware interrupt on PI
-	channel 1.  Currently, there is no processing assigned to this
-	channel.  This could possibly indicate faulty hardware that is
-	generating spurious PI requests.
+Cause:	The monitor has received an unvectored hardware interrupt on PI channel
+	1.  Currently, there is no processing assigned to this channel.  This
+	could possibly indicate faulty hardware that is generating spurious PI
+	requests.
+
+Action:	Have Field Service check the system to make sure that it is functioning
+	properly.
 >,,<DB%NND>)			;[7.1210]
 	CLSB 1			;CLEAR THE INTERRUPT ON 1
 	DMOVE CX,PIXCX
@@ -2229,10 +2340,13 @@ PIERR2:	PIOFF			;TURN OFF PIS
 	MOVE P,[IOWD XPISK,PIXSTK]
 	BUG.(CHK,PI2ERR,APRSRV,HARD,<Unexpected unvectored interrupt on channel 2>,,<
 
-Cause:	The monitor has received an unvectored hardware interrupt on PI
-	channel 2.  Currently, there is no processing assigned to this
-	channel.  This could possibly indicate faulty hardware that is
-	generating spurious PI requests.
+Cause:	The monitor has received an unvectored hardware interrupt on PI channel
+	2.  Currently, there is no processing assigned to this channel.  This
+	could possibly indicate faulty hardware that is generating spurious PI
+	requests.
+
+Action:	Have Field Service check the system to make sure that it is functioning
+	properly.
 >,,<DB%NND>)			;[7.1210]
 	CLSB 2			;CLEAR THE INTERRUPT ON 2
 	DMOVE CX,PIXCX
@@ -2247,10 +2361,13 @@ PIERR3:	PIOFF			;TURN OFF PIS
 	MOVE P,[IOWD XPISK,PIXSTK]
 	BUG.(CHK,PI3ERR,APRSRV,HARD,<Unexpected unvectored interrupt on channel 3>,,<
 
-Cause:	The monitor has received an unvectored hardware interrupt on PI
-	channel 3.  Currently, there is no processing assigned to this
-	channel.  This could possibly indicate faulty hardware that is
-	generating spurious PI requests.
+Cause:	The monitor has received an unvectored hardware interrupt on PI channel
+	3.  Currently, there is no processing assigned to this channel.  This
+	could possibly indicate faulty hardware that is generating spurious PI
+	requests.
+
+Action:	Have Field Service check the system to make sure that it is functioning
+	properly.
 >)
 	CLSB 3			;CLEAR THE INTERRUPT ON 3
 	DMOVE CX,PIXCX
@@ -2265,10 +2382,13 @@ PIERR4:	PIOFF
 	MOVE P,[IOWD XPISK,PIXSTK]
 	BUG.(CHK,PI4ERR,APRSRV,HARD,<Unexpected unvectored interrupt on channel 4>,,<
 
-Cause:	The monitor has received an unvectored hardware interrupt on PI
-	channel 4.  Currently, there is no processing assigned to this
-	channel.  This could possibly indicate faulty hardware that is
-	generating spurious PI requests.
+Cause:	The monitor has received an unvectored hardware interrupt on PI channel
+	4.  Currently, there is no processing assigned to this channel.  This
+	could possibly indicate faulty hardware that is generating spurious PI
+	requests.
+
+Action:	Have Field Service check the system to make sure that it is functioning
+	properly.
 >,,<DB%NND>)			;[7.1210]
 	CLSB 4			;CLEAR THE INTERRUPT ON 4
 	DMOVE CX,PIXCX
@@ -2281,8 +2401,8 @@ Cause:	The monitor has received an unvectored hardware interrupt on PI
 
 LUUBUG:	BUG.(HLT,LUUMN0,APRSRV,SOFT,<LUUO in monitor context>,,<
 
-Cause:	While running in section 0, the monitor has executed an LUUO.
-	The flags and PC are stored in LUUBLK and LUUBLK+1, respectively.
+Cause:	While running in section 0, the monitor has executed an LUUO.  The
+	flags and PC are stored in LUUBLK and LUUBLK+1, respectively.
 >)
 
 
@@ -2363,14 +2483,16 @@ PIAPR:	MOVE P,[IOWD APRSIZ,APRSTK] ;LOCAL STACK
 ;Here when an APR interrupt occurred but there's no condition bit set in the
 ;APR word. Record this and dismiss the interrupt.
 
-	BUG.(CHK,SPUAPR,APRSRV,HARD,<SPURIOUS APR INTERRUPT>,,<
+	BUG.(CHK,SPUAPR,APRSRV,HARD,<Spurious APR interrupt>,,<
 
 Cause:	An APR interrupt occurred but no condition bit was set.
 
+Action:	Have Field Service check the system to make sure that it is functioning
+	properly.
 >)
 PIAP5:	XJEN PIAPRX		;DISMISS THE INTERRUPT
    >				;END OF IFN KCFLG
-
+
 ;What happens on a power failure:
 
 ;APR interrupt leads to PIAPR. PIAPR AOS's PWRDWN, which was initialized to 0,
@@ -2430,8 +2552,12 @@ PIAPR:	DATAI PAG,MEMPDP	;SAVE STATE
 	CONSZ APR,APCDPE	;CACHE DIR PARITY ERROR?
 	BUG.(HLT,FATCDP,APRSRV,HARD,<Fatal cache directory parity error>,<<A,CONIAP>>,<
 
-Cause:	An APR interrupt occurred because a physical page number with
-	even parity was encountered in the cache directory.
+Cause:	An APR interrupt occurred because a physical page number with even
+	parity was encountered in the cache directory.
+
+Action:	Have Field Service check the system to make sure that it is functioning
+	properly.  Particular attention should be given to the cache directory.
+	Backplane problems have also been known to cause these.
 
 Data:	CONIAP - Result of CONI APR
 >)
@@ -2446,33 +2572,34 @@ P1NXM:	PIOFF			;OWN THE MACHINE
 	PION			;AND RESTORE MACHINE
 	BUG.(HLT,APRNX1,APRSRV,HARD,<NXM detected by APR>,,<
 
-Cause:	An APR interrupt occurred because the processor attempted to
-	access a memory that did not respond within a preset time. This
-	can indicate broken hardware or a software bug. The monitor
-	has printed a description of the problem on the CTY.
+Cause:	An APR interrupt occurred because the processor attempted to access a
+	memory that did not respond within a preset time.  This can indicate
+	broken hardware or a software bug.  The monitor has printed a
+	description of the problem on the CTY.
 
-Action:	The analysis of this BUGHLT is extremely complicated.
-	The physical address from the error register is printed on the
-	CTY ("ERA="). If there is physical memory at this address, the
-	problem is probably in the hardware. If the address does not
-	exist, the problem may be in either hardware or software.
+Action:	This BUGHLT is usually caused by faulty hardware, and Field Service
+	should check the system.
 
-	One software problem that has led to this BUGHLT in the past
-	is code that returns an SPT slot to the free pool while leaving
-	a pointer to that slot in some page table. The content of
-	the SPT entry, instead of being a pointer to memory, is a
-	pointer to another SPT slot.
+	The analysis of this BUGHLT is extremely complicated.  The physical
+	address from the error register is printed on the CTY ("ERA=").  If
+	there is physical memory at this address, the problem is probably in
+	the hardware. If the address does not exist, the problem may be in
+	either hardware or software.
 
-	In this case, a page fault will have occurred just before the
-	interrupt. The PC will point into the page fault handler.  The page
-	fault word and PC (TRAPSW and TRAPPC, respectively) will
-	indicate the virtual address and instruction at the time of
-	the page fault. Tracing this virtual address to the SPT will
-	produce the erroneous SPT entry.
+	One software problem that has led to this BUGHLT in the past is code
+	that returns an SPT slot to the free pool while leaving a pointer to
+	that slot in some page table.  The content of the SPT entry, instead of
+	being a pointer to memory, is a pointer to another SPT slot.  In this
+	case, a page fault has occurred just before the interrupt.  The
+	PC points into the page fault handler.  The page fault word and PC
+	(TRAPSW and TRAPPC, respectively) indicates the virtual address and
+	instruction at the time of the page fault. Tracing this virtual address
+	to the SPT produces the erroneous SPT entry.
 
-	Note, however, that this BUGHLT is rarely caused by software
-	in the field. The hardware is probably broken.
- >)		;CAUSE A BUGHLT
+	If this BUGHLT is seen with healthy hardware and is reproducible,
+	submit an SPR along with the dump and instructions on reproducing the
+	problem.
+ >)				;CAUSE A BUGHLT
 	CONOAPR APFCLR+APSBER+APMPE ;CLEAR SUPRIOUS PARITY ERROR INDICATIONS
 	CLNXMF			;CLEAR FLAG
 	JRST OV0
@@ -2512,13 +2639,13 @@ ADRPER:	PIOFF			;OWN MACHINE
 	PION			;RESTORE MACHINE
 	BUG.(HLT,APRAPE,APRSRV,HARD,<Address parity error>,,<
 
-Cause:	An APR interrupt occurred because a memory controller
-	signaled that it received an address with even parity
-	from the processor. There is a description of the problem 
-	on the CTY.
+Cause:	An APR interrupt occurred because a memory controller signaled that it
+	received an address with even parity from the processor.  There is a
+	description of the problem on the CTY.
 
-Action:	Using SBUS diag 0 for all memory controllers, check the
-	address parity error bit(s). Test the bus and controller.
+Action:	This is usually seen with broken hardware.  Field Service should check
+	the system.  Using SBUS diag 0 for all memory controllers, check the
+	address parity error bit(s).  Test the bus and controller.
 >)
 	CONOAPR APFCLR+APAPE+APSBER ;CLEAR ERROOR
 	CLNXMF			;CLEAR NXM INDICATORS
@@ -2572,11 +2699,12 @@ SCHPF0::PIOFF			;QUIET DOWN MACHINE
 SCHPR2:	XCT KEPALV		;Update keep alive counter
 	BUG.(CHK,SPWRFL,APRSRV,HARD,<Spurious power fail indication>,,<
 
-Cause:	A power-fail indication was given and the monitor has
-	executed its sequence for an orderly power-down. The machine
-	is still running after a long delay, so the monitor has
-	declared the power-fail warning to be a mistake. The system
-	will restart as if power had failed.
+Cause:	A power-fail indication was given and the monitor has executed its
+	sequence for an orderly power-down.  The machine is still running after
+	a long delay, so the monitor has declared the power-fail warning to be
+	a mistake.  The system restarts as if power had failed.
+
+Action:	No action is required; the system continues.
 >,,<DB%NND>)			;[7.1210]
 	SETOM SPWFFL		;Indicate that it was spurious
 	JRST SYSRST		;GO RESTART IMMEDIATELY
@@ -2637,17 +2765,23 @@ APRIO0:	JSR BUGPRI		;ENTER PRIMARY PROTOCOL
 
 APRFAT:	BUG.(HLT,IOPGF,APRSRV,SOFT,<IO page fail>,<<Q1,IOP>>,<
 
-Cause:	An APR interrupt occurred because an interrupt instruction caused
-	a page failure. This probably indicates that the interrupt instruction
-	provided by the monitor referenced a page that was not in memory.
-	The monitor has already checked for a DTE that made the reference
-	and found none. (However, it is possible for a software bug
-	to cause a DTE to generate an I/O page fail that the monitor
-	cannot detect.)  The monitor has printed a description of the problem 
-	on the CTY.
+Cause:	An APR interrupt occurred because an interrupt instruction caused a
+	page failure.  This probably indicates that the interrupt instruction
+	provided by the monitor referenced a page that was not in memory.  The
+	monitor has already checked for a DTE that made the reference and found
+	none. (However, it is possible for a software bug to cause a DTE to
+	generate an I/O page fail that the monitor cannot detect.)  The monitor
+	has printed a description of the problem on the CTY.  
+
+	Note that it has been demonstrated that if the AN20 is ever powered
+	down on a running system, there is a high probability of an IOPGF
+	occurring.
+
+Action:	If hardware is not suspected as the cause for this BUGHLT, and this
+	BUGHLT is reproducible, send in an SPR with the dump and instructions
+	on reproducing the problem.
 
 Data:	IOP - IOP word
-
 >)
 
 ;BUGHLT GOTTEN TO BY AN XCT 71 DONE BY THE FE (OR THE OPERATOR)
@@ -2655,18 +2789,19 @@ Data:	IOP - IOP word
 
 RLDHLT::BUG.(HLT,KPALVH,APRSRV,SOFT,<Keep alive ceased>,,<
 
-Cause:	The immediate cause of this BUGHLT is the execution of
-	location 71. The front end does this if the monitor has
-	not updated its keep-alive counter recently. This usually
-	indicates that the monitor is looping and preventing the
-	scheduler from running. This can be due to a software
-	bug or hardware that interrupts abnormally frequently.
-	This BUGHLT can be caused manually by requesting the
-	front end to jump to location 71.
+Cause:	The immediate cause of this BUGHLT is the execution of location 71.
+	The front end does this if the monitor has not updated its keep-alive
+	counter recently.  This usually indicates that the monitor is looping
+	and preventing the scheduler from running.  This can be due to a
+	software bug or hardware that interrupts abnormally frequently.  This
+	BUGHLT can be caused manually by requesting the front end to jump to
+	location 71.
 
-Action:	Look at the CTY output to see which case occurred. Look at
-	the PC to see where the monitor was running. If the crash was 
-	done manually, the PC will contain 72.
+Action:	Look at the CTY output to see which case occurred.  Look at the PC to
+	see where the monitor was running.  If the crash was done manually, the
+	PC contains 72.  If this BUGHLT is not caused manually, and this
+	BUGHLT is reproducible, send in an SPR with the dump and instructions
+	on reproducing the problem.
 >)
 
 ;ROUTINE USED BY PHYSIO TO OUTPUT RH20/CHANNEL MEMORY
@@ -2903,12 +3038,12 @@ MEMP10:
 
 MEMP8:	BUG.(HLT,FATMER,APRSRV,HARD,<Fatal memory error>,,<
 
-Cause:	An APR interrupt occurred indicating an SBUS error and no
-	MB parity error. However, no MOS controller reports an error.
-	The monitor is unable to determine the cause of the SBUS error.
-	The monitor has printed a description of the problem on the CTY.
+Cause:	An APR interrupt occurred indicating an SBUS error and no MB parity
+	error.  However, no MOS controller reports an error.  The monitor is
+	unable to determine the cause of the SBUS error.  The monitor has
+	printed a description of the problem on the CTY.
 
-Action:	Diagnose the memory system.
+Action:	Field Service should check out all memory on the system.
 >)
 
 MEMPT:	SEBPTR 0,SBTEVC,SEC%P1	;EVENT CODE
@@ -2936,18 +3071,19 @@ MEMPTP:	HRRZ T1,UPTPFO		;CHECK PC OF TRAP
 ;Common error place for unexpected page fault. To figure out which
 ;page fault routine was working, look at UPTPFN!!!
 
-MEMXXX:BUG.(HLT,UNPGF1,APRSRV,HARD,<MEMPAR - Parity error during mem scan>,,<
+MEMXXX:	BUG.(HLT,UNPGF1,APRSRV,HARD,<MEMPAR - Parity error during mem scan>,,<
 
-Cause:	A page fault occurred while the monitor was scanning memory
-	looking for an MB parity error. The monitor expects to cause
-	such a fault when it references the bad word in memory. However,
-	the PC indicates that the error occurred somewhere other than
-	in the instruction that is expected to fail.  The monitor has printed
-	a description of the problem on the CTY. A SYSERR block has been
-	created and will be placed in the SYSERR file when the monitor is
-	rebooted.  If the memory scan has detected any errors, the monitor has
-	printed a description of them on the CTY, too.
->)		;ERROR!
+Cause:	A page fault occurred while the monitor was scanning memory looking for
+	an MB parity error.  The monitor expects to cause such a fault when it
+	references the bad word in memory.  However, the PC indicates that the
+	error occurred somewhere other than in the instruction that is expected
+	to fail.  The monitor has printed a description of the problem on the
+	CTY.  A SYSERR block has been created and will be placed in the SYSERR
+	file when the monitor is rebooted.  If the memory scan has detected any
+	errors, the monitor has printed a description of them on the CTY, too.
+
+Action:	Have Field Service check the memory on this system.
+>)				;ERROR!
 
 
 ;FOUND MEM PAR ERR ON DIRECT REFERENCE
@@ -3208,13 +3344,18 @@ SBSER8:	TXNE F,MOSCER!MOSWPE	;A CORRECTABLE ERROR?
 	CALL ASGRES		;GET IT
 	 JRST [	BUG.(INF,SBSERF,APRSRV,SOFT,<SBSERR - Could not get error block>,,<
 
-Cause:	An APR interrupt occurred because a memory controller detected
-	an error in its own operation or in information received over
-	the S bus or from a memory module. The monitor has determined
-	that a MOS controller is involved. Normally the monitor creates
-	a block and records information about the error for later
-	retrieval by TGHA. However, no free space is available so this
-	information will be lost.
+Cause:	An APR interrupt occurred because a memory controller detected an error
+	in its own operation or in information received over the SBUS or from a
+	memory module.  The monitor has determined that a MOS controller is
+	involved.  Normally the monitor creates a block and records information
+	about the error for later retrieval by TGHA.  However, no free space is
+	available so this information is lost.
+
+Action:	Some user on the system could be consuming a lot of the general pool
+	free space.  Run SYSDPY and look at the RE display to check on the
+	general pool free space.  Try and determine who is using the free
+	space. If it appears that there is insufficient free space, then
+	rebuild the monitor with a bigger general pool.
 >,,<DB%NND>)			;[7.1210]
 		JRST SBSER6]	;CAN'T DO IT THEN
 
@@ -4655,7 +4796,20 @@ UPDTCK::RDTIME T1		;READ TIME BASE
 	DIV T1,BASDIV		;CONVERT TO MILLISECONDS
 	MOVEM T1,TODCLK		;UPDATE MS CLOCK
 	MOVEM T1,TODPWL		;UPDATE GTAD CLOCK
-	RET
+	JUMPGE T1,R		;[9070] TODCLK reached the age of aquarius?
+	BUG.(HLT,UP2LNG,APRSRV,HARD,<The system has been up too long>,,<
+
+Cause:	The system has been up for more than 397 days, 16 hours, 22 minutes
+	and 18 seconds.  When this happens, TODCLK got large enough to start
+	filling in bit 0 (meaning TODCLK is now negative).  This has the
+	unpleasant side effect of knocking all of the system timers out of
+	whack.  Prior to this BUGHLT, the system's behavior will have been
+	quite strange.  Many FLKTIM BUGCHKs may have appeared.
+
+Action:	Have field service perform a PM on your system at least once a year.
+	If this is not possible, then you should reload your system at least
+	once a year.
+>)				;[9070] System been running too long!
 
 ;read clock, convert to normal millisecond units
 
@@ -4990,12 +5144,12 @@ NIEPT==.-IEPT0
 
 RSI .LUTRP,<0,0,0,<MSEC1,,.LBCHK>> ;LUUO BLOCK
 
-.LBCHK:	BUG.(HLT,LUUMON,APRSRV,SOFT,<.LBCHK: Illegal LUUO from monitor context>,,<
+.LBCHK:	BUG.(HLT,LUUMON,APRSRV,SOFT,<Illegal LUUO from monitor context>,,<
 
-Cause:	While running in a non-zero section, the monitor executed an
-	LUUO. The LUUO block is at the 4 locations starting at .LUTRP.
-	Note that the hardware reference manual incorrectly states that
-	an LUUO in exec mode becomes an MUUO.
+Cause:	While running in a non-zero section, the monitor executed an LUUO. The
+	LUUO block is at the 4 locations starting at .LUTRP.  Note that the
+	hardware reference manual incorrectly states that an LUUO in exec mode
+	becomes an MUUO.
 >)
 
 ;Here when monitor executed a JSYS. Transferred through UPT offset 440 (KC)
@@ -5030,6 +5184,9 @@ KIMUOM: LDB CX,[POINT 9,KIMUFL,26] ;GET OPCODE
 Cause:	A JSYS with E greater than 1000 has been executed in the monitor.
 	There should be no such cases.
 
+Action:	If you can reproduce this BUGCHK, set it dumpable and send in an SPR
+	with the dump and instructions on reproducing the problem.
+
 Data:	PC - PC of JSYS
 >)
 	MOVS CX,0(CX)		;NO, SIMULATE JSYS (NOT USED BY
@@ -5044,10 +5201,9 @@ Data:	PC - PC of JSYS
 
 BADDMS:	BUG.(HLT,ILLDMS,APRSRV,SOFT,<BADDMS - Illegal DMS JSYS from monitor context>,<<KIMUPC,PC>>,<
 
-Cause:	The monitor has issued a JSYS that requests a service of the
-	RMS-20 package.  These JSYSs are legal in user mode only.
-	An illegal instruction trap will be given to the current
-	process.
+Cause:	The monitor has issued a JSYS that requests a service of the RMS-20
+	package.  These JSYSs are legal in user mode only.  An illegal
+	instruction trap is given to the current process.
 
 Data:	PC - PC in monitor address space where JSYS was invoked
 >)
@@ -5148,14 +5304,16 @@ EXMUUO::
 
 ;Monitor executed illegal UUO. Complain.
 
-KIBADU:	BUG.(HLT,ILLUUO,APRSRV,SOFT,<KIBADU - Illegal UUO from monitor context>,<<KIMUFL,FLAGS>,<KIMUPC,PC>,<KIMUEF,EFFADR>>,<
+KIBADU:	BUG.(HLT,ILLUUO,APRSRV,SOFT,<Illegal UUO from monitor context>,<<KIMUFL,FLAGS>,<KIMUPC,PC>,<KIMUEF,EFFADR>>,<
 
-Cause:	The monitor has executed an instruction that the microcode
-	treats as an MUUO. The op code is not 104 (for a JSYS) or one
-	of the KA10 floating point instructions.
+Cause:	The monitor has executed an instruction that the microcode treats as an
+	MUUO.  The op code is not 104 (for a JSYS) or one of the KA10 floating
+	point instructions.
 
-Action:	Look for the software bug. Repeated occurrence of this
-	BUGHLT may indicate a hardware problem.
+Action:	This bug is commonly caused by a software problem, but can be caused by
+	bad hardware.  If the hardware checks out OK, and the BUGHLT is
+	reproducible, then send in an SPR along with the dump and instructions
+	on reproducing the problem.
 
 Data:	FLAGS - Processor flags when MUUO was executed
 	PC - PC in monitor address space where MUUO was executed
@@ -5244,10 +5402,14 @@ KIMUO2:	CAIL CX,100		;POSSIBLY A TOPS10 UUO?
 
 	BUG.(HLT,IMPUUO,APRSRV,HARD,<Impossible MUUO>,,<
 
-Cause:	The monitor was called at its MUUO handler because the user
-	executed an MUUO. However, the op code reported by the
-	microcode is in the range 1-37, which should have caused
-	an LUUO.
+Cause:	The monitor was called at its MUUO handler because the user executed an
+	MUUO.  However, the op code reported by the microcode is in the range
+	1-37, which should have caused an LUUO.
+
+Action:	This bug is commonly caused by a hardware problem, but can be caused by
+	bad software.  Field Service should check out the system.  If the
+	hardware checks out OK, and the BUGHLT is reproducible, then send in an
+	SPR along with the dump and instructions on reproducing the problem.
 >)
 >
 
@@ -5377,13 +5539,11 @@ USEXT:	HRR CX,KIMOAC		;GET OP CODE AND AC
 
 VMENT:	BUG.(HLT,VMMODE,APRSRV,SOFT,<MUUO in virtual machine mode>,,<
 
-Cause:	The microcode transferred through the UPT location for execution of
-an instruction in virtual machine mode. This should not happen, because no
-code exists to handle this case, and the mode should never be enabled.
-
-Action:	Determine how the mode was set, or debug the microcode.
-
->)		;No code in monitor for VM mode yet
+Cause:	The microcode transferred through the UPT location for execution of an
+	instruction in virtual machine mode.  This should not happen, because
+	no code exists to handle this case, and the mode should never be
+	enabled.  Determine how the mode was set, or debug the microcode.
+>)				;No code in monitor for VM mode yet
 >				;End of IFN KCFLG
 
 ;Here when user executed a trap MUUO.
@@ -5415,9 +5575,9 @@ MAXUTU==.-UTUTAB
 KITRPS:
 KITRPM:	BUG.(HLT,MONPDL,APRSRV,SOFT,<Stack fault in monitor>,<<FPC,PC>>,<
 
-Cause:	The monitor has executed a PUSH instruction that
-	caused a stack overflow.  The central processor
-	detected this condition and reported it to the monitor.
+Cause:	The monitor has executed a PUSH instruction that caused a stack
+	overflow.  The central processor detected this condition and reported
+	it to the monitor.
 
 Data:	PC - PC of instruction which caused stack overflow
 >)
@@ -5673,16 +5833,14 @@ KIPFS1:	DMOVEM T1,PFSA1		;SAVE ACS
 	  BUG.(HLT,SKDPF1,APRSRV,SOFT,<Page fail in scheduler context>,<<T1,UPTPFW>,<T2,TRAPPC>,<T3,TRAPFL>>,<
 
 Cause:	A page fault occurred while the monitor was running in scheduler
-	context and the page fail word did not indicate a "hard"
-	failure. This is probably a software bug because the
-	scheduler executes only resident code.  One cause of this failure is a
-	reference to a piece of swappable code or data that is not currently in
-	memory.
+	context and the page fail word did not indicate a "hard" failure.  This
+	is probably a software bug because the scheduler executes only resident
+	code.  One cause of this failure is a reference to a piece of swappable
+	code or data that is not currently in memory.
 
 Data:	UPTPFW - Page fail word
 	TRAPPC - The PC of the instruction that caused the page fault
 	TRAPFL - The PC flags of the instruction that caused the page fault
-
 >) ;NO
 	ENDIF.
 	JSP T2,PFAID		;YES, DISPATCH ON TYPE
@@ -5944,14 +6102,16 @@ CHKCFS::
 	HRR T2,T1		;Page number
 	MOVEM T2,MMAP+PIPG	;Into MMAP
 	MOVES PIPGA		;Try to write it
-CHKCFX:	BUG. (HLT,CFSWMC,APRSRV,HARD,<Wrong UCODE for CFS>,,<
+CHKCFX:	BUG.(HLT,CFSWMC,APRSRV,HARD,<Wrong UCODE for CFS>,,<
 
-Cause:	The KL microcode currently running does not support CFS.
+Cause:	The KL10 microcode currently running does not support CFS.  KL10
+	microcode edit 442 or later is suggested, as this microcode implements
+	PMOVE/PMOVEM instructions.
 
 Action:	Install the correct microcode on the front end and reload the
-	system. Be sure to answer "YES" to the "RELOAD MICROCODE" prompt
+	system.  Be sure to answer "YES" to the "RELOAD MICROCODE" prompt
 	from KLI.
->) ;Yes. Wrong UCODE then
+>) 				;Yes. Wrong UCODE then
 CHKCF0:	MOVE T2,UPTPFW		;Get PF word
 	TXNE T2,TWHPFF		;Hard error?
 	JRST CHKCFX		;Yes.
@@ -6059,11 +6219,9 @@ MAPRCA::HLL T1,IMMPTR		;CONSTRUCT PTR
 MAPIPG::CONSZ PI,PIPION		;PI OFF?
 	BUG.(HLT,PIRACE,APRSRV,SOFT,<MAPIPG - Called with PI on>,,<
 
-Cause:	This routine uses a MMAP entry which may be used at PI level.
-	To avoid races the PI should be off when it is called.
-	This particular caller did not turn off the PI.  
-
-Action: Check the stack to find the caller.
+Cause:	This routine uses a MMAP entry which may be used at PI level.  To avoid
+	races the PI should be off when it is called.  This particular caller
+	did not turn off the PI.  Check the stack to find the caller.
 >)
 	EA.ENT			;RUN IN SECTION 1
 	PUSH P,T1
@@ -6073,8 +6231,9 @@ Action: Check the stack to find the caller.
 	CAMLE T1,NHIPG		;LEGAL PAGE?
 	BUG.(HLT,PINIC1,APRSRV,SOFT,<MAPIPG - Page table not in core>,,<
 
-Cause:	A routine has been called to map a page into a special
-	address slot.  The requested page is not in memory.
+Cause:	A routine has been called to map a page into a special address slot.
+	The requested page is not in legal range for physical memory.  Look at
+	the stack and check the offending caller.
 >)
 	IOR T1,IMMPTR		;CONSTRUCT PRIVATE PTR
 	MOVEM T1,MMAP+PIPG	;PUT IN MON MAP
@@ -6365,15 +6524,14 @@ SETSPG::EA.ENT			;RUN IN SECTION 1
 SETSP1:	CAMLE T1,NHIPG		;LEGAL PAGE?
 	BUG.(HLT,PTNIC1,APRSRV,SOFT,<SWPIN - Page table not in core>,,<
 
-Cause:	A routine has been called to map a page table into a special
-	page used only by the swapping routines. The caller is expected
-	to provide an identifier for a page that is in memory. When a
-	page is in memory, the page table that points to it must be
-	in memory. The BUGHLT indicates that the storage address for
-	the page table is not a valid core page. This can indicate that the
-	page is not in memory or that its memory address is larger
-	than the physical memory on the machine. The most likely
-	cause is corruption of the monitor's data base.
+Cause:	A routine has been called to map a page table into a special page used
+	only by the swapping routines.  The caller is expected to provide an
+	identifier for a page that is in memory.  When a page is in memory, the
+	page table that points to it must be in memory.  The BUGHLT indicates
+	that the storage address for the page table is not a valid core page.
+	This can indicate that the page is not in memory or that its memory
+	address is larger than the physical memory on the machine.  The most
+	likely cause is corruption of the monitor's data base.
 >)
 	IOR T1,IMMPTR		;CONSTRUCT PRIVATE PTR
 	MOVEM T1,MMAP+CSWPG	;PUT IN MON MAP
@@ -6506,13 +6664,18 @@ PFCODT:	PFCD20			;NXM
 
 PFCDX::	BUG.(HLT,UNPGF2,APRSRV,HARD,<Unknown page failure type>,,<
 
-Cause:	A page fault has occurred and the page fail word indicates
-	a "hard" error. The monitor has read the type of failure from
-	the page fail word and one of the following is true:
+Cause:	A page fault has occurred and the page fail word indicates a "hard"
+	error.  The monitor has read the type of failure from the page fail
+	word and one of the following is true:
 
 	1. The hardware is never supposed to generate the code.
-	2. The code is valid, but the scheduler is running, and this
-	code should never be generated from scheduler context.
+	2. The code is valid, but the scheduler is running, and this code
+	should never be generated from scheduler context.
+
+Action:	This bug is usually caused by a hardware problem.  Have Field Service
+	check out the system.  If this BUGHLT is reproducible with healthy
+	hardware, submit an SPR along with the dump and instructions on
+	reproducing it.
 >)
 
 ;Page fail code is 20. BUGHLT on KL. Complain and continue on KS
@@ -6523,10 +6686,13 @@ PFCD20::JRST PFCDX		;ILLEGAL ON OTHER THAN SM10
 
 PFCD21:	BUG.(HLT,PVTRP,APRSRV,HARD,<Proprietary violation trap>,,<
 
-Cause:	A page fault occurred indicating a proprietary violation while
-	the monitor was running in scheduler context. An instruction in 
-	a public page attempted to reference a concealed page. Since TOPS-20  
-	uses only concealed mode, this BUGHLT should never happen.
+Cause:	A page fault occurred indicating a proprietary violation while the
+	monitor was running in scheduler context.  An instruction in a public
+	page attempted to reference a concealed page.  Since TOPS-20 uses only
+	concealed mode, this BUGHLT should never happen.
+
+Action:	This bug is caused by a hardware problem.  Have Field Service check out
+	the system.
 >)
 
 ;Page fail code is 22 (refill error). This is not supposed to happen
@@ -6534,11 +6700,13 @@ Cause:	A page fault occurred indicating a proprietary violation while
 
 PFCD22::BUG.(CHK,RFILPF,APRSRV,HARD,<Refill error page fail>,,<
 
-Cause:	A page fault occurred indicating a refill error. This condition
-	is indicated by a "hard" failure code of 22 in the page fail
-	word and should occur only under KI-style paging.
-	TOPS-20 does not use this style of paging. The monitor will retry
-	the instruction.
+Cause:	A page fault occurred indicating a refill error.  This condition is
+	indicated by a "hard" failure code of 22 in the page fail word and
+	should occur only under KI-style paging.  TOPS-20 does not use this
+	style of paging.  The monitor retries the instruction.
+
+Action:	This bug is caused by a hardware problem.  Have Field Service check out
+	the system.
 >)
 	JRST 0(T2)		;TRY AGAIN
 
@@ -6572,13 +6740,17 @@ PFCD25::AOSLE PTPARC		;Should we forge ahead?
 
 Cause:	The monitor encountered multiple page table parity errors.
 
+Action:	This bug is caused by a hardware problem.  Have Field Service
+	check out the system.
 >)
 	CALL CLRALL		;Clear all of pager, including KEPT entries
-	BUG. (CHK,PTPTE1,APRSRV,HARD,<Page table parity error>,<<UPTPFW,PFW>>,<
+	BUG.(CHK,PTPTE1,APRSRV,HARD,<Page table parity error>,<<UPTPFW,PFW>>,<
 
-Cause:	A page table entry has bad parity. The monitor will clear
-	the entry and try again. If it fails repeatedly, PTMPE
-	will result.
+Cause:	A page table entry has bad parity.  The monitor clears the entry
+	and try again.  If it fails repeatedly, a PTMPE BUGHLT results.
+
+Action:	This bug is caused by a hardware problem.  Have Field Service check out
+	the system.
 
 Data:	PFW - Page fail word
 >,,<DB%NND>)			;[7.1210]
@@ -6607,13 +6779,14 @@ PFCDP1:	MOVEM P,MEMAP		;SAVE OLD STACK JUST IN CASE
 	 JFCL			;DON'T CARE IF IT WAS HARD OR NOT
 	BUG.(HLT,SKDMPE,APRSRV,HARD,<MPE in scheduler or PI context>,,<
 
-Cause:	A page fault occurred indicating an AR or ARX parity error
-	while the monitor was processing an interrupt or running
-	the scheduler. This BUGHLT occurs regardless of whether the
-	error is repeated when the reference is retried or not.
-	The monitor has printed a description of the problem on the CTY.
-	A SYSERR block has been created and will be placed in the
-	SYSERR file when the monitor is rebooted.
+Cause:	A page fault occurred indicating an AR or ARX parity error while the
+	monitor was processing an interrupt or running the scheduler.  This
+	BUGHLT occurs regardless of whether the error is repeated when the
+	reference is retried or not.  The monitor has printed a description of
+	the problem on the CTY.  A SYSERR block has been created and is 
+	placed in the SYSERR file when the monitor is rebooted.
+
+Action:	Have Field Service look at the memory causing the parity errors.
 >)
 
 ;Here on a NXM. This also causes an AR/ARX parity error. Normally we
@@ -6624,17 +6797,16 @@ PFNXM::	CONOAPR APFCLR+APSBER+APMPE ;CLEAR SPURIOUS FLAGS
 	CONSZ PI,PIPION		;PI SYSTEM ON?
 	BUG.(HLT,APRNX2,APRSRV,HARD,<NXM detected by APR>,,<
 
-Cause:	A page fault occurred, indicating that the processor
-	attempted to access a memory that did not respond within
-	a preset time. The monitor is presently processing an
-	interrupt or running in the scheduler and the interrupt
-	system is turned on. Since non-existent memory also
-	produces an APR interrupt, which results in an APRNX1 BUGHLT,
-	this BUGHLT does not normally occur.
+Cause:	A page fault occurred, indicating that the processor attempted to
+	access a memory that did not respond within a preset time.  The monitor
+	is presently processing an interrupt or running in the scheduler and
+	the interrupt system is turned on.  Since non-existent memory also
+	produces an APR interrupt, which results in an APRNX1 BUGHLT, this
+	BUGHLT does not normally occur.
 
-Action:	See APRNX1. Note, however, that the occurrence of this BUGHLT
-	instead of APRNX1 may indicate a failure in the interrupt
-	system.
+Action:	This is usually a hardware problem.  See the action for APRNX1.  Note,
+	however, that the occurrence of this BUGHLT instead of APRNX1 may
+	indicate a failure in the interrupt system.
 >) ;YES
 	AOS UPTPFO		;FAKE COMPLETION OF INSTRUCTION
 	JRST 0(T2)		;CONTINUE, ASSUME PGM WILL CHECK FOR NXM
@@ -6691,30 +6863,33 @@ PGMPE0::SKIPE T1,DIAGAR		;AR/ARX INTERCEPT SET?
 PFCP3:	MOVE T1,CONOPG
 	TXZ T1,PGCLDE		;SET CACHE NO LOAD
 	CONO PAG,0(T1)
-	MOVEM P,MEMAP		;[7447] Save current stack pointer
-	MOVE P,[IOWD NMEMPP,MEMPP] ;[7447] And set up APR stack
-
-;Save current page fail information
-
-	PUSH P,UPTPFN		;[7447] Save old and new trap PC
-	PUSH P,UPTPFO		;[7447]
-	PUSH P,UPTPFL		;[7447]
 
 ;Get SYSERR block and store data
 
 	MOVEI T1,PT%LEN
 	MOVEI T2,PT%SIZ
 	CALL ALCSEB		;ASSIGN SYSERR BUFFER
-	 BUG.(HLT,NOSEB2,APRSRV,SOFT,<PGMPE-No SYSERR buffer available>,,<
+	 BUG.(HLT,NOSEB2,APRSRV,SOFT,<No SYSERR buffer available>,,<
 
-Cause:	An AR or ARX parity error has occurred, and the monitor
-	is creating a SYSERR block. The BUGHLT indicates that no
-	free space is available for the SYSERR block. UPTPFW
+Cause:	An AR or ARX parity error has occurred, and the monitor is creating a
+	SYSERR block.  The BUGHLT indicates that no free space is available for
+	the SYSERR block.  Therefore, no block is created.  UPTPFW
 	contains the page fail word.
+
+Action:	Free space may be congested with other SYSERR blocks.  Have Field
+	Service check the system.
 >)
 	MOVEI Q2,SEBDAT(T1)	;Q2 HOLDS PTR TO DATA BLOCK
 	HRL Q2,T1		;LH HOLDS ORIGINAL PTR
 	PIOFF			;PROCEED WITH PI OFF
+	MOVEM P,MEMAP		;[8970] Save current stack pointer
+	MOVE P,[IOWD NMEMPP,MEMPP] ;[8970] And set up APR stack
+
+;Save current page fail information
+
+	PUSH P,UPTPFN		;[8970] Save old and new trap PC
+	PUSH P,UPTPFO		;[8970]
+	PUSH P,UPTPFL		;[8970]
 	;..
 	;..
 
@@ -6960,21 +7135,19 @@ PFCPHH:	CONO PAG,0(Q1)		;TURN CACHE OFF
 	JRST PFCP2		;NO, CONTINUE
 	BUG.(CHK,HARDCE,APRSRV,HARD,<Hard cache errors--cache deselected>,,<
 
-Cause:	The hardware has detected an AR or ARX parity error that occurs
-	only when an address is referenced through the cache. An attempt
-	to reference the same address from memory with the cache turned
-	off has succeeded. This has happened more than the allowable
-	maximum number of times. The monitor will turn off the cache and
-	proceed.
-	
-	The monitor has printed a description of the problem on the
-	CTY and created a SYSERR block, which will be written into
-	the SYSERR file.
+Cause:	The hardware has detected an AR or ARX parity error that occurs only
+	when an address is referenced through the cache.  An attempt to
+	reference the same address from memory with the cache turned off has
+	succeeded.  This has happened more than the allowable maximum number of
+	times.  The monitor turns off the cache and proceeds.
 
-Action:	The monitor will continue to run without the cache.
-	However, when the front end reloads the monitor at some future
-	time, the front end will enable the cache. Change its configuration
-	file in order to avoid this until the cache is fixed.
+	The monitor has printed a description of the problem on the CTY and
+	created a SYSERR block, which is written into the SYSERR file.
+
+Action:	Field Service should look at the system.  The monitor continues to
+	run without the cache.  However, when the front end reloads the monitor
+	at some future time, the front end enables the cache.  Change the
+	configuration file in order to avoid BUGCHK  until the cache is fixed.
 >,,<DB%NND>)			;[7.1210]
 	MOVEM Q1,CONOPG		;SET CACHE OFF
 	JRST PFCP2		;CONTINUE
@@ -7021,25 +7194,30 @@ PFCPL1:
 PFCPTP:	TXNN F,PFCPF0		;DOING TEST REFERENCE?
 	 BUG.(HLT,UNXMPE,APRSRV,HARD,<PFCDPE - Unexpected parity error trap>,<<T1,PFW>,<T2,PADR>>,<
 
-Cause:	The monitor was processing an AR or ARX parity error when
-	a second error occurred. The monitor retries the reference
-	that caused the original error and is prepared to handle
-	a second error. However, the BUGHLT indicates that the
-	error occurred during the processing but not during the retry.
+Cause:	The monitor was processing an AR or ARX parity error when a second
+	error occurred.  The monitor retries the reference that caused the
+	original error and is prepared to handle a second error.  However, the
+	BUGHLT indicates that the error occurred during the processing but not
+	during the retry.
+
+Action:	This is caused by a hardware problem.  Field Service should check the
+	system.
 
 Data:	PFW - Page fail word
 	PADR - Address of page fail
 >) ; NO
 	LOAD T1,TWCOD,UPTPFW	;YES, CHECK CODE
 	CAIGE T1,PECOD0		;ANOTHER PARITY ERROR?
-	BUG.(HLT,MPEUTP,APRSRV,HARD,<PFCDPE-Unknown trap on test reference>,,<
+	BUG.(HLT,MPEUTP,APRSRV,HARD,<PFCDPE - Unknown trap on test reference>,,<
 
-Cause:	The monitor was processing an AR or ARX parity error when a
-	second error occurred. The monitor retries the reference that
-	caused the original error and is prepared to handle a second
-	error. However, the BUGHLT indicates that the second error
-	(caused by the retry) was not an AR or ARX parity error and
-	thus was not expected.
+Cause:	The monitor was processing an AR or ARX parity error when a second
+	error occurred.  The monitor retries the reference that caused the
+	original error and is prepared to handle a second error.  However, the
+	BUGHLT indicates that the second error (caused by the retry) was not an
+	AR or ARX parity error and thus was not expected.
+
+Action:	This BUGHLT indicates a hardware problem.  Field Service should check
+	the system.
 >)
 	TXO F,PFCPF1		;YES, NOTE REFERENCE FAILED
 	AOS UPTPFO		;SKIP FAILING INSTRUCTION
@@ -7052,17 +7230,15 @@ PGNXM0:	CONOAPR APFCLR+APMPE	;CLEAR RESIDUAL FLAGS
 	CONSZ PI,PIPION		;PI SYSTEM ON?
 	BUG.(HLT,PRONX2,APRSRV,HARD,<NXM detected by processor>,,<
 
-Cause:	A page fault occurred indicating that the processor
-	attempted to access a memory that did not respond within
-	a preset time. The monitor is presently running in
-	process context. The interrupt system is on. Since
-	non-existent memory also produces an APR interrupt,
-	which results in an APRNX1 BUGHLT,
-	this BUGHLT does not normally occur.
+Cause:	A page fault occurred indicating that the processor attempted to access
+	a memory that did not respond within a preset time.  The monitor is
+	presently running in process context.  The interrupt system is on.
+	Since non-existent memory also produces an APR interrupt, which results
+	in an APRNX1 BUGHLT, this BUGHLT does not normally occur.
 
-Action:	See APRNX1. Note, however, that the occurrence of this BUGHLT
-	instead of APRNX1 may indicate a failure in the interrupt
-	system.
+Action:	This is usually a hardware problem.  See the action for APRNX1.  Note,
+	however, that the occurrence of this BUGHLT instead of APRNX1 may
+	indicate a failure in the interrupt system.
 >)
 	AOS UPTPFO		;BYPASS FAILING INSTRUCTION
 	RET

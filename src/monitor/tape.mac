@@ -1,3 +1,10 @@
+; Edit= 9011 to TAPE.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8942 to TAPE.MAC on 25-Aug-88 by GSCOTT
+;Update BUG. documentation. 
+; Edit= 8858 to TAPE.MAC on 11-Jul-88 by GSCOTT, for SPR #21894
+;Fix "Invalid tape HDR1 sequence number" errors on second reel of multi reel
+;saveset because DUMPER does not CLOSF the tape between savesets. 
 ; UPD ID= 8628, RIP:<7.MONITOR>TAPE.MAC.5,  11-Feb-88 18:54:33 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8333, RIP:<7.MONITOR>TAPE.MAC.4,  31-Dec-87 10:49:38 by RASPUZZI
@@ -4488,10 +4495,11 @@ OPHDWR:	JN TPEBD,,[RETBAD (OPNX13)] ;CAN'T WRITE AN EBCDIC TAPE
 	CAMGE T1,T2		;EXPIRED?
 	MTERET (IOX26)		;NO - RETURN ERROR
 
-;CHECKS FOR WRITE ACCESS COMPLETED FOR NOW. CHANGE STATE AND WAIT
-;FOR NEXT OPERATION
+;Checks for write access completed for now.  [8858] Set tape file section one,
+;and enter common file open code.
 
-OPHDW3:
+OPHDW3:	MOVEI T1,1		;[8858] Since we are opening for write
+	STOR T1,TPFSEC		;[8858]  then set file section one
 ;	JRST OPHDON		;DONE FOR NOW
 
 ;HERE WHEN FILE HAS BEEN OPENED
@@ -5595,13 +5603,10 @@ LBLCMP:	ASUBR <VAL,DESC,BFR,PNTR>
 		IFIW!CMPOCT](T1) ;OCTAL NUMBER
 ILLTYP:	BUG.(HLT,BADTYP,TAPE,HARD,<Bad label field desc>,,<
 
-Cause:	This is a bug in TAPE.  The internal routines in TAPE have a table
-	with codes that describe the type of data in particular label fields
-	(octal,string,decimal).  One of these tables has a code that is
-	out of range.
-
-Action:	Try to find out where the out of-range-code came from.
-
+Cause:	This is a bug in TAPE.  The internal routines in TAPE have a table with
+	codes that describe the type of data in particular label fields
+	(octal,string,decimal).  One of these tables has a code that is out of
+	range.	Try to find out where the out of-range-code came from.
 >)
 
 ;ACTION ROUTINES FOR LBLCMP
@@ -6341,18 +6346,19 @@ DEALBL:	LOAD T1,TPLBLS		;RETURN BLOCK
 
 PLRMSG:	MOVEI T4,0(U)		;GET MT UNIT NUMBER
 	CALL IPCMTM		;SEND MT MESSAGE
-	 JRST [	BUG.(INF,MTMSG,TAPE,HARD,<Failed to send MT message to "TAPE" controller>,<<T1,ERRCOD>>,<
+	 JRST [	BUG.(INF,MTMSG,TAPE,HARD,<Failed to send MT message to MOUNTR>,<<T1,ERRCOD>>,<
 
 Cause:	This message is from TAPE.  TAPE sends IPCF messages to MOUNTR under
-	certain conditions, such as volume switch.  TAPE was unable to send
-	the IPCF message.  The user program involved will get an error
-	return to its tape operation.
+	certain conditions, such as volume switch.  TAPE was unable to send the
+	IPCF message.  The user program involved receives an error return to
+	its tape operation.
 
 Action:	There are many reasons IPCF refuses to send a message.  The IPCF error
-	code is passed back to the user.  If it is a resource problem, try
-	to improve system resources.  If it seems like a monitor bug, change
-	the BUGINF to a BUGHLT and find out what the monitor is doing wrong
-	(For example, it might be using the wrong PID).
+	code is passed back to the user.  If it is a resource problem, try to
+	improve system resources.  
+
+	If it seems like a monitor bug, change this BUGINF to a BUGHLT, and
+	submit an SPR with the dump stating how to reproduce the problem.  
 
 Data:	ERRCOD - Error code
 >)

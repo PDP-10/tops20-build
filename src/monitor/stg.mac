@@ -1,6 +1,74 @@
-; UPD ID= 8713, RIP:<7.MONITOR>STG.MAC.46,  13-May-88 16:34:01 by RASPUZZI
-;TCO 7.1287 - Make DEVCHR resident as it is touched by LATSRV at scheduler
-;	      level.
+; Edit= 9161 to STG.MAC on 9-Mar-90 by GSCOTT
+;Increase NHOSTS to 10501. 
+; Edit= 9157 to STG.MAC on 7-Mar-90 by GSCOTT
+;Rearrange host tables so that we can remove that gross edit 8828.
+; Edit= 9156 to STG.MAC on 7-Mar-90 by GSCOTT
+;Implement DNS resolver, including support to read file
+;SYSTEM:INTERNET.NAMESERVERS, use of monitor's host tables as a cache of data,
+;new IPOPR% function .IPDNS, extend GTHST% functions .GTHSN and .GTHNS, and
+;new GTHST% functions .GTHPN, .GTHMX, .GTHAA, .GTHVN, .GTHOS, and .GTHDN.
+; Edit= 9154 to STG.MAC on 1-Mar-90 by GSCOTT
+;Prevent occasional INTWA1 BUGCHKs on startup after edit 9145 because ABTBUF
+;called by RESET% or KFORK% when TCPON is set but before INQINI sets up
+;INTQLK. Remove useless and wateful TCPIFG flag. 
+; Edit= 9140 to STG.MAC on 16-Jan-90 by GSCOTT, for SPR #22074
+;Implement Karn and Jacobson algorithms for retransmission timeout
+;calculation, slow start, and congestion avoidance, as specified by RFC1122.
+; Edit= 9135 to STG.MAC on 28-Nov-89 by GSCOTT
+;Allow alternate IP address using "IPNIA" interface in INTERNET.ADDRESS. 
+; Edit= 9119 to STG.MAC on 24-Aug-89 by GSCOTT
+;Implement new GETOK functions .GODSK, .GOSJP, and .GOSPR. 
+; Edit= 9115 to STG.MAC on 18-Jul-89 by GSCOTT
+;Merge a fair number of TCP/IP bug fixes and performance enhancements from
+;Stanford and the SRI-NIC. 
+; Edit= 9088 to STG.MAC on 8-Apr-89 by GSCOTT
+;Add GETOK function .GOGTD for GTDIR% and .GOSTD for STAD%.
+; Edit= 9085 to STG.MAC on 6-Apr-89 by GSCOTT
+;Prevent ILPAGN and other problems with 16. page dump mode magtape I/O. 
+; Edit= 9075 to STG.MAC on 1-Mar-89 by RASPUZZI
+;Make dummy CTMLOK for ATACH% when no CTHSRV is loaded in the monitor build.
+; Edit= 9069 to STG.MAC on 16-Feb-89 by WONG (TCO none)
+;Increase NHOSTS again. 
+; Edit= 9058 to STG.MAC on 12-Jan-89 by GSCOTT
+;Add SMON function .SFBUG to set SAVTRE. Reverse sense of SMON function
+;.SFHDT. ITRAP on errors in SMON function .SFDCD. 
+; Edit= 9054 to STG.MAC on 10-Jan-89 by GSCOTT
+;Search SYSTEM:PASSWORD.DICTIONARY when setting passwords to help prevent
+;users from setting easily guessed passwords. 
+; Edit= 9041 to STG.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 9036 to STG.MAC on 15-Nov-88 by RASPUZZI
+;Make sure that the system's name gets sent over during PHYKLP START/STACK/ACK
+;sequence. Also, when the NODE% JSYS changes the name, have the local system
+;notify remote systems. Finally, make CLUDGR send over the node name in the
+;last 2 words of the optional connection data. I'm out of breath.
+; Edit= 9033 to STG.MAC on 9-Nov-88 by RASPUZZI, for SPR #22041
+;Increase size of extended terminal freespace pool.
+; Edit= 8992 to STG.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8985 to STG.MAC on 27-Oct-88 by RASPUZZI
+;Prevent someone from setting NHOSTS to something ludicrous.
+; Edit= 8939 to STG.MAC on 25-Aug-88 by GSCOTT
+;Update BUG. documentation. 
+; Edit= 8854 to STG.MAC on 16-Jun-88 by RASPUZZI, for SPR #21925
+;Redo IPABFL BUGCHK logic. Make TOPS-20 timeout the last time a buffer was
+;returned or assigned. Don't BUGCHK (IPABTO) for 5 minutes now and only do it
+;every 5 minutes.
+; Edit= 8853 to STG.MAC on 14-Jun-88 by RASPUZZI
+;Make NODE% call PARNDU in the right section when building a non-DECnet
+;monitor.
+; Edit= 8851 to STG.MAC on 1-Jun-88 by RASPUZZI
+;Always define ETHADR and have PHYKNI set it up at the right time. 
+; Edit= 8842 to STG.MAC on 13-May-88 by RASPUZZI (TCO 7.1287)
+;Make DEVCHR resident as it is touched by LATSRV at scheduler level.
+; Edit= 8814 to STG.MAC on 29-Mar-88 by RASPUZZI, for SPR #21715
+;Increase the extended general pool size.
+; Edit= 8807 to STG.MAC on 22-Mar-88 by RASPUZZI
+;Increase the extended DECnet free space pool. 
+; Edit= 8802 to STG.MAC on 17-Mar-88 by RASPUZZI
+;Increase the size of NHOSTS again. 
 ; UPD ID= 8682, RIP:<7.MONITOR>STG.MAC.45,   6-Mar-88 23:19:21 by GSCOTT
 ;TCO 7.1254 - Remove TCO 7.1177, resetting .RESGQ to 1400, as DOB now does not
 ; use space from .RESGP for its CCWs
@@ -1461,7 +1529,7 @@
 ;TCO 4.2574 - ADD PI5CNT
 
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -1481,7 +1549,7 @@
 
 DEFINE CPYRYT (FUNCT)<
 	 FUNCT <
-COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ALL RIGHTS RESERVED.
 >>
 
@@ -1725,6 +1793,7 @@ NDG	CMAN,0			;NUMBER OF AYDIN DISPLAYS
 NDG	KNIN,0			;NUMBER OF KLNI'S
 NDG	FTNITEST,0		;NISRV tester module
 IFE KNIN,<IPNIN==:0		;IF NO NI FORCE IPNIN TO ZERO
+	  IPNIAN==:0		;[9135] No NI so no NI alternate addresses
 	  FTNITEST==:0>		;IF NO NI, NO NEED FOR NITEST
 IFE FTKLIPA,<IPCIN==:0>		;IF NO KLIPA, NO CI TCP
 
@@ -2165,7 +2234,7 @@ RS JOBRTL,NJOBS			;JOB RUN TIME LIMIT
 	;DEFSTR JOBRTP,JOBRTL,35,23 ; Ptr to runtime limit blk
 	;DEFSTR TIMCNT,JOBRTL,12,13 ; # of clocks in use by job
 RS JOBPT,NJOBS			;CONTROL TTY,,TOP FORK
-
+
 ;QUOTA ENFORCEMENT TABLES
 
 RS ALOC1,NOFN			;[7.1208] Dir # ,, OFN count
@@ -2197,11 +2266,32 @@ NR XECFLG,1			;EXEC FLAGS
 ;[7.1063]Cell for storing the offline structures timer interval value
 RSI TMRINT,<^D5*^D1000>		;[7.1147]Default value is 5 seconds
 ;[7.1112]Flag for Login Structure. Set and cleared by SMON% function .SFLGS
+
+IFE CHFLG,<			;[9075] If no CTHSRV...
+RSI CTMLOK,<-1>			;[9075] If no CTERM, dummy location for ATACH%
+	>			;[9075] End of no CTERM
+
 RS LGSFLG,1			;[7.1112]Login Structure flag
 RS LGSIDX,1			;[7.1112]Login Structure number
+
+;[9054][7.1231] Password length, expiration, dictionary flags
 
-;[7.1231] Cell for storing minimum password length
-RS MINPAS,1			;[7.1231] Default to no minimum length
+NR MINPAS,1			;[9054][7.1231] Default to no minimum length
+NR PASEXP,1			;[9054][9041] Password expiration day count
+NR PWDFLG,1			;[9054] Password dictionary flag, default off
+
+;[9041] System wide password penalty lock
+
+RSI PWLOCK,<-1>			;[9041] Obtained when an incorrect password is seen
+
+;[9041] Cell indicating whether or not ACJ is running and how
+; 0 = ACJ running under monitor
+; 1 = ACJ running somewhere besides monitor context
+; -1 = ACJ not running
+RSI ACJRUN,<-1>			;[9041] Start with no ACJ running
+
+;[8851] Ethernet address goes here
+RS ETHADR,2			;[8851] Current Ethernet address always there now
 
 ;MEMORY ERROR REPORTING STORAGE
 
@@ -2586,12 +2676,14 @@ RS EQRFRK,1			;[7.1072] Fork number of ENQ resched fork
    >				;[7.1072]
 RS CLFORK,1			;[7.1076] CLUDGR fork's number
 RS DOBFRK,1			;[7.1253] SETSPD DOB dump copier fork (0=none)
+RS ACJFKH,1			;[9041] ACJ relative fork number for job 0
 
 ;FLAGS FOR CUSTOMER-CONTROLLABLE OPTIONS
 
 RSI HNGU0F,<HNGU0>		;HANGUP IF JOB NOT LOGGED IN
-RSI HNGU1F,<HNGU1>		;HANDUP IF JOB LOGGED IN
+RSI HNGU1F,<HNGU1>		;HANGUP IF JOB LOGGED IN
 RSI COFTIM,<^D60000*COFMIN>	;TIME BETWEEN AUTO DETACH AND AUTO LOGOUT
+NR HDTCOF,1			;[9058] Hangup on DETACH (nonzero=do it)
 ;STORAGE FOR BUGHLT AND BUGCHK
 
 ;KEEP DBUGSW, DCHKSW, EDDTF, WEFLAG IN ORDER (FOR DEBUGGING CONVENIENCE ONLY)
@@ -2610,7 +2702,7 @@ IFN KNIN,<
    RS RIQHED			;LLMOP Request ID Queue head
    RS RIQLST			;LLMOP Request ID Queue end
    RS LLMACT			;Time at which to send next System ID
-> ; End of IFN KNIN
+>				;End of IFN KNIN
 RSI CITIMR,<0>			;DON'T DO SCAMPI, PHYMSC, OR PHYMVR TIMEOUTS
 RSI NOKLIP,<0>			;DON'T INITIALIZE THE KLIPA
 
@@ -2926,9 +3018,9 @@ RS SDBBL0,SDBLN			;STRUCTURE DATA BLOCK FOR PS
 ;QUOTAS FOR EACH OF THE POOLS.
 
 	.RESGQ==:1400		;GENERAL QUOTA - UNEXTENDED SYSERR AND CTY LDB
-	.XREGQ==:7000		;GENERAL QUOTA EXTENDED
+	.XREGQ==:16000		;[8814] General quota extended
 	.RESTQ==:600		;TERMINAL QUOTA - CTY DYNAMIC DATA AND SENDALLS
-	.XRETQ==:44*ACTLNS	;TERMINAL QUOTA EXTENDED SECTION - TERMINAL BLOCKS
+	.XRETQ==:100*ACTLNS	;[9033] Terminal quota extended section - terminal blocks
 IFN FTNSPSRV,<			;DECNET QUOTA - USED BY NSPSRV
 	.RESNQ==:<^D40*44>+<^D20*33>+<12*30>+<^D10*<4*120>>+<^D15*<4*50>>
 	.XRSNQ==:0		;No extended quota for NSPSRV
@@ -2943,7 +3035,7 @@ IFE FTNSPSRV,<
 	.XRSNQ==:0		;If using DECnet-36 memory manager then
   >				; then no quota in extended pool
   IFE FTD36MM,<
-	.XRSNQ==:^D105*^D512	;[7282]Quota for DECnet-36 extended pool
+	.XRSNQ==:^D150*^D512	;[8807] Quota for DECnet-36 extended pool
   >
 >
 	.RSTMQ==:0		;TIMER QUOTA IN SECTION 0
@@ -3235,7 +3327,7 @@ NDEV=NDEV+2			;LEAVE ROOM TO PATCH 2 DEVICES
 
 RS(DEVL0K,LOKLEN)			; Lock for assigning devices
 NR(DEVNAM,NDEV)			; Sixbit device name
-RS(DEVCHR,NDEV)			;[7.1287] Device characteristics
+RS(DEVCHR,NDEV)			;[8842] Device characteristics
 NR(DEVCH1,NDEV)			;DEV CHAR WORD # 2
 NR(DEVCH2,NDEV)		; DIR NUMBER OF SPOOL DIRECTORY
 NR(DEVDSP,NDEV)			; Lh = ofn if any, rh = dispatch table address
@@ -3493,7 +3585,7 @@ NDG	DGOCFK,SF%DOK!GT%DEF+DGOFKN	;CREATE FORK
 NDG	DGOTBR,SF%DOK!GT%DEF	;SET TERMINAL BAUD RATE
 NDG	DGOLGO,SF%DOK!GT%DEF	;LOGOUT OVER QUOTA
 NDG	DGOENQ,0!GT%DEF		;ENQ OVER QUOTA
-NDG	DGOCRD,SF%DOK!GT%DEF	;CREATE DIRECTORY
+NDG	DGOCRD,SF%DOK!GT%DEF!GT%SPC ;[9041] Create directory
 NDG	DGOSMT,SF%DOK!GT%DEF	;INCREMENT MOUNT COUNT
 NDG	DGOMDD,SF%DOK!GT%DEF	;ENTRY TO MDDT
 NDG	DGOCLS,SF%DOK!GT%DEF	;SET CLASS
@@ -3506,6 +3598,25 @@ NDG	DGOANA,SF%DOK!GT%DEF	;ARPANET ACCESS
 NDG	DGOATJ,SF%DOK!GT%DEF	;ATTACH
 NDG	DGOINF,SF%DOK!GT%DEF	;[7.1076] INFO%
 NDG	DGOLAT,SF%DOK!GT%DEF	;[7.1207] LATOP%
+NDG	DGOCTM,SF%DOK!GT%DEF!GT%SPC ;[9041] Allow CTERM connection
+NDG	DGOTTM,SF%DOK!GT%DEF	;[9041] Allow TTMSG%
+NDG	DGOSMN,SF%DOK!GT%DEF	;[9041] Allow SMON%
+NDG	DGOHSY,SF%DOK!GT%DEF	;[9041] Allow HSYS%
+NDG	DGOSGT,SF%DOK!GT%DEF	;[9041] Allow SYSGT%
+NDG	DGOGTB,SF%DOK!GT%DEF	;[9041] Allow GETAB%
+NDG	DGOOPN,SF%DOK!GT%DEF!GT%SPC ;[9041] OPENF% of secure file
+NDG	DGORNF,SF%DOK!GT%DEF!GT%SPC ;[9041] RNAMF% of secure file
+NDG	DGODLF,SF%DOK!GT%DEF!GT%SPC ;[9041] DLEF%/DELNF% of secure file
+NDG	DGOTLK,SF%DOK!GT%DEF	;[9041] Allow TLINK%
+NDG	DGOCRL,SF%DOK!GT%DEF!GT%SPC ;[9041] Allow CRLNM% (only some functions)
+NDG	DGODTC,SF%DOK!GT%DEF	;[9041] Allow DTACH%
+NDG	DGOCFD,SF%DOK!GT%DEF!GT%SPC ;[9041] Allow CHFDB% to change FB%SEC
+NDG	DGOGTD,SF%DOK!GT%DEF	;[9088] Allow GTDIR%
+NDG	DGOSTD,SF%DOK!GT%DEF	;[9088] Allow STAD%
+NDG	DGODSK,SF%DOK!GT%DEF	;[9119] Allow DSKOP%
+NDG	DGOSJP,SF%DOK!GT%DEF	;[9119] Allow SJPRI%
+NDG	DGOSPR,SF%DOK!GT%DEF	;[9119] Allow SPRIW%
+
 ;DEFAULT TIMEOUT FOR GETOK
 
 NDG	GIVTIM,200000		;GIVOK TIMEOUT TIMER
@@ -3537,6 +3648,24 @@ GTOKPR::DGOUSR		;ONE ENTRY PER LEGAL GETOK/GIVOK FUNCTION (THIS ENTRY IS USER RE
 	DGOATJ		;ATTACH
 	DGOINF		;[7.1076] INFO%
 	DGOLAT		;[7.1207] LATOP%
+	DGOCTM		;[9041] Incoming CTERM connections
+	DGOTTM		;[9041] Allow TTMSG%
+	DGOSMN		;[9041] Allow SMON%
+	DGOHSY		;[9041] Allow HSYS%
+	DGOSGT		;[9041] Allow SYSGT%
+	DGOGTB		;[9041] Allow GETAB%
+	DGOOPN		;[9041] OPENF% of secure file
+	DGORNF		;[9041] RNAMF% of secure file
+	DGODLF		;[9041] DELF%/DELNF% of secure file
+	DGOTLK		;[9041] Allow TLINK%
+	DGOCRL		;[9041] Allow CRLNM% (only some functions)
+	DGODTC		;[9041] Allow DTACH%
+	DGOCFD		;[9041] Allow CHFDB% to change FB%SEC
+	DGOGTD		;[9088] Allow GTDIR%
+	DGOSTD		;[9088] Allow STAD%
+	DGODSK		;[9119] Allow DSKOP%
+	DGOSJP		;[9119] Allow SJPRI%
+	DGOSPR		;[9119] Allow SPRIW%
 MXGOKF==:.-GTOKPR	;SIZE OF TABLE
 
 	SWAPCD
@@ -4146,9 +4275,7 @@ RSI OWGBPV,<440606360607,300610220611,140612060613
 	    626364656600,555657600000,707172730000
 	    757600000000>,OWGBPN
 
-;ADD RESIDENT STORAGE FOR TAPE SCEDULER TEST
-
-
+
 ;DTESRV STORAGE
 
 NR BTLOCK			;LOCK ON BOOT PAGE (DTERBT)
@@ -4176,7 +4303,7 @@ NR (LPTOFN,LPTN)		;VFU,,RAM OFN'S TO PREVENT OPENS FOR WRITE
 	LPFLSZ==:^D28		;NUMBER OF WORDS IN FILENAME BUFFERS
 NR (VFUFIL,LPFLSZ*LPTN)		;ALLOCATE SWAPPABLE STORAGE FOR VFU FILE NAMES
 NR (RAMFIL,LPFLSZ*LPTN)		;ALLOCATE SWAPPABLE STORAGE FOR RAM FILE NAMES
-
+
    IFG FEN,<			;PRIVATE STORAGE FOR FE DEVICES
 RS FEUDB0,FEN
 RS FEUDB1,FEN
@@ -4216,7 +4343,7 @@ RS CDRLCK,1			;THE CDR LOCK WORD
 RS CDRCNT,1			;COUNT OF CDR'S OPENED
 NRP CDRBUF,1000			;THE BUFFER PAGE
    >
-
+
    IFG MTAN,<
 
 ;Private storage for magtapes
@@ -4233,15 +4360,21 @@ RS(MTARS1,MTAN)			;RESIDENT STORAGE FOR MAGTAPE
 RS(MTPSFK,MTAN)			;PSI,,FORK # FOR ONLINE/OFFLINE INTERRUPTS ON TAPE
 RS(MTCUTB,MTAN)			;CDB ,, UDB TABLE
 
+;[9085] Because MAGTAP allows transfers of up to MAXPPB pages, the maximum
+;words needed for CCWs is MAXPPB+2 (transfer doesn't have to start on a page
+;boundry and zero word is needed at end of IOWD lists).  Therefore MTABFL is
+;the size of the rest of the IORB (MTIRTL+1) plus CCW space (MAXPPB+2).
+
 	MTBUFN==:2		;NUMBER OF BUFFERS/IORB'S
 	MAXPPB==:20		;MAXIMUM PAGES PER BUFFER
 	IRBLEN==:6		;LENGTH OF AN IORB (ALSO IN PHYPAR)
 	MTIRSD==:IRBLEN		;START OF DEVICE SPECIFIC AREA
 				;SEE MAGTAP FOR DEFSTR'S OF THIS AREA
 	MTIRTL==:MTIRSD+2	;START OF TRANSFER LIST
-	MTIRBL==:MTIRTL+MAXPPB+1	;TOTAL LENGTH OF MAGTAPE IORB
-	MTABFL==MTAN*MTBUFN*MTIRBL
-	MTPBFL==MTBUFN*<MAXPPB+1>*MTAN	;+1 for end-of-buffer zero word
+	MTIRBL==:MTIRTL+1+MAXPPB+2 ;[9085] Total length of magtape IORB
+	MTABFL==MTAN*MTBUFN*MTIRBL ;[9085] Compute space for all IORBs
+	MTPBFL==MTBUFN*<MAXPPB+1>*MTAN ;[9085] +1 for non-page aligned DUMPI/O 
+
 RS(MTAPBF,MTPBFL)		;SPACE FOR BUFFER PAGE POINTERS
 RS(MTIRBF,MTABFL)		;SPACE FOR IORB'S
 
@@ -4258,7 +4391,7 @@ RS(MTERFL)			;State of retry
 RS(MTACOM)			;Cono word of current operation
 RS(MTDINR)			;Return address from data interrupt
 RS(MTACLS)			;Clock routine switch, 0 for no clock wanted
-
+
 ;PRIVATE STORAGE FOR MT (DUMMY TAPES)
 
 RS (TLABBP,2*MTAN)		;PNTR TO LOCKED BUFFER PAGE
@@ -4354,20 +4487,21 @@ RS(VBCIOS)			;STATUS WORD
 
 ;Storage for TCP/IP Service
 
-%NETS==:ANXN+IPNIN+IPCIN	;NUMBER OF IP INTERFACES 
-NINTIB==:^D20*%NETS		;NUMBER OF IP BUFFERS TO KEEP AROUND
+%NETS==:ANXN+IPNIN+IPNIAN+IPCIN	;[9135] Number of IP interfaces 
+NINTIB==:^D20*<%NETS-IPNIAN>	;[9135] Number of IP buffers to keep around
 
 IFN NETN,<
 
 IFE IPNIN,<INTBSZ==:400>	;If no Ethernet small buffers
 IFN IPNIN,<INTBSZ==:574>	;If Ethernet Larger buffers
+IFN IPNIN,<RS BUFTIM,1>		;[8854] If Ethernet, need this for buffer tracking
 
-NDG NHOSTS,^D7001		;[7.1098]LENGTH OF HOSTN TABLE (MUST BE PRIME)
-NDG NHOSTN,<NHOSTS*4>		;[7378]SIZE OF HOSTN TABLE
-NDG NHSTN,<NHOSTS*12>		;[7378] LENGTH OF HOST NAME TABLE (TEXT)
+NDG NHOSTS,^D10501		;[9161] Size of HOSTNN/HSTSTS/HOSTPN tables
+NDG NHOSTN,<NHOSTS*2>		;[9157] Size of HOSTN table, 2 names per host
+NDG NHSTN,<NHOSTN*4>		;[9161] Size of HSTNAM table, 4 words per HOSTN
 IMPLBT==:10			;LENGTH OF OLD BIT TABLE
 NHSTST==:200			;LENGTH OF OLD HOST STATUS TABLE
-NDG NETHSZ,^D53			;SIZE OF NETWORK HASH TABLES
+NDG NETHSZ,^D157		;[9115] Size of network hash tables
 
 RS IGDMSG,1			;Last IMP going down message
 RS IGDTIM,1			;Time of last IMP going down message
@@ -4378,23 +4512,51 @@ RS IBPTIM,1			;TIME OF NEXT IMPIBP RUN
 RS BF18BI,1			;1822 BUFFER QUEUE INPUT
 RS BF18BO,1			;1822 BUFFER QUEUE OUTPUT
 NR(MHOSTS,1)			;MINUS NUMBER OF HOSTS IN TABLE.
+NR(NAMSPC,1)			;[9156] Free space pointer to HSTNAM
 RSI BBNOK,<1>			;BBN CONNECTIONS ALLOWED
 RSI DECOK,<1>			;DEC CONNECTIONS ALLOWED
 
-;Some of the following tables are kept in INTSEC
+;[9156] The following storage is for the DNS resolver.
+
+NDG NDNSH,8			;[9156] Default size of DNSTAB
+				;[9156] Do not seperate DNSHST from DNSTMP!
+NR(DNSHST,NDNSH)		;[9156] Addresses of DNS server hosts
+NR(DNSTMO,NDNSH)		;[9156] Timeout in seconds for each host
+NR(DNSSUC,NDNSH)		;[9156] Number of successful DNS requests
+NR(DNSFAI,NDNSH)		;[9156] Number of failed DNS requests
+DNSFWZ==:DNSHST			;[9156] First word to zero in DNS tables
+DNSLWZ==:DNSFAI+NDNSH-1		;[9156] Last word to zero in DNS tables
+
+;[9156] Start of storage kept in INTSEC.  This storage is all swappable except
+;storage between BMTBLK and EMTBLK which is locked down by MNTINI.
 
 ..OFST==1000			;STORAGE AFTER FIRST PAGE
-				;THE FOLLOWING ARE SWAPPABLE
-NDG BF18SZ,20			;NUMBER OF 1822 BUFFERS
+NDG BF18SZ,20*ANXN		;[9115] Number of 1822 buffers
 DEFWRD(BF1822,BF18SZ*INTBSZ)  	;1822 BUFFER AREA
-DEFWRD(HOSTN,NHOSTN)		;TABLE OF HOST FLAGS,,POINTERS TO NAMES.
+HOSTFZ==:..OFST			;[9156] First word to zero
+BMNTLK==:..OFST			;[9157] First location to lock down
+DEFWRD(HOSTNN,NHOSTS)		;[9157] Host numbers, locked down
+DEFWRD(HSTSTS,NHOSTS)		;[9157] Host status table, locked down
+EMNTLK==:..OFST			;[9157] Last location to lock down
+DEFWRD(HOSTN,NHOSTN)		;[9156] Flags + name index + hashed offset
 DEFWRD(HOSTPN,NHOSTS)		;PRIMARY NAME FOR THIS HOST
 DEFWRD(HSTNAM,NHSTN)		;TEXT TABLE OF HOST NAMES
+HOSTLZ==:..OFST-1		;[9156] Last word to zero
+INTFRE==:..OFST+1		;[9157] First internet free space location
+INTFSZ==:777777-INTFRE		;[9157] Use the rest of INTSEC as free space
 
-BMNTLK==:..OFST			;FIRST LOCATION TO LOCK DOWN
-DEFWRD(HOSTNN,NHOSTS)		;HOST NUMBERS
-DEFWRD HSTSTS,NHOSTS		;DEAD HOST STATUS TABLE (18 BITS PER HOST)
-EMNTLK==:..OFST			;LAST LOCATION TO LOCK DOWN
+;[9156] Don't let them shoot themselves in the foot
+IFG <..OFST-600000>,<		;[9156] We must have a good amount of freespace
+PRINTX ?NHOSTS is too large, causing host tables to take too much of INTSEC.
+PRINTX You must decrease NHOSTS before attempting to build a monitor.
+>				;[9156] 
+;[9157] Don't let HSTNAM get over 377777
+IFG <HSTNAM-377777>,<		;[9157] If first word is over 377777
+PRINTX ?NHOSTS is too large, causing HSTNAM to be over 377777.
+PRINTX You must decrease NHOSTS before attempting to build a monitor.
+>				;[9157] 
+
+;[9156] End of storage kept in INTSEC
 
 ;The following parallel tables are used for looking up network numbers
 
@@ -4429,7 +4591,6 @@ NR GWTAB,1			;(Extended) pointer to gateway table
 RS INETID			;Our Internet ID
 RS INTABC,NTACWD		;Per fork count of ABORTed TCBs
 RS INTBFF,NTWBWD		;Free wait bit indicators
-				;bypass is off for now.  will be on soon.
 RSI INTBYP,-1			;Internet bypass 0 no, -1 ok
 RSI INTCLS,<4B6,4B6,4B6,4B6,6B6,6B6,7B6,7B6> ;Network class mask
 RS INTFLG,1			;Flag to make the Internet fork run
@@ -4485,12 +4646,11 @@ RSI TCPPTO,<0>			;IMP Dump <N>,<time>,N<data>
 NR BULKST,1			;START OF BULK STORAGE
 NR BULKND,1			;END OF BULK STORAGE
 NR FRELCK,LOCKSZ		;LOCK ON THE FREE STORAGE AREA
-NR INTBLK,NFIXED
-INTFRE=:EMNTLK+1		;FIRST INTERNET FREE SPACE LOCATION
-INTFSZ==:777777-<EMNTLK+1> 	;USE AS MUCH OF THIS SECTION AS POSSIBLE
+INTBLS==:2			;[9115] Header size
+NR INTBLK,<NFIXED*INTBLS>	;[9115] Headers of free block lists
 NR INTFSP,1			;AMOUNT OF FREE SPACE CURRENTLY AVAILABLE
 NR MRGFLG,1			;NON-0 IF A GARBAGE COLLECT MIGHT HELP
-NR ODDBLK,1			;ODD LENGTH BLOCKS LIST
+NR ODDBLK,INTBLS		;[9115] Odd length blocks list
 
 ;Internet Protocol Tables
 ; *** Do not separate
@@ -4549,7 +4709,7 @@ NR INTQM0,NIQ		;User queue mask for PIPRO (B24-31)
 NR INTQM1,NIQ		;User queue mask for PIDH  (B00-31)
 NR INTQM2,NIQ		;User queue mask for PISH  (B00-31)
 NR INTQM3,NIQ		;User queue mask for for ports (l B0-15, f B16-31)
-NR INTQSP,NIQ		;Number of messages on this queue
+RS INTQSP,NIQ		;[9115] Number of messages on this queue
 NR INTQTM,NIQ		;Timeout for this queue
 NR INTQV0,NIQ		;User queue value for PIPRO (B24-31)
 NR INTQV1,NIQ		;User queue value for PIDH  (B00-31)
@@ -4582,22 +4742,16 @@ RS TCPBDQ,1		;Buffer done queue
    TCPCKT::^D10000	;TCP check interval, msec
    TCPDGT::^D30000	;DG time interval, msec
    TCPDTL::^D60		;Default Time to live, seconds
-   TCPDXD::^D2		;Default RX denominator
-   TCPDXI::^D3		;Default RX interval, seconds
-   TCPDXN::^D3		;Default RX numerator
+   TCPDXI::^D3000	;[9115] Default RX interval, milliseconds
 RS TCPIDQ,1		;Head of IP's dead queue
-RS TCPIFG,1		;Set non-0 after TCP initialized
    TCPISN::^D<<MAXSEQ/8>*<<24*60*60>/CYCTIM>> ;TCP sequence # per second
            EXP 3	;Scale factor (8 above) to prevent MUL overflow
    TCPPTM::^D300	;Maximum persistence time, seconds (send timeout)
    TCPRA0::^D100	;Msec to wait for RA to process input packet
-   TCPRX0::^D3000	;Initial RX interval, msec
-   TCPRXF::0,,-4	;Scale factor for TCPRXS & TCPRXV (ASH x,@TCPRXF)
-   TCPRXN::^D1000	;Minimum RX interval, msec
-   TCPRXS::15		;0.1101 = 0.8125
-   TCPRXV::30		;1.1000 = 1.5
+   TCPRX0::^D3000	;[9140] Initial RX interval, as per RFC1122
    TCPRXW::^D120000	;RX probe into zero window, msec
-   TCPRXX::^D60000	;Maximum RX interval, msec
+   TCPRXN::^D1000	;[9140] Minimum RX interval, msec (1 second)
+   TCPRXX::^D120000	;[9140] Maximum RX interval, msec (2 minutes)
    TCPSY0::^D2000	;Msec delay on re-synchronization attempts
 RS TCPUS0,1		;Saved TCP fork UPT pointer
 NR PROC,1		;Points to currently running "process" in TCP
@@ -4609,10 +4763,13 @@ NR PZ,PROCSZ		;Packetizer
 NR RA,PROCSZ		;Reassembler
 NR RX,PROCSZ		;Retransmitter
 
-       			;TCP virtual terminals
+;TCP virtual terminals
+
 RS TVMSTM,1		;TVT sendall timer
 RS TVTLSN,1		;TVT listening JCN
 RS TVTNOF,1		;TCP output scan needed
+NTVTQN==:<<NTTTVT/^D36>+1> ;[9115] Words in the bittable for TVTs 
+RS TVTSOQ,NTVTQN	;[9115] The bit table if TVTs needing output
 RS TVTNTM,1		;Time to check for over TVT negotiations
 RS TVTPTR,1		; AOBJN ptr over TCP Virtual terminals
    TVTWTM::^D60000	;Msec to wait when window filled
@@ -4662,6 +4819,7 @@ NR OPUSE,1
 NR PZUSE,1
 NR RAUSE,1
 NR RXUSE,1
+NR TVUSE,1		;[9115] TVT CPU usage
 NR STATZZ,0		; The last cell cleared by STSINI is ...
 NR TIMPTR,1		; Current timer.  Points to one of the above
 
@@ -4672,11 +4830,16 @@ IFN ANXN,<			;Only if we have an AN20
 RESDT
 
 NDG NSQ,10			;Number of special imp queues to handle
-IMP8XS==:100			;Size of irreg message buffer
+IMP8XS==:100*ANXN		;[9115] Size of irreg message buffer
 NIMSTK==:24			;Size of PI level stack
-
 RS IMSTK,NIMSTK			;Stack storage area
-IMPPDP:: IOWD NIMSTK,IMSTK 	;Stack pointer for AN20 interrupts
+DEFINE ANXPDP(NUM),<IMPDP'NUM':: IOWD NIMSTK,IMSTK> ;[9115] Macro to make stack
+	......==0		;[9115] Counter for each one
+REPEAT ANXN,<			;[9115] For each AN20
+	ANXPDP(\......)		;[9115] Make a stack
+	......==......+1	;[9115] Count the counter of stacks
+>				;[9115] End of REPEAT ANXN
+
 RS SIQIBI,NSQ			;Special queues
 RS SIQIBO,NSQ
 RS SIQTIM,NSQ			;Time of first message on special queue
@@ -4750,6 +4913,7 @@ IFN IPNIN,<		;If Ethernet TCP/IP is assembled
 NDG MAXNIH,^D128	;Maximum number of hosts in GHT
 RSI NIMAXH,MAXNIH	;Holds MAXNIH
 
+RS NIANCT		;[9135] NCT address of first NI alt address NCT if any
 RS NIPNCT		;NCT address (used by callbacks from NISRV)
 RS IUNBLK		;UN block address
 RS ICHNST		;Saves channel status
@@ -4780,7 +4944,6 @@ RS AUNBLK		;Address of UN block
 RS ABUFFR		;Address of big buffer containing all ARP buffers
 RS ARPFRI		;Pointer to next free ARP buffer
 RS ARPNFI		;Number of ARP buffers on free list
-RS ETHADR,2		;Current Ethernet address
 RS GHTAR1		;Address of Internet host # section of GHT
 RS GHTAR2		;Address of per host data section of GHT
 RS GHTLOK		;[7450] GHT lock flag
@@ -4808,6 +4971,7 @@ ARPSRQ::
 ARPTRS::
 	RET
 
+NIANCT::			;[9135]
 NIPNCT::Z
 
 >			;End of IFE IPNIN
@@ -5243,7 +5407,8 @@ JS FLKOWN,1			;FORK THAT LOCKED THE FORK LOCK
 JS FKTIMW,1			;TIMER WORD
  NDG FLKTMV,^D120000		;DEFAULT FLKTIM TIMER
 JS FKCNT,1			;COUNT OF ACTIVE FORKS IN THIS JOB
-JS LSTLGN,1			; Last login D&T
+JS LSTLGN,1			; Last interactive login D&T
+JS NLDLGN,1			;[9041] Last non-interactive login D&T
 JS SRTTIM,1			;DATE AND TIME THIS JOB WAS INITIALIZED
 JS ARDFRT,1			; Job default for retrievals
 JS CTRLTT,1			;LINE NUMBER OF CONTROLLING TTY
@@ -5889,13 +6054,15 @@ PWRFLE::JFCL			;NO SPECIAL POWER FAIL CODE
 SCSWJF::RET			;SWJFN% hook, called from JSYSF
 IFN FTNSPSRV, DEDMCB::
 IFN FTNSPSRV, NSPSPC::
-NSPQ::	BUG.(HLT,NSPUDF,STG,SOFT,<UNSUPPORTED NETWORK FUNCTION>,,<
+NSPQ::	BUG.(HLT,NSPUDF,STG,SOFT,<Unsupported network function>,,<
 
-Cause:	If the monitor is not built for DECnet (DCN is 0), and
-	a DECnetL utility routine is called, this BUGHLT will occur.
-	Invoking the following routines will cause this BUGHLT:
-	DEDMCB (shut links to dead MCB), NSPSPC (get a network buffer), and
-	NSPQ (put a message in the scheduler queue).
+Cause:	If the monitor is not built for DECnet (DCN is 0), and a DECnet
+	utility routine is called, this BUGHLT will occur.  Invoking the
+	following routines will cause this BUGHLT: DEDMCB (shut links to dead
+	MCB), NSPSPC (get a network buffer), and NSPQ (put a message in the
+	scheduler queue).
+
+Action:	Use a monitor built for DECnet.
 >)
 IFN FTNSPSRV,<
 NODINI::
@@ -5935,9 +6102,10 @@ NODSLN:	MOVE T1,CAPENB		;Privs required
 	UMOVE T2,2		;GET ADDRESS OF USER'S ARGUMENT BLOCK
 	UMOVE T1,.NDNOD(T2)	;GET POINTER TO STRING IN USER SPACE
 	MOVEI T2,OURNAM		;WE'LL WRITE PARSED NAME TO OURNAM
-	CALL PARNDU		;MAKE SURE NODE NAME IS KOSHER
-	  RETBAD()		;FAILED, TELL CALLER WHY
+	CALLX (MSEC1,PARNDU)	;[8853] Make sure node name is kosher
+	 ITERR()		;[9115] Failed, tell caller why
 	MOVEM T2,OURCNT		;REMEMBER LENGTH OF OURNAM
+	CALL CLNODC		;[9036] (/) Now let everyone in the cluster know
 	MRETNG			;Give good return
 
 ;NODGLN - get local host name
@@ -5999,8 +6167,11 @@ CTHTXT::
 	XJRST [MSEC1,,.+1]	;In case we arent in section 1
 	BUG.(CHK,NODCN,STG,SOFT,<No DECnet>,,<
 
-Cause:	The monitor is built without DECnet, and a function that should
-	never be called was called. This is a software bug.
+Cause:	The monitor is built without DECnet, and a function that should never
+	be called was called.  This is a software bug.
+
+Action:	If this BUGCHK can be reproduced, change it to a BUGHLT and submit an
+	SPR along with instructions on reproducing the problem.
 >,R)
 
   >				;End of IFE FTNSPSRV
@@ -7182,6 +7353,7 @@ RS DEFNET			; DEFAULT NETWORK NUMBER
 RS PRFADR			; PREFERRED LOCAL HOST ADDRESS FOR GTHST%
 RS PRFNFD			; PREFERRED NETWORK NUMBER, SHIFTED
 RS PRFNET			; PREFERRED NETWORK FOR GTHST%
+NR PRFMSK			;[9156] Mask for preferred network
 RESDT
 NLHOST:: REPEAT <%NETS+1>,<-1>
 	EXP 0
@@ -7698,14 +7870,14 @@ IFN FTNSPSRV <
 	CALL SCDRQ7		;INITIATE FIRST JOB
 	JRST SCHED0		;TO SCHEDULER
 
-NOPMOV:	BUG. (HLT,PMVWMC,STG,HARD,<Wrong UCODE - PMOVE/M instructions not present>,,<
+NOPMOV:	BUG.(HLT,PMVWMC,STG,HARD,<Wrong UCODE - PMOVE/M instructions not present>,,<
 
-Cause:	The KL microcode currently running does not have the PMOVE or
-	PMOVEM instructions.
+Cause:	The KL microcode currently running does not have the PMOVE or PMOVEM
+	instructions.
 
-Action:	Install the correct microcode on the front end and reload the
-	system. Be sure to answer "YES" to the "RELOAD MICROCODE" prompt
-	from KLI.
+Action:	Install the correct KL10 microcode on the front end and reload the
+	system.  Edit 442 or greater of the KL10 mocrocode is required.  Be
+	sure to answer "YES" to the "RELOAD MICROCODE" prompt from KLI.
 >)	;[7.1002] Wrong microcode
 
 ;NOW FIND THE MASTER DTE
@@ -7786,13 +7958,14 @@ PWRRST::XJRST [0,,.+1]		;Insure section 0 entry or IORST will hang
 	AOS INSKED		;BE SURE BUGHLT RESTARTS
 	BUG.(HLT,PWRFL,APRSRV,HARD,<Fatal power failure>,,<
 
-Cause:	The monitor has been started at the power-fail recovery
-	code and is attempting to recover. However, the loss
-	of power that preceded this occurred too quickly to
-	allow an orderly shutdown. Therefore the monitor will
-	be reloaded.  This BUGHLT will be preceeded by the messages:
+Cause:	The monitor has been started at the power-fail recovery code and is
+	attempting to recover.  However, the loss of power that preceded this
+	occurred too quickly to allow an orderly shutdown. Therefore the
+	monitor is reloaded.  This BUGHLT is preceeded by the messages:
 		"Attempting automatic restart..."
 		"PWRDWN .NE. -1, restarting..."
+
+Action:	No action required.  The system should reload itself.
 >) 				;Crash and reload
 
 ;RESTART SYSTEM
@@ -7851,15 +8024,16 @@ IFG PLTN,<	DEVRST PLT>
 	IFNSK.			;Yes
 	  CALL TTDALL		;Detach all jobs then
 	  SKIPL SPWFFL		;Was it actually spurious?
-	  BUG.(CHK,PWRRES,APRSRV,HARD,<Power restart>,,<
+	  BUG.(INF,PWRRES,APRSRV,HARD,<Power restart>,,<
 
-Cause:	The monitor was started at the power fail recovery code
-	and is attempting to recover. This BUGCHK will be preceded by:
+Cause:	The monitor was started at the power fail recovery code and is
+	attempting to recover. This BUGCHK is preceded by:
 		"Attempting automatic restart..."
-		"Attempting to continue system"
-	This indicates that an an orderly shutdown was
-	accomplished before the power fail so the system will
-	continue. 
+		"Attempting to continue system" 
+	This indicates that an an orderly shutdown was accomplished before the
+	power fail so the system continues.
+
+Action:	No action required.  The system attempts to restart itself.
 >,,<DB%NND>)			;[7.1210] Not spurious, report power fail event
 	ENDIF.			
 	POP P,1			;GET OLD INSKED
@@ -7977,11 +8151,10 @@ PISC6::
 	MOVE P,[IOWD XPISK,PIXSTK]
 	BUG.(CHK,PI6ERR,STG,HARD,<Unexpected unvectored interrupt on channel 6>,,<
 
-Cause:	An unvectored PI interrupt has occurred which no devices have
-	claimed responsibility for.  This most likely indicates a hardware
-	malfunction.
+Cause:	An unvectored PI interrupt has occurred which no devices have claimed
+	responsibility for.  This most likely indicates a hardware malfunction.
 
-Action:	Notify Field Service.
+Action:	 Field Service should check out the system.
 
 >)
 	CLSB	6		;CLEAR THE INTERRUPT ON 6
@@ -8042,7 +8215,7 @@ DRMIOM::SKIPG DRUMP		;DRUM ON SYSTEM?
 	JRST DSKIOM		;NO, USE DISK
 	BUG.(HLT,DRUMP1,STG,SOFT,<DRMIO - Drum on but no drum code in system>,,<
 
-Cause:	This can only happen on the 2020. This BUGHLT occurs at DRMIOM if
+Cause:	This can only happen on the 2020.  This BUGHLT occurs at DRMIOM if
 	DRUMP contains a positive number. DRUMP contains DRMN, which, if
 	positive, causes the DRUMP1 BUGHLT code not to be assembled.
 >)

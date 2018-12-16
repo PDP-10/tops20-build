@@ -1,3 +1,7 @@
+; Edit= 9029 to CIDLL.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8875 to CIDLL.MAC on 10-Aug-88 by RASPUZZI
+;Update BUG. documentation again.
 ; UPD ID= 8490, RIP:<7.MONITOR>CIDLL.MAC.5,   9-Feb-88 12:17:52 by GSCOTT
 ;TCO 7.1218 - Update copyright notice.
 ; UPD ID= 8407, RIP:<7.MONITOR>CIDLL.MAC.4,   4-Feb-88 10:27:45 by GSCOTT
@@ -1011,6 +1015,12 @@ Cause:	The remote port is not running the same protocol version of DECnet/CI.
 	and a VMS system. DECnet/CI between TOPS-20 and VMS is not 
 	supported.
 
+Action:	If this is caused by a VMS system, then remove the system from
+	your cluster or disable the CI dircuit to that system. If it is
+	caused by a TOPS-20 system, then you should make both systems
+	run the same version of the software or disable the CI circuit
+	between them.
+
 Data:	REMVER - The remote ends protocol version
 	LOCVER - The local TOPS-20 systems protocol version
 >,RTN,<DB%NND>)			;[7.1210]
@@ -1106,6 +1116,12 @@ Cause:	The remote port does not understand the protocol version of DECnet/CI.
 	The other system may be running another version of TOPS-20, or the
 	remote system may be running VMS. DECnet/CI between TOPS-20
 	and VMS is not supported.
+
+Action:	If this is caused by a VMS system, then remove the system from
+	your cluster or disable the CI dircuit to that system. If it is
+	caused by a TOPS-20 system, then you should make both systems
+	run the same version of the software or disable the CI circuit
+	between them.
 
 Data:	LOCVER - TOPS-20 DECnet/CI protocol version
 >)
@@ -1208,7 +1224,7 @@ DOLIS:	BLCAL. (<XENT SC.LIS>,<[XADDR. DNANAM],[XADDR. DNANAM],[-1],[XADDR. SCACB
 	 BUG.(CHK,CINLIE,CIDLL,SOFT,<Listen failed>,<<T1,ERRCOD>>,<
 
 Cause:	CIDLL asked SCA for a "promiscuous listen" but the call failed.
-	As a consequence, the system will not accept any future incoming
+	As a consequence, the system does not accept any future incoming
 	DECnet/CI connections.
 
 Data:	ERRCOD - The error code returned from SCAMPI
@@ -1376,7 +1392,7 @@ DNAXMT:	MOVE MB,T3		;Get MB address
 	BUG.(CHK,CINWNB,CIDLL,SOFT,<Wrong number of buffers>,<<T2,COUNT>>,<
 
 Cause:	CIDLL asked SCAMPI to allocate 1 buffer, but received more than
-	one. The extra buffers will now be lost.
+	one. The extra buffers are now lost.
 
 Data:	COUNT - The number of buffers SCAMPI allocated and returned
 >)
@@ -1556,7 +1572,7 @@ RDGBUF:	BLCAL.(<XENT SC.RDG>,<CID,[0],P1>) ;[7.1037]Recycle buffer to free queue
 	BUG.(CHK,CINFRB,CIDLL,SOFT,<Failed to recycle buffer>,<<CID,SCACID>,<P1,BUFADR>>,<
 
 Cause:	CIDLL has received a datagram, and failed to return the buffer to
-	the SCA receive queue. One less buffer will now be on the port 
+	the SCA receive queue. One less buffer is now on the port 
 	datagram receive queue.
 
 Data:	SCACID - The connect ID

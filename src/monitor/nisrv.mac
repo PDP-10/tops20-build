@@ -1,3 +1,7 @@
+; Edit= 8971 to NISRV.MAC on 22-Sep-88 by RASPUZZI
+;Move FTHIST out of NISRV and put it in PROLOG where it should be.
+; Edit= 8927 to NISRV.MAC on 23-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8565, RIP:<7.MONITOR>NISRV.MAC.2,  11-Feb-88 11:42:59 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 2134, SNARK:<6.1.MONITOR>NISRV.MAC.27,   5-Jun-85 10:05:40 by MCCOLLUM
@@ -248,8 +252,6 @@ RETX:	TLZ T1,-1		; Zero the left half
 
 	OPDEF NIOFF [CALL .NIOFF]	; Disables KLNI interrupts
 	OPDEF NION [CALL .NION]		; Enables KLNI interrupts
-
-	FTHIST==0			; Disable history buffer stuff
 
 	SUBTTL Macro Definitions -- Portal Table Block
 
@@ -595,7 +597,6 @@ DLLICB:	 BUG. (HLT,NIDUNF,NISRV,SOFT,<Unknown Callback code from Port Driver.>,,
 
 Cause:	The port driver has called back with either a code in T1 that is 
 	not understood or that is not expected to be called back on.
-
 >,RTN)
 
 	SUBTTL DLLPST - Post A Message as being transmitted
@@ -679,8 +680,8 @@ DLLLS0:	 LOAD PR,PRNXT,(PR)	;GET THE NEXT ONE
 Cause:	NISRV got an error return from PHYKNI while processing a state
 	change callback.  The error code (one of the UNxyz% errors) is in
 	T1.
-Data:	ERROR - Error returned from PHYKNI
 
+Data:	ERROR - Error returned from PHYKNI
 >,RTN)
 	LOAD T1,PRUID,(PR)	;GET THE USERS ID
 	STOR T1,UNUID,(UN)	;SAVE IT

@@ -1,3 +1,7 @@
+; Edit= 9001 to SCSJSY.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8936 to SCSJSY.MAC on 23-Aug-88 by GSCOTT
+;Update BUG. documentation. Change some IFNSK. to IFSKP. 
 ; UPD ID= 8620, RIP:<7.MONITOR>SCSJSY.MAC.8,  11-Feb-88 18:33:30 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8453, RIP:<7.MONITOR>SCSJSY.MAC.7,   4-Feb-88 17:13:53 by GSCOTT
@@ -404,47 +408,47 @@
 ;        3.1    Connect (SCSCON) . . . . . . . . . . . . . . .   7
 ;        3.2    Listen (SCSLIS)  . . . . . . . . . . . . . . .   8
 ;        3.3    Receive DG/MSG (SCSRDG/SCSRMG) . . . . . . . .   9
-;        3.4    Read port counters (SCSRPC)  . . . . . . . . .  10
-;        3.5    Reject (SCSREJ)  . . . . . . . . . . . . . . .  11
-;        3.6    Disconnect (SCSDIS)  . . . . . . . . . . . . .  12
-;        3.7    Send message/datagram (SCSSMG/SCSSDG)  . . . .  13
-;        3.8    Queue mess buffers (SCSQRM)  . . . . . . . . .  14
-;        3.9    Cancel DG/MSG buffers (SCSCRD/SCSCRM)  . . . .  15
-;        3.10   Connect state poll (SCSCSP)  . . . . . . . . .  16
-;        3.11   Return connect data (SCSRCD) . . . . . . . . .  17
-;        3.12   Status of connect (SCSSTS) . . . . . . . . . .  18
-;        3.13   Map a buffer (SCSMAP)  . . . . . . . . . . . .  19
-;        3.14   Unmap a buffer (SCSUMP)  . . . . . . . . . . .  20
-;        3.15   Send/Request a buffer (SCSSND/SCSREQ)  . . . .  21
-;        3.16   Maint. data send/rec (SCSMDS/SCSMDR) . . . . .  22
-;        3.17   Start a remote system (SCSSRS) . . . . . . . .  23
-;        3.18   Reset a remote system (SCSRRS) . . . . . . . .  24
-;        3.19   Add interrupt channel (SCSAIC) . . . . . . . .  25
-;        3.20   Accept connection (SCSACC) . . . . . . . . . .  26
-;        3.21   Get data queue entry (SCSGDE)  . . . . . . . .  27
-;        3.22   Get event Q entry (SCSEVT) . . . . . . . . . .  28
-;        3.23   Get local node number (SCSGLN) . . . . . . . .  29
-;        3.24   Return buffer sizes (SCSRBS) . . . . . . . . .  30
-;        3.25   Return path status info (SCSRPS) . . . . . . .  31
+;        3.4    Read port counters (SCSRPC)  . . . . . . . . .  14
+;        3.5    Reject (SCSREJ)  . . . . . . . . . . . . . . .  15
+;        3.6    Disconnect (SCSDIS)  . . . . . . . . . . . . .  16
+;        3.7    Send message/datagram (SCSSMG/SCSSDG)  . . . .  17
+;        3.8    Queue mess buffers (SCSQRM)  . . . . . . . . .  20
+;        3.9    Cancel DG/MSG buffers (SCSCRD/SCSCRM)  . . . .  21
+;        3.10   Connect state poll (SCSCSP)  . . . . . . . . .  22
+;        3.11   Return connect data (SCSRCD) . . . . . . . . .  23
+;        3.12   Status of connect (SCSSTS) . . . . . . . . . .  24
+;        3.13   Map a buffer (SCSMAP)  . . . . . . . . . . . .  25
+;        3.14   Unmap a buffer (SCSUMP)  . . . . . . . . . . .  26
+;        3.15   Send/Request a buffer (SCSSND/SCSREQ)  . . . .  27
+;        3.16   Maint. data send/rec (SCSMDS/SCSMDR) . . . . .  28
+;        3.17   Start a remote system (SCSSRS) . . . . . . . .  29
+;        3.18   Reset a remote system (SCSRRS) . . . . . . . .  30
+;        3.19   Add interrupt channel (SCSAIC) . . . . . . . .  31
+;        3.20   Accept connection (SCSACC) . . . . . . . . . .  33
+;        3.21   Get data queue entry (SCSGDE)  . . . . . . . .  34
+;        3.22   Get event Q entry (SCSEVT) . . . . . . . . . .  35
+;        3.23   Get local node number (SCSGLN) . . . . . . . .  36
+;        3.24   Return buffer sizes (SCSRBS) . . . . . . . . .  37
+;        3.25   Return path status info (SCSRPS) . . . . . . .  38
 ;    4. SCS% error handlers
-;        4.1    A2MHLT (PSB mapping bug) . . . . . . . . . . .  32
-;        4.2    SERIAA (Invalid argument block address)  . . .  33
-;        4.3    SERIBP (Invalid byte pointer)  . . . . . . . .  34
+;        4.1    A2MHLT (PSB mapping bug) . . . . . . . . . . .  39
+;        4.2    SERIAA (Invalid argument block address)  . . .  40
+;        4.3    SERIBP (Invalid byte pointer)  . . . . . . . .  41
 ;    5. SCA call handlers
-;        5.1    Main entry point . . . . . . . . . . . . . . .  35
-;        5.2    SCSONT (Handle online/offline interrupts)  . .  36
-;        5.3    SINDGR . . . . . . . . . . . . . . . . . . . .  37
-;        5.4    SINDMA . . . . . . . . . . . . . . . . . . . .  38
-;        5.5    SINMSC . . . . . . . . . . . . . . . . . . . .  39
-;        5.6    SINPBC . . . . . . . . . . . . . . . . . . . .  40
-;        5.7    SINCTL . . . . . . . . . . . . . . . . . . . .  41
-;        5.8    SINCRA . . . . . . . . . . . . . . . . . . . .  42
-;        5.9    SINOSD . . . . . . . . . . . . . . . . . . . .  43
-;        5.10   SINRID . . . . . . . . . . . . . . . . . . . .  44
-;        5.11   SINCIA . . . . . . . . . . . . . . . . . . . .  45
-;        5.12   SINPSC . . . . . . . . . . . . . . . . . . . .  46
-;        5.13   SINLCL . . . . . . . . . . . . . . . . . . . .  47
-;        5.14   SINNWO . . . . . . . . . . . . . . . . . . . .  48
+;        5.1    Main entry point . . . . . . . . . . . . . . .  42
+;        5.2    SCSONT (Handle online/offline interrupts)  . .  43
+;        5.3    SINDGR . . . . . . . . . . . . . . . . . . . .  45
+;        5.4    SINDMA . . . . . . . . . . . . . . . . . . . .  46
+;        5.5    SINMSC . . . . . . . . . . . . . . . . . . . .  47
+;        5.6    SINPBC . . . . . . . . . . . . . . . . . . . .  50
+;        5.7    SINCTL . . . . . . . . . . . . . . . . . . . .  51
+;        5.8    SINCRA . . . . . . . . . . . . . . . . . . . .  52
+;        5.9    SINOSD . . . . . . . . . . . . . . . . . . . .  53
+;        5.10   SINRID . . . . . . . . . . . . . . . . . . . .  54
+;        5.11   SINCIA . . . . . . . . . . . . . . . . . . . .  55
+;        5.12   SINPSC . . . . . . . . . . . . . . . . . . . .  56
+;        5.13   SINLCL . . . . . . . . . . . . . . . . . . . .  57
+;        5.14   SINNWO . . . . . . . . . . . . . . . . . . . .  58
 	Subttl	Table of Contents (page 2)
 
 ;		     Table of Contents for SCSJSY
@@ -453,49 +457,49 @@
 ;
 ;
 ;    6. Support routines
-;        6.1    SCSDMU (Data monitor to user)  . . . . . . . .  49
-;        6.2    SCSRUB (Remove user buffer)  . . . . . . . . .  50
-;        6.3    SCSSUM (Move string from user to monitor)  . .  51
-;        6.4    SCSDUM (Move data from user to monitor)  . . .  52
-;        6.5    SCSCUB (Count user buffers)  . . . . . . . . .  53
-;        6.6    SCSXUB (Link buffer chain into database) . . .  54
-;        6.7    SCSUNM (User name move)  . . . . . . . . . . .  55
-;        6.8    SCSUDM (User connection data move) . . . . . .  56
-;        6.9    SCSCBI (Connect block data init) . . . . . . .  57
-;        6.10   SCSABT/SCSRBT (Add/remove bit from table)  . .  58
-;        6.11   SCSGNB (Get next bit)  . . . . . . . . . . . .  59
-;        6.12   SCSAFT (Add fork to table) . . . . . . . . . .  60
-;        6.13   SCSRFT (Remove fork from table)  . . . . . . .  61
-;        6.14   SCSGNF (Get next fork) . . . . . . . . . . . .  62
-;        6.15   SCSQMD (Queue entry on maint. data Q)  . . . .  63
-;        6.16   SCSDMD (Dequeue maint. data queue entry) . . .  64
-;        6.17   SCSLFQ (Link packet to front of queue's) . . .  65
-;        6.18   SCSAER (ASGRES error handler)  . . . . . . . .  66
-;        6.19   SCSLCB (Link CB onto fork CB queue)  . . . . .  67
-;        6.20   SCSKIL (Clean up SCS% data)  . . . . . . . . .  68
-;        6.21   SCSCBD (JSYS CB data delete) . . . . . . . . .  69
-;        6.22   SCSGPR (General packet return) . . . . . . . .  70
-;        6.23   SCSCBS (Clean a BSD queue) . . . . . . . . . .  71
-;        6.24   SCSRCB (Remove CB from owning fork CB queue) .  72
-;        6.25   SCSAXN (Add DMA buffer name) . . . . . . . . .  73
-;        6.26   SCSDXN (Delete DMA buffer name)  . . . . . . .  74
-;        6.27   SCSFXN (Find a buffer name)  . . . . . . . . .  75
-;        6.28   SCSCXN (Clean a buffer name list)  . . . . . .  76
-;        6.29   SCSLXN (Link entry onto fork DMA name queue) .  77
-;        6.30   SCSRXN (Remove entry from fork DMA nam list) .  78
-;        6.31   SCSULK (Unlock pages in a DMA buffer)  . . . .  79
-;        6.32   SCSCLK (Clock service routine) . . . . . . . .  80
-;        6.33   SCSPSI (Add entry to fork queue) . . . . . . .  81
-;        6.34   SCSQUE (Queue a block for list queueing) . . .  82
-;        6.35   SCSMBS (Make another BSD)  . . . . . . . . . .  83
-;        6.36   SCSDEQ (Dequeue a buffer from fork+CB Q's) . .  84
-;        6.37   SCSMPS (Map a forks PSB) . . . . . . . . . . .  85
-;        6.38   SCSUPS (Unmap a forks PSB) . . . . . . . . . .  86
-;        6.39   SCSLUB (Link on user buffer addr)  . . . . . .  87
-;        6.40   SCSGUB (Get user buffer address) . . . . . . .  88
-;        6.41   SCSRET (Return buffer to correct pool) . . . .  89
-;    7. Storage  . . . . . . . . . . . . . . . . . . . . . . .  90
-;    8. End of SCSJSY  . . . . . . . . . . . . . . . . . . . .  91
+;        6.1    SCSDMU (Data monitor to user)  . . . . . . . .  59
+;        6.2    SCSRUB (Remove user buffer)  . . . . . . . . .  60
+;        6.3    SCSSUM (Move string from user to monitor)  . .  61
+;        6.4    SCSDUM (Move data from user to monitor)  . . .  62
+;        6.5    SCSCUB (Count user buffers)  . . . . . . . . .  63
+;        6.6    SCSXUB (Link buffer chain into database) . . .  64
+;        6.7    SCSUNM (User name move)  . . . . . . . . . . .  65
+;        6.8    SCSUDM (User connection data move) . . . . . .  66
+;        6.9    SCSCBI (Connect block data init) . . . . . . .  67
+;        6.10   SCSABT/SCSRBT (Add/remove bit from table)  . .  68
+;        6.11   SCSGNB (Get next bit)  . . . . . . . . . . . .  69
+;        6.12   SCSAFT (Add fork to table) . . . . . . . . . .  70
+;        6.13   SCSRFT (Remove fork from table)  . . . . . . .  71
+;        6.14   SCSGNF (Get next fork) . . . . . . . . . . . .  72
+;        6.15   SCSQMD (Queue entry on maint. data Q)  . . . .  73
+;        6.16   SCSDMD (Dequeue maint. data queue entry) . . .  74
+;        6.17   SCSLFQ (Link packet to front of queue's) . . .  75
+;        6.18   SCSAER (ASGRES error handler)  . . . . . . . .  76
+;        6.19   SCSLCB (Link CB onto fork CB queue)  . . . . .  77
+;        6.20   SCSKIL (Clean up SCS% data)  . . . . . . . . .  78
+;        6.21   SCSCBD (JSYS CB data delete) . . . . . . . . .  80
+;        6.22   SCSGPR (General packet return) . . . . . . . .  82
+;        6.23   SCSCBS (Clean a BSD queue) . . . . . . . . . .  83
+;        6.24   SCSRCB (Remove CB from owning fork CB queue) .  84
+;        6.25   SCSAXN (Add DMA buffer name) . . . . . . . . .  85
+;        6.26   SCSDXN (Delete DMA buffer name)  . . . . . . .  86
+;        6.27   SCSFXN (Find a buffer name)  . . . . . . . . .  87
+;        6.28   SCSCXN (Clean a buffer name list)  . . . . . .  88
+;        6.29   SCSLXN (Link entry onto fork DMA name queue) .  89
+;        6.30   SCSRXN (Remove entry from fork DMA nam list) .  90
+;        6.31   SCSULK (Unlock pages in a DMA buffer)  . . . .  91
+;        6.32   SCSCLK (Clock service routine) . . . . . . . .  92
+;        6.33   SCSPSI (Add entry to fork queue) . . . . . . .  93
+;        6.34   SCSQUE (Queue a block for list queueing) . . .  98
+;        6.35   SCSMBS (Make another BSD)  . . . . . . . . . .  99
+;        6.36   SCSDEQ (Dequeue a buffer from fork+CB Q's) . . 100
+;        6.37   SCSMPS (Map a forks PSB) . . . . . . . . . . . 102
+;        6.38   SCSUPS (Unmap a forks PSB) . . . . . . . . . . 104
+;        6.39   SCSLUB (Link on user buffer addr)  . . . . . . 105
+;        6.40   SCSGUB (Get user buffer address) . . . . . . . 106
+;        6.41   SCSRET (Return buffer to correct pool) . . . . 107
+;    7. Storage  . . . . . . . . . . . . . . . . . . . . . . . 109
+;    8. End of SCSJSY  . . . . . . . . . . . . . . . . . . . . 110
 	SUBTTL Init code
 
 	XRESCD			;[7.1043]
@@ -506,9 +510,11 @@ SCSINI::BLCAL. (<XENT SC.SOA>,<<.,SCSONT>>) ;[7.1043]Tell SCA about this address
 	 BUG. (CHK,SCSNOI,SCSJSY,SOFT,<SCSJSY - SCS% cannot receive node online/offline interrupts>,,<
 
 Cause:	SCA has told the JSYS SYSAP that there are too many SYSAPs and the JSYS
-	is not allowed to see online/offline interrupts. The system can run
-	but many diagnostics will get upset as will anything that uses the 
-	JSYS.
+	is not allowed to see online/offline interrupts. The system can run but
+	many diagnostics, or anything using the JSYS, fail.
+
+Action:	If this BUGCHK is reproducible, set it dumpable and send in an SPR
+	along with how to reproduce the problem.
 >)
 	RET			;All done...
 	SUBTTL Entry to JSYS
@@ -817,10 +823,10 @@ SCSRMG::SETO T1,		;Indicate we are doing messages
 	UMOVE T1,.SQCID(Q1)	;Get the connect ID from arg block
 	ERJMP SERIAA		;Handle bad addresses
 	NOINT			;Interlock the fork datagram queue
-	CAMN T1,[-1]		;Do we want first for fork or connection???
-	IFNSK.
+	CAME T1,[-1]		;[8936] Do we want first for fork or connection
+	IFSKP.			;[8936] Yes
 	 SKIPN T1,@.TOPFQ(Q2)	;Is there a packet waiting for this fork???
-	 ITERR (SCSQIE,<OKINT>);No, fail with queue is empty
+	 ITERR (SCSQIE,<OKINT>)	;No, fail with queue is empty
 	 LOAD P1,MECID,(T1)	;Get the destination connect ID
 	 UMOVEM P1,.SQCID(Q1)	;Return it to user right away
 	 ERJMP SERIA0		;BAD ADDRESS
@@ -832,15 +838,15 @@ SCSRMG::SETO T1,		;Indicate we are doing messages
 	 SKIPN T1,@.TOPCQ(Q2)	;Are there datagrams queued for this connect???
 	 ITERR (SCSQIE,<OKINT>) ;Nothing on the queue, fail with queue empty
 	ENDIF.
-
+
 ; Here with:
 ;	T1/	Address of desired packet buffer
 ;	Q1/	Address of user arguments
 ;	Q2/	Address of 4 word header block pointing to list headers
 ;	P1/	Address of connect block
 ;
-	SKIPG @.JBUFF(Q2)	;Are there datagram buffers queued???
-	IFNSK.
+	SKIPLE @.JBUFF(Q2)	;[8936] Are there datagram buffers queued???
+	IFSKP.			;[8936]
 	 MOVX T1,SCSNMQ		;Assume we are doing messages
 	 SKIPN MSGFLG		;Good assumption???
 	 MOVX T1,SCSNDQ		;No, show error code for datagrams
@@ -870,6 +876,7 @@ SCSRMG::SETO T1,		;Indicate we are doing messages
 	MOVEM T1,LEN		;Save the corrected length of the packet
 	UMOVEM T1,.SQLRP(Q1)	;Tell user how long the datagram is
 	ERJMP RDGER1		;Handle write locked user pages and such
+
 	TDNN T2,.METYP(T4)	;Is this an industry compatable mode packet???
 	IFNSK.
 	 MOVEI T1,3(T1)		;Yes, round up to next nearest word
@@ -916,7 +923,7 @@ RDGNOB:	MOVE T2,PAKADR		;Get the source address
 	ERJMP SERIA0		;Handle a bad address
 	OKINT
 	RETSKP			; and return all happy
-
+
 ; Here when an ERJMP takes. In this case we have a user datagram address that
 ;needs to be placed back into the database and a datagram that should be
 ;linked back onto the FRONT of the fork and connection datagram queues.
@@ -942,20 +949,23 @@ RDGERR:	MOVEM T1,ERRCOD		;Save the error code
 	IFNSK.
 	 MOVE T2,FORKX		;Say who we are
 	 MOVE T3,USRBUF	;  and what buffer we tried for
-	 BUG. (INF,SCSUBL,SCSJSY,SOFT,<SCSJSY - User buffer lost during error recovery>,<<T1,ERRCOD>,<T2,CURFRK>,<T3,BUFADR>>,<
+	 BUG.(INF,SCSUBL,SCSJSY,SOFT,<SCSJSY - User buffer lost during error recovery>,<<T1,ERRCOD>,<T2,CURFRK>,<T3,BUFADR>>,<
 
-Cause:	Bad access to user memory or a failing routine caused SCS to try to 
-	place the currently owned user buffer back on the buffer list. The
-	attempt failed and the buffer address has been lost. Note that there
+Cause:	Bad access to user memory or a failing routine caused SCS to try to
+	place the currently owned user buffer back on the buffer list.  The
+	attempt failed and the buffer address has been lost.  Note that there
 	is no memory loss, the monitor has just forgotten one user buffer
 	address.
 
-DATA:	ERRCOD - Erro code
+Action:	If this BUGINF is reproducible, set it dumpable and send in an SPR
+	along with how to reproduce the problem.
+
+Data:	ERRCOD - Erro code
 	CURFRK - Current fork
 	BUFADR - Buffer address
 >);End of BUG. SCSUBL
 	ENDIF.			;Fall into packet return code please...
-
+
 ; Here to return the packet (if we have one)
 
 RDGER2:	SKIPN T1,PAKADR		;Do we have a packet to return???
@@ -1065,8 +1075,8 @@ SCSSMG::SETO T1,		;Indicate we are doing messages
 	MOVEM T1,CID		;Stash the connect ID for later
 
 	MOVX T1,1		;We wish one packet buffer please
-	SKIPN MSGFLG		;Are we doing messages???
-	IFNSK.
+	SKIPE MSGFLG		;[8936] Are we doing messages???
+	IFSKP.			;[8936]
 	 CALL <XENT SC.ALD>	;[7.1043]Get a monitor buffer for the data
 	  ITERR (<>,<OKINT>)	;No buffer available, fail here
 	 MOVX T2,JH%DGB		;Get the datagram buffer bit
@@ -1078,7 +1088,7 @@ SCSSMG::SETO T1,		;Indicate we are doing messages
 	 ANDCAM T2,.JHFLG(T1)	;Zero the datagram flag in the JSYS header
 	ENDIF.
 	MOVEM T1,BUFADR		;Save the buffer address
-
+
 	UMOVE T2,.SQAPT(Q1)	;Get the user address of the packet text
 	ERJMP SDGER1		;Ooops, back out gracfully please
 	MOVEM T2,.JHAUB(T1)	;Store the address of the user buffer
@@ -1121,15 +1131,14 @@ SCSSMG::SETO T1,		;Indicate we are doing messages
 	 MOVX T1,SCSIPS		;Yes, fail with invalid path spec.
 	 JRST SDGERR		;.	.	.
 	ENDIF.
-
+
 	UMOVE T4,.SQLPT(Q1)	;Get the length of the packet text from user
 	ERJMP SDGER1		;Handle a bad address
 
-	SKIPN MSGFLG		;Are we doing messages???
-	IFNSK.
+	SKIPE MSGFLG		;[8936] Are we doing messages???
+	IFSKP.			;[8936]
 	 BLCAL. (<XENT SC.SDG>,<CID,T2,T4,BUFADR,[SCSPRI],T3>) ;[7.1043]Have SCA send the datagram
 	  JRST SDGERR		;Fail with code from SCA
-;**;[7211] Add 1 line at SCSSMG+86	CEG 18-Dec-85
 	 AOS SCSJDS		;[7211] COUNT THE DATAGRAM SEND
 	ELSE.
 	 BLCAL. (<XENT SC.SMG>,<CID,T2,T4,BUFADR,[SCSPRI],[0],T3>) ;[7.1043]Have SCA send message
@@ -1547,8 +1556,8 @@ MAPELP:	UMOVE T3,.SQBLN(Q2)	;Length from user block
 	  AOS T3		;YES. ADD ONE TO THE WORD COUNT
 	ENDIF.
 	MOVEM T3,WRDLEN		;SAVE THE NUMBER OF WORDS NEEDED.
-	CAILE T3,PGSIZ		;Is the block not longer than one page???
-	IFNSK.
+	CAIG T3,PGSIZ		;[8936] Is the block not longer than one page?
+	IFSKP.			;[8936]
 	 MOVEI T1,SCSSTL	;Yes, error code for segment to long
 	 JRST MAPER1		;Go fail...
 	ENDIF.
@@ -1845,7 +1854,7 @@ AICEL:	MOVE T2,ARGLEN		;Get the current pointer into the arg block
 	MOVEM T1,CODE		;Save the interrupt code
 	MOVEM T2,CHAN		;Save the current channel number as well
 	XCT PSBPSI(T1)		;Store the current channel in the PSB
-
+
 ; Check the interrupt code. If events are being turned on, add this fork to
 ;FRKTAB. If events are being turned off, remove fork from FRKTAB. For non-event
 ;interrupt codes ignore FRKTAB.
@@ -1853,8 +1862,8 @@ AICEL:	MOVE T2,ARGLEN		;Get the current pointer into the arg block
 	CAIE T1,.SIPAN		;Are we doing events???
 	JRST AICCON		;No, nothing needs to be done with FRKTAB
 	MOVE T1,FORKX		;Get number of fork doing this SCS% JSYS
-	CAIE T2,-1		;Are we disabling event interrupts???
-	IFNSK.
+	CAIN T2,-1		;[8936] Are we disabling event interrupts???
+	IFSKP.			;[8936]
 	 CALL SCSAFT		;(T1)No, add this fork to FRKTAB
 	 NOP			;We don't care if the bit was already lit
 	ELSE.
@@ -1912,9 +1921,7 @@ ACCDTA:	CALL SCSUDM		;(T1/T1,T2) Move the user connect data to
 	UMOVE T1,.SQCID(Q1)	;Get the connect ID from the user
 	ERJMP ACCER1		;Handle bad addresses pls...
 	CALL <XENT SC.CSC>	;[7.1043](T1/T1,P1)Is this a valid CID???
-	IFNSK.
-	 JRST ACCERR		;Handle the error please
-	ENDIF.
+	 JRST ACCERR		;[8936] Handle the error please
 	BLCAL. (<XENT SC.ACC>,<T1,DATADR,[0],[0]>) ;[7.1043]Do the accept call
 	 JRST ACCERR		;Handle the failure from SCA
 	SKIPE T1,DATADR		;Get the data address back again
@@ -2154,9 +2161,9 @@ SCSRPS::XCTU [HRRZ T1,.SQLEN(T2)] ;Get the length of the users arg block
 	RETSKP			;All done, return
 	SUBTTL SCS% error handlers -- A2MHLT (PSB mapping bug)
 
-A2MHLT:	 BUG. (HLT,SCSA2M,SCSJSY,SOFT,<SCSJSY - Attempt to map second PSB>,<<MPSFRK,OWNFRK>,<T1,CURFRK>>,<
+A2MHLT:	 BUG.(HLT,SCSA2M,SCSJSY,SOFT,<SCSJSY - Attempt to map second PSB>,<<MPSFRK,OWNFRK>,<T1,CURFRK>>,<
 
-Cause:	Some routine mapped a PSB but did not release it, or did not use the 
+Cause:	Some routine mapped a PSB but did not release it, or did not use the
 	correct interlock. The net result was that we are trying to map another
 	PSB while we still have the first one mapped.
 
@@ -2210,8 +2217,8 @@ SCSINT:	SAVEP			;[7.1043]Save the ACs we will kill here
 SCSONT:	TRVAR <NOD,CODE,FORK>
 	CAIN T1,.SSPBC		;Did the node go offline???
 	MOVX T4,.SEPBC		;Yes, get the event code for node offline
-	CAIN T1,.SSNCO		;Did the node come online???
-	IFNSK.
+	CAIE T1,.SSNCO		;[8936] Did the node come online???
+	IFSKP.			;[8936]
 	  MOVX T4,.SENCO	;Yes, get the event code for node online
 	  MOVEM T2,T3		;Reposition node number
 	ENDIF.
@@ -2228,14 +2235,14 @@ ONTLOP:	AOS T1			;Increment to the next fork
 	 $SKIP			;Failed, BUGCHK and loop again
 	JRST ONTLOP		;All went OK, loop for more forks
 
-	BUG. (CHK,SCSPBF,SCSJSY,SOFT,<SCSJSY - PSI block build failure>,<<T1,ERRCOD>>,<
+	BUG.(CHK,SCSPBF,SCSJSY,SOFT,<SCSJSY - PSI block build failure>,<<T1,ERRCOD>>,<
 
 Cause:	The routine to build an event block failed. It is very likely that
 	ASGRES did not have the space available.
 
 Data:	ERRCOD -  Error code returned by ONTBLD
 >,ONTLOP)
-
+
 ; ONTBLD
 ;
 ; This routine is a support routine for SCSONT. It builds an online/offline
@@ -2351,7 +2358,7 @@ MSCLOP:	CAMN T2,.MQBUF(T1)	;Is this the entry we are looking for???
 	SKIPE T1,.MQNXT(T1)	;Is there a next entry???
 	JRST MSCLOP		;Can't find an entry for this name...
 	JRST MSCERR		;Nope, die here please...
-
+
 ; Here when we have found the entry we are looking for.
 ;
 ; Expects:
@@ -2382,32 +2389,39 @@ MSCOK:	MOVE P1,.MQCBA(T1)	;Setup the CB address
 
 ; Here when we cannot find the buffer name SCA has just given us...
 ;
-MSCERR:	BUG. (CHK,SCSCFB,SCSJSY,SOFT,<SCSJSY - Can't find maintainance buffer name>,<<T2,BFRNAM>>,<
+MSCERR:	BUG.(CHK,SCSCFB,SCSJSY,SOFT,<SCSJSY - Can't find maintainance buffer name>,<<T2,BFRNAM>>,<
 
-Cause:	SCA called us with a buffer name for a completed maintainance data 
-	transfer. Upon trying to find this name in the database of outstanding 
-	JSYS maint xfers, no match was found. The fork which performed the 
-	maint data xfer request will never be notified of the completion of 
+Cause:	SCA called us with a buffer name for a completed maintenance data
+	transfer.  Upon trying to find this name in the database of outstanding
+	JSYS maint transfers, no match was found.  The fork which performed the
+	maint data transfer request will never be notified of the completion of
 	the request.
 
-Action: Try to find the buffer name in the port driver database of BSD/BHD's
-	and see if this is a valid buffer name. If so, check the consistancy
-	of the SCA maint Q. Other than this, not much can be done...
+Action:	If this BUGCHK is reproducible, set it dumpable and send in an SPR
+	along with how to reproduce the problem.
+
+	In the dump, try to find the buffer name in the port driver database of
+	BSD/BHD's and see if this is a valid buffer name. If so, check the
+	consistancy of the SCA maint queue.  Other than this, not much can be
+	done.
 
 Data:	BFRNAM - Buffer name
 
 >)
 	RETBAD ()
-
-
+
 ; Here on a bizzare failure.
 ;
 ; Expects:
 ;	T1/	Error code
 ;
-MSCER1:	BUG. (CHK,SCSBIZ,SCSJSY,SOFT,<SCSJSY - Maintainance data transfer Q smashed>,<<T1,ERRCOD>>,<
+MSCER1:	BUG.(CHK,SCSBIZ,SCSJSY,SOFT,<SCSJSY - Maintenance data transfer queue smashed>,<<T1,ERRCOD>>,<
 
-Cause:	A routine which should not return (+1), did.
+Cause:	A routine which should not return (+1), did.  This indicates that a
+	maintenance data transfer queue is damaged.
+
+Action:	If this BUGCHK is reproducible, set it dumpable and send in an SPR
+	along with how to reproduce the problem.
 
 Data:	ERRCOD - The error code
 
@@ -2942,11 +2956,11 @@ CUBLOP:	TXNE Q1,SECMSK		;Are there any bad section bits on???
 	XCTU [MOVES (Q2)]	;Touch the end of the buffer
 	ERJMP CUBERR		;Failed, report bad page access
 	AOS T3			;Count the buffer
-	CAIL T3,C%MXBF		;Have we exceeded a reasonable number of buf?
-	 IFNSK.
+	CAIGE T3,C%MXBF		;[8936] Have we exceeded a reasonable number of buf?
+	IFSKP.			;[8936]
 	 MOVX T1,SCSENB		;Yes, get the error code for too many buffers
 	 RETBAD ()		;Report failure
-	 ENDIF.
+	ENDIF.
 	XCTU [MOVE Q1,(Q1)]	;Get the addr of the next buffer
 	ERJMP CUBERR		;No such address, fail
 	SKIPE Q1		;Is there a next buffer???
@@ -3187,8 +3201,8 @@ SCSABT:	SETO T3,		;Show we are in ABT code
 	MOVE T4,BITS(T4)	;Light the bit from the bit number
 	MOVE T1,(T3)		;Save the origional contents of the table
 
-	SKIPN ABTCOD		;Are we adding the bit???
-	IFNSK.
+	SKIPE ABTCOD		;[8936] Are we adding the bit???
+	IFSKP.			;[8936]
 	 ANDCAM T4,(T3)		;Turn off the bit please
 	 TDNE T4,T1		;No, we are removing the bit
 	 RETSKP			;Bit was on before, say so
@@ -3486,9 +3500,12 @@ SCSAER:	POP P,T2		;Get the callers PC back
 	TXZ T2,<777740,,0>	;Keep just the PC part
 	BUG. (INF,SCSACF,SCSJSY,SOFT,<SCSJSY - Can't get resident space from ASGRES>,<<T1,ERRCOD>,<T2,CALLPC>>,<
 
-Cause:	A call to ASGRES (by the JSYS) has failed. With the error code and 
-	caller's PC given by the BUGINF, figuring out why it failed should
-	be easy enough.
+Cause:	A call to ASGRES (by the JSYS) has failed. With the error code and
+	caller's PC given by the BUGINF, figuring out why it failed should be
+	easy enough.
+
+Action:	If this BUGCHK is reproducible, set it dumpable and send in an SPR
+	along with how to reproduce the problem.
 
 Data:	ERRCOD - Error code
 	CALLPC - PC of caller
@@ -3514,8 +3531,8 @@ Data:	ERRCOD - Error code
 SCSLCB:	
 	MOVE T1,SCSBCQ		;Get addr of last entry on the queue
 	XMOVEI T2,SCSTCQ	;  and the addr of the top of queue pointer
-	CAME T1,T2		;Is BLINK a pointer to the FLINK???
-	IFNSK.
+	CAMN T1,T2		;[8936] Is BLINK a pointer to the FLINK???
+	IFSKP.			;[8936]
 	 MOVEM T1,.CBJPB(P1)	;No, update previous pointer of new CB
 	 ADDI T1,.CBJNB		;  and offset to the forward pntr for last CB
 	ENDIF.
@@ -3547,12 +3564,12 @@ XNENT	(SCSKIL,G)		;[7.1043]SCSKIL::, XSCSKI::
 	SAVEAC <T1,T2,T3,T4,P1>	;Save ALL ACs used here
 	TRVAR <FRKN,PSBADR,FLNK,BLNK>
 	MOVEM T1,FRKN		;Save the fork number for later
-;
-; NOTE: The folowing two lines are a temporary hack to prevent SCSFR1
-; BUGCHKs from FRKCHK when SCSKIL is called from CLZFF%.  The correct
-; action here is to allow SCSKIL to clean up CI connections owned by a
-; fork inferior to the current fork.
-;
+
+; NOTE: The following two lines are a temporary hack to prevent SCSFR1 BUGCHKs
+; from FRKCHK when SCSKIL is called from CLZFF%.  The correct action here is to
+; allow SCSKIL to clean up CI connections owned by a fork inferior to the
+; current fork.
+
 	CAME T1,FORKX		;IS THE CURRENT FORK
 	 RET			;NO. RETURN QUIETLY
 ;	CALL FRKCHK		;(T1) CURRENT FORK?
@@ -3563,7 +3580,7 @@ XNENT	(SCSKIL,G)		;[7.1043]SCSKIL::, XSCSKI::
 	XMOVEI T1,SCSTCQ
 	MOVEM T1,FLNK		;Save the address of the queue FLINK
 
-	XMOVEI T3,SCSBCQ		;Get 18 bits of queue BLINK address
+	XMOVEI T3,SCSBCQ	;Get 18 bits of queue BLINK address
 	MOVEM T3,BLNK		;Save the address of the queue BLINK
 
 	SKIPE P1,(T1)		;Are there any connections for this fork???
@@ -3573,7 +3590,7 @@ XNENT	(SCSKIL,G)		;[7.1043]SCSKIL::, XSCSKI::
 				;this fork
 	OKINT
 	RET			;All done, return
-
+
 ; Here to loop over all connection opened by a fork.
 ;
 ;	P1/	Pointer to the first CB in the list
@@ -3601,16 +3618,18 @@ KILCHK:	JUMPN P1,KILCLP		;If more blocks left, delete them
 	SETZM @FLNK		;Zero the queue FLINK
 	RET			;No more connect blocks, all done
 
-
 ; Here when SC.DIS fails.
 ;
 KILERR:	 OKINT			;SCA is done, allow interrupts again
 	 CAIN T1,SCSIID		;Is the error, bad CID
 	 JRST KILCHK		;Yes, then connect is already gone, no problem
-	 BUG. (CHK,SCSABF,SCSJSY,SOFT,<SCSJSY - Connection abort failure on fork delete>,<<T1,ERRCOD>>,<
+	 BUG.(CHK,SCSABF,SCSJSY,SOFT,<SCSJSY - Connection abort failure on fork delete>,<<T1,ERRCOD>>,<
 
-Cause:	During the deletion process for a fork we tried to abort the 
-	connections it had open. We failed in the attempt. 
+Cause:	During the deletion process for a fork we tried to abort the
+	connections it had open.  We failed in the attempt.
+
+Action:	If this BUGCHK is reproducible, set it dumpable and send in an SPR
+	along with how to reproduce the problem.
 
 Data:	ERRCOD - Error code returned by SC.DIS
 
@@ -3663,7 +3682,7 @@ SCSCBD:
 	MOVE T3,[MSEC1,,RELRES]	;[7.1043]  and the routine to return the space
 	XMOVEI T4,XFER		;  and the 4 word block for DMA
 	CALL SCSGPR		;(T1,T2,T3,T4,P1)Return the blocks on the queue
-
+
 ; Clean up entries on the event queue
 
 	XMOVEI T1,.CBTEQ(P1)	;Point to the top of the queue
@@ -3695,11 +3714,14 @@ SCSCBD:
 	ENDIF.
 	RET			;All done
 
-CBDCHK:	BUG. (CHK,SCSCDC,SCSJSY,SOFT,<SCSJSY - Cannot delete connect block from fork queue>,<<T1,ERRCOD>>,<
+CBDCHK:	BUG.(CHK,SCSCDC,SCSJSY,SOFT,<SCSJSY - Cannot delete connect block from fork queue>,<<T1,ERRCOD>>,<
 
-Cause:	We tried to remove a connect block from the owning fork's list of 
-	connect blocks. The most likely failure is a +1 return from SCSMPS.
+Cause:	We tried to remove a connect block from the owning fork's list of
+	connect blocks.  The most likely failure is a +1 return from SCSMPS.
 	This fails only when we map a PSB but do not unmap it.
+
+Action:	If this BUGCHK is reproducible, set it dumpable and send in an SPR
+	along with how to reproduce the problem.
 
 Data:	ERRCOD - Error code
 
@@ -4155,14 +4177,12 @@ CLKEX2:	RET			;  and return
 ;	Return (+1) Always to PIRQR
 ;	No data returned
 ;
-;
-;THE .MEANC OFFSET OF EACH QUEUE ENTRY IS USED AS A FORWARD POINTER
-;TO THE NEXT ENTRY. THE .MEAPC OFFSET IS USED AS A BACKWARD POINTER.
-;THIS IS TRUE ONLY BETWEEN THE TIMES WHEN THE ENTRY
-;IS QUEUED (VIA QUEFRK) AND WHEN IT IS REMOVED (VIA SCSPSI). AFTER THE
-;ENTRY IS REMOVED FROM THE SCSTPQ LIST, THE .MEANC AND .MEAPC OFFSETS
-;ARE USED FOR ANOTHER PURPOSE.
-;
+;The .MEANC offset of each queue entry is used as a forward pointer to the next
+;entry. The .MEAPC offset is used as a backward pointer.  This is true only
+;between the times when the entry is queued (via QUEFRK) and when it is removed
+;(via SCSPSI).  After the entry is removed from the SCSTPQ list, the .MEANC and
+;.MEAPC offsets are used for another purpose.
+
 XRENT	(SCSPSI,G)		;[7.1043]SCSPSI::, XSCSPS::
 	SKIPN SCSTPQ		;Is there anything at all on the queue???
 	RET			;No, nothing to do here
@@ -4186,7 +4206,7 @@ PSINXT:
 	  SKIPN T1,SCSTPQ	;HAVE ANY ENTRIES BEEN ADDED?
 	  JRST PSIEXI		;NO. FINISHED FOR THIS FORK.
 	ENDIF.
-				;T1 SHOULD NOW HAVE THE ADDRESS OF AN ENTRY
+				;T1 SHOULD NOW HAVE THE ADDRESS OF AN ENTRY
 				;ON THE QUEUE THAT HAS NOT BEEN LOOKED AT.
 PSIFRK:	LOAD T2,MEFRK,(T1)	;Get the target fork number
 	CAMN T2,FORKX		;Is this one for us???
@@ -4227,12 +4247,12 @@ PSIFRK:	LOAD T2,MEFRK,(T1)	;Get the target fork number
 
 	MOVEM T1,BLKADR		;Save the event block address
 	LOAD T1,MECID,(T1)	;Get the CID from the event block
-	CAMN T1,[-1]		;Is this a special block with no CID???
-	IFNSK.
+	CAME T1,[-1]		;[8936] Is this a special block with no CID???
+	IFSKP.			;[8936] yes
 	 SETO P1,0		;Yes, special block, show address of CB as -1
 	 JRST PSINDL		;Yes, no CB work to do
 	ENDIF.
-
+
 ; Here to see if this event requires bits to be set in the connect block.
 
 	CALL <XENT SC.CSC>	;[7.1043]Sanity check the CID
@@ -4263,7 +4283,7 @@ PSIFRK:	LOAD T2,MEFRK,(T1)	;Get the target fork number
 	MOVEM T3,.MEAPC(T1)	;No, update the previous pointer of new entry
 	MOVEM T1,@Q2		;Link this entry onto the end of the queue
 	MOVEM T1,(Q2)		;  and update the tail pointer
-
+
 ; Here to put the new entry onto the fork queues.
 
 PSINDL:	MOVE T1,BLKADR		;Get the entry address
@@ -4279,8 +4299,8 @@ PSINDL:	MOVE T1,BLKADR		;Get the entry address
 	SETZM .MEAPF(T1)	;  and for now, assume no previous
 	MOVE T4,@Q1		;Save the current state of the queue
 	MOVE T3,@Q2		;Get addr of current last entry
-	CAMN T3,Q1		;Is this a pointer to the FLINK???
-	IFNSK.
+	CAME T3,Q1		;[8936] Is this a pointer to the FLINK???
+	IFSKP.			;[8936]
 	 MOVEM T1,(Q1)		;Yes, update the fork Q FLINK
 	ELSE.
 	 MOVEM T3,.MEAPF(T1)	;No, update link to previous of new entry
@@ -4296,17 +4316,20 @@ PSINDL:	MOVE T1,BLKADR		;Get the entry address
 	LOAD T2,MEFRK,(T3)	;Get the fork to interrupt
 	CALLX (MSEC1,PSIRQ)	;[7.1043]Queue a PSI interrupt for the fork
 	JRST PSINXT		;Loop for more entries
-
+
 ; Here on finding an old CB. Return the free space and loop for the next
 ;entry.
 
 PSIBER:	MOVE T1,BLKADR		;Get the free space addr back
 	LOAD T2,METYP,(T1)	;Get the entry type
 	CAILE T2,.ETDMA		;Check entry type
-PSIBUG:	BUG. (CHK,SCSBDE,SCSJSY,SOFT,<SCSJSY - Bad entry type found>,<<T2,TYPE>,<T1,BLKADR>>,<
+PSIBUG:	BUG.(CHK,SCSBDE,SCSJSY,SOFT,<SCSJSY - Bad entry type found>,<<T2,TYPE>,<T1,BLKADR>>,<
 
-Cause: An illegal type of message buffer was attempted to be returned.
-       It is now lost.
+Cause:	An illegal type of message buffer was attempted to be returned.
+	It is now lost.
+
+Action:	If this BUGCHK is reproducible, set it dumpable and send in an SPR
+	along with how to reproduce the problem.
 
 Data:	TYPE - Message buffer type
 	BLKADR - Free space block address
@@ -4479,11 +4502,10 @@ DEQMEL:	SKIPE T3		;Is there a next entry???
 	MOVEM T3,.MEANC(T4)	;Yes, update next pointer of previous
 	SKIPN T4		;Is there a previous entry???
 	MOVEM T3,@.TOPCQ(T2)	;No, update the head pointer in the CB
-
+
 ; Here to remove the entry from the fork list
 ;
-DEQFRK:	SKIPL P1		;Is this fork only case???
-	IFNSK.
+DEQFRK:	IFGE. P1		;[8936] Is this fork only case?
 	 MOVX T3,CBFKIL		;No, see if fork with connect is dead
 	 TDNE T3,.CBFLG(P1)	;Is the fork already gone???
 	 RETSKP			;Yes, then don't try to delete fork Q entries.
@@ -4548,8 +4570,8 @@ REPEAT 0,<
 ;	It is the responsibility of the caller to provide an interlock while
 ;we own the PSB.
 ;
-SCSMPS:	SKIPL T2,MPSFRK		;Have we got a fork mapped already???
-	IFNSK.
+SCSMPS:	SKIPGE T2,MPSFRK	;[8936] Have we got a fork mapped already???
+	IFSKP.			;[8936]
 	 CAME T1,T2		;Yes, are we mapping the same fork again???
  	 RETBAD (MONX03)	;NO! Someone missed an interlock, fail
 	 AOS MPSCNT		;Increment the nesting count
@@ -4560,15 +4582,15 @@ SCSMPS:	SKIPL T2,MPSFRK		;Have we got a fork mapped already???
 
 	MOVEM T1,MPSFRK		;Save the fork number of last fork mapped
 
-	CAMN T1,FORKX		;Are we the target fork???
-	IFNSK.
+	CAME T1,FORKX		;[8936] Are we the target fork???
+	IFSKP.			;[8936]
 	 AOS MPSCNT		;Increment the nesting level
 	 AOS MPSFKX		;Count a mapped ourselves occurance
 	 XMOVEI T2,PSBPGA	;Point to the base of our PSB
 	 MOVEM T2,MPSADR	;Save the last reported address
 	 RETSKP			;  and return
 	ENDIF.
-
+
 	STKVAR <FRKN>
 	AOS MPSCPT		;Count a use of SETCPT for fork mapping
 	MOVEM T1,FRKN		;Save the fork number
@@ -4763,7 +4785,7 @@ SCSRET:	MOVX T2,JH%DGB		;Get the datagram buffer bit
 	ELSE.			;[7.1043]Else, 
 	  CALLRET <XENT SC.RBF> ;[7.1043] Return the message buffer please
 	ENDIF.			;[7.1043]
-
+
 ;Routine to check if the current fork matches the fork number 
 ;to be checked.
 
@@ -4781,10 +4803,14 @@ FRKCHK:	SAVEAC <T1,T2,T3>
 	IFSKP.			;NO.
 	  MOVE T2,FORKX
 	  MOVE T3,(P)		;CALLING ADDRESS
-	  BUG. (CHK,SCSFR1,SCSJSY,SOFT,<SCSJSY - SCS% fork removing entries that do not belong to it>,<<T1,FRKNUM>,<T2,CURFRK>,<T3,ADDRESS>>,<
+	  BUG.(CHK,SCSFR1,SCSJSY,SOFT,<SCSJSY - SCS% fork removing entries that do not belong to it>,<<T1,FRKNUM>,<T2,CURFRK>,<T3,ADDRESS>>,<
 
-Cause:	It is assumed that only the owning fork can manipulate SCS% in
-	a CB or in its own PSB.
+Cause:	SCS% fork is remving entries that don't belong to it.  It is assumed
+	that only the owning fork can manipulate SCS% in a CB or in its own
+	PSB.
+
+Action:	If this BUGCHK is reproducible, set it dumpable and send in an SPR
+	along with how to reproduce the problem.
 
 Data:	FRKNUM - Fork number to be checked
 	CURFRK - Current fork

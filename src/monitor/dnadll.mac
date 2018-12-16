@@ -1,3 +1,11 @@
+; Edit= 9172 to DNADLL.MAC on 22-Jun-90 by GSCOTT
+;Insure the AC save routines in APRSRV are used by always SEARCHing PROLOG
+;before any SEARCH of MACSYM so that the proper USRSAV macro (from PROLOG) is
+;used in the SAVEAC macro.
+; Edit= 9022 to DNADLL.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8887 to DNADLL.MAC on 12-Aug-88 by RASPUZZI
+;Update BUG. documentation.
 ; UPD ID= 8505, RIP:<7.MONITOR>DNADLL.MAC.2,   9-Feb-88 14:54:59 by GSCOTT
 ;TCO 7.1218 - Update copyright notice.
 ; UPD ID= 2261, SNARK:<6.1.MONITOR>DNADLL.MAC.90,  21-Jun-85 11:41:29 by PALMIERI
@@ -175,7 +183,7 @@
 ; UPD ID= 343, SNARK:<6.1.MONITOR>DNADLL.MAC.2,  24-Feb-84 13:22:24 by PALMIERI
 ;TITLE DNADLL - DLL use interface for DECnet-36  V000
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1985, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1985, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -194,19 +202,19 @@
 
 
 	SUBTTL Marty Palmieri	 6 March 85
-	SEARCH NIPAR,D36PAR,MACSYM
+	SEARCH D36PAR		;[9172]
 	SALL
 
 	ENTRY DNDINI
 
 XP DNADLL,000
 IFN FTOPS20,<
-	SEARCH PROLOG
+	SEARCH PROLOG,NIPAR	;[9172]
 	TTITLE DNADLL,,< - DLL interface for DECnet-36>
 	>
 
 IFN FTOPS10,<
-	SEARCH F,S
+	SEARCH F,S,MACSYM,NIPAR	;[9172]
 	TITLE DNADLL - DLL interface for DECnet-36
 >;END OF IFN FTOPS10
 	D36SYM			;SET UP D36 SPECIFIC PARAMETERS
@@ -689,7 +697,6 @@ Cause:	DNADLL requires that the memory manager save at least 2 buffers
 	not guarantee the buffers.
 
 Action:	Allocate more memory or settle for fewer circuits.
-
 >)
 	RETSKP
 
@@ -898,7 +905,6 @@ IFN FTPARANOIA,<
 	BUG.(CHK,DNDIUF,DNADLL,SOFT,<Illegal function code from DNADLL user>,,<
 
 Cause:	DNADLL was called with a bad function by ROUTER
-
 >,RTN)
 > ;END IFN FTPARANOIA
 
@@ -916,7 +922,6 @@ IFN FTPARANOIA,<
 	BUG.(CHK,DNDINF,DNADLL,SOFT,<Illegal function code from NTMAN>,,<
 
 Cause:	DNADLL was called with a bad function by NTMAN.
-
 >,RTN)
 > ;END IFN FTPARANOIA
 
@@ -1288,7 +1293,8 @@ IFN FTPARANOIA,<
 	CAXL T1,DI.ODN
 	 CAXLE T1,DI.ICB
 	BUG. (CHK,DTIIFK,DNADLL,SOFT,<Illegal function code from DTE kontroller>,,<
-	This BUG is not documented yet.
+	This BUG. is only assembled in DEBUG code and does not appear
+	in the field.
 >,RTN)
 > ;END IFN FTPARANOIA
 
@@ -1300,7 +1306,6 @@ Cause:	DTESRV has lost the callback ID for this line or never had one.
 
 Action:	See if protocol was started when Router thought the circuit state was
 	off.  Or, check DCNCID in DTESRV to see what it has for a callback ID.
-
 >,RTN)
 
 	LOAD LT,DLLTP,(DL)	;Get line table entry
@@ -1425,11 +1430,10 @@ Cause:	NISRV returned an error when asked to return the channel list.
 Action:	Check error code returned in T1 to see what NISRV thinks is wrong.
 
 Data:	ERRCOD - Error code returned by NISRV
-
 >,NIDIN1)
 	LOAD T1,UNBSZ,(UN)	; Get number of channels found
 	SKIPE T1		; Any found?
-	 AOS (P)		; Yes, so for now, indicate success
+	AOS (P)			; Yes, so for now, indicate success
 NIDIN1:	LOAD T1,UNBFA,(UN)	; Free the buffer
 	CALL DNFWDS
 	CALL FREUNB		; Free the UN block
@@ -1502,7 +1506,6 @@ Cause:	NISRV returned an error when trying to open a portal.
 Action:	Check error code returned in T1 to see what NISRV thinks is wrong.
 
 Data:	ERRCOD - Error code returned by NISRV
-
 >,NIFOF)
 	LOAD T1,UNPID,(UN)	; Get portal ID
 	STOR T1,DLPID,(DL)	; Save for transmits later
@@ -1540,8 +1543,7 @@ Data:	ERRCOD - Error code returned by NISRV
 	LOAD T1,LTSTA,(LT)	; Return line state to Router
 	RETSKP
 
-NIFEMF:
-	 BUG.(CHK,DNDEMF,DNADLL,SOFT,<Enable Ethernet multicast address failed>,<<T1,ERRCOD>>,<
+NIFEMF:	BUG.(CHK,DNDEMF,DNADLL,SOFT,<Enable Ethernet multicast address failed>,<<T1,ERRCOD>>,<
 
 Cause:	NISRV returned an error when trying to enable a multicast address.
 
@@ -1619,7 +1621,6 @@ Cause:	NISRV returned an error when trying to queue a message for transmit.
 Action:	Check error code returned in T1 and investigate problem in NISRV.
 
 Data:	ERRCOD - Error code returned by NISRV
-
 >,FREUNB)
 
 	CALL FREUNB		;  and return the UN block
@@ -2364,9 +2365,9 @@ RTNEVT:	SAVEAC <P1,P2>
 Cause:	DECnet has used all of its available memory and could not give us any.
 
 Action:	Try to determine who is using all the memory and why.  Setting FTDEBUG
-	to non-zero will give more information about who is using each block
-	of memory.
-
+	to non-zero gives more information about who is using each block
+	of memory. You may also consider building a monitor with more DECnet
+	freespace incorporated.
 >,RTN)
 	STOR P1,NECTY,(T1)	; Put the event type in the arg block
 	STOR P2,NEEID,(T1)	; Put entity-id in event block

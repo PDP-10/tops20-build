@@ -1,4 +1,5 @@
-; UPD ID= 8701, RIP:<7.MONITOR>PHYPAR.MAC.5,  20-Apr-88 10:34:26 by RASPUZZI
+; Edit= 8832 to PHYPAR.MAC on 20-Apr-88 by RASPUZZI (TCO 7.1276)
+;Install TCO 7.1276 into the autopatch sources.
 ;TCO 7.1276 - Add U1.NOL for login structures hang
 ; UPD ID= 8593, RIP:<7.MONITOR>PHYPAR.MAC.4,  11-Feb-88 16:56:54 by GSCOTT
 ;TCO 7.1218 - Update copyright date.

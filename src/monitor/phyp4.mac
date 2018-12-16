@@ -1,3 +1,5 @@
+; Edit= 8908 to PHYP4.MAC on 16-Aug-88 by GSCOTT
+;Update BUG. documentation. 
 ; UPD ID= 8592, RIP:<7.MONITOR>PHYP4.MAC.5,  11-Feb-88 16:56:44 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 309, RIP:<7.MONITOR>PHYP4.MAC.4,  24-Nov-87 12:06:06 by GSCOTT
@@ -171,15 +173,15 @@
 ;    1. Parameters . . . . . . . . . . . . . . . . . . . . . .   3
 ;    2. Error Recovery/Reporting Definitions . . . . . . . . .   5
 ;    3. Initialization . . . . . . . . . . . . . . . . . . . .   7
-;    4. Start I/O  . . . . . . . . . . . . . . . . . . . . . .  10
-;    5. Latency Optimization . . . . . . . . . . . . . . . . .  15
-;    6. Position Request . . . . . . . . . . . . . . . . . . .  18
-;    7. Interrupt Processing . . . . . . . . . . . . . . . . .  19
-;    8. Get Serial Number  . . . . . . . . . . . . . . . . . .  22
-;    9. Read/Write Interrupts  . . . . . . . . . . . . . . . .  23
-;   10. Error Recovery Code, Entered By PHYSIO On Error  . . .  24
-;   11. Misc Routines  . . . . . . . . . . . . . . . . . . . .  33
-;   12. End of PHYP4 . . . . . . . . . . . . . . . . . . . . .  37
+;    4. Start I/O  . . . . . . . . . . . . . . . . . . . . . .  11
+;    5. Latency Optimization . . . . . . . . . . . . . . . . .  17
+;    6. Position Request . . . . . . . . . . . . . . . . . . .  20
+;    7. Interrupt Processing . . . . . . . . . . . . . . . . .  21
+;    8. Get Serial Number  . . . . . . . . . . . . . . . . . .  25
+;    9. Read/Write Interrupts  . . . . . . . . . . . . . . . .  26
+;   10. Error Recovery Code, Entered By PHYSIO On Error  . . .  27
+;   11. Misc Routines  . . . . . . . . . . . . . . . . . . . .  36
+;   12. End of PHYP4 . . . . . . . . . . . . . . . . . . . . .  40
 	SUBTTL Parameters
 
 ;DRIVE REGISTERS
@@ -373,27 +375,35 @@ INI1:	MOVE T3,XTYPE(T2)	;GET TYPE WORD
 	AOBJN T2,INI1		;NO - ANY LEFT
 	BUG.(HLT,RP4UNF,PHYP4,HARD,<PHYP4 - Unit type not found>,<<T1,DRVTYP>>,<
 
-Cause:	During initialization of a disk in the routine RP4INI, the
-	hardware drive type of the disk was read, and then the XTYPE
-	table was searched for the corresponding internal drive type.
-	The search failed, indicating the disk was of an unknown type.
+Cause:	During initialization of a disk in the routine RP4INI, the hardware
+	drive type of the disk was read, and then the XTYPE table was searched
+	for the corresponding internal drive type.  The search failed,
+	indicating the disk was of an unknown type.
+
+Action:	There is a hardware problem which should be checked by Field Service.
+	Either a legal drive is reporting an illegal drive type, or there is an
+	illegal drive connected to the system.
 
 Data:	DRVTYP - Drive type
-
 >)
+
 INI2:	HLRZ T1,T3		;FOUND - GET INTERNAL TYPE CODE
 	MOVE T4,T1		;COPY FOR UDB BUILD LATER
 	MOVSI T2,-NDSKUT	;SEARCH TO FIND PHYSICAL PARAM TABLE
 INI3:	CAMN T1,DSKUTP(T2)	;MATCH?
 	JRST INI4		;YES
 	AOBJN T2,INI3		;NO - LOOP
-	BUG.(HLT,RP4PNF,PHYP4,SOFT,<PHYP4 - Disk physical parameters not found>,,<
+	BUG.(HLT,RP4PNF,PHYP4,HARD,<PHYP4 - Disk physical parameters not found>,,<
 
-Cause:	The routine RP4INI was called to initialize a UDB for a disk.
-	It converted the hardware drive type into the internal drive
-	type, and then looked in the physical parameter table (DSKUTP)
-	for that type, so that the disk parameters could be obtained.
-	The drive type could not be found.
+Cause:	The routine RP4INI was called to initialize a UDB for a disk.  It
+	converted the hardware drive type into the internal drive type, and
+	then looked in the physical parameter table (DSKUTP) for that type, so
+	that the disk parameters could be obtained.  The drive type could not
+	be found.
+
+Action:	There is a hardware problem which should be checked by Field Service.
+	Either a legal drive is reporting an illegal drive type, or there is an
+	illegal drive connected to the system.
 >)
 
 INI4:	MOVE T2,DSKSIZ(T2)	;GET POINTER TO PHYSICAL PARAMETER TABLE
@@ -441,12 +451,11 @@ INI5:	MOVSI T2,DO.LA		;NOW TRY FOR A DIFFERENT VALUE
 				;THE PORT MAY BE ON THE OTHER SIDE
 	BUG.(CHK,RP4SSC,PHYP4,HARD,<PHYP4 - Stuck sector counter>,<<T1,CDBADR>,<T2,UDBAKA>>,<
 
-Cause:	During initialization of a disk unit in the routine RP4INI,
-	the sector counter for the disk was examined to see if it
-	was changing as it should.  After watching the value for
-	100000 times, it never varied.
+Cause:	During initialization of a disk unit in the routine RP4INI, the sector
+	counter for the disk was examined to see if it was changing as it
+	should.  After watching the value for 100000 times, it never varied.
 
-Action:	Call Field Service to fix the disk.
+Action:	Field Service must be called to repair the disk.
 
 Data:	CDBADR - Channel address
 	UDBAKA - Unit address
@@ -466,9 +475,10 @@ RP4SIO:	SAVEQ			;SAVE REGISTERS
 	JRST RP4SI1		;ITS OK
 	BUG.(HLT,RP4FEX,PHYP4,SOFT,<PHYP4 - Illegal function>,,<
 
-Cause:	The routine RP4SIO was called to start I/O for a unit, but
-	the function code supplied in the IORB was out of range.
+Cause:	The routine RP4SIO was called to start I/O for a unit, but the function
+	code supplied in the IORB was out of range.
 >)
+
 RP4SI1:	HLRZ Q1,RP4FCN(T3)	;TRANSLATE TO HARDWARE BITS
 	TRZ Q1,(XFRFLG)		;MASK
 	CALL RP4CON		;CONNECT TO DRIVE
@@ -498,10 +508,10 @@ RP4STK:	LDB T1,IRYFCN		;GET FUNCTION
 	JRST RP4ST1
 	BUG.(HLT,RP4IF2,PHYP4,SOFT,<PHYP4 - Illegal function at STKIO>,,<
 
-Cause:	The routine RP4STK was called to start stacked I/O for a
-	unit, but the function code supplied in the IORB was out
-	of range.
+Cause:	The routine RP4STK was called to start stacked I/O for a unit, but the
+	function code supplied in the IORB was out of range.
 >)
+
 RP4ST1:	HLRZ Q1,RP4FCN(T1)	;GET HW FUNCTION
 	TRZ Q1,(XFRFLG)		;MASK
 	CALL PHYBLK		;GET UNIT RELATIVE ADDRESS
@@ -618,7 +628,7 @@ RP4DIS:	MOVSI T1,(US.PGM)	;IS THIS A VARIABLE DUAL PORT
 	MOVE T2,[DO.DRC+DF.REL]	;DRIVE CONTROL REG, RELEASE PORT
 	CALL WTREG		;SEND TO DRIVE
 	RET
-
+
 ;HERE TO DETERMINE THE CYLINDER ASSOCIATED WITH AN IORB
 
 ;P3/ UDB
@@ -636,10 +646,10 @@ RP4CNV:	CALL PHYBLK		;GET UNIT RELATIVE BLOCK ADDRESS
 	SKIPN T1,RP4FCN(T1)	;OR HAVE NULL TABLE ENTRY?
 	BUG.(HLT,RP4IFC,PHYP4,SOFT,<PHYP4 - Illegal function at CNV>,,<
 
-Cause:	The routine RP4CNV was called to return the cylinder associated
-	with an IORB.  The routine checked the function in the IORB, and
-	it was illegal.
->) 		;HERE FOR NULL ENTRY OR BAD FUNCTION
+Cause:	The routine RP4CNV was called to return the cylinder associated with an
+	IORB.  The routine checked the function in the IORB, and it was
+	illegal.
+>)				;HERE FOR NULL ENTRY OR BAD FUNCTION
 RP4CV2:	HLRZS T1		;GET FUNCTION CODE AND FLAGS
 	TRZ T1,(XFRFLG)		;MASK
 RP4CV1:	HRRZ T3,RP.SCL(P3)	;GET SECTORS PER CYLINDER
@@ -761,10 +771,10 @@ RP4LT6:	MOVE T1,UDBPS2(P3)	;GET CURRENT SECTOR
 
 RP4LTE:	BUG.(HLT,RP4LTF,PHYP4,SOFT,<PHYP4 - Failed to find TWQ entry at RP4LTM>,,<
 
-Cause:	The routine RP4LTM was called to find the entry on the transfer
-	wait queue that had the best latency.  After searching the
-	queue, no IORB was found to return.  This routine should only
-	be called when the transfer wait queue is nonempty.
+Cause:	The routine RP4LTM was called to find the entry on the transfer wait
+	queue that had the best latency.  After searching the queue, no IORB
+	was found to return.  This routine should only be called when the
+	transfer wait queue is nonempty.
 >)
 	RET
 
@@ -890,9 +900,9 @@ ERRATN:	HRRZ T1,UDBERR(P3)	;GET FUNCTION BEING PERFORMED
 	CAME T3,CDBXFR(P1)	;IS IT THE TRANSFERRING DRIVE?
 	CALL RP4CLR		;CLEAR DRIVE AND BACK TO CHANNEL
 	JRST ATNX0		;DATA TRANSFER FUNCTION - DEFER
-
-
+
 ;HERE FOR INTERRUPTS OTHER THAN ATTENTION
+
 RP4INT:	CALL SETIRB		;SET UP IORB INTO P4
 	HRRZ T1,UDBERR(P3)	;GET FUNCTION IF ERR RECOV
 	SKIPN T1		;IN ERROR RECOVERY?
@@ -903,11 +913,13 @@ RP4INT:	CALL SETIRB		;SET UP IORB INTO P4
 	SKIPL T1,RP4FCN(T1)	;GET TABLE ENTRY
 	BUG.(HLT,RP4ILF,PHYP4,HARD,<PHYP4 - Illegal function on interrupt>,,<
 
-Cause:	The routine RP4INT was called by the channel routine to handle
-	a non-attention interrupt.  The function code for the IORB that
-	I/O was done for was either illegal, or else the function was
-	one which did not transfer data.  Functions which do not transfer
-	data should give an attention interrupt.
+Cause:	The routine RP4INT was called by the channel routine to handle a
+	non-attention interrupt.  The function code for the IORB that I/O was
+	done for was either illegal, or else the function was one which did not
+	transfer data.  Functions which do not transfer data should give an
+	attention interrupt.
+
+Action:	Field Service should check the condition RH20s and RP0x drives.
 >)
 	HRRZS T1,T1
 	JRST 0(T1)		;THE LEAP OF FAITH

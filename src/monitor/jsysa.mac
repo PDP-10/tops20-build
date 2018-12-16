@@ -1,3 +1,50 @@
+; Edit= 9145 to JSYSA.MAC on 6-Feb-90 by GSCOTT
+;Internet queues are not released when the fork that did the ASNIQ% is killed
+;with KFORK% or reset with RESET%. Remove "historical" code in IPIPIP that is
+;not called by RELIQ%. 
+; Edit= 9122 to JSYSA.MAC on 22-Sep-89 by GSCOTT
+;Prevent two systems from using a shared tape drive at the same time by
+;returning OPNX32 (OPENF%) or ASNDX4 (ASND%).
+; Edit= 9100 to JSYSA.MAC on 8-Jun-89 by GSCOTT
+;Don't give undeserved RCVTMRs. 
+; Edit= 9095 to JSYSA.MAC on 2-Jun-89 by GSCOTT
+;If account validation is on, and no account database has been installed, give
+;a NOACTF BUGCHK and turn off account validation in VERACT. 
+; Edit= 9088 to JSYSA.MAC on 8-Apr-89 by GSCOTT
+;Add GETOK function .GOGTD for GTDIR% and .GOSTD for STAD%.
+; Edit= 9083 to JSYSA.MAC on 24-Mar-89 by GSCOTT, for SPR #22061
+;SMON and TMON function 74 should just set and clear LASDEF and not HNLAS.
+; Edit= 9059 to JSYSA.MAC on 13-Jan-89 by RASPUZZI
+;Fix the one spot where ACJRUN is not getting reset during the death of the
+;ACJ fork through the SMON% monitor call.
+; Edit= 9058 to JSYSA.MAC on 12-Jan-89 by GSCOTT
+;Add SMON function .SFBUG to set SAVTRE. Reverse sense of SMON function
+;.SFHDT. ITRAP on errors in SMON function .SFDCD. 
+; Edit= 9054 to JSYSA.MAC on 10-Jan-89 by GSCOTT
+;Search SYSTEM:PASSWORD.DICTIONARY when setting passwords to help prevent
+;users from setting easily guessed passwords. 
+; Edit= 9046 to JSYSA.MAC on 22-Dec-88 by RASPUZZI
+;Prevent RESCHK BUGHLTs by making sure we have the right size for freespace
+;blocks!
+; Edit= 9041 to JSYSA.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 9031 to JSYSA.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8974 to JSYSA.MAC on 30-Sep-88 by GSCOTT
+;Prevent LAPRBF BUGCHKs on systems without an NIA20. Add routines SMFLTS and
+;TMFLTS which implement SMON and TMON function 74. 
+; Edit= 8952 to JSYSA.MAC on 26-Aug-88 by GSCOTT
+;Change "BREAKIN" BUGCHK to be "BREAKI".
+; Edit= 8900 to JSYSA.MAC on 12-Aug-88 by RASPUZZI
+;Update BUG. documentation.
+; Edit= 8850 to JSYSA.MAC on 31-May-88 by RASPUZZI
+;Add code to do the TMON% version of .SFSEA and .SFLTS. Also, teach INFO% how
+;it must handle ethernet addresses for .SFSEA between remote systems.
+; Edit= 8821 to JSYSA.MAC on 7-Apr-88 by RASPUZZI
+;Fix oversight in edit 7251. Mainly, restore class in T3 before calling
+;CPYCSH.
 ; UPD ID= 8649, RIP:<7.MONITOR>JSYSA.MAC.18,  18-Feb-88 15:33:19 by RASPUZZI
 ;TCO 7.1231 - Add routines for SMON% and TMON% to set and return the
 ;	      minimum password length for directories.
@@ -549,7 +596,7 @@
 ;<4.1.MONITOR>JSYSA.MAC.251,  8-Nov-79 15:05:41, Edit by KONEN
 ;CORRECT SKIP INSTRUCTION IN UFNRAS SO DATA IS MOVED TO USER AREA
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -581,48 +628,48 @@
 ;        2.1    Perform BOUT (BOUTA) . . . . . . . . . . . . .   5
 ;        2.2    Perform BIN (BIN1) . . . . . . . . . . . . . .   6
 ;        2.3    Password Check (PASSWC/CHKPSX) . . . . . . . .   7
-;        2.4    Lock Device Tables (LCKDVL)  . . . . . . . . .  12
-;        2.5    Check 7-Bit Byte Pointer (PTRCHK)  . . . . . .  13
-;    3. ACCES JSYS . . . . . . . . . . . . . . . . . . . . . .  14
-;    4. ADBRK JSYS . . . . . . . . . . . . . . . . . . . . . .  24
-;    5. ALLOC JSYS . . . . . . . . . . . . . . . . . . . . . .  31
-;    6. CACCT JSYS . . . . . . . . . . . . . . . . . . . . . .  33
-;    7. CFIBF JSYS . . . . . . . . . . . . . . . . . . . . . .  37
-;    8. CFOBF JSYS . . . . . . . . . . . . . . . . . . . . . .  38
-;    9. CNDIR JSYS . . . . . . . . . . . . . . . . . . . . . .  39
-;   10. CNFIG JSYS . . . . . . . . . . . . . . . . . . . . . .  40
-;   11. DELDF JSYS . . . . . . . . . . . . . . . . . . . . . .  43
-;   12. DEVST JSYS . . . . . . . . . . . . . . . . . . . . . .  44
-;   13. DIBE JSYS  . . . . . . . . . . . . . . . . . . . . . .  45
-;   14. DIRST JSYS . . . . . . . . . . . . . . . . . . . . . .  46
-;   15. DOBE JSYS  . . . . . . . . . . . . . . . . . . . . . .  47
-;   16. ERSTR JSYS . . . . . . . . . . . . . . . . . . . . . .  48
-;   17. GACCT JSYS . . . . . . . . . . . . . . . . . . . . . .  53
-;   18. GETER JSYS . . . . . . . . . . . . . . . . . . . . . .  54
-;   19. Access Control . . . . . . . . . . . . . . . . . . . .  55
-;       19.1    GETOK JSYS . . . . . . . . . . . . . . . . . .  57
-;       19.2    RCVOK JSYS . . . . . . . . . . . . . . . . . .  68
-;       19.3    GIVOK JSYS . . . . . . . . . . . . . . . . . .  71
-;       19.4    Delete ACJ Fork (ACJKIL) . . . . . . . . . . .  75
-;   20. GTABS JSYS . . . . . . . . . . . . . . . . . . . . . .  76
-;   21. GTAD JSYS  . . . . . . . . . . . . . . . . . . . . . .  77
-;   22. GTDIR JSYS . . . . . . . . . . . . . . . . . . . . . .  78
-;   23. PLOCK JSYS . . . . . . . . . . . . . . . . . . . . . .  89
-;   24. NIN JSYS . . . . . . . . . . . . . . . . . . . . . . .  94
-;   25. NOUT JSYS  . . . . . . . . . . . . . . . . . . . . . .  96
-;   26. NTINF JSYS . . . . . . . . . . . . . . . . . . . . . .  99
-;   27. PMAP JSYS  . . . . . . . . . . . . . . . . . . . . . . 102
-;   28. PPNST JSYS . . . . . . . . . . . . . . . . . . . . . . 113
-;   29. PMCTL JSYS . . . . . . . . . . . . . . . . . . . . . . 115
-;   30. PRARG JSYS . . . . . . . . . . . . . . . . . . . . . . 118
-;   31. QUEUE% JSYS  . . . . . . . . . . . . . . . . . . . . . 120
-;   32. RELD JSYS  . . . . . . . . . . . . . . . . . . . . . . 131
-;   33. RESET JSYS . . . . . . . . . . . . . . . . . . . . . . 135
-;   34. RFCOC JSYS . . . . . . . . . . . . . . . . . . . . . . 137
-;   35. RFMOD JSYS . . . . . . . . . . . . . . . . . . . . . . 138
-;   36. RFPOS JSYS . . . . . . . . . . . . . . . . . . . . . . 139
-;   37. RMAP JSYS  . . . . . . . . . . . . . . . . . . . . . . 140
-;   38. RPACS JSYS . . . . . . . . . . . . . . . . . . . . . . 142
+;        2.4    Lock Device Tables (LCKDVL)  . . . . . . . . .  13
+;        2.5    Check 7-Bit Byte Pointer (PTRCHK)  . . . . . .  14
+;    3. ACCES JSYS . . . . . . . . . . . . . . . . . . . . . .  15
+;    4. ADBRK JSYS . . . . . . . . . . . . . . . . . . . . . .  25
+;    5. ALLOC JSYS . . . . . . . . . . . . . . . . . . . . . .  32
+;    6. CACCT JSYS . . . . . . . . . . . . . . . . . . . . . .  34
+;    7. CFIBF JSYS . . . . . . . . . . . . . . . . . . . . . .  38
+;    8. CFOBF JSYS . . . . . . . . . . . . . . . . . . . . . .  39
+;    9. CNDIR JSYS . . . . . . . . . . . . . . . . . . . . . .  40
+;   10. CNFIG JSYS . . . . . . . . . . . . . . . . . . . . . .  41
+;   11. DELDF JSYS . . . . . . . . . . . . . . . . . . . . . .  44
+;   12. DEVST JSYS . . . . . . . . . . . . . . . . . . . . . .  45
+;   13. DIBE JSYS  . . . . . . . . . . . . . . . . . . . . . .  46
+;   14. DIRST JSYS . . . . . . . . . . . . . . . . . . . . . .  47
+;   15. DOBE JSYS  . . . . . . . . . . . . . . . . . . . . . .  48
+;   16. ERSTR JSYS . . . . . . . . . . . . . . . . . . . . . .  49
+;   17. GACCT JSYS . . . . . . . . . . . . . . . . . . . . . .  54
+;   18. GETER JSYS . . . . . . . . . . . . . . . . . . . . . .  55
+;   19. Access Control . . . . . . . . . . . . . . . . . . . .  56
+;       19.1    GETOK JSYS . . . . . . . . . . . . . . . . . .  58
+;       19.2    RCVOK JSYS . . . . . . . . . . . . . . . . . .  69
+;       19.3    GIVOK JSYS . . . . . . . . . . . . . . . . . .  72
+;       19.4    Delete ACJ Fork (ACJKIL) . . . . . . . . . . .  76
+;   20. GTABS JSYS . . . . . . . . . . . . . . . . . . . . . .  77
+;   21. GTAD JSYS  . . . . . . . . . . . . . . . . . . . . . .  78
+;   22. GTDIR JSYS . . . . . . . . . . . . . . . . . . . . . .  79
+;   23. PLOCK JSYS . . . . . . . . . . . . . . . . . . . . . .  90
+;   24. NIN JSYS . . . . . . . . . . . . . . . . . . . . . . .  95
+;   25. NOUT JSYS  . . . . . . . . . . . . . . . . . . . . . .  97
+;   26. NTINF JSYS . . . . . . . . . . . . . . . . . . . . . . 100
+;   27. PMAP JSYS  . . . . . . . . . . . . . . . . . . . . . . 103
+;   28. PPNST JSYS . . . . . . . . . . . . . . . . . . . . . . 114
+;   29. PMCTL JSYS . . . . . . . . . . . . . . . . . . . . . . 116
+;   30. PRARG JSYS . . . . . . . . . . . . . . . . . . . . . . 119
+;   31. QUEUE% JSYS  . . . . . . . . . . . . . . . . . . . . . 121
+;   32. RELD JSYS  . . . . . . . . . . . . . . . . . . . . . . 132
+;   33. RESET JSYS . . . . . . . . . . . . . . . . . . . . . . 136
+;   34. RFCOC JSYS . . . . . . . . . . . . . . . . . . . . . . 138
+;   35. RFMOD JSYS . . . . . . . . . . . . . . . . . . . . . . 139
+;   36. RFPOS JSYS . . . . . . . . . . . . . . . . . . . . . . 140
+;   37. RMAP JSYS  . . . . . . . . . . . . . . . . . . . . . . 141
+;   38. RPACS JSYS . . . . . . . . . . . . . . . . . . . . . . 143
 	Subttl	Table of Contents (page 2)
 
 ;		     Table of Contents for JSYSA
@@ -630,27 +677,27 @@
 ;				  Section		      Page
 ;
 ;
-;   39. RSMAP JSYS . . . . . . . . . . . . . . . . . . . . . . 143
-;   40. SETER JSYS . . . . . . . . . . . . . . . . . . . . . . 145
-;   41. SETJB JSYS . . . . . . . . . . . . . . . . . . . . . . 146
-;   42. SFCOC JSYS . . . . . . . . . . . . . . . . . . . . . . 151
-;   43. SFMOD JSYS . . . . . . . . . . . . . . . . . . . . . . 152
-;   44. SFPOS JSYS . . . . . . . . . . . . . . . . . . . . . . 153
-;   45. SMAP JSYS  . . . . . . . . . . . . . . . . . . . . . . 154
-;   46. SMON JSYS  . . . . . . . . . . . . . . . . . . . . . . 159
-;   47. SNOOP JSYS . . . . . . . . . . . . . . . . . . . . . . 166
-;   48. SOBE JSYS  . . . . . . . . . . . . . . . . . . . . . . 185
-;   49. SOBF JSYS  . . . . . . . . . . . . . . . . . . . . . . 186
-;   50. SPACS JSYS . . . . . . . . . . . . . . . . . . . . . . 187
-;   51. SPOOL JSYS . . . . . . . . . . . . . . . . . . . . . . 189
-;   52. STABS JSYS . . . . . . . . . . . . . . . . . . . . . . 191
-;   53. STAD JSYS  . . . . . . . . . . . . . . . . . . . . . . 192
-;   54. STDEV JSYS . . . . . . . . . . . . . . . . . . . . . . 193
-;   55. STI JSYS . . . . . . . . . . . . . . . . . . . . . . . 196
-;   56. TMON JSYS  . . . . . . . . . . . . . . . . . . . . . . 197
-;   57. UTEST JSYS . . . . . . . . . . . . . . . . . . . . . . 200
-;   58. VACCT JSYS . . . . . . . . . . . . . . . . . . . . . . 204
-;   59. End of JSYSA . . . . . . . . . . . . . . . . . . . . . 222
+;   39. RSMAP JSYS . . . . . . . . . . . . . . . . . . . . . . 144
+;   40. SETER JSYS . . . . . . . . . . . . . . . . . . . . . . 146
+;   41. SETJB JSYS . . . . . . . . . . . . . . . . . . . . . . 147
+;   42. SFCOC JSYS . . . . . . . . . . . . . . . . . . . . . . 152
+;   43. SFMOD JSYS . . . . . . . . . . . . . . . . . . . . . . 153
+;   44. SFPOS JSYS . . . . . . . . . . . . . . . . . . . . . . 154
+;   45. SMAP JSYS  . . . . . . . . . . . . . . . . . . . . . . 155
+;   46. SMON JSYS  . . . . . . . . . . . . . . . . . . . . . . 160
+;   47. SNOOP JSYS . . . . . . . . . . . . . . . . . . . . . . 170
+;   48. SOBE JSYS  . . . . . . . . . . . . . . . . . . . . . . 190
+;   49. SOBF JSYS  . . . . . . . . . . . . . . . . . . . . . . 191
+;   50. SPACS JSYS . . . . . . . . . . . . . . . . . . . . . . 192
+;   51. SPOOL JSYS . . . . . . . . . . . . . . . . . . . . . . 194
+;   52. STABS JSYS . . . . . . . . . . . . . . . . . . . . . . 196
+;   53. STAD JSYS  . . . . . . . . . . . . . . . . . . . . . . 197
+;   54. STDEV JSYS . . . . . . . . . . . . . . . . . . . . . . 198
+;   55. STI JSYS . . . . . . . . . . . . . . . . . . . . . . . 201
+;   56. TMON JSYS  . . . . . . . . . . . . . . . . . . . . . . 202
+;   57. UTEST JSYS . . . . . . . . . . . . . . . . . . . . . . 207
+;   58. VACCT JSYS . . . . . . . . . . . . . . . . . . . . . . 211
+;   59. End of JSYSA . . . . . . . . . . . . . . . . . . . . . 230
 	SUBTTL Local Definitions
 
 ;This file contains code which implements various JSYSes.  This code does not
@@ -764,7 +811,31 @@ PASSWC::EA.ENT
 	ULKDIR
 	RET
 
-CHKPSW::UMOVE B,2		;[7.1200] Entry for LOGIN JSYS
+;CHKPSW called from LOGIN% JSYS only!!!
+;Assumes Q1 has index to mapped directory
+
+CHKPSW::UMOVE T2,T2		;[7.1200] Entry for LOGIN JSYS
+	CALL CHKPSX		;[9041] (T2/) Check for password correctness
+	 JRST RETZ		;[9041] If failure, then just return
+	SKIPE PASEXP		;[9041] Password expiration enabled?
+	IFSKP.			;[9041] If not,
+	  SETZ T1,		;[9041] say no exp date and time
+	  RETSKP		;[9041] No, don't check any of this
+	ENDIF.			;[9041]
+	LOAD T2,DRPED,(Q1)	;[9041] Get the expiration time and date
+	IFE. T2			;[9041] Is it 0?
+	  SETONE DRPED,(Q1)	;[9041] Don't let user login again
+	  JRST CHKPL1		;[9041] But let him login this time
+	ENDIF.			;[9041]
+	JUMPL T2,RETZ		;[9041] Already expired? If so, outta here
+	CALL LGTAD		;[9041] (/T1) Get the current time
+	LOAD T2,DRPED,(Q1)	;[9041] Get the expiration date again
+	SKIPGE T1		;[9041] Was the time set?
+	JRST RETZ		;[9041] No, nothing will work right
+	CAMLE T1,T2		;[9041] Has it expired?
+CHKPL1:	SETO T2,		;[9041] Flag that this is the user's last time
+	RETSKP			;[9041] And return
+
 CHKPSX::SAVEQ
 	JUMPE B,RETO		;If no pointer to password string, return
 	SKIPN C,JBFLTM		;Has there been a recent failure?
@@ -788,11 +859,14 @@ CHKPSX::SAVEQ
 	   LOAD T3,STRNAM,(T3)	;GET SIXBIT STRUCTURE NAME
 	   MOVE T4,DIRORA	;Get origin of directory
 	   LOAD T4,DRNUM,(T4)	;Get number of DIR
-	   BUG.(INF,BREAKIN,JSYSA,SOFT,<Password guess threshold exceeded>,<<T1,CTRLTT>,<T2,USERNO>,<T3,STRNAM>,<T4,DIRNUM>>,<
+	   BUG.(INF,BREAKI,JSYSA,SOFT,<Password guess threshold exceeded>,<<T1,CTRLTT>,<T2,USERNO>,<T3,STRNAM>,<T4,DIRNUM>>,<
 
-Cause:	Someone has typed more than MXFLCT incorrect passwords. The system
-	now refuses all subsequent passwords for some time. It is possible
-	the person is trying to guess passwords
+Cause:	Someone has typed more than MXFLCT incorrect passwords.  All password
+	validation attempts by this job are denied for 3 minutes (MINTVL).
+	It is possible the person is trying to guess passwords.
+
+Action:	See if someone is trying to guess a user's password or if the user is
+	really making an honest mistake.
 
 Data:	CTRLTT - The line number of the job
 	USERNO - The user number if the job is logged in
@@ -890,7 +964,7 @@ CHKPRD:	XCTBU [ILDB D,CHKPSO]	;Get next byte
 
 PASMAT:	MOVE Q1,DIRORA		;GET BASE ADDRESS OF DIRECTORY
 	LOAD A,DRPMU,(Q1)	;GET THE MAXIMUM USE COUNT
-	JUMPE A,CHKPED		;IF ZERO, NONE SET
+	JUMPE A,RSKP		;[9041] If zero, none set
 	LOAD A,DRPCU,(Q1)	;GET THE CURRENT USE COUNT
 	AOS A			;INCREMENT IT
 	TLNE A,-1		;HAS THE COUNT OVERFLOWED INTO LEFT HALF
@@ -899,25 +973,18 @@ PASMAT:	MOVE Q1,DIRORA		;GET BASE ADDRESS OF DIRECTORY
 	LOAD B,DRPMU,(Q1)	;GET THE MAXIMUM USE COUNT
 	CAMLE A,B		;LESS THAN OR EQUAL TO MAXIMUM?
 	JRST RETZ		;NO, TREAT IT AS AN INCORRECT PASSWORD
-CHKPED:	LOAD B,DRPED,(Q1)	;GET THE EXPIRATION TIME AND DATE
-	JUMPE B,RSKP		;IF ZERO, NON SET
-	CALL LGTAD		;GET THE CURRENT TIME
-	LOAD B,DRPED,(Q1)	;GET THE EXPIRATION DATE AGAIN
-	SKIPL A			;WAS THE TIME SET?
-	CAMLE A,B		;HAS IT EXPIRED?
-	JRST RETZ		;YES, TREAT IT AS AN INCORRECT PASSWORD
-				;NOTE THAT IF THE TIME HAS NOT BEEN SET,
-				;NO PASSWORD WITH AN EXPIRATION DATE SET
-				;WILL WORK
-	RETSKP			;NO, THIS IS A GOOD PASSWORD
+	RETSKP			;THIS IS A GOOD PASSWORD
 
-	;CENTRAL ROUTINE TO ISSUE PENALTIES ON USE OF BAD PASSWORDS
-PASPEN::MOVEI T1,^D3000		;3 sec. delay
+;Central routine to issue penalties on use of bad passwords
+PASPEN::LOCK PWLOCK		;[9041] Get password lock (only one fork at a time)
+	MOVEI T1,^D3000		;3 sec. delay
 	DISMS%			;Sit it out
 	AOS JBFLCT		;Delay count
 	MOVE A,TODCLK		;Get now
 	MOVEM A,JBFLTM		;And save the time as well
+	UNLOCK PWLOCK		;[9041] Done with penalty
 	RET
+
 	SUBTTL Local Routines -- Lock Device Tables (LCKDVL)
 
 ;SET THE DEVICE TABLES LOCK.
@@ -2489,20 +2556,24 @@ ALOCRS:	SKIPGE T3		;CHECK FOR LEGAL SIZE
 ;FOR THE MONITOR THIS WILL STORE IN THE WRONG PLACE
 
 GETOKM::SAVEQ			;SAVE REGISTERS
+	CAIN T1,.GOCTM		;[9041] CTERM fork knocking?
+	JRST GETKM1		;[9041] Yes, don't check job
 	SKIPE Q1,JOBNO		;GET JOB NUMBER
 	CAMN Q1,ACJJN		;CHECK FOR ACJ JOB ALSO
 	RETSKP			;RETURN GOOD IF JOB 0 OR ACJ
 	CAIL T1,MXGOKF		;CHECK FOR MAX FUNCTION
 	JRST [	BUG.(CHK,ILGOKM,JSYSA,SOFT,<Illegal function for GETOKM call>,<<T1,GOKFCN>>,<
 
-Cause:	The GETOKM routine was called with an unknown function code.
-	GETOKM handles internal GETOK requests from the monitor.
+Cause:	The GETOKM routine was called with an unknown function code.  GETOKM
+	handles internal GETOK requests from the monitor.
+
+Action:	Set this bug dumpable and submit an SPR along with the dump and
+	instructions on reproducing the problem.
 
 Data:	GOKFCN - GETOK function code
-
 >)
 		RETBAD (GOKER1)]
-	SKIPGE Q1,GTOKPR(T1)	;CHECKING ENABLED?
+GETKM1:	SKIPGE Q1,GTOKPR(T1)	;[9041] Checking enabled?
 	JRST GOKMA		;YES PROCEED
 GETOKZ:	TLNE Q1,(SF%DOK)	;NO. IS DEFAULT TO ALLOW IT?
 	RETSKP			;YES RETURN GOOD
@@ -2510,17 +2581,25 @@ GETOKZ:	TLNE Q1,(SF%DOK)	;NO. IS DEFAULT TO ALLOW IT?
 
 ;HERE WHEN ACCESS CONTROL JOB IS CHECKING THIS FUNCTION
 
-GOKMA:	STKVAR <BLKADR>		;SAVE ROUTINE TO CALL IF BLOCKING
+GOKMA:	STKVAR <BLKADR>		;Save routine to call if blocking
 	MOVEM T4,BLKADR		;SAVE BLOCK ADDRESS
-	DMOVE Q1,T1		;SAVE ARGUMENTS
+	TXNN Q1,GT%SPC		;[9041] Special function?
+	IFSKP.			;[9041] If so,
+	  AOS T2		;[9041] Point to where freespace is
+	  AOS T2,(T2)		;[9041] Get start of GETOK stuff
+	  MOVE T3,<.GOSIZ-1>(T2) ;[9046] And get size of block
+	ENDIF.			;[9041]
+	DMOVE Q1,T1		;Save arguments here
 	MOVE Q3,T3
-	CALL ALOCRS		;ALLOCATE AND CREATE BLOCK
-	 JRST [	CAIE T1,MONX05	;CHECK FOR NO RESIDENT FREE SPACE
-		RETBAD ()
-		MOVE T1,GTOKPR(Q1) ;GET DEFAULTS
-		LOAD Q1,GT%DEF,T1 ;GET DEFAULT ARGUMENTS
-		STOR Q1,GT%ENB,Q1 ;JUSTIFY THEM TO "ENABLED" FIELD
-		JRST GETOKZ]
+	CALL ALOCRS		;[9041](T3,Q3/T1,T3,T4) Allocate and create block
+	IFNSK.			;[9041] On failure
+	  CAIE T1,MONX05	;[9041] Check for no resident free space
+	  RETBAD ()		;[9041] If not, pass back error
+	  MOVE T1,GTOKPR(Q1)	;[9041] Get defaults
+	  LOAD Q1,GT%DEF,T1	;[9041] Get default arguments
+	  STOR Q1,GT%ENB,Q1	;[9041] Justify them to "enabled" field
+	  JRST GETOKZ		;[9041] And check to see what the default is
+	ENDIF.			;[9041]
 	MOVE Q3,T4		;SAVE BLOCK POINTER
 	MOVE T2,Q2		;GET FROM ADDRESS
 	CALL XBLTA		;TRANSFER DEPENDENT DATA
@@ -2559,11 +2638,12 @@ GETOK0:	STKVAR <BLKADR>		;SAVE BLOCK ADDRESS HERE
 
 ;If this is to be the first GETOK in the queue, start the RCVOK timer
 
-	SKIPN T2,GOKQED		;IS THIS THE FIRST GETOK?
-	JRST [MOVE T2,TODCLK	;YES, GET CURRENT TIME
-	      ADDI T2,RCVTIM	;ADD THE RCVOK TIMER VALUE
-	      MOVEM T2,RCVTMO	;SET THE TIMEOUT TIME
-	      JRST .+1]
+	SKIPE T2,GOKQED		;[9041] Is this the first GETOK?
+	IFSKP.			;[9041] If so,
+	  MOVE T2,TODCLK	;[9041] Get current time
+	  ADDI T2,RCVTIM	;[9041] Add the RCVOK timer value
+	  MOVEM T2,RCVTMO	;[9041] Set the timeout time
+	ENDIF.			;[9041]
 
 ;ADD THIS ENTRY TO THE END OF THE QUEUE
 
@@ -2688,9 +2768,9 @@ Cause:	The access control job has not responded with a GIVOK within the
 Action:	If this consistently happens with the same function code, you
 	should see if the processing of the function can be made faster.
 
-	If there is no obvious function code pattern, you may need to
-	increase the timeout period or rework the way in which the
-	access control program operates.
+	If there is no obvious function code pattern, you may need to increase
+	the timeout period or rework the way in which the access control
+	program operates.
 
 Data:	FUNC - the GETOK function code
 >,,<DB%NND>)			;[7.1210]
@@ -2777,11 +2857,17 @@ RCVA1:	MOVE T4,CAPENB		;CHECK FOR ENABLED CAPABILITIES
 RCVA2:	SKIPA T2,GETOKF		;GET FIRST ENTRY IN Q
 RCVGLP:	MOVE T2,0(T2)		;GET NEXT ENTRY
 	JUMPE T2,[SKIPE GOKQED	;SEE IF SOMETHING STRANGE HAPPENED
-		BUG.(CHK,RCVNOE,JSYSA,SOFT,<RCVOK - No entry found in queue>,,<
+		  BUG.(CHK,RCVNOE,JSYSA,SOFT,<RCVOK - No entry found in queue>,,<
 
-Cause:	The RCVOK JSYS has detected that the list of unprocessed GETOK
-	requests is empty, but the count of entries in the list is nonzero.
->)	;QUEUE EMPTY BUT COUNT NOT = 0
+Cause:	The RCVOK JSYS has detected that the list of unprocessed GETOK requests
+	is empty, but the count of entries in the list is nonzero.  This may
+	have happened if a GIVTMR BUGCHK has already been issued.
+
+Action:	Check the health of the system's access control program.  If it is
+	healthy and this BUGCHK is reproducible, set this bug dumpable and
+	submit an SPR along with the dump along with instructions on
+	reproducing the problem.
+>)				;QUEUE EMPTY BUT COUNT NOT = 0
 		SETZM GOKQED	;INSURE COUNT IS 0
 		UNLOCK GOKLCK	;UNLOCK
 		ECSKED		;OK TO SCHEDULE
@@ -2825,6 +2911,11 @@ Cause:	The RCVOK JSYS has detected that the list of unprocessed GETOK
 RCVCH7::SKIPE T1,RCVTMO		;HAS THE TIMER BEEN STARTED?
 	CAMLE T1,TODCLK		;YES, HAS IT GONE OFF?
 	RET			;NO
+	SKIPE GOKQED		;[9100] Anything in the queue now?
+	IFSKP.			;[9100] Timer went off after ACJ emptied queue
+	  SETZM RCVTMO		;[9100] Don't shoot the ACJ, just clear timer
+	  RET			;[9100]  and return
+	ENDIF.			;[9100] So, there was something in queue
 	SKIPL GOKLCK		;IS GETOK REQUEST QUEUE LOCKED?
 	RET			;YES, CAN'T KILL ACJ RIGHT NOW
 	CALL ACJKI1		;DON'T ASK THE ACJ ANYMORE
@@ -2835,7 +2926,9 @@ Cause:	The access control job did not do a RCVOK within the designated time
 	period.  A GETOK request was pending.
 
 Action:	The access control job should be examined to see if its receiving
-	requests can be made faster.
+	requests can be made faster. It is also possible that the ACJ was hung
+	processing something due to some other system malfunction (a disk going
+	offline for instance).
 >,,<DB%NND>)			;[7.1210] 
 	RET
 	SUBTTL Access Control -- GIVOK JSYS
@@ -3010,8 +3103,12 @@ ACJKL:	SKIPN T1,0(T1)		;GET AN ENTRY
 	AOS 1(T1)		;SET FAILURE
 	JRST ACJKL		;AND TRY NEXT ONE
 
+;[9059]
+;Called or JRSTed to when the ACJ fork crashes or is killed in some
+;manner.
 ACJDON:	SETZM ACJFN		;SET NO ACJ FORK
 	SETZM ACJJN		;SET NO JOB NUMBER
+	SETOM ACJRUN		;[9041] ANd ACJ not known to be running
 	RET			;RETURN
 
 	SWAPCD
@@ -3053,6 +3150,7 @@ ACJDON:	SETZM ACJFN		;SET NO ACJ FORK
 ;	GTDIR
 
 .GTDIR::MCENT
+	GTOKM (.GOGTD,<T1>)	;[9088] Ask the ACJ for permission first
 	UMOVE Q3,2		;GET POINTER TO PARAMETER BLOCK
 	XCTU [SKIPG Q2,.CDLEN(Q3)] ;GET LENGTH OF ARGUMENT BLOCK
 	MOVEI Q2,.CDDGP+1	;IF NONE SET UP, USE THIS ONE
@@ -3231,6 +3329,12 @@ GTDIR7:	MOVEI C,.CDDAC(Q3)	;PLACE TO PUT USER7'S UPDATED PTR
 	SOJLE Q2,GTDIR5		;go if done
 	LOAD B,DRPPN,(A)	;get PPN
 	UMOVEM B,.CDPPN(Q3)	;store it for the user
+	SOJLE Q2,GTDIR5		;[9041] Returned enough?
+	LOAD T2,DRNIL,(T1)	;[9041] Get non-interactive login date
+	UMOVEM T2,.CDNLD(Q3)	;[9041] Give it to the user
+	SOJLE Q2,GTDIR5		;[9041] Still want more?
+	LOAD T2,DRFPA,(T1)	;[9041] Now get password failures
+	UMOVEM T2,.CDFPA(Q3)	;[9041] Stuff it in user's block
 GTDIR5:	ULKDIR
 	JRST MRETN
 
@@ -3383,13 +3487,17 @@ GTDRN1:	LOAD T3,RNTYP,(T1)	;make sure it really is
 	  LOAD T1,DRNUM,(T1)	;get directory number
 	  BUG. (CHK,DIRRNA,JSYSA,SOFT,<Remote node alias list inconsistency>,<<T1,DIRNUM>>,<
 
-Cause:	GTDRN1 was called to allocate space for the user's remote node
-	alias block but the pointer to the monitor's remote node alias
-	block provided by the caller does not contain the correct block
-	type.
+Cause:	GTDRN1 was called to allocate space for the user's remote node alias
+	block but the pointer to the monitor's remote node alias block provided
+	by the caller does not contain the correct block type.
+
+Action:	There could be a problem with the directory named in the BUGCHK or
+	there could be a software problem.  If no hardware problem is
+	suspected, and this BUGCHK is reproducible, set this bug dumpable and
+	submit an SPR along with the dump along with instructions on
+	reproducing the problem.
 
 Data:	DIRNUM - Directory Number
-
 >)
 	  RET			;it isn't.
 	ENDIF.
@@ -4994,12 +5102,10 @@ RELDWT:	TXZN T1,1B0		;NEED TO WAIT?
 
 
 ;RELDEV - RELEASE DEVICE AND SEND MESSAGE TO ALLOCATOR IF NECESSARY
-
+;[9122] Also will release CFS MTA resource 
 ;ACCEPTS:
 ;	T2/ INDEX TO DEVICE TABLES
-
 ;	CALL RELDEV
-
 ;RETURNS +1: FAILED
 ;		T1/ ERROR CODE
 ;			OR
@@ -5009,6 +5115,7 @@ RELDWT:	TXZN T1,1B0		;NEED TO WAIT?
 ;PRESERVES B
 ;
 RELDEV::STKVAR <RELDIX>
+	HRRZM B,RELDIX		;[9122] Save device index for later
 	LDB D,[POINT 9,DEVCHR(B),17] ;GET DEVICE TYPE NUMBER
 	MOVX C,DV%OPN
 	TDNE C,DEVCHR(B)	;IS DEVICE OPENED?
@@ -5035,17 +5142,17 @@ RELDD0:	HRRZ C,DEVDSP(B)	;GET TYPE OF THIS DEVICE
 	TLZ A,777000
 	TLO A,.DVDES
 	HRR A,DEVUNT(B)		;GET UNIT NUMBER
-	MOVEM B,RELDIX		;[7148] PRESERVE B. ALCMES WILL TRASH IT
-	CALL ALCMES		;[7148] (T1/)
-	 JFCL			;[7148]
-	MOVE B,RELDIX		;[7148] RESTORE THE DEVICE INDEX
-RELDD1:	RETSKP
+	CALL ALCMES		;[7148] (T1/) Send message to device allocator
+	 JFCL			;[7148] Ignore errors
+RELDD1:	MOVE T1,RELDIX		;[9122] Get index to device tables
+	CALL CFSMTR		;[9122] (T1/) Release MTA token if any
+	MOVE B,RELDIX		;[9122] Restore the device index for return
+	RETSKP
 
 RELDD3:	LOAD A,FRKTTY,+0	;GET TOP FORK'S CTY
 	CAIE A,.TTDES(C)	;IS THIS IT?
 	CAMN C,CTRLTT		;YES. IS IT THIS JOB'S CONTROLLING TTY?
 	RETSKP			;YES. DON'T DEASSIGN IT
-	MOVEM B,RELDIX		;SAVE INDEX TO DEVICE TABLES
 	MOVE B,C		;B/ TERMINAL NUMBER
 	CALL GTTOPF		;GET SCTTY GROUP
 	IFSKP.
@@ -5060,6 +5167,7 @@ RELDD3:	LOAD A,FRKTTY,+0	;GET TOP FORK'S CTY
 	 RETBAD			;FAILED. RETURN FAILURE
 RELDD4:	MOVE B,RELDIX		;RESTORE INDEX TO DEVICE TABLES
 	JRST RELDD0		;FINISH PROCESSING
+	ENDSV.			;[9122] End of RELDEV's STKVAR
 
 ;Scheduler test to wait for TTY to be released as a sub-CTY
 
@@ -5081,6 +5189,7 @@ CTWAIT:	MOVE T2,T1		;TTY NUMBER
 .RESET::MCENT
 	MOVNI A,4
 	KFORK			; Kill all inferior forks
+	CALL ABTBUF		;[9145] (/) Flush TCP buffer and IP IQs
 	MOVE A,FORKX		; GET FORK NUMBER OF THIS FORK
 	CALL PIDRFK		; GO DELETE TEMPORARY PIDS OF THIS FORK
 	MOVE A,FORKX
@@ -5851,6 +5960,7 @@ CSMAPX:	HRLZS T1		;FKH.0
 	MOVE C,CAPENB
 	TXNN C,SC%WHL!SC%OPR
 	ITERR (SMONX1)
+	GTOKM (.GOSMN,<T1,T2>)	;[9041] See if ACJ will let them
 	UMOVE T1,1		;GET FLAG TO BE SET
 	CAIN T1,.SFRMT		;SETTING REMOTE LOGIN STATUS?
 	CALL [	SAVET		;YES
@@ -5918,18 +6028,18 @@ SMON2T:	JFCL			;CODE 44, VALUE 0
 	SETOM PRELDF
 	SETZM DSTFLG		;code 62, use automatic DST routines
 	CALL DSTSET		;code 62, set DST on/off permanently
-	JFCL			;CODE 63 IS UNUSED AND UNASSIGNED
-	JFCL			; "    "  "   "     "      "
+	MOVEM T2,SAVTRE		;[9058] Code 63, zero, clear short bug typeout
+	MOVEM T2,SAVTRE		;[9058] Code 63, nonzero, do short bug typeout
 	JFCL			;CODE 64 VALUE ZERO
 	CALL MSSMRK		;CODE 64 DO/DON'T SERVICE MSCP REQUESTS
 	CALL SETSPR		;code 65, value 0 and...
 	CALL SETSPR		;code 65, value <> 0, set spear entry count
-	CALL SCOFTI		;CODE 66, SET CARRIER OFF TIME
-	CALL SCOFTI		; " "
-	CALL SHNG0F		;CODE 67, SET HANGUP ACTION NOT LOGGED IN
-	CALL SHNG0F		; " "
-	CALL SHNG1F		;CODE 70, SET HANGUP ACTION LOGGED IN
-	CALL SHNG1F		; " "
+	MOVEM T2,COFTIM		;[9054] Code 66, set carrier off time
+	MOVEM T2,COFTIM		;[9054] Code 66, set carrier off time
+	MOVEM T2,HNGU0F		;[9054] Code 67, set hangup when not logged in
+	MOVEM T2,HNGU0F		;[9054] Code 67, set hangup when not logged in
+	MOVEM T2,HNGU1F		;[9054] Code 70, set hangup when logged in
+	MOVEM T2,HNGU1F		;[9054] Code 70, set hangup when logged in
 
 ;SMON2T continues...
 
@@ -5940,8 +6050,8 @@ SMON2T:	JFCL			;CODE 44, VALUE 0
 	CALL DCUNIT		;CODE 73, DON'T CARE UNIT
 	CALL DCUNIT		;CODE 73, DON'T CARE UNIT
 IFN LAHFLG <
-	MOVEM T2,LASDEF		;CODE 74, LAT-STATE 0=ON, 1-OFF
-	MOVEM T2,LASDEF		;CODE 74, LAT-STATE 0=ON, 1-OFF
+	MOVEM T2,LASDEF		;[9083] Set LAT state
+	MOVEM T2,LASDEF		;[9083] Set LAT state
 	>;end of IFN LAHFLG
 IFE LAHFLG <			;[7.1063]If no LAT
 	ITERR (ARGX02)		;[7.1063]Return "Invalid function"
@@ -5957,8 +6067,53 @@ IFE LAHFLG <			;[7.1063]If no LAT
 	SETOM LGSFLG		;[7.1112]Code 100, enable Login Structure
 	SETZM MINPAS		;[7.1231]Code 101, Disable min password length
 	CALL SETMPW		;[7.1231]Code 101, Enable min password length
+	CALL SMNACJ		;[9041] Code 102, Can't disable ACJ
+	CALL SMNACJ		;[9041] Code 102, Enable system ACJ
+	SETZM PASEXP		;[9041] Code 103, Disable password expiration
+	CALL SETPSX		;[9041] Code 103, Enable password expiration
+	MOVEM T2,PWDFLG		;[9054] Code 104, Password dictionary
+	MOVEM T2,PWDFLG		;[9054] Code 104, Password dictionary
+	SETZM HDTCOF		;[9041] Code 105, Enable hangup on DETACH
+	SETOM HDTCOF		;[9041] Code 105, Disable hangup on DETACH
 
 NSMON2==<.-SMON2T>/2		;MAXIMUM CODE VALUE LESS 36
+
+;[9041]
+;SETPSX - Set password expiration days for the system.
+;
+; Call with:
+;	T2/ Number of days
+;	CALL SETPSX
+;
+; Returns:
+;	+1 - Always
+
+SETPSX:	CAIL T2,1		;Too low?
+	CAILE T2,^D366		;Or to high?
+	ITERR (SMONX6)		;Yes to either
+	MOVEM T2,PASEXP		;Save number of days
+	RET			;And done
+
+;[9041]
+;SMNACJ - Routine called to queue job 0 to start the ACJ fork within
+;the monitor so that it can't be stopped very easily.
+;
+; Called with:
+;	T2/ 0 - Always
+;	CALL SMNACJ
+;
+; Returns:
+;	+1 - Always, with job 0 poked to start up an ACJ fork
+
+SMNACJ:	SKIPE T2		;Valid request?
+	ITERR (SMONX6)		;No, we are done
+	NOSKED			;Prevent others from running
+	SKIPL ACJRUN		;Is the ACJ running?
+	ITERR SMONX5,<OKSKED>	;Yes, return to user
+	SETZM ACJRUN		;Say it will be running in monitor context
+	AOS JB0FLG		;Make CHKR run
+	OKSKED			;Interruptions are OK now
+	RET			;We've done our part
 
 ;[7.1231]
 ;SETMPW - Routine to set MINPAS, the minimum password length. Only 
@@ -5992,16 +6147,26 @@ SGTOK:	HRRZ T1,T2		;GET FUNCTION CODE
 	CAIL T1,MXGOKF		;CHECK FOR LEGAL FUNCTION
 	ITERR (SMONX2)		;FATAL ERROR ILLEGAL FUNCTION
 	JUMPGE T2,SGTDIS	;CHECK FOR DISABLE
-	SKIPN T3,ACJFN		;CHECK FOR ACJ FORK
-	JRST [	MOVE T3,JOBNO	;SAVE JOB NUMBER
-		MOVEM T3,ACJJN
-		MOVE T3,FORKX	;SAVE FORK NUMBER
-		MOVEM T3,ACJFN
-		CALL SETACJ	;SET ACJ'S SCHEDULING PRIORITY
-		JRST SGSET]
-	CAME T3,FORKX		;THIS THE CORRECT FORK?
-	ITERR (GOKER3)		;NO YOU CAN'T DO THIS
-SGSET:	NOINT			;DISABLE INTERRUPTS
+	NOSKED			;[9041] No bothering me
+	SKIPE T3,ACJFN		;[9041] Check for ACJ fork
+	IFSKP.			;[9041]
+	  MOVE T3,JOBNO		;[9041] Get job number
+	  MOVEM T3,ACJJN	;[9041] And save it here
+	  MOVE T3,FORKX		;[9041] Get fork number
+	  MOVEM T3,ACJFN	;[9041] And save it here
+	  SKIPL ACJRUN		;[9041] ACJ never run before?
+	  IFSKP.		;[9041] If de-virginating
+	    MOVEI T3,1		;[9041] Indicate so
+	    MOVEM T3,ACJRUN	;[9041] And save in this cell
+	  ENDIF.		;[9041]
+	  OKSKED		;[9041] Sensitive stuff done
+	  CALL SETACJ		;[9041](/) Set ACJ's scheduling priority
+	ELSE.			;[9041]
+	  OKSKED		;[9041] Go ahead and bother me
+	  CAME T3,FORKX		;[9041] This the correct fork?
+	  ITERR (GOKER3)	;[9041] No, you can't do this
+	ENDIF.			;[9041]
+	NOINT			;[9041] Disable interrupts
 	LOAD T3,GT%ENB,T2	;GET THE ENABLES
 	ADDI T1,GTOKPR
 	LOAD T4,GTDEF,(T1)	;CHECK FOR ALREADY  SETUP
@@ -6052,8 +6217,7 @@ SGOKDL:	SKIPGE GTOKPR(T1)	;ANY ENABLED?
 	AOS T1
 	CAIGE T1,MXGOKF		;CHECK FOR MAX FUNCTION
 	JRST SGOKDL		;NOT DONE YET
-	SETZM ACJFN		;SET NO ACJ FORK
-	SETZM ACJJN		;SET NO ACJ JOB NUMBER
+	CALL ACJDON		;[9059] (/) No more ACJ fork or job
 SGOKDN:	UNLOCK GOKLCK		;UNLOCK THE LOCK
 	ECSKED			;ALLOW SCHEDULING
 	OKINT			;ENABLE INTERRUPTS
@@ -6081,29 +6245,15 @@ SETSPR:	MOVEM T2,SPRCNT		;STORE NEW VALUE INTO SPRCNT
 	JUMPN T2,R		;RET IF NON-ZERO
 	BUG.(INF,SPRZRO,JSYSA,SOFT,<SETSPR - SPRCNT was set to zero>,,<
 
-Cause:	SMON% function .SFSPR (Set count of SPEAR entries output) was
-	called with a value of 0. This indicates that the monitor could not
-	get the running count of the number of SPEAR entries output from
-	either the dump file or ERROR.SYS.
+Cause:	SMON% function .SFSPR (Set count of SPEAR entries output) was called
+	with a value of 0. This indicates that the monitor could not get the
+	running count of the number of SPEAR entries output from either the
+	dump file or ERROR.SYS.
 
 	SPRCNT is a cell which should contain the running number of SPEAR
 	entries made in the ERROR.SYS file over the life of the system.
 >,,<DB%NND>)			;[7.1210] 
 	RET
-
-;SET NEW TIME OF LOGOUT AFTER CARRIER OFF
-
-SCOFTI:	MOVEM T2,COFTIM		;SET NEW HANGUP/LOGOUT TIME
-	RET
-
-;SET NEW VALUES FOR HANGUP ON LOGOUT
-
-SHNG0F:	MOVEM T2,HNGU0F
-	RET
-
-SHNG1F:	MOVEM T2,HNGU1F
-	RET
-
 
 ;[7.1063]
 ; SETTMR - Set the offline structures timer value
@@ -6272,17 +6422,20 @@ SNPFN0:	STKVAR <SNPF0C,SNPF0S,SNPF0D>
 	MOVEM T2,SNPF0D		;SAVE DESTINATION IDENTIFIER
 	MOVE T1,SNPF0S		;GET SOURCE IDENTIFIER
 	XCTU [HRRZM T2,2]	;RETURN MONITOR ADDRESS TO USER
+
 SNPF0A:	TRZ T1,777000		;GUARANTEE A LEGAL PAGE #
 	LSH T2,PGSFT		;GET ADDRESS FROM PAGE #
 	HRLI T2,(PM%RD!PM%WT!PM%EX)
 	CALL SETIOP		;LOCK IT INTO MONITOR
-	 BUG.(CHK,SNPLKF,JSYSA,SOFT,<SNPFN0 - Cannot lock down page into MONITOR>,,<
+	 BUG.(CHK,SNPLKF,JSYSA,SOFT,<SNPFN0 - Cannot lock down page into monitor>,,<
 
-Cause:	The .SNPLC function of the SNOOP JSYS was trying to lock pages
-	from the user address space into the monitor address space.
-	It called the SETIOP routine in PAGEM to do this, and SETIOP
-	returned +1 indicating failure.
+Cause:	The .SNPLC function of the SNOOP JSYS was trying to lock pages from the
+	user address space into the monitor address space.  It called the
+	SETIOP routine in PAGEM to do this, and SETIOP returned +1 indicating
+	failure.
 
+Action:	If this BUGCHK is reproducible, set this bug dumpable and submit an SPR
+	along with the dump along with instructions on reproducing the problem.
 >)
 	AOS T1,SNPF0S		;GET NEXT SOURCE IDENTIFIER
 	AOS T2,SNPF0D		;GET NEXT DESTINATION IDENTIFIER
@@ -6422,14 +6575,13 @@ SNPF3A:	JUMPE T1,SNPF3B		;0 MEANS AT END OF BP LIST
 	LOAD T2,SNPADR,(T1)	;[7.1165] Get address of where to put BP
 	MOVE T3,(T2)		;[7.1165] Get instruction being replaced
 	CAME T3,SNPBII(T1)	;IS IT SAME AS ORIGINAL
-	BUG.(CHK,SNPIC,JSYSA,SOFT,<SNPFN3 - Instruction being replaced has changed>,,<
+	BUG.(INF,SNPIC,JSYSA,SOFT,<SNPFN3 - Instruction being replaced has changed>,,<
 
 Cause:	The instruction being replaced by a SNOOP% breakpoint via SNOOP%
-	function .SNPIB is not the same instruction that was at that
-	location when the SNOOP% breakpoint was defined by function .SNPDB.
+	function .SNPIB is not the same instruction that was at that location
+	when the SNOOP% breakpoint was defined by function .SNPDB.
 
-Action:	None. The new instruction is being replaced.
-
+Action:	No action is required.  The new instruction is being replaced.
 >)
 	MOVSI T3,(JRST)		;SET UP JRST BP INSTRUCTION
 	HRRI T3,SNPBP(T1)	;GET ADDRESS OF BP CODE
@@ -6465,9 +6617,12 @@ SNPF4B:	CALL SWPMWP		;WRITE PROTECT THE SWAPPABLE MON AGAIN
 
 SNPF4C:	BUG.(CHK,SNPODB,JSYSA,SOFT,<SNPF4C - Count of inserted break points overly decremented>,,<
 
-Cause:	The .SNPRB function of the SNOOP JSYS was removing breakpoints,
-	and the number of breakpoints in the linked list was greater
-	than the breakpoint count.
+Cause:	The .SNPRB function of the SNOOP JSYS was removing breakpoints, and the
+	number of breakpoints in the linked list was greater than the
+	breakpoint count.
+
+Action:	If this BUGCHK is reproducible, set this bug dumpable and submit an SPR
+	along with the dump along with instructions on reproducing the problem.
 >)
 	SETZM SNPCNT		;FIX UP COUNT
 	JRST SNPF4D		;AND CONTINUE ON
@@ -6494,10 +6649,12 @@ SNPF5A:	MOVEI T1,0		;0 MEANS UNLOCK
 	CALL SETIOP		;UNLOCK PAGES
 	BUG.(CHK,SNPUNL,JSYSA,SOFT,<SNPF5A - Cannot unlock SNOOP page>,,<
 
-Cause:	The .SNPUL function of the SNOOP JSYS received a failure
-	return from the SETIOP routine in PAGEM while trying to unlock
-	a page that was locked with the .SNPLC function.
+Cause:	The .SNPUL function of the SNOOP JSYS received a failure return from
+	the SETIOP routine in PAGEM while trying to unlock a page that was
+	locked with the .SNPLC function.
 
+Action:	If this BUGCHK is reproducible, set this bug dumpable and submit an SPR
+	along with the dump along with instructions on reproducing the problem.
 >)
 	AOS T2,SNPF5D		;UPDATE DESTINATION
 	SOSLE SNPF5C		;ANY MORE PAGES TO BE DONE?
@@ -6992,7 +7149,8 @@ SPOL2A:	UMOVEM T3,1(Q1)		;STORE ANSWER
 	MOVEI A,STADX1
 	RETERR()
 
-STAD1:	CALL LGTAD		;GET CURRENT DATE/TIME
+STAD1:	GTOKM (.GOSTD,<T1>,[RETERR ()]) ;[9088] Ask the ACJ first please
+	CALL LGTAD		;[9088] (/A) Get current date/time
 	MOVEM A,CKPDTL		;SAVE AS LAST DATE/TIME
 	UMOVE A,1		;RE-FETCH USER ARG
 	MOVE B,TODPWL		;JIFFIES SINCE STARTUP (BY POWERLINE)
@@ -7176,22 +7334,49 @@ TMON2T:	JRST TMONER		;44 - IS NETWORK ON?
 	MOVE T1,TPMTDF		;60-TAPE MOUNT CONTROLS
 	SKIPA T1,PRELDF		;61-WORKING SET PRELOADING
 	CALL GTDSTF		;62-get DST method type
-	NOP			;63-UNUSED AND UNNASSIGNED
+	SKIPA T1,SAVTRE		;[9058]  63 - short bug typeout flag
 	CALL MSSRED		;64-MSCP SERVER DISKS
 	MOVE T1,SPRCNT		;65-GET RUNNING COUNT OF SPEAR ENTRIES
 	MOVE T1,COFTIM		;66 - CARRIER OFF TIME
-	MOVE T1,HNGU0F		;67 - HUNGUP ACTION NOT LOGGED IN
-	MOVE T1,HNGU1F		;70 - HANGUP ACTION LOGGED IN
+	SKIPA T1,HNGU0F		;[9058] 67 - Hangup action when not logged in
+	SKIPA T1,HNGU1F		;[9058] 70 - Hangup action when logged in
 	MOVE T1,XECFLG		;71 - READ EXEC FLAGS WORD
-	ITERR (TMONX1)		;[7.1063]72 - Not defined
+	JRST GETNIA		;[8850] 72 - Get ethernet address
 	ITERR (TMONX1)		;[7.1063]73 - Not defined
-	ITERR (TMONX1)		;[7.1063]74 - Not defined
-	MOVE T1,CLUSET		;[7.1076]75 - Get CLUDGR SYSYAP status
-	MOVE T1,CLUTMG		;[7.1076]76 - Get cluster sendall status
+IFN LAHFLG <			;[8850] If LAT code assembled in
+	SKIPA T1,LASDEF		;[9083] Load LAT state (on or off)
+>;End of IFN LAHFLG		;[8850]
+IFE LAHFLG <			;[8850] If no LAT code
+	ITERR (TMONX1)		;[8850] 74 - Not defined if no LAT
+>;End if IFE LAHFLG		;[8850]
+	SKIPA T1,CLUSET		;[9058] 75 - Get CLUDGR SYSYAP status
+	SKIPA T1,CLUTMG		;[9058] 76 - Get cluster sendall status
 	CALL RETTMR		;[7.1063]77 - Offline structures timer value
-	MOVN T1,LGSIDX		;[7.1124]100 - Login Structure state
+	SKIPA T1,LGSIDX		;[9058] 100 - Login Structure state
 	MOVE T1,MINPAS		;[7.1231]101 - Get min password length
+	CALL CHKACJ		;[9041](/T1) 102 - Get ACJ status
+	MOVE T1,PASEXP		;[9041] 103 - Get password exp. days
+	SKIPA T1,PWDFLG		;[9058] 104 - Password dictionary flag
+	SKIPA T1,HDTCOF		;[9058] 105 - Hangup on detach
 NTMON2==.-TMON2T		;NUMBER OF LEGAL CODES OVER 35
+
+;[9041]
+;CHKACJ - Called when TMON% function .SFACJ is done. Only prived
+;users are allowed to read the setting.
+;
+; Call with:
+;	no arguments
+;	CALL CHKACJ
+;
+; Returns:
+;	+1 - Always, with
+;	     T1/ ACJRUN setting
+
+CHKACJ:	MOVE T1,CAPENB		;Get callers privs
+	TXNN T1,SC%WHL!SC%OPR	;Got WHEEL or OPERATOR?
+	ITERR (WHELX1)		;Not enough privs, so loose.
+	MOVE T1,ACJRUN		;Get ACJ status
+	RET			;And return to user
 
 TGTOK:	TRNE T2,400000		;CHECK FOR USER FUNCTION CODE
 	TDZA T1,T1		;FORCE FOR USER FUNCTION
@@ -7217,6 +7402,63 @@ GTDSTF:	CALL DSTCHK		;check if DST method type is valid
 RETTMR:	MOVE T1,TMRINT		;Get the timer interval
 	IDIVI T1,^D1000		;Convert to seconds
 	RET			;Done
+
+;[8850]
+;GETNIA - Routine to pass on to the user the 6 ethernet bytes.
+;
+; Called with:
+;
+;	User T3/ Byte pointer to put ethernet address
+;	XCT TMON2T(.SFSEA)
+;
+; Returns:
+;
+;	To user - Always with updated byte pointer in user space
+
+MAXCH==^D17			;Number of characters in the ethernet address string
+
+GETNIA:	XCTU [SKIPE T2]		;User give us channel 0 (the only channel)?
+	ITERR (NIENSC)		;No, bad channel number
+	SAVEQ			;These get used
+	STKVAR <USERBP,<STRING,4>,COUNT> ;Temp storage
+	UMOVE T1,T3		;Get user's byte pointer
+	TLC T1,-1		;Check source pointer
+	TLCN T1,-1		;Was a -1 in left half?
+	HRLI T1,(POINT 7,)	;Yes, make the usual byte pointer
+	MOVEM T1,USERBP		;Save for later useage
+	DMOVE Q2,ETHADR		;Get our ethernet address
+	HRRI T1,STRING		;Set up T1 with our byte pointer
+	HRLI T1,(POINT 7,)	;Make 7-bit byte pointer
+	SETZM COUNT		;Start at 0
+	DO.			;Loop to get each character
+	  AOS T3,COUNT		;Our character number
+	  CAILE T3,MAXCH	;Have we reached our max?
+	  EXIT.			;Yes we have
+	  SETZ Q1,		;Character is going to go here
+	  IDIVI T3,3		;Every third character is a separator
+	  IFE. T4		;Are we on the third character?
+	    MOVEI Q1,.CHDAS	;If third character, then we want a dash
+	  ELSE.			;Else, we get a real byte from ethernet address
+	    LSHC Q1,4		;Get a byte in the right AC
+	    LSHC Q2,4		;Move other bytes into useful position
+	    CAIGE Q1,^D10	;Are we in character range?
+	    IFSKP.		;If so,
+	      ADDI Q1,71	;Make it the right character
+	    ELSE.		;Else,
+	      ADDI Q1,60	;Make it a number
+	    ENDIF.
+	  ENDIF.
+	  IDPB Q1,T1		;Save character in our holding cell
+	  LOOP.			;Go back for more characters
+	OD.			;Have put in all of the characters
+	MOVEI Q1,.CHNUL		;End string with a null
+	IDPB Q1,T1		;And make sure it gets in there
+	MOVE T1,USERBP		;Get user byte pointer
+	MOVEI T2,STRING		;String starts here in monitor space
+	SOS T2			;And of course, CPYTU1 wants this 1 less
+	MOVEI T3,3		;Put updated pointer into user's AC 3
+	CALL CPYTU1		;(T1,T2,T3/) Now give the string to the user
+	MRETNG			;And done
 
 	SUBTTL UTEST JSYS
 
@@ -7452,10 +7694,36 @@ VR%USR==:1B0		;MEANS VALIDATING FOR A USER NUMBER
 VERACJ:	TDZA T3,T3		;INDICATE VERACJ ENTRY
 VERACT::SETO T3,0		;INDICATE VERACT ENTRY
 	SKIPN AVALON		;ACCOUNT VALIDATION RUNNING?
-	JRST [	SETZB T1,T2	;NO, GIVE GOOD RETURN IMMEDIATELY
-		SETZ T3,0	;CLASS 0
-		RETSKP]
-	SAVEQ
+	JRST VERACZ		;[9095] Nope, return success
+
+;[9095] Check for account validation on but no accounting database.
+;If account validation is on and no account database, turn it off.
+
+	SKIPLE ACTOFN		;[9095] Is there an accounting file now?
+	JRST VERACS		;[9095] Yes, try and use it now please
+	SETZM AVALON		;[9095] No, insure that accounting off now
+	BUG.(CHK,NOACTF,JSYSA,SOFT,<No account database - account validation disabled>,,<
+
+Cause:	An account is to be validated because account validation is enabled,
+	but no account database has been loaded.  It would appear that account
+	validation was turned on (possibly with the ENABLE ACCOUNT-VALIDATION
+	command in SYSTEM:n-CONFIG.CMD) without putting an account database in
+	BS:<SYSTEM>ACCOUNTS-TABLE.BIN.
+
+Action:	Account validation has been disabled.  Either turn off account
+	validation by editing SYSTEM:n-CONFIG.CMD or install an account
+	database in BS:<SYSTEM>ACCOUNTS-TABLE.BIN with the ACTGEN utility.
+>,,<DB%NND>)			;[9095] Give something to the CTY
+
+;[9095] Here if account validation not turned on (any more), just skip return.
+
+VERACZ:	SETZB T1,T2		;[9095] Give zero flags and exp date
+	SETZ T3,0		;[9095]  and scheduler class zero please
+	RETSKP			;[9095] Skip return means the account is valid
+
+;[9095] Account validation is turned on and we have an accounting database.
+	
+VERACS:	SAVEQ			;[9095] Save the Qs
 	TRVAR <TFL,STRINX,VERABJ,VERHDR,VERLOC,VERLUK,VERNUM,<VERTMP,2>,VERCLS,VEREPT>
 	MOVEM T3,TFL		;SAVE ENTRY FLAG
 	SETZ Q1,		;INITIALIZE FLAG AC
@@ -7500,9 +7768,11 @@ VERAC0:	MOVE T1,VERABJ		;AOBJN POINTER TO ACCOUNT
 	JRST [BUG.(CHK,HSHERR,JSYSA,HARD,<VERACT - Hash value out of range>,,<
 
 Cause:	An account string was being hashed by routine HSHNAM in JSYSA in a
-	effort to validate an account. This BUG. indicates that HSHNAM
-	returned a hash value that is illegal.
+	effort to validate an account. This BUG. indicates that HSHNAM returned
+	a hash value that is illegal.
 
+Action:	If this BUGCHK is reproducible, set this bug dumpable and submit an SPR
+	along with the dump along with instructions on reproducing the problem.
 >)
 		RETBAD (VACCX0)]
 	MOVEI T2,HSHPG+1	;START OF HASH VALUES ON HSHPG
@@ -7576,6 +7846,7 @@ VERAC7:	MOVE T1,VERABJ		;SEE IF THIS IS THE DESIRED ACCT
 VERAC8:	CALL SCNACT		;GO SCAN DATA BASE
 	 JRST BADRT0		;ACCOUNT INVALID OR EXPIRED
 	MOVE Q2,T2		;ACCOUNT VALID, SAVE EXP DATE
+	MOVE T3,VERCLS		;[8821] Restore class
 	CALL CPYCSH		;SAVE ACCT AND EXP DATE IN JSB CACHE
 	MOVE T2,Q2		;GET BACK EXPIRATION DATE
 	MOVE T3,VERCLS		;RESTORE CLASS
@@ -7784,15 +8055,24 @@ VERACX:	BUG.(CHK,CRSPAG,JSYSA,HARD,<VERACT - Account data block crosses a page b
 
 Cause:	The monitor's account data base illegally crossed a page boundary.
 	This indicates a problem with the account data base.
+
+Action:	There is a problem with the accounts data base.  A new accounts data
+	base should be installed with ACTGEN.  If this BUGCHK is reproducible,
+	set this bug dumpable and submit an SPR along with the dump along with
+	instructions on reproducing the problem.
 >,,<DB%NND>)			;[7.1210] 
 	RETBAD (VACCX0)
 
 VERAX1:	BUG.(CHK,BADTAB,JSYSA,HARD,<VERACT - Spurious hash table encountered>,,<
 
-Cause:	This BUG indicates that a block has been found in the monitor's
-	account data base that is not an account block. The account data
-	base is corrupted.
+Cause:	This BUG indicates that a block has been found in the monitor's account
+	data base that is not an account block. The account data base is
+	corrupted.
 
+Action:	There is a problem with the accounts data base.  A new accounts data
+	base should be installed with ACTGEN.  If this BUGCHK is reproducible,
+	set this bug dumpable and submit an SPR along with the dump along with
+	instructions on reproducing the problem.
 >)
 	RETBAD (VACCX0)
 

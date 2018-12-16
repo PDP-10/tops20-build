@@ -1,10 +1,26 @@
-; UPD ID= 8700, RIP:<7.MONITOR>DSKALC.MAC.13,  20-Apr-88 10:30:11 by RASPUZZI
+; Edit= 9148 to DSKALC.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9119 to DSKALC.MAC on 24-Aug-89 by GSCOTT
+;Implement new GETOK functions .GODSK, .GOSJP, and .GOSPR. 
+; Edit= 9015 to DSKALC.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8953 to DSKALC.MAC on 26-Aug-88 by LOMARTIRE
+;Improve FSICFS description
+; Edit= 8888 to DSKALC.MAC on 12-Aug-88 by RASPUZZI
+;Update BUG. documentation.
+; Edit= 8868 to DSKALC.MAC on 28-Jul-88 by GSCOTT
+;Add new BUGINF LGSMIS if Login Structure is not found by FNDLGS. 
+; Edit= 8862 to DSKALC.MAC on 13-Jul-88 by GSCOTT, for SPR #21890
+;DSKOP should not ITERR when the disk read or write fails.
+; Edit= 8832 to DSKALC.MAC on 20-Apr-88 by RASPUZZI (TCO 7.1276)
+;Install TCO 7.1276 into the autopatch sources.
 ;TCO 7.1276 - Wait for things to settle down before attempting to find the
 ;	      login structure. Also, use new bit U1.NOL to see if this is an
 ;	      OK unit to try.
-; UPD ID= 8693, RIP:<7.MONITOR>DSKALC.MAC.12,   7-Apr-88 12:42:14 by LOMARTIRE
-;TCO 7.1267 - Add a question to the /G143 dialogue to allow user to 
-;             enable password encryption (again) 
+; Edit= 8819 to DSKALC.MAC on 7-Apr-88 by LOMARTIRE (TCO 7.1267)
+;Add password encryption question to /G143 dialog 
+;Add a question to the /G143 dialogue to allow user to enable password 
+;encryption (again) 
 ; UPD ID= 8675, RIP:<7.MONITOR>DSKALC.MAC.11,   1-Mar-88 16:02:13 by GSCOTT
 ;TCO 7.1246 - Set ASAASG, DEAUNA, and ASGBPG normally not dumpable.
 ; UPD ID= 8655, RIP:<7.MONITOR>DSKALC.MAC.10,  18-Feb-88 21:08:09 by GSCOTT
@@ -229,7 +245,7 @@
 ;<4.MONITOR>DSKALC.MAC.8,  6-May-78 21:26:06, Edit by MCLEAN
 ;ADD RP07
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -289,19 +305,19 @@
 ;   30. GETFRC - Get structure free count  . . . . . . . . . .  56
 ;   31. STOFRC - Store free count  . . . . . . . . . . . . . .  57
 ;   32. .DSKOP - Disk Operate JSYS . . . . . . . . . . . . . .  58
-;   33. CHKBT - Check consistency of bit table . . . . . . . .  62
-;   34. CHKB0 - Check free page count  . . . . . . . . . . . .  63
-;   35. UPDBTB - Update bit table  . . . . . . . . . . . . . .  65
-;   36. BOTSYS/FEFSYS - Allocate the FE file system  . . . . .  66
-;   37. WRBOOT - Write FE boot block . . . . . . . . . . . . .  75
-;   38. FEWRTH/BOWRTH - Write the Home Blocks  . . . . . . . .  77
-;   39. FIXBOT/Fixfes - fix home blocks for special files  . .  79
-;   40. GTFESZ/GTBTSZ - Get size of special file . . . . . . .  82
-;   41. VERBAT - Verify the BAT blocks . . . . . . . . . . . .  85
-;   42. BATQ - Mark a disk BAT for SYSERR  . . . . . . . . . .  86
-;   43. SWPASN - Assign the swapping blocks  . . . . . . . . .  90
-;   44. MNTPS - Start-up routine to mount the boot structure .  91
-;   45. CHKHOM - Read all Home Blocks and check their consiste  95
+;   33. CHKBT - Check consistency of bit table . . . . . . . .  63
+;   34. CHKB0 - Check free page count  . . . . . . . . . . . .  64
+;   35. UPDBTB - Update bit table  . . . . . . . . . . . . . .  66
+;   36. BOTSYS/FEFSYS - Allocate the FE file system  . . . . .  67
+;   37. WRBOOT - Write FE boot block . . . . . . . . . . . . .  76
+;   38. FEWRTH/BOWRTH - Write the Home Blocks  . . . . . . . .  78
+;   39. FIXBOT/Fixfes - fix home blocks for special files  . .  80
+;   40. GTFESZ/GTBTSZ - Get size of special file . . . . . . .  83
+;   41. VERBAT - Verify the BAT blocks . . . . . . . . . . . .  86
+;   42. BATQ - Mark a disk BAT for SYSERR  . . . . . . . . . .  87
+;   43. SWPASN - Assign the swapping blocks  . . . . . . . . .  91
+;   44. MNTPS - Start-up routine to mount the boot structure .  92
+;   45. CHKHOM - Read all Home Blocks and check their consiste  96
 	Subttl	Table of Contents (page 2)
 
 ;		     Table of Contents for DSKALC
@@ -310,47 +326,47 @@
 ;
 ;
 ;   46. CHKHOM error conditions
-;       46.1    CHKH11 - Errors in single unit . . . . . . . .  98
-;       46.2    CHKH40 - Problems with a structure . . . . . . 100
-;   47. FNDLGS - Find and mount a Login Structure  . . . . . . 101
-;   48. MNTLGS - Register the Login Structure with CFS . . . . 113
-;   49. LGSERR - Clean up after MNTLGS failure . . . . . . . . 114
-;   50. CHKHOM - Examine a disk unit at startup  . . . . . . . 115
-;   51. CHKUDB - Verufy a UDB for CKHOMU . . . . . . . . . . . 118
-;   52. BLDSTR - Build SDB and set up STRTAB . . . . . . . . . 119
-;   53. ADDSTR - Add a unit to an existing SDB . . . . . . . . 120
-;   54. CRTSTR - Create a new SDB  . . . . . . . . . . . . . . 121
-;   55. FIXVID - Fix up UDBVID . . . . . . . . . . . . . . . . 124
-;   56. CLRSTB - Clear an entry in STRTAB  . . . . . . . . . . 125
-;   57. GETTYP - Get type of disk  . . . . . . . . . . . . . . 126
-;   58. BLDNEW/BLDSDB - Create or add to an SDB  . . . . . . . 127
-;   59. REMSTR - Remove a structure from STRTAB  . . . . . . . 128
-;   60. UNIBAT - Check the BAT blocks on a unit  . . . . . . . 129
-;   61. CRTHOM - Create a pair of new Home Blocks  . . . . . . 130
-;   62. REDHOM - Read in the primary and backup Home Blocks  . 133
-;   63. HBCCHK - Check Home Block consistency  . . . . . . . . 134
-;   64. CPYH1/CPYH2 - Correct one incorrect Home Block . . . . 135
-;   65. WRTHOM - Write all Home Blocks in Public Structure . . 137
-;   66. WRTHB - Write a home block . . . . . . . . . . . . . . 138
-;   67. SWPHOM - Swap the Home or BAT blocks . . . . . . . . . 139
-;   68. SETHOM - Setup first Home Block on a unit  . . . . . . 140
-;   69. MODHOM - Modify the Home Blocks  . . . . . . . . . . . 142
-;   70. UPDHOM - Update the Home Blocks  . . . . . . . . . . . 144
-;   71. CHKBAT - Check all BAT blocks on a structure . . . . . 145
-;   72. DOPACK - Check the BAT blocks on a single unit . . . . 148
-;   73. UNTSTR - Routine to output structure/unit message  . . 150
-;   74. BATCMP - Compare two BAT blocks  . . . . . . . . . . . 151
-;   75. GETBAT - Read the BAT blocks into a buffer . . . . . . 152
-;   76. BATOUT - Write out the BAT blocks for a drive  . . . . 153
-;   77. BATLOK - Check the BAT block . . . . . . . . . . . . . 155
-;   78. FSIDIA - Diaglogue to define the public structure  . . 156
-;   79. FSICFG - Type out configuration of units . . . . . . . 164
-;   80. CPY1/CPY2 - Correct one incorrect BAT block  . . . . . 166
-;   81. FSIBAT - Once only code for the BAT blocks . . . . . . 167
-;   82. FNDCHN/FNDCH1 - Find the CKU numbers for a pack  . . . 170
-;   83. MAKBAT - Create and write out new BAT blocks . . . . . 171
-;   84. CHKSWP - Validate a swapping structure . . . . . . . . 173
-;   85. CMPSWP - Compute swapping pages  . . . . . . . . . . . 174
+;       46.1    CHKH11 - Errors in single unit . . . . . . . .  99
+;       46.2    CHKH40 - Problems with a structure . . . . . . 101
+;   47. FNDLGS - Find and mount a Login Structure  . . . . . . 102
+;   48. MNTLGS - Register the Login Structure with CFS . . . . 114
+;   49. LGSERR - Clean up after MNTLGS failure . . . . . . . . 115
+;   50. CHKHOM - Examine a disk unit at startup  . . . . . . . 116
+;   51. CHKUDB - Verufy a UDB for CKHOMU . . . . . . . . . . . 119
+;   52. BLDSTR - Build SDB and set up STRTAB . . . . . . . . . 120
+;   53. ADDSTR - Add a unit to an existing SDB . . . . . . . . 121
+;   54. CRTSTR - Create a new SDB  . . . . . . . . . . . . . . 122
+;   55. FIXVID - Fix up UDBVID . . . . . . . . . . . . . . . . 125
+;   56. CLRSTB - Clear an entry in STRTAB  . . . . . . . . . . 126
+;   57. GETTYP - Get type of disk  . . . . . . . . . . . . . . 127
+;   58. BLDNEW/BLDSDB - Create or add to an SDB  . . . . . . . 128
+;   59. REMSTR - Remove a structure from STRTAB  . . . . . . . 129
+;   60. UNIBAT - Check the BAT blocks on a unit  . . . . . . . 130
+;   61. CRTHOM - Create a pair of new Home Blocks  . . . . . . 131
+;   62. REDHOM - Read in the primary and backup Home Blocks  . 134
+;   63. HBCCHK - Check Home Block consistency  . . . . . . . . 135
+;   64. CPYH1/CPYH2 - Correct one incorrect Home Block . . . . 136
+;   65. WRTHOM - Write all Home Blocks in Public Structure . . 138
+;   66. WRTHB - Write a home block . . . . . . . . . . . . . . 139
+;   67. SWPHOM - Swap the Home or BAT blocks . . . . . . . . . 140
+;   68. SETHOM - Setup first Home Block on a unit  . . . . . . 141
+;   69. MODHOM - Modify the Home Blocks  . . . . . . . . . . . 143
+;   70. UPDHOM - Update the Home Blocks  . . . . . . . . . . . 145
+;   71. CHKBAT - Check all BAT blocks on a structure . . . . . 146
+;   72. DOPACK - Check the BAT blocks on a single unit . . . . 149
+;   73. UNTSTR - Routine to output structure/unit message  . . 151
+;   74. BATCMP - Compare two BAT blocks  . . . . . . . . . . . 152
+;   75. GETBAT - Read the BAT blocks into a buffer . . . . . . 153
+;   76. BATOUT - Write out the BAT blocks for a drive  . . . . 154
+;   77. BATLOK - Check the BAT block . . . . . . . . . . . . . 156
+;   78. FSIDIA - Diaglogue to define the public structure  . . 157
+;   79. FSICFG - Type out configuration of units . . . . . . . 165
+;   80. CPY1/CPY2 - Correct one incorrect BAT block  . . . . . 167
+;   81. FSIBAT - Once only code for the BAT blocks . . . . . . 168
+;   82. FNDCHN/FNDCH1 - Find the CKU numbers for a pack  . . . 171
+;   83. MAKBAT - Create and write out new BAT blocks . . . . . 172
+;   84. CHKSWP - Validate a swapping structure . . . . . . . . 174
+;   85. CMPSWP - Compute swapping pages  . . . . . . . . . . . 175
 	Subttl	Table of Contents (page 3)
 
 ;		     Table of Contents for DSKALC
@@ -359,20 +375,20 @@
 ;
 ;
 ;   86. I/O Routines
-;       86.1    FSICPY - Copy one string to another  . . . . . 175
-;       86.2    FSIDTY/FSIOTY - Type out a number  . . . . . . 176
-;       86.3    FSINST - Convert a number to an ASCIZ string . 177
-;       86.4    FSIASK - Ask a question and get an answer  . . 178
-;       86.5    FSIYNO - Get a yes or no answer  . . . . . . . 179
-;       86.6    FSISIX - Read in a SIXBIT name . . . . . . . . 180
-;       86.7    FSI6TY - Type out a SIXBIT name  . . . . . . . 181
-;       86.8    FSIOCT/FSIDEC - Get a signed number  . . . . . 182
-;       86.9    FSIRUB - Type out rubout string  . . . . . . . 184
-;       86.10   FSIPSO - Type out a string . . . . . . . . . . 185
-;       86.11   FSIBPI - Read in a character . . . . . . . . . 186
-;       86.12   FSIPBO - Output a character  . . . . . . . . . 187
-;       86.13   FSIPSW - Print help text for swapping default  188
-;   87. End of DSKALC  . . . . . . . . . . . . . . . . . . . . 189
+;       86.1    FSICPY - Copy one string to another  . . . . . 176
+;       86.2    FSIDTY/FSIOTY - Type out a number  . . . . . . 177
+;       86.3    FSINST - Convert a number to an ASCIZ string . 178
+;       86.4    FSIASK - Ask a question and get an answer  . . 179
+;       86.5    FSIYNO - Get a yes or no answer  . . . . . . . 180
+;       86.6    FSISIX - Read in a SIXBIT name . . . . . . . . 181
+;       86.7    FSI6TY - Type out a SIXBIT name  . . . . . . . 182
+;       86.8    FSIOCT/FSIDEC - Get a signed number  . . . . . 183
+;       86.9    FSIRUB - Type out rubout string  . . . . . . . 185
+;       86.10   FSIPSO - Type out a string . . . . . . . . . . 186
+;       86.11   FSIBPI - Read in a character . . . . . . . . . 187
+;       86.12   FSIPBO - Output a character  . . . . . . . . . 188
+;       86.13   FSIPSW - Print help text for swapping default  189
+;   87. End of DSKALC  . . . . . . . . . . . . . . . . . . . . 190
 	SUBTTL	Storage and Constants
 
 ;NO SPECIAL AC'S USED HEREIN
@@ -504,6 +520,9 @@ Cause:	The bit table for this disk cylinder indicated there
 	were free pages for assignment.  However, none could be
 	found.
 
+Action:	Find out which structure this is for and run CHECKD on the disk.
+	Then check the consistency of bits of the disk.
+
 Data:	STRCOD - Structure Unique Code
 	CYLNDR - Cylinder Number
 >,,<DB%NND>)			;[7.1210]
@@ -631,11 +650,10 @@ DSKASA::SETO T3,0		;SAY SINGLE ADDRESS
 Cause:	The sector being assigned on the disk is already assigned.
 	This may happen during creation of structure when assigning
 	swapping space, and the sector is already assigned in the
-	BAT blocks. Also can be caused by redundant BAT block entries.
+	BAT blocks. This can also be caused by redundant BAT block entries.
 
 Data:	STRCOD - Structure Unique Code
 	SECTOR - Sector Number on Disk Relative	to Start of Structure
-
 >,,<DB%NND>)			;[7.1246] 
 		MOVE T1,STRN20	;RETRIEVE ERROR CODE
 		RETBAD]		;TAKE ERROR RETURN
@@ -1493,7 +1511,6 @@ WRTBTB::SAVEQ
 
 Cause:	The FDB for a file structure bit table has the FB%LNG bit set, which
 	says the file is a long file.
-
 >)
 	MOVE T1,Q3		;T1/ADDRESS OF INDEX BLOCK
 	TXO T1,THAWB+FILWB	;OPEN THAWED WITH WRITE ACCESS
@@ -1708,11 +1725,10 @@ MAPBTB::MOVEI T2,1
 	EA.ENT
 	MOVE T1,STRTAB(T1)	;POINT TO START OF SDB FOR THIS STRUCTURE
 	SKIPN T1,SDBBTB(T1)	;IS THERE AN OFN FOR THE BIT TABLE?
-	 BUG.(HLT,MAPBT1,DSKALC,SOFT,<OFN for bit table is zero>,,<
+	BUG.(HLT,MAPBT1,DSKALC,SOFT,<OFN for bit table is zero>,,<
 
 Cause:	There is no OFN for the file structure bit table currently being
 	mapped.
-
 >)
 	MOVEM T1,BTBMAP		;YES. SAVE SPT INDEX
 MAPBTR:	NOSKED			;Exclusive ownership for a bit
@@ -2320,11 +2336,19 @@ STOFRC::MOVE T3,STRTAB(T3)	;Get SDB
 	MOVEM T1,Q1		;REMEMBER AC FOR LATER
 	MOVEM T2,UAC2		;PRESERVE USER'S FLAGS AND COUNT
 	MOVEM T3,UAC3		;PRESERVE ADDRESS ALSO
-	MOVE T4,CAPENB		;GET USER'S CAPABILITIES
-	TXNN T4,SC%WHL!SC%OPR!SC%MNT ;HAVE PROPER PRIVILEGES?
+	MOVE Q2,CAPENB		;[9119] Get user's capabilities
+	TXNN Q2,SC%WHL!SC%OPR!SC%MNT ;[9119] Have proper privileges?
 	ITERR (WHELX1)		;NO. COMPLAIN
 	TXNE T2,-1-<DOP%NF!DOP%IL!DOP%PS!DOP%IR!DOP%WR!DOP%CT!DOP%EO>	;ANY UNUSED FLAGS USED?
 	ITERR (DECRSV)		;YES, COMPLAIN
+
+;[9119] Ask the ACJ if this is OK.
+
+	GTOKM(.GODSK,<T1,T2,T3,T4>) ;[9119] Get the ACJ's blessing if needed
+
+	;...
+	;...
+
 	LOAD Q2,DOP%AT,Q1	;GET ADDRESS TYPE
 	CAIE Q2,.DOPSR		;[7.1063]Structure relative?
 	IFSKP.			;[7.1063]If yes...
@@ -2429,6 +2453,8 @@ DSKOP4:	SETZM P3		;OR ZERO AC AS A FLAG
 	SKIPA
 DSKOP5:	CALL UDSKIO		;HERE FOR SINGLE PAGE TRANSFER
 	UMOVEM T1,1		;RETURN ERROR BITS
+	SKIPE T1		;[8862] Any error code returned?
+	HRRZM T1,LSTERR		;[8862] Yes, store it in LSTERR for later
 	MOVE T1,SAVLCK		;GET POINTER TO LIST OF CCW WORDS
 	MOVX T2,DOP%WR		;GET WRITE FLAG READY
 	ANDCM T2,UAC2		;CREATE FLAG INDICATING IF CORE WAS WRITTEN
@@ -2436,12 +2462,7 @@ DSKOP5:	CALL UDSKIO		;HERE FOR SINGLE PAGE TRANSFER
 	OKINT			;ALLOW INTS AGAIN
 	SKIPL T1,STRNXX		;SAVED STR #
 	CALL ULKSTR		;YES - UNLOCK IT
-	UMOVE T1,1		;[7352]Pick up the potential error code
-	SKIPL T1		;[7352]Was there an error?
-	JRST MRETN		;[7352]No, so just return
-	HRRZ T1,T1		;[7352]Yes, zero out the LH -1
-	ITERR()			;[7352]Indicate the error
-
+	JRST MRETN		;[8862] Return with AC1/zero=success
 	SUBTTL	CHKBT - Check consistency of bit table
 
 ;CHKBT - CHECK CONSISTENCY OF BIT TABLE
@@ -2690,13 +2711,11 @@ FESYS2:	MOVE D,0(B)		;UDB ADDRESS
 	AOBJN B,FESYS2		;LOOK AT NEXT
    REPEAT 0,<
 	SKIPN FILTYP		;IF BOOTSTRAP NO BUGCHECK
-	BUG.(CHK,NO2PRT,DSKALC,HARD,<FEFSYS-NO DUAL-PORTED DISK. USING LOGICAL 0>,,<
+	BUG.(CHK,NO2PRT,DSKALC,HARD,<FEFSYS - No dual-ported disk. Using logical 0>,,<
 
-Cause:	This BUG is not documented yet.
-
-Action:
-
->) >   ;END REPEAT 0
+Cause:	This BUG. has been removed from the monitor and does not occur.
+>)
+> ;End REPEAT 0
 	MOVEI B,SDBUDB(Q1)	;POINTER TO LOGICAL 0
 FEFSY1:	MOVE P4,B		;SAVE UDB INDEX
 	MOVEI P1,0(B)		;ADDRESS OF UDB POINTER
@@ -2925,6 +2944,8 @@ Cause:	A copy of the Root-Directory was not made due to one of the
 	    1.  Not enough free space
 	    2.  Could not get JFN
 	    3.  Root-Directory or symbol table is bad
+
+Action:	Determine the cause (1, 2 or 3) and try to fix the problem.
 
 Data:	STRCOD - Structure unique code
 >,,<DB%NND>)			;[7.1210]
@@ -3339,7 +3360,6 @@ NO1:	TLNN P3,(1B1)		; 2 GOOD?
 		BUG.(CHK,BADBAT,DSKALC,HARD,<BAT blocks unreadable>,,<
 
 Cause:	BAT block header contains bad information.
-
 >,,<DB%NND>)			;[7.1210]
 		RET]		;AND GIVE UP
 	MOVEI A,(P1)
@@ -3500,13 +3520,15 @@ BATQE:	MOVE A,P1
 BATQE2:	SKIPE ERRSWP		;WAS THERE A SWAP ERROR?
 	JRST [			;YES THERE WAS, TAKE CARE OF IT
 		SOSN ERRSWP	;DEC THE COUNT, SKIP IF DONE
-		BUG. (HLT,SWPXXX,DSKALC,HARD,<Unrecoverable swap error for critical page>,,<
+		BUG.(HLT,SWPXXX,DSKALC,HARD,<Unrecoverable swap error for critical page>,,<
 
 Cause:	The monitor had a swap error for a PSB, PT, PTP, or UPT.
 	At the time of the error, a BUGCHK reported the problem,
 	and allowed the system to continue to record the error in
 	SYSERR, and rewrite the BATBLOCK.
 
+Action:	This has been known to happen on a drive that is beginning to have
+	hardware problems.
 >)
 		JRST .+1]	;IF WE KEEP GOING, OK BY ME
 	OKINT			;AND ALLOW INTS NOW
@@ -3579,21 +3601,29 @@ SWPAS2:	MOVE T1,Q2		;GET NEXT PAGE TO BE ASSIGNED
 ;
 ;   IFN CFSCOD,<			;Only for CFS monitors
 MNTPS::	MOVEI T2,1		;Try for exclusive first
-	MOVEI T1,PSNUM		;Number of PS:
+	MOVEI T1,PSNUM		;Number of BS:
 	CALL CFSSMT		;Do mount
 	IFSKP.			;If it made it
-	 MOVEI T2,1		;Say it was exclusive
+	  MOVEI T2,1		;Say it was exclusive
 	ELSE.
-	 MOVEI T1,PSNUM		;PS again
-	 MOVEI T2,0		;Try for "shared"
-	 CALL CFSSMT		;Do it
-	  BUG.(HLT,FSICFS,DSKALC,SOFT,<Could not register PS with CFS>,,<
+	  MOVEI T1,PSNUM	;BS again
+	  MOVEI T2,0		;Try for "shared"
+	  CALL CFSSMT		;Do it
+	   BUG.(HLT,FSICFS,DSKALC,SOFT,<Could not register BS with CFS>,,<
 
 Cause:	Some other CFS system has this structure mounted exclusively
 	or as an alias and is preventing this system from mounting the 
-	structure. This is an administrative problem.
+	structure. This is usually an administrative problem.
+
+Action:	Find out which other system in the cluster has this system's BS:
+	mounted and then dismount it from that system or set the access to 
+	shared.  Note, it could be more than one system in the cluster so 
+	make sure you check each system in the cluster.  Since OPR may
+	indicate that the structure is dismounted (since the system is down), 
+	STRTST (or some other tool) might have to be used to dismount the 
+	structure or change the access.
 >)
-	 SETZM T2		;Got it
+	  SETZM T2		;Got it
 	ENDIF.
 	MOVE T1,STRTAB+PSNUM	;Get SDB for PS:
 	STOR T2,STEXL,(T1)	;Set mount tyep bit
@@ -3731,7 +3761,6 @@ Cause:	While mounting the public structure, the monitor found it
 	had no CTY on which to output information.
 
 Action:	Call Digital Field Service.
-
 >)
 	CALL TTSOBE		;SEE IF OUTPUT BUFFER IS EMPTY
 	JRST .-1		;LOOP UNTIL THEY ARE TYPED
@@ -4018,16 +4047,27 @@ FNDLG1:	SKIPN P1,CHNTAB(P4)	;This channel exist?
 FNDLG2:	AOBJN P4,FNDLG1		;Loop over all channels
 	MOVEI T1,HOMPGA		;Number of I/O page
 	CALL MULKMP		;(T1/)Unlock the I/O page
+	;...
+
 	MOVEI Q2,1		;Get the Login Structure number in Q2
-	SKIPN Q1,STRTAB(Q2)	;Did we construct a Login Structure?
-	RET			;No. Done
+	SKIPE Q1,STRTAB(Q2)	;[8868] Did we find a reasonable Login Str?
+	IFSKP.			;[8868] Nope
+	  BUG.(INF,LGSMIS,DSKALC,SOFT,<FNDLGS - Login Structure missing>,,<
+
+Cause:	Routine FNDLGS was called to mount a Login Structure as enabled in
+	the system configuration file.  However no Login Structure was found.
+	The system will continue startup without the Login Structure.
+
+Action:	Examine the disk configuration to find out why the Login Structure
+	is not available.  
+>)				;[8868] Let us know it wasn't found
+	  RET			;[8868] Return anyway
+	ENDIF.			;[8868] Login structure found, Q2/STRTAB entry
 	MOVE T1,SDBSTS(Q1)	;Get the structure flags
 	TXNE T1,HB%HBM		;Home Block mismatch?
 	JRST FNDHBM		;Yes. Go handle it
 	TXNE T1,MS%MXB		;Is the bit table to large?
 	JRST FNDMXB		;Yes. Go handle it
-	;...
-
 	MOVN T4,SDBNUM(Q1)	;Get the number of units in the structure
 	HRLS T4			;Make AOBJN pointer
 	HRR T4,Q1		;SDB address
@@ -4149,8 +4189,8 @@ Cause:	Routine FNDLGS was attempting to mount the Login Structure,
 Action:	Examine the structure and repair the problem. Then re-boot the
 	system. 
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4168,8 +4208,8 @@ Cause:	Routine FNDLGS was attempting to mount the Login Structure,
 Action:	Examine the structure and repair the problem.  Then re-boot the
 	system. 
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4188,8 +4228,8 @@ Cause:	Routine FNDLGS was attempting to mount the Login Structure,
 Action:	Examine the structure and repair the problem. Then re-boot the
 	system. 
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4207,8 +4247,8 @@ Cause:	Routine FNDLGS was attempting to mount the Login Structure,
 Action:	Examine the structure and repair the problem. Then re-boot the
 	system. 
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is 
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4227,8 +4267,8 @@ Cause:	Routine FNDLGS was attempting to mount the Login Structure,
 Action:	Examine the structure and repair the problem. Then re-boot the
 	system. 
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4246,8 +4286,8 @@ Cause:	Routine FNDLGS was attempting to mount the Login Structure,
 Action:	Examine the structure and repair the problem. Then re-boot the
 	system. 
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4268,8 +4308,8 @@ Cause:	Routine FNDLGS was attempting to mount the Login Structure,
 Action:	Examine the structure and repair the problem. Then re-boot the
 	system. 
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4311,8 +4351,8 @@ Cause:	Routine FNDLGS was trying to build the Login Structure. CKHOMU
 Action:	Examine the units that are a part of the Login Structure. Fix the
 	unit mismatches and re-boot the system.
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is 
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4332,8 +4372,8 @@ Cause:	Routine FNDLGS was trying to build the Login Structure. CKHOMU
 Action:	Examine the units that are a part of the Login Structure. Fix the
 	structure and re-boot the system.
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4350,8 +4390,8 @@ Cause:	Routine FNDLGS was trying to build the Login Structure. It
 
 Action:	Replace the missing Login Structure unit and re-boot the system.
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4369,8 +4409,8 @@ Cause:	Routine FNDLGS was trying to build the Login Structure. It
 
 Action:	Fix the duplicate units and re-boot the system.
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4387,8 +4427,8 @@ Cause:	Routine FNDLGS was trying to build the Login Structure. It
 
 Action:	Replace the missing Login Structure unit and re-boot the system.
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4444,8 +4484,8 @@ Cause:	Routine FNDLGS was trying to build the Login Structure. It
 Action:	Change the access of this structure on other nodes in the cluster
 	to "shared", the re-boot the system.
 
-	The Login Structure has not been mounted. The boot structure will
-	be used as PS:.
+	The Login Structure has not been mounted. The boot structure is
+	used as PS:.
 
 Data:	STRNAM - Sixbit Structure Name
 >,,<DB%NND>)			;[7.1210] 
@@ -4511,8 +4551,8 @@ CKHOMU:	CALL CHKUDB		;[7.1112](P3/)See if we can use this UDB
 ;[7.1112]
 ; See if this unit is part of the structure we want to build.
 ;
-	SKIPE FSINAM		;[7289]LOOKING FOR SPECIFIC NAME?
-	IFNSK.			;[7289]YES
+	SKIPN FSINAM		;[8868] Looking for specific name?
+	IFSKP.			;[8868] Yes
 	  MOVE T2,HOMSNM(T1)	;[7289]GET THE STRUCTURE NAME
 	  CAME T2,FSINAM	;[7289]IS THIS IT?
 	  RET			;[7289]NO. SO DON'T BUILD THE SDB
@@ -4628,10 +4668,10 @@ CHKUDB:	MOVX T3,US.DSK		;[7.1276] Get disk bit
 	MOVX T4,U1.NOL		;[7.1276] And get MSCP online bit
 	DO.
 	  TDNE T4,UDBST1(P3)	;[7.1276] Has disk been recognized?
-	  IFSKP.		;[7.1276] MSCP has even seen this disk
+	  IFSKP.		;[7.1276] MSCP seen this disk
 	    TDNN T3,UDBSTS(P3)	;[7.1276] Home block check done?
 	    RETSKP		;[7.1276] Yes, MSCP seen and home block check done
-	  ENDIF.
+	  ENDIF.		;[7.1276]
 	  MOVEI T1,^D100	;[7.1276] Dismiss for 1/10th second
 	  DISMS%		;[7.1276] for bit(s) to clear (maybe)
 	  SOJGE T2,TOP.		;[7.1276] Try for up to 60 seconds
@@ -4652,7 +4692,7 @@ Action:	Examine the additional data of this BUGCHK to determine why
 	the unit is not available. Examine the unit for problems when
 	the system is fully booted.
 
-	This unit will not be used as part of the Login Structure.
+	This unit is not used as part of the Login Structure.
 
 Data:	UDB - Address of UDB for unit
 	UDBSTS - The primary UDB status word
@@ -5959,7 +5999,7 @@ BATLOK:	MOVS T3,BATNAM(T1)	;GET THE NAME
 FSIDIA:	MOVSI T1,-HOMTBL	;CLEAR OUT PHYSICAL DRIVE CORRESPONDENCE
 	SETOM HOMTAB(T1)	;FOR DETECTING MULTIPLE REFERENCES
 	AOBJN T1,.-1
-	SETZM FSIFLG		;[7.1267] Init flag word
+	SETZM FSIFLG		;[8819] Init flag word
 	HRROI T1,[ASCIZ/
 [For additional information type "?" to any of the following questions.]
 /]
@@ -6248,27 +6288,27 @@ How many pages for the bootstrap file? /]
 	JRST FSID13		;ERROR. ASK AGAIN
 FSID15:	MOVEM T1,BOTSIZ		;SAVE THE ANSWER
 	CAIL T1,NPGSBT		;IS THIS ENOUGH SPACE?
-	JRST FSID16		;[7.1267] Yes
+	JRST FSID16		;[8819] Yes
 	HRROI T1,[ASCIZ/
 ? Invalid number of pages for the bootstrap file
 /]
 	CALL FSIPSO		;NO. COMPLAIN
 	JRST FSID13		;TRY AGAIN
 
-;[7.1267] See if user wants password encryption enabled.
+;[8819] See if user wants password encryption enabled.
 
 FSID16:	HRROI T1,[ASCIZ/
-Do you want to enable password encryption for the system structure? /]  ;[7.1267] 
+Do you want to enable password encryption for the system structure? /]  ;[8819] 
 	HRROI T2,[ASCIZ/
 [Type 'YES' to enable password encryption or
  'NO' to disable password encryption]
-/]				;[7.1267] 
-	MOVEI T3,FSIYNO		;[7.1267] Get YES or NO
-	CALL FSIASK		;[7.1267] Ask the question and get the answer
-	 JRST FSID16		;[7.1267] Failed. Try again
-	JUMPE T1,FSID17		;[7.1267] If NO don't set MS%CRY
-	MOVX T1,MS%CRY		;[7.1267] Get the encryption bit
-	IORM T1,FSIFLG		;[7.1267] Set it up
+/]				;[8819] 
+	MOVEI T3,FSIYNO		;[8819] Get YES or NO
+	CALL FSIASK		;[8819] Ask the question and get the answer
+	 JRST FSID16		;[8819] Failed. Try again
+	JUMPE T1,FSID17		;[8819] If NO don't set MS%CRY
+	MOVX T1,MS%CRY		;[8819] Get the encryption bit
+	IORM T1,FSIFLG		;[8819] Set it up
 FSID17:	HRROI T1,[ASCIZ/
 What is the name of this structure? /]
 	HRROI T2,[ASCIZ/

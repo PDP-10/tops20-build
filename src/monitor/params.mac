@@ -1,3 +1,14 @@
+; Edit= 9148 to PARAMS.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9136 to PARAMS.MAC on 29-Nov-89 by GSCOTT
+;Define IPNIAN as zero for non-TCP/IP monitors.
+; Edit= 9135 to PARAMS.MAC on 28-Nov-89 by GSCOTT
+;Allow alternate IP address using "IPNIA" interface in INTERNET.ADDRESS. 
+; Edit= 9115 to PARAMS.MAC on 18-Jul-89 by GSCOTT
+;Merge a fair number of TCP/IP bug fixes and performance enhancements from
+;Stanford and the SRI-NIC. 
+; Edit= 9084 to PARAMS.MAC on 6-Apr-89 by GSCOTT
+;For some reason FEN was set to ^D14, change it to 1 and save $91. 
 ; UPD ID= 8576, RIP:<7.MONITOR>PARAMS.MAC.3,  11-Feb-88 16:53:29 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; *** Edit 7226 to PARAMS.MAC by GRANT on 14-Jan-86, for SPR #20842
@@ -84,7 +95,7 @@
 ; UPD ID= 526, SNARK:<5.MONITOR>PARAMS.MAC.2,  16-May-80 14:48:18 by MURPHY
 ;INCREASE DEFAULT RATIO OF FORKS TO JOBS
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -143,7 +154,7 @@ NDG	EPVAR,400000
 
 ;PARAMETERS FOR DEVICE CONFIGURATION
 
-NDG	FEN,^D14		;FE DEVICES
+NDG	FEN,1			;[9084] FE devices, only one is needed
 ;[7226] If you change the value of DTEN, you must assemble DTESRV.MAC
 NDG	DTEN,4			;FOUR DTES ARE PRESENT
 NDG	LPTN,2			;# OF PHYSICAL LPTS
@@ -232,27 +243,32 @@ IFN NETN,<
 NDG	NNTBFS,60000		;NETWORK BUFFER AREA
 NDG	ANXN,1			;# of DEC AN10/20 interfaces
 NDG	IPNIN,1			;# of KLNI interfaces
+IFN IPNIN,NDG IPNIAN,2		;[9135] # of NIA20 alternate address interfaces
+NDG	IPNIAN,0		;[9135] # of alternate address ints if no NIA20
 IFN FTKLIPA,<NDG IPCIN,1>	;# of CI interfaces
 IFE FTKLIPA,<NDG IPCIN,0>	;NO CI interfaces if no KLIPA
 
 TCPVER==:4			; Want TCP4
-NDG TCBHSZ,^D17			; Size of TCB Hash table
+NDG TCBHSZ,^D97			;[9115] Size of TCB Hash table
 NDG NTCPWP,4			; Number of monitor window pages
 NDG NTTTVT,^D32			; Default to 32 TCP Virtual Terminals
-IFGE <^D50-<2*NTTTVT>>,<NDG MAXTCB,<NTTTVT*2>>
-IFL <^D50-<2*NTTTVT>>,<NDG MAXTCB,<^D50>>
+IFGE <^D80-<2*NTTTVT>>,<NDG MAXTCB,<NTTTVT*2>> ;[9115]
+IFL <^D80-<2*NTTTVT>>,<NDG MAXTCB,<^D80>> ;[9115]
 NDG MAXJCN,NTTTVT		; Each job allowed this many JCNs
 NDG ABTCBS,^D35-^L<2*MAXJCN>	; Abort counter byte size
 NDG NTACWD,<NFKS+<^D36/ABTCBS>>/ABTCBS	; Number of words for abort counters
 
 NTWBTS==^D<MAXTCB*<8+2>+10>	; Appox. number of wait bits needed
-IFG NTWBTS-^D511,<PRINTX % TOO MANY WAIT BITS
-		NTWBTS==^D511	; Must fit in 9-bits for TCPOOT, TCPZOT,
-				; and TOPNF and TERRF fields
-	> ; End of IFG NTWBTS-^D511
+IFG NTWBTS-^D511,NTWBTS==^D511	;[9115] Must fit in 9 bits for TCPOOT, TCPZOT,
+				;[9115] TOPNF, and TERRF fields
+IFL <^D601-< <MAXTCB*^D10>-<NTTTVT*7> >>,< 
+;[9115] Note TVT's take fewer wait bits, we will wait for wait bits if needed
+IF1,PRINTX % not enough wait bits for all possible TCP/IP connections
+ >				;[9115]
+
 NDG INTFSZ,20000		; Size of free area (if not separate section)
 NDG MAXNET,^D64			; Maximum nets we will handle
-NDG NFIXED,^D61			; Num fixed size blk lists (prime best)
+NDG NFIXED,^D23			;[9115] Num fixed size blk lists (prime best)
 NDG NIQ,^D8			; Number of Internet User Queues
 NDG NTWBWD,<^D<NTWBTS+1+31>/^D32> ; Number of words of wait bits (from TCP)
 > ; End of IFN NETN
@@ -262,6 +278,7 @@ NTWBTS==0			; No wait bits
 NTTTVT==:0			; No TCP Virtual Terminals
 ANXN==:0
 IPNIN==:0
+IPNIAN==:0			;[9136] No IPNIA device if no TCP/IP 
 IPCIN==:0
 
 > ; End of IFE NETN

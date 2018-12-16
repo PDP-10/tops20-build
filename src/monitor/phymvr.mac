@@ -1,3 +1,11 @@
+; Edit= 9013 to PHYMVR.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8984 to PHYMVR.MAC on 27-Oct-88 by RASPUZZI
+;Prevent SKDPF1 and PITRAP BUGHLTs by having the error path from GETBF call a
+;new routine QUECHK (that falls into QUECMD). QUECHK will vamoose if Q1 does
+;not have a legitmate command block.
+; Edit= 8913 to PHYMVR.MAC on 17-Aug-88 by GSCOTT
+;Update BUG. documentation. 
 ; UPD ID= 8590, RIP:<7.MONITOR>PHYMVR.MAC.6,  11-Feb-88 16:56:16 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8451, RIP:<7.MONITOR>PHYMVR.MAC.5,   4-Feb-88 17:13:11 by GSCOTT
@@ -184,49 +192,49 @@
 ;    5. Initialization . . . . . . . . . . . . . . . . . . . .   9
 ;    6. Periodic Check . . . . . . . . . . . . . . . . . . . .  10
 ;    7. SCA Related Routines . . . . . . . . . . . . . . . . .  13
-;    8. MSCP Commands  . . . . . . . . . . . . . . . . . . . .  24
-;    9. IORB Interrupt Service . . . . . . . . . . . . . . . .  34
-;   10. Subroutines  . . . . . . . . . . . . . . . . . . . . .  37
-;   11. CFS Interface  . . . . . . . . . . . . . . . . . . . .  59
-;   12. End of PHYMVR  . . . . . . . . . . . . . . . . . . . .  61
+;    8. MSCP Commands  . . . . . . . . . . . . . . . . . . . .  26
+;    9. IORB Interrupt Service . . . . . . . . . . . . . . . .  37
+;   10. Subroutines  . . . . . . . . . . . . . . . . . . . . .  40
+;   11. CFS Interface  . . . . . . . . . . . . . . . . . . . .  65
+;   12. End of PHYMVR  . . . . . . . . . . . . . . . . . . . .  67
 	SUBTTL Comments
 REPEAT 0,<
 
- PHYMVR IS THE TOPS-20 MSCP SERVER. IT EMULATES AN HSC-50 FOR MASSBUS DISKS.
+ PHYMVR is the TOPS-20 MSCP server.  It emulates an HSC-50 for MASSBUS disks.
 
- THE SERVER MAKES CERTAIN ASSUMPTIONS WHICH ARE NECESSARILY TRUE FOR ITS 
- OPERATION THEY ARE.
+ The server makes certain assumptions which are necessarily true for its 
+ operation they are:
 
- 1. ALL SCA CALLBACKS HAPPEN AT INTERRUPT LEVEL AND THEREFORE 2 CALLBACKS 
-    CANNOT HAPPEN AT THE SAME TIME.
+ 1. All SCA callbacks happen at interrupt level and therefore 2 callbacks 
+    cannot happen at the same time.
 
- 2. THE INTERRUPT LEVEL FOR CI INTERRUPTS IS THE SAME AS THE INTERRUPT LEVEL 
-    FOR MASSBUS (PHYSIO) INTERRUPTS
+ 2. The interrupt level for CI interrupts is the same as the interrupt level 
+    for MASSBUS (PHYSIO) interrupts.
 
- 3. SCHEDULER CALLS (PERIODIC CHECK) IS NOT AT INTERRUPT LEVEL AND CODE
-    MUST BE PROTECTED FROM INTERRUPTS DURING PERIODIC CHECK.
+ 3. Scheduler calls (periodic check) is not at interrupt level and code
+    must be protected from interrupts during periodic check.
 
- 4. ACTUALLY AN ASPECT OF 3. NO SCHEDULER CALLS WILL HAPPEN DURING INTERRUPT
-    PROCESSING.
+ 4. (Actually an aspect of 3) No scheduler calls will happen during interrupt
+    processing.
 
- 5. THE RPLQ IS NOT PROTECTED AT ALL INTERRUPT LEVELS (IF THIS CHANGES IT WOULD
-    SIMPLIFY THINGS SOMEWHAT) BUT IS PROTECTED AT SCHEDULER CALLS INTO THE 
-    SERVER AND WHEN THE SYSTEM IS NOT EITHER NOSKED OR INSKED. IT ALSO ASSUMES
-    THAT THE RPLQ IS RACE FREE WHEN RUNNING THE NULL JOB (NULJBF<>0)
+ 5. The RPLQ is not protected at all interrupt levels (if this changes it would
+    simplify things somewhat) but is protected at scheduler calls into the 
+    server and when the system is not either nosked or insked.  It also assumes
+    that the RPLQ is race free when running the null job (NULJBF<>0).
 
- 6. DISK DRIVES WHICH ARE OFFLINE (US.OFS SET IN UDBSTS) BUT WHICH HAVEN'T GONE
-    THROUGH THE MSCOFL CODE (FROM PHYOFL IN PHYSIO) ARE "TRANSIENTLY OFFLINE"
-    AND ARE NOT TREATED AS OFFLINE TO THE DRIVERS. THIS ELIMINATES MUCH
-    OVERHEAD AND IS A TREMENDOUS PERFORMANCE WIN WHEN DUAL PORTED DRIVES ARE
-    PRESENT.
+ 6. Disk drives which are offline (US.OFS set in UDBSTS) but which haven't gone
+    through the MSCOFL code (from PHYOFL in PHYSIO) are "transiently offline"
+    and are not treated as offline to the drivers.  This eliminates much
+    overhead and is a tremendous performance win when dual ported drives are
+    present.
 
- REGISTER CONVENTIONS USED HEREIN:
+ Register conventions used herein:
 
- Q1 - ADDRESS OF COMMAND BEING PROCESSED
- Q2 - ADDRESS OF END PACKET BUFFER
- Q3 - ADDRESS OF SCDB FOR THE CONNECTION
+ Q1 - Address of command being processed
+ Q2 - Address of end packet buffer
+ Q3 - Address of SCDB for the connection
 
- P1-P4 - PHYSIO REGISTER CONVENTIONS
+ P1-P4 - PHYSIO register conventions
 
 >
 	SUBTTL Macros
@@ -598,7 +606,7 @@ NOCRDT:	RET
 ;
 LISTEN:	SAVEAC <Q1,Q3>
 	SKIPL SVSLSX		;SHOULD BE NO LISTNER
-	BUG. (HLT,MSSTML,PHYMVR,SOFT,<LISTEN - MSCP server too many listners>,,<
+	BUG.(HLT,MSSTML,PHYMVR,SOFT,<LISTEN - MSCP server too many listners>,,<
 
 Cause:	The MSCP server tried to obtain a listner when one already existed.
 	This indicates an inconsistency in the software.
@@ -625,6 +633,7 @@ LSNLUP:	SKIPE SCDBTB(Q1)	;IS THIS ENTRY FREE?
 NXTLSN:	AOBJN Q1,LSNLUP		;TRY THE NEXT
 	PUSH P,Q1		;ERROR CODE IS LOOP COUNTER
 	JRST LSNBGC		;NO MORE, ISSUE BUGCHK
+
 NOLIS:	PUSH P,T1		;SAVE ERROR CODE
 	SKIPE T1,SCDBTB(Q1)	;DO WE HAVE FREE SPACE?
 	CALL RELRES		;RELEASE IT (T1)
@@ -634,7 +643,10 @@ LSNBGC:	POP P,T1		;GET ERROR CODE
 	 BUG.(INF,MSSCGL,PHYMVR,SOFT,<MSCP server can't get listener>,<<T1,ERROR>>,<
 
 Cause:	The MSCP server cannot get a listener for connection requests.
-	The server will continue to try to get a listener.
+	The server continues to try to get a listener.
+
+Action:	If this bug occurs often or is reproducible, set it dumpable and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	ERROR - Error code returned by SC.LIS
 >,,<DB%NND>)			;[7.1210] 
@@ -699,9 +711,11 @@ R2LBAD:	PUSH P,T1		;SAVE ERROR
 	POP P,T3
 	BUG.(INF,MSSREJ,PHYMVR,SOFT,<MSCP server rejecting connection>,<<T2,NODE>,<T1,CID>,<T3,ERROR>>,<
 
-Cause:	The MSCP server is rejecting a connection because the connector
-	cannot be identified due to an SCA failure or because the connector
-	is not on a KL10 processor.
+Cause:	The MSCP server is rejecting a connection because the connector cannot
+	be identified due to an SCA failure or because the connector is not on
+	a KL10 processor.
+
+Action:	No action required, this bug is for information only.
 
 Data:	NODE - Node number
 	CID - Connect ID
@@ -722,6 +736,9 @@ R2LBA1:	MOVE T3,T1		;SAVE FOR BUGCHK
 	BUG.(CHK,MSSCAC,PHYMVR,SOFT,<MSCP server can't accept connection>,<<T2,NODE>,<T1,CID>,<T3,REASON>>,<
 
 Cause:	The MSCP server cannot accept a connection.
+
+Action:	If this bug occurs often or is reproducible, set it dumpable and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE - node number
 	CID - connect ID
@@ -759,6 +776,7 @@ MSSSH0:	SAVEPQ			;SAVE ALL P AND Q REGS
 	RET			;YES, ALL DONE
 	MOVE T3,REASON
 	STOR T3,SVSTA,(Q3)	;SAVE NEW STATE
+
 	CAIE T3,SCFSD		;FORCED SHUTDOWN?
 	IFSKP.
 	   MOVE T3,.SVCIS(Q3)	;GET COMPLETE STATUS
@@ -769,7 +787,9 @@ MSSSH0:	SAVEPQ			;SAVE ALL P AND Q REGS
 
 Cause: 	The MSCP server was forced to shut down a node.
 
-DATA:	NODE - node number
+Action:	No action required, this bug is for information only.
+
+Data:	NODE - node number
 	CID - connect ID
 	STATUS - connection status
 	ERROR - last SCA error
@@ -830,8 +850,8 @@ OK2SND:	SAVEQ
 	CAIE T3,SCWOK		;WAITING FOR THIS?
 	 BUG.(HLT,MSSNWO,PHYMVR,SOFT,<OK2SND - OK to send when not waiting>,<<T2,CID>>,<
 
-Cause:	The MSCP server received notification of OK to send from a node.
-	The node in question was not flagged as waiting for an OK to send.
+Cause:	The MSCP server received notification of OK to send from a node.  The
+	node in question was not flagged as waiting for an OK to send.
 
 Data:	CID - connect ID
 
@@ -908,7 +928,10 @@ CMDTMO:	MOVE T3,.QCSTS(Q1)
 	JRST CRDNXT		;YES, MUST BE STUCK IORB DO NEXT
 	 BUG.(INF,MSSCTO,PHYMVR,SOFT,<PHYMVR - Command timeout>,<<T2,NODE>,<T1,CID>,<T4,STATE>>,<
 
-Cause:	Unknown. A command did not complete in the timeout interval.
+Cause:	Unknown.  A command did not complete in the timeout interval.
+
+Action:	If this bug occurs often or is reproducible, set it dumpable and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE - node number
 	CID - connect ID
@@ -948,8 +971,8 @@ DMCFNL:	CAMN T3,.QCDBD(Q1)	;SAME?
 	SKIPN Q1,.QCNXT(Q1)	;GET NEXT
 DMAQNF:	BUG.(HLT,MSSDNQ,PHYMVR,SOFT,<DMADON - DMA done queue entry not found>,<<T2,CID>,<T3,BUFF>>,<
 
-Cause:	A DMA complete interrupt occurred and no commands were found which
-	had a matching buffer name. This indicates a software inconsistency.
+Cause:	A DMA complete interrupt occurred and no commands were found which had
+	a matching buffer name. This indicates a software inconsistency.
 
 Data:	CID - connect ID
 	BUFF - 32 bit buffer name
@@ -1077,14 +1100,18 @@ BADCM0:	SETO T2,		;NO BUGINF
 	SKIPN BGFLAG		;BUGINF?
 	 BUG.(INF,MSSBCM,PHYMVR,SOFT,<BADCMD - MSCP server bad command>,<<T2,NODE>,<T1,CID>,<T3,OPCODE>,<T4,ERRBIT>>,<
 
-Cause:	The MSCP server received a command with an illegal or 
-	unsupported operation specified.
+Cause:	The MSCP server received a command with an illegal or unsupported
+	operation specified.
+
+Action:	If this bug occurs often or is reproducible, set it dumpable and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE   - node number
 	CID    - connect ID
 	OPCODE - operation code
 	ERRBIT - error bits and status of command
 >)
+
 	JUMPN Q2,BADCM1		;HAVE A MESSAGE BUFFER
 	CALL GETEBF		;NO. GET ONE
 	 RET			;CAN'T
@@ -1439,16 +1466,19 @@ CHKIOE:	SETZ T1,		;INITIALIZE MSCP ERROR BITS
 	MOVX T1,ST.DAT		;YES
 	TXNE T1,IS.WLK		;WRITE PROTECTED?
 	MOVX T1,ST.WPR		;YES
-	SKIPN T1		;ANY ERROR BITS SET?
-	JRST [BUG.(CHK,MSSER0,PHYMVR,SOFT,<IORB done error and error bits 0>,<<T2,IRBERR>>,<
+	IFE. T1			;[8913] Any error bits set?
+	  BUG.(CHK,MSSER0,PHYMVR,SOFT,<IORB done error and error bits 0>,<<T2,IRBERR>>,<
 
 Cause:	An IORB completed with bit IS.ERR set indicating an error. The MSCP
 	server could not find any relevent error.
 
+Action:	If this bug occurs often or is reproducible, set it dumpable and
+	submit an SPR along with a dump and instructions on reproducing it.
+
 Data:	IRBERR - IORB status word
 >)
-	     MOVX T1,ST.CNT	;CONTROLLER ERROR
-	     JRST .+1]
+	  MOVX T1,ST.CNT	;[8913] Controller error
+	ENDIF.			;[8913]
 	CALL REVFUL
 	IORM T1,P.STS(Q1)	;SAVE ERROR STATUS
 	CALLRET MAKIOE		;SEND END PACKET
@@ -1741,7 +1771,7 @@ GETBF:	SAVEAC <Q1>		;ENTRY TO GET A BUFFER FOR A NON-END USE
 	SETZ Q1,		;FLAG NO COMMAND
 GETEBF:	MOVEI T1,1
 	CALL SC.ABF		;GET A PACKET BUFFER
-	 SCAERR <CALLRET QUECMD>;CAN'T QUEUE OLD COMMAND (Q1/)
+	 SCAERR <CALLRET QUECHK>;[8984] Can't queue old command (Q1/)
 	MOVE T4,T3		;REMEMBER RETURN ADDRESS FOR BUFFER
 	MOVE Q2,T1		;SAVE ITS ADDRESS
 	MOVE T2,Q2		;GET READY
@@ -1759,7 +1789,7 @@ GETEBF:	MOVEI T1,1
 	MOVE T1,P.CRF(Q1)	;YES, GET COMMAND REFERENCE NUMBER FROM COMMAND
 	MOVEM T1,P.CRF(Q2)	;SAVE IN END PACKET
 	RETSKP			;GOOD RETURN
-
+
 ENDRTY:	LOAD T1,QCSTS,(Q1)	;GET STATUS
 	CAIE T1,STWSE		;WAITING FOR THIS
 	CALL ILSTAT		;NO. DIE
@@ -1789,7 +1819,7 @@ IFN DEBUG,<	CALL SCPAK
 	AOS SVSEND		;[7211] COUNT THE SEND
 	SOS SVPKIU		;COUNT PACKETS IN USE
 	CALLRET RTNCMD		;SEND OK RETURN COMMAND
-
+
 ;
 ; HERE IF THE SEND FAILED. FIND OUT WHY AND DO SOMETHING ABOUT IT
 ;
@@ -1799,8 +1829,11 @@ SNDERR:	MOVE T3,T1
 	CAIE T3,SCSNEC		;NOT ENOUGH CREDIT?
 SNDSHT:	BUG.(INF,MSSSBD,PHYMVR,SOFT,<Send failed>,<<T2,NODE>,<T1,CID>,<T3,ERROR>>,<
 	
-Cause:	A send of a message failed for an unexpected reason. The 
-	connection will be shut down.
+Cause:	A send of a message failed for an unexpected reason.  The connection
+	is shut down.
+
+Action:	If this bug occurs often or is reproducible, set it dumpable and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE - node number
 	CID - connect ID
@@ -1838,7 +1871,7 @@ SCPAK:	CAIL T3,P%OPCD		;LENGTH GOOD?
 
 BADPAK:	 BUG.(HLT,MSSNUT,PHYMVR,SOFT,<MSCP server send sanity check failed>,,<
 
-Cause: 	Unknown should never happen. Examine the dump to determine the 
+Cause: 	Unknown should never happen.  Examine the dump to determine the
 	problem.
 >)
 >
@@ -1869,15 +1902,18 @@ CLENUP:	SAVET			;PRESERVE ALL ACS
 	SKIPG NRPLQ		;ANY PAGES BEFORE THIS?
 	CALL MSSCZK		;NO, MAKE SCHED KNOW TO RUN US SOON
 	CALL OFRQ		;AND PLACE IT ON RPLQ
-
+
 CLENU2:	SETZ T1,
 	EXCH T1,.QCDBD(Q1)	;MARK NO BUFFER
 	JUMPE T1,CLENU1		;MAY BE NO BUFFER
 	BLCAL. (SC.UMP,<T1>)	;UNMAP BUFFER
 	 SCAERR <BUG.(CHK,MSSUMP,PHYMVR,SOFT,<Unmap buffer failed>,<<T1,REASON>>,<
 
-Cause:	A routine was called to unmap a buffer and failed when it should 
-	not have.
+Cause:	A routine was called to unmap a buffer and failed when it should not
+	have.
+
+Action:	If this bug occurs often or is reproducible, set it dumpable and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	REASON - error code
 >,CLNUME)>
@@ -1943,6 +1979,9 @@ SCDBBG:	MOVE T1,T2
 
 Cause:	The MSCP server cannot locate a SCDB for the given connect ID.
 
+Action:	If this bug occurs often or is reproducible, set it dumpable and
+	submit an SPR along with a dump and instructions on reproducing it.
+
 Data:	NODE - node number
 	CID - connect ID
 >)
@@ -1959,7 +1998,6 @@ Data:	SCAFNC - SCA function code
 ILSTAT:	BUG.(HLT,MSSSTA,PHYMVR,SOFT,<MSCP SERVER - Illegal state>,,<
 
 Cause:	The MSCP server detected an illegal command or connection state.
-
 >,R)
 
 ;SUBROUTINE TO FIND SPECIFIED UNIT OR NEXT UNIT NUMBERED HIGHER
@@ -2238,6 +2276,16 @@ ATADOK:	MOVX T1,US.BDK		;ALL OK. CLEAR BROADCAST NEEDED
 ; Q3/ SCDB
 ;	CALL QUECMD		;(Q1,Q3/)
 ; RETURNS +1 ALWAYS
+
+;[8984] Nota bene - Routine GETBF calls QUECHK when SCA buffer allocation
+;fails. This routine does not set up Q1 (zeroes it) because there is no
+;command associated with it. This is done when the system is trying to
+;tell other nodes about disks that it is onlining. QUECHK will exit stage
+;left immediately if we are coming from ATALUP (and through GETBF). ATALUP
+;handles the SCA buffer allocation failure and deferes the send till a later,
+;more convenient time.
+
+QUECHK:	JUMPE Q1,R		;[8984] If no command, then done
 QUECMD:	JN MSCOQ,(Q1),R		;IF ALREADY QUEUED JUST RETURN
 	SETONE MSCOQ,(Q1)
 	MOVE T1,[MSEC1,,RTNQCE]	;GET RETURN ADDRESS FOR QUEUED COMMANDS

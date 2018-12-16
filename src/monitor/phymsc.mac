@@ -1,4 +1,9 @@
-; UPD ID= 8702, RIP:<7.MONITOR>PHYMSC.MAC.7,  20-Apr-88 10:34:35 by RASPUZZI
+; Edit= 9014 to PHYMSC.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8913 to PHYMSC.MAC on 17-Aug-88 by GSCOTT
+;Update BUG. documentation. 
+; Edit= 8832 to PHYMSC.MAC on 20-Apr-88 by RASPUZZI (TCO 7.1276)
+;Install TCO 7.1276 into the autopatch sources.
 ;TCO 7.1276 - TCO 7.1268 causes bad side effects. It was an attempt at making
 ;	      life easier in the login structures lane. Instead of using US.UNA
 ;	      for a dual purpose, us a new bit U1.NOL.
@@ -424,19 +429,19 @@
 ;
 ;
 ;    1. Start I/O  . . . . . . . . . . . . . . . . . . . . . .   4
-;    2. General Purpose Packet Routines  . . . . . . . . . . .  11
-;    3. Interrupt Service  . . . . . . . . . . . . . . . . . .  13
-;    4. Diag Online  . . . . . . . . . . . . . . . . . . . . .  34
-;    5. General Purpose Routines . . . . . . . . . . . . . . .  36
-;    6. PHYSIO Interface . . . . . . . . . . . . . . . . . . .  42
-;    7. Initialization . . . . . . . . . . . . . . . . . . . .  44
-;    8. Init Assist Routines . . . . . . . . . . . . . . . . .  60
-;    9. General Routines . . . . . . . . . . . . . . . . . . .  64
-;   10. Periodic Check . . . . . . . . . . . . . . . . . . . .  70
+;    2. General Purpose Packet Routines  . . . . . . . . . . .  13
+;    3. Interrupt Service  . . . . . . . . . . . . . . . . . .  15
+;    4. Diag Online  . . . . . . . . . . . . . . . . . . . . .  38
+;    5. General Purpose Routines . . . . . . . . . . . . . . .  40
+;    6. PHYSIO Interface . . . . . . . . . . . . . . . . . . .  46
+;    7. Initialization . . . . . . . . . . . . . . . . . . . .  48
+;    8. Init Assist Routines . . . . . . . . . . . . . . . . .  65
+;    9. General Routines . . . . . . . . . . . . . . . . . . .  69
+;   10. Periodic Check . . . . . . . . . . . . . . . . . . . .  75
 ;   11. CNFIG% JSYS Support
-;       11.1    CFHSC (Return list of HSC node names)  . . . .  78
-;   12. Storage  . . . . . . . . . . . . . . . . . . . . . . .  81
-;   13. End of PHYMSC  . . . . . . . . . . . . . . . . . . . .  85
+;       11.1    CFHSC (Return list of HSC node names)  . . . .  83
+;   12. Storage  . . . . . . . . . . . . . . . . . . . . . . .  86
+;   13. End of PHYMSC  . . . . . . . . . . . . . . . . . . . .  90
 
 
 ;LOCAL BYTE POINTERS
@@ -472,11 +477,12 @@ MSCDSP::JRST MSCRNG		;0 - INITIALIZATION
 	JRST R			;14- CHECK FOR HALTED CONTROLLER
 	RET			;15 - PORT RELEASE
 
-MSCRNG:	BUG. (HLT,MSCBAD,PHYMSC,SOFT,<PHYMSC - Bad dispatch from PHYSIO>,,<
+MSCRNG:	BUG.(HLT,MSCBAD,PHYMSC,SOFT,<PHYMSC - Bad dispatch from PHYSIO>,,<
 
-Cause:	PHYMSC was called to perform a function that cannot be performed.
+Cause:	PHYSIO called PHYMSC at the MSCDSP controller dispatch vector to
+	perform a function that is illegal for MSCP devices.  This is a
+	software problem.
 >)
-
 	SUBTTL Start I/O
 
 ;MSCSIO:,MSCRIO:  
@@ -502,15 +508,19 @@ MSCRIO:	MOVX T2,BS.HDM		;SET HIGH DENSITY AS DEFAULT
 	RET			;CAN'T START THIS ONE
 	LDB T1,IRYFCN		;YES. GET FUNCTION FROM IORB
 	SKIPN Q3,MSCFCN(T1)	;YES, IS IT A DEFINED FUNCTION FOR AN MSCP SERVER?
-	JRST  [BUG. (CHK,MSCILF,PHYMSC,SOFT,<PHYMSC - Illegal function at start IO>,<<T1,FCN>>,<
+	JRST  [BUG.(CHK,MSCILF,PHYMSC,SOFT,<PHYMSC - Illegal function at start IO>,<<T1,FCN>>,<
 
-Cause:	Illegal function at call to MSCRIO.
+Cause:	Illegal function at call to start IO on a MSCP device.  The caller of
+	MSCRIO or MSCSIO has specified an function code that is not legal for
+	MSCP devices.
 
-Action: Fix the caller.
+Action:	If this BUGCHK is reproducable, set it dumpable, and send in an SPR
+	with the dump and how to reproduce the problem.
 
-Data:	FCN - Function
+Data:	FCN - The illegal function
 >)
 		RET]
+
 	SKIPL UDBSTR(P3)	;IS THE UNIT IN A STR?
 	JRST MSCSI1		;YES
 	HLRZ T1,UDBTWQ(P3)	;NO. GET END OF TWQ
@@ -671,13 +681,17 @@ MSCSI8:	MOVE T1,UDBSLV(P3)	;MSCP UNIT NUMBER
 	BLCAL. (SC.DCI,<MSCCID(Q1)>) ;GET THE CONNECT ID
 	 JRST [	MOVE T1,MSCCID(Q1) ;GET THE SOURCE CONNECT ID
 		CALL SC.NOD	;(T1/T1,T2) GET THE DESTINATION NODE
-		BUG. (CHK,MSCIDG,PHYMSC,SOFT,<PHYMSC - Connect ID gone>,<<T2,NODE>,<T1,CID>>,<
+		BUG.(CHK,MSCIDG,PHYMSC,SOFT,<PHYMSC - Connect ID gone>,<<T2,NODE>,<T1,CID>>,<
 
-Cause:	The connect ID is now gone.
+Cause:	When the MSCP driver was tyring to send a request to a server, the
+	source connect ID disappeared (call to SC.DCI failed).  This appears to
+	be a SCAMPI problem.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:  	NODE - destination node number
 	CID  - source connect ID
-
 >)
 		RET]
 	MOVEM T1,P.BUFF+2(Q2)	;TELL THE HSC THE LAST PART OF THE BUFFER NAME
@@ -694,30 +708,39 @@ Data:  	NODE - destination node number
 
 MSCSI9:	CAIN T1,SCSNEC		;LOSE DUE TO NO CREDIT?
 	JRST [	AOS LCRDT
-		JRST RBDQUE]		;YES, QUEUE FOR LATER
+		JRST RBDQUE]	;YES, QUEUE FOR LATER
 	CAIN T1,SCSCWS		;WRONG STATE?
 	JRST SNDWNS		;YUP WE LOST THIS ONE
 	MOVE T3,T1		;MOVE ERROR CODE
 	MOVE T1,MSCCID(Q1)	;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (CHK,MSCSDF,PHYMSC,SOFT,<PHYMSC - Send failure>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>>,<
+	BUG.(CHK,MSCSDF,PHYMSC,SOFT,<PHYMSC - Send failure>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>>,<
 
-Cause:	A message sent to SCAMPI failed and an error will be returned.
+Cause:	A message sent to SCAMPI failed for reasons other than no credit or
+	connection in wrong state.  The send request is retried.  This
+	appears to be a SCAMPI problem.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE   - node number
 	CID    - connect ID
 	ERRCOD - error code
 >)
-	JRST	RBDQUE		;WAIT A WHILE AND TRY AGAIN
-
+	JRST RBDQUE		;WAIT A WHILE AND TRY AGAIN
+
 SNDWNS:	MOVE T3,T1		;MOVE ERROR CODE
 	MOVE T1,MSCCID(Q1)	;GET THE CONNECT INFORMATION
 	CALL SC.NOD		;(T1/T1,T2) GET THE NODE NUMBER FOR THE CONNECTION
-	BUG. (CHK,MSCSCW,PHYMSC,SOFT,<PHYMSC - Send found wrong connect state>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>>,<
+	BUG.(CHK,MSCSCW,PHYMSC,SOFT,<PHYMSC - Send found wrong connect state>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>>,<
 
 Cause:	The state of the connection is incorrect for the connect state.
-	Previous states should have caught this unless the state changed 
-	during the send.  The send should have been done with the channel off.
+	Previous states should have caught this unless the state changed during
+	the send.  The send should have been done with the channel off.  The
+	send is tried again.  This appears to be a SCAMPI problem.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE   - node number
 	CID    - connect ID
@@ -845,9 +868,10 @@ GETBUF::MOVEI T1,1
 INTRPT:	SAVEPQ
 	CAIG T1,INTRLG		;CHECK FOR LEGAL DISPATCHES
 	JUMPGE T1,@DISPCH(T1)
-	BUG. (HLT,MSCILD,PHYMSC,SOFT,<PHYMSC - Illegal dispatch from SCAMPI>,<<T1,CODE>>,<
+	BUG.(HLT,MSCILD,PHYMSC,SOFT,<PHYMSC - Illegal dispatch from SCAMPI>,<<T1,CODE>>,<
 
-Cause:	A dispatch value from Scampi is illegal.
+Cause:	PHYMSC was called by SCAMPI with an illegal dispatch value (less than
+	zero or greater than INTRLG).  This appears to be a SCAMPI problem.
 
 Data:	CODE - Dispatch value
 >)
@@ -873,9 +897,14 @@ DSCREQ:	LOAD T1,SID,T2		;GET INDEX
 	RET			;FORGET IT
 	MOVE T1,T2		;GET CID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (INF,MSCDSR,PHYMSC,SOFT,<PHYMSC - Disconnect request by remote node>,<<T2,NODE>,<T1,CID>,<T3,REASON>>,<
+	BUG.(INF,MSCDSR,PHYMSC,SOFT,<PHYMSC - Disconnect request by remote node>,<<T2,NODE>,<T1,CID>,<T3,REASON>>,<
 
-Cause:  The remote node has disconnected.
+Cause:	The remote node has disconnected, the remote node has probably timed
+	out on some operation to the MSCP driver.  All drives connected to the
+	node are put offline.
+
+Action:	No action is required, this bug is informational only.  The remote node
+	might indicate why it disconnected.
 
 Data:	NODE   - node number
 	CID    - connect ID
@@ -896,15 +925,17 @@ Data:	NODE   - node number
 ;TO BE OFFLINE AND RE-QUEUE ALL THE REQUESTS.
 ;WHEN THE PORT REVIVES THE POLLER SHOULD RECOVER FROM THIS PROBLEM.
 
-
 PBRCON:	SKIPGE T2		;IS THIS AN EXTRA CALLBACK?
 	RET			;YES, JUST RETURN
 	MOVE T1,T2		;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
 	SKIPE CIBUGX		;CI DEBUGGING?
-	BUG. (INF,MSCPTG,PHYMSC,SOFT,<PHYMSC - port went away>,<<T2,NODE>,<T1,CID>>,<
+	BUG.(INF,MSCPTG,PHYMSC,SOFT,<PHYMSC - port went away>,<<T2,NODE>,<T1,CID>>,<
 
-Cause:	The port has dropped the connection.
+Cause:	The remote node has dropped the connection.  All drives connected to
+	the node are put offline.
+
+Action:	No action is required, this bug is informational only.
 
 Data:	NODE - node number
 	CID  - connect ID
@@ -912,14 +943,14 @@ Data:	NODE - node number
 	MOVE T2,T1		;REPOSITION CID
 
 NODBYE:	CALL FNDNDX		;SET UP MSCCID INDEX, CB ADDR
-	JRST [ MOVX T2,DT.KEP	     ;CLEAR STATUS
+	JRST [ MOVX T2,DT.KEP	;CLEAR STATUS
 	       ANDM T2,CIDATA(T1)
 	       RET]		;AND QUIT
 	SETOM MSCCID(T1)	;INDICATE WE ARE GONE
 	MOVX T4,DT.KEP		;INDICATE DISCONNECT
 	ANDM T4,CIDATA(T1)
 	JRST PBRCOB		;JUMP FINISH OFFLINE
-
+
 PBRCOA:	CALL FNDNDX
 	JFCL			;THIS GUY BETTER NOT LOOSE...
 	MOVX T3,DT.GAW		;INDICATE GONE AWAY
@@ -963,25 +994,27 @@ MSCONL:	HRRO Q1,T2		;SB INDEX INTO A MORE PERMANENT AC
 CNRAVL:	LOAD Q3,SID,T2		;WHICH NODE IS THIS TALKING ABOUT
 	JUMPE T3,CRNAV1		;CHECK TO SEE IF REJECTED
 	SKIPG T2		;DID WE GET A VALID CID?
-	 BUG. (HLT,MSCBID,PHYMSC,SOFT,<PHYMSC - bad connect ID from SCAMPI>,<<T2,CID>>,<
+	 BUG.(HLT,MSCBID,PHYMSC,SOFT,<PHYMSC - bad connect ID from SCAMPI>,<<T2,CID>>,<
 
-Cause:	A connect response available occurred and a negative or zero connect
-	Id was returned from SCA
+Cause:	A connect response available occurred and a negative or zero Connect ID
+	was returned from SCA.  This indicates a SCAMPI problem.
 
 Data:	CID - connect ID
-
 >)
 	CAME T2,MSCOLD(Q3)	;MATCH?
 	JRST CNRREJ		;WE ALREADY KNOW ABOUT YOU??
 	SETO T1,0
-	CAME T1,MSCCID(Q3)	;COMING ONLINE (ARE WE WAITING FOR THIS ONE?)
-	IFNSK.			;NO
+	CAMN T1,MSCCID(Q3)	;[8913] Coming online (waiting for this one?)
+	IFSKP.			;[8913] No
 CNRREJ:	  MOVE T1,T2		;GET CONNECT ID
 	  CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	  BUG. (CHK,MSCNRA,PHYMSC,SOFT,<PHYMSC - Node response available when not requested>,<<T2,NODE>,<T1,CID>>,<
+	  BUG.(CHK,MSCNRA,PHYMSC,SOFT,<PHYMSC - Node response available when not requested>,<<T2,NODE>,<T1,CID>>,<
 
-Cause:	A connect response available occurred on a node that isn't expected 
-	to have an available happen.
+Cause:	A connect response available occurred on a node that isn't expected to
+	have an available happen.  This could be a SCAMPI or PHYMSC problem.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE - node number
 	CID  - connect ID
@@ -1003,10 +1036,13 @@ CRNAV1:	MOVX T1,DT.KEP		;CLEAR STATUS
 	SKIPN CIBUGX		;[7191] ARE WE IN DEBUGGING MODE?
 	RET			;[7191] NO, THEN DON'T SCARE THE OPERATOR
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (INF,MSCREJ,PHYMSC,SOFT,<PHYMSC - Node connection reject>,<<T2,NODE>,<T1,CID>>,<
+	BUG.(INF,MSCREJ,PHYMSC,SOFT,<PHYMSC - Node connection reject>,<<T2,NODE>,<T1,CID>>,<
 
 Cause:	A connection response available was rejected.  The node cannot be
-	reached.
+	reached.  The MSCP server on another TOPS-20 system rejects all
+	connections until that system has joined the CFS cluster.
+
+Action:	No action is required, this bug is for information only.
 
 Data:	NODE - node number
 	CID  - connect ID
@@ -1018,9 +1054,13 @@ Data:	NODE - node number
 ;	SKIP RETURN IF MATCH WITH T1/MSCCID INDEX, T2/CB ADDRESS
 ;PRESERVES T3, T4
 FNDNDX:	SKIPN T2		;CHECK FOR BROKEN SCAMPI
-MSNGID:	BUG. (CHK,MSCMID,PHYMSC,SOFT,<PHYMSC - Missing connect ID>,,<
+MSNGID:	BUG.(CHK,MSCMID,PHYMSC,SOFT,<PHYMSC - Missing connect ID>,,<
 
-Cause:	There is a missing or zero connect ID on call to FNDNDX.
+Cause:	There is a missing or zero connect ID on call to FNDNDX.  This has to
+	be a SCAMPI problem.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 >)
 	LOAD T1,SID,T2		;GET THE OFFSET INTO THE MSCCID TABLE
 	CAME T2,MSCCID(T1)	;CHECK FOR CORRECT CONNECT ID
@@ -1028,7 +1068,7 @@ Cause:	There is a missing or zero connect ID on call to FNDNDX.
 	$LDCID T2,T2		;FOUND A MATCH FIND CB ADDRESS
 	RETSKP			;RETURN
 
-
+
 ;ROUTINE TO SEARCH FOR AN OPEN OR UNUSED SLOT FOR CONNECT ID'S
 ;ENTER: Q1 = SBI COMING ON LINE
 ;RETURNS: Q3 = INDEX INTO MSCCID FOR NEW SLOT
@@ -1043,12 +1083,15 @@ FNDSLT:	MOVE Q3,Q1		;SET UP Q3
 	RETSKP
 	MOVE T1,MSCCID(Q3)	;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (CHK,MSCAOL,PHYMSC,SOFT,<PHYMSC - Online node event while node already online>,<<T2,NODE>,<T1,CID>,<Q1,SBI>>,<
+	BUG.(CHK,MSCAOL,PHYMSC,SOFT,<PHYMSC - Online node event while node already online>,<<T2,NODE>,<T1,CID>,<Q1,SBI>>,<
 
-Cause:	SCAMPI told us that this node was coming back on line but we think
-	that it is already online.
+Cause:	SCAMPI told us that this node was coming back on line but we think that
+	it is already online.  We believe SCAMPI and put it online.  This is
+	commonly seen from the HSC.
 
-Action: Believe SCAMPI and put it online
+Action:	No action is required.  However, if this bug occurs often or is
+	reproducible, change it to a BUGHLT and submit an SPR along with a dump
+	and instructions on reproducing it.
 
 Data:	NODE - node number
 	CID  - connect ID
@@ -1119,9 +1162,13 @@ MSGREC:	AOS MSCRCV		;[7211] COUNT THE MESSAGES
 BROKE: 	DMOVE T3,T1	;MOVE ENDCODE AND FUNCTION CODE
 	MOVE T1,P5	;GET CONNECT ID
 	CALL SC.NOD	;(T1/T1,T2)  AND NODE NUMBER
-	BUG. (CHK,MSCBCN,PHYMSC,SOFT,<PHYMSC - Command reference number bad>,<<T2,NODE>,<T1,CID>,<T3,ENDCODE>,<T4,FUNCTION>>,<
+	BUG.(CHK,MSCBCN,PHYMSC,SOFT,<PHYMSC - Command reference number bad>,<<T2,NODE>,<T1,CID>,<T3,ENDCODE>,<T4,FUNCTION>>,<
 
-Cause:	The command reference number is invalid.
+Cause:	The command reference number is invalid.  This is an MSCP protocol
+	problem.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE	 - node number
 	CID	 - connect ID
@@ -1135,9 +1182,12 @@ TAPSUC:	LOAD T3,PKYEST,(Q2)	;GET STATUS
 	JUMPE T3,RTNBUF		;ALL OK
 	MOVE T1,P5
 	CALL SC.NOD		;GET NODE NUMBER
-	BUG. (INF,MSCSUF,PHYMSC,SOFT,<PHYMSC - Set density failed>,<<T2,NODE>,<T1,CID>,<3,CODE>>,<
+	BUG.(INF,MSCSUF,PHYMSC,SOFT,<PHYMSC - Set density failed>,<<T2,NODE>,<T1,CID>,<3,CODE>>,<
 
-Cause:	The set unit characteristics command failed.
+Cause:	The set unit characteristics command failed for a tape drive.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE - Node number
 	CID - Connect ID
@@ -1164,19 +1214,25 @@ MSGRC4:	CAMN T2,QORCRF(Q1)	;MATCH?
 RTNBFX:	DMOVE T3,T1		;MOVE ENDCODE AND COMMAND REFERENCE NUMBER
 	MOVE T1,P5		;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	SKIPN Q1		;CHECK FOR CLOBBERED QOR LIST
-	JRST [	BUG.(CHK,MSCQRC,PHYMSC,SOFT,<PHYMSC - QOR list clobbered>,<<T2,NODE>,<P2,KONT>,<T4,CRN>>,<
+	JUMPE Q1,[BUG.(CHK,MSCQRC,PHYMSC,SOFT,<PHYMSC - QOR list clobbered>,<<T2,NODE>,<P2,KONT>,<T4,CRN>>,<
 
-Cause:	The QOR list has been clobbered and has a 0.
+Cause:	The QOR (the link between MSCP commands and IORBs) list has been
+	clobbered and has a 0 in it.  This indicates a PHYMSC problem.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE - Node number
 	KONT - Controller number
 	CRN - Command reference number
 >,RTNBUF)]
-	BUG. (CHK,MSCBPK,PHYMSC,SOFT,<PHYMSC - QOR bad packet>,<<T2,NODE>,<T1,CID>,<T3,ENDCODE>,<T4,CRN>>,<
+	BUG.(CHK,MSCBPK,PHYMSC,SOFT,<PHYMSC - QOR bad packet>,<<T2,NODE>,<T1,CID>,<T3,ENDCODE>,<T4,CRN>>,<
 
-Cause:	The HSC sent a packet whose command reference number can't be 
-	found.
+Cause:	The HSC sent a packet whose command reference number can't be found.
+	The packet is ignored.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE - node number
 	CID - connect ID
@@ -1191,11 +1247,11 @@ MSGRC5:	SKIPN T1,QORBHD(Q1)	;RETURN THE BHD IF THERE IS ONE
 	ADD T3,BHDIPT		;POINT AT ENTRY
 	MOVX T2,BH.ERR		;ERROR
 	TDNE T2,(T3)		;IS THE ERROR BIT SET?
-	BUG. (HLT,MSCBHE,PHYMSC,SOFT,<PHYMSC - BHD error bit set>,,<
+	BUG.(HLT,MSCBHE,PHYMSC,SOFT,<PHYMSC - BHD error bit set>,,<
 
 Cause:	The BHD error bit was set.  This implies that the BSD had the wrong
-	length.  Something is inconsistent in the state or too much data
-	was sent.
+	length.  Something is inconsistent in the state or too much data was
+	sent.
 >)
 	SETZM 0(T3)		;CLEAR FLAGS WORD
 	CALL RTNBHX
@@ -1247,20 +1303,24 @@ MSGRC7:	LDB T1,IRYFCN		;FUNCTION
 
 
 ;HERE ON A MESSAGE WITH A BAD END CODE
+
 MSGRC8:	MOVE T3,T1		;SAVE ENDCODE
 	MOVE T4,P.CRF(Q2)	;MAKE SURE WE HAVE COMMAND REFERENCE NUMBER
 	ASH T4,-4		;RIGHT ADJUST IT IN 36 BITS
 	MOVE T1,P5		;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (CHK,MSCPEI,PHYMSC,SOFT,<PHYMSC - Packet end code incorrect>,<<T2,NODE>,<T1,CID>,<T3,ENDCODE>,<T4,CRN>>,<
+	BUG.(CHK,MSCPEI,PHYMSC,SOFT,<PHYMSC - Packet end code incorrect>,<<T2,NODE>,<T1,CID>,<T3,ENDCODE>,<T4,CRN>>,<
 
-Cause:	The HSC sent a packet that had a bad packet end code.
+Cause:	The HSC sent a packet that had a bad packet end code.  There may be a
+	problem with the HSC or it could be a software problem.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE    - node number
 	CID	- connect ID
 	ENDCODE - packet end code
 	CRN	- command reference number
-
 >)
 	CALLRET RTNBUF		;CHUCK THE PACKET AND EXIT THE INTERRUPT
 
@@ -1344,14 +1404,18 @@ ERRDON:	MOVX T3,IS.ERR!IS.NRT!IS.DVE ;YES
 DONE:	IORM T3,IRBSTS(P4)	;LIGHT BITS IN IORB
 DONE1:	CAIN T1,ST%CMD		;CHECK FOR ILLEGAL COMMAND
 	JRST [	LOAD T3,PKYQSB,(Q2)
-		BUG. (CHK,MSCIVC,PHYMSC,SOFT,<PHYMSC - Illegal command>,<<P1,CHAN>,<P2,KONT>,<P3,UNIT>,<T3,STS>>,<
+		BUG.(CHK,MSCIVC,PHYMSC,SOFT,<PHYMSC - Illegal command>,<<P1,CHAN>,<P2,KONT>,<P3,UNIT>,<T3,STS>>,<
 
-Cause:	An illegal command was claimed by the remote node. 
+Cause:	The remote node claimed we sent it an illegal command.  This indicates
+	a MSCP protocol problem with the local or remote node.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	CHAN - Channel number
 	KONT - Controller number
 	UNIT - Unit number
-	STS - 
+	STS  - Status returned by remote node
 >)
 		JRST .+1]
 	CAIN T1,ST%WPR		;CHECK FOR WRITE PROTECT
@@ -1384,18 +1448,21 @@ DONE2:	CALL RTNBUF		;GIVE THE BUFFER BACK TO SCA
 	RET			;DONE - RETURN TO SCA
 
 DONE3:	SKIPN P4
-	BUG. (HLT,MSCNIR,PHYMSC,SOFT,<PHYMSC - IORB ZERO>,<<P5,CID>>,<
+	BUG.(HLT,MSCNIR,PHYMSC,SOFT,<PHYMSC - IORB zero>,<<P5,CID>>,<
 
-Cause:  PHYMSC found the IORB register zero in a place it did not
-        expect.
+Cause:  PHYMSC found the IORB register zero in a place it did not expect.
 
 Data:   CID - Connect ID
 >)
 	MOVE T2,IRBSTS(P4)	;STATUS OF THE IORB (MAY NOT BE VALID)
-	BUG. (INF,MSCGON,PHYMSC,SOFT,<PHYMSC - IORB/QOR gone>,<<P5,CID>,<P4,IORB>,<T2,STATUS>>,<
+	BUG.(INF,MSCGON,PHYMSC,SOFT,<PHYMSC - IORB/QOR gone>,<<P5,CID>,<P4,IORB>,<T2,STATUS>>,<
 
-Cause:	PHYMSC had a data structure which pointed at an IORB. It cannot find
-	the IORB on the unit transfer queue.
+Cause:	PHYMSC had a data structure which pointed at an IORB.  It cannot find
+	the IORB on the unit transfer queue.  This seems to be a problem with
+	PHYMSC's handling of the QOR database.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	CID - Connect ID
 	IORB - IORB address
@@ -1469,9 +1536,13 @@ MSGAVA:	BLCAL. (SC.RMG,<P5,[1],[0]>)	 ;REQUEST MORE CREDIT
 	MOVE T1,P5		;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
 	SKIPE CIBUGX		;CI DEBUGGING?
-	BUG. (INF,MSCAVA,PHYMSC,SOFT,<PHYMSC - Available message received>,<<T2,NODE>,<T1,CID>,<T4,UNIT>>,<
+	BUG.(INF,MSCAVA,PHYMSC,SOFT,<PHYMSC - Available message received>,<<T2,NODE>,<T1,CID>,<T4,UNIT>>,<
 
-Cause:	An Available message was received.
+Cause:	When a disk becomes available we get a message that tells us that it
+	has returned from a state where it we could not use it.  We then build
+	a UDB if needed and start checking the home blocks.
+
+Action:	No action required, this bug is for information only.
 
 Data:	NODE - node number
 	CID  - connect ID
@@ -1492,9 +1563,14 @@ MSGAV1:	MOVEI P6,MSGA1		;RETURN ON DONE TO MSGAA
 	  MOVE T3,T1		;MOVE ERROR CODE
 	  MOVE T1,P5		;GET CONNECT ID
 	  CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	  BUG. (INF,MSCNUF,PHYMSC,SOFT,<PHYMSC - Get next unit failed>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>>,<
+	  BUG.(INF,MSCNUF,PHYMSC,SOFT,<PHYMSC - Get next unit failed>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>>,<
 
-Cause:	SC.SMG failed
+Cause:	PHYMSC was unable to get the next unit from a HSC, probably because 
+	SC.SMG failed.  This is seen most often with broken HSC hardware.
+
+Action:	If the hardware checks out OK, and if this bug occurs often or is
+	reproducible, change it to a BUGHLT and submit an SPR along with a dump
+	and instructions on reproducing it.
 
 Data:	NODE   - node number
 	CID    - connect ID
@@ -1521,16 +1597,20 @@ MSGAA:	CALL SETP3		;CHECK FOR A UNIT FOUND
 	 JRST RTNBUF		;NO SPACE TO CREATE THE UDB
 	TLZ P2,-1		;CLEAR JUNK FROM LH OF P2
 	CALL PHYDUA		;(P3/) LOOK FOR ANOTHER UDB WITH SAME DSN
-MSGAV3:	MOVE T1,Q1		;RECOVER UNIT NUMBER
+
+MSGAV3:	MOVE T1,Q1		;RECOVER UNIT NUMBER
 MSGAV7:	MOVEI P6,MSCGO1		;SET RETURN TO MSSONL  WHEN ONLINE SUCCESSFUL
 ONLINA:	CALL ONLINE		;ONLINE THE UNIT
-	JRST [  MOVE T3,T1		;MOVE ERROR CODE
-		  MOVE T1,MSCOLD(Q3)	;GET CONNECT ID
-		  CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-		  BUG. (INF,MSCOLF,PHYMSC,SOFT,<PHYMSC - Available online failed>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>>,<
+	JRST [	MOVE T3,T1		;MOVE ERROR CODE
+		MOVE T1,MSCOLD(Q3)	;GET CONNECT ID
+		CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
+		BUG.(INF,MSCOLF,PHYMSC,SOFT,<PHYMSC - Available online failed>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>>,<
 
 Cause:	An attempt to put an available unit online failed because of a send 
-	failure.
+	failure.  The remote node could have crashed during the online attempt.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE   - node number
 	CID    - connect ID
@@ -1628,10 +1708,14 @@ BUGMSC:	MOVE T3,T1		;SAVE CODE
 	CALLRET	RTNBUF		;YES FORGET IT FOR NOW IT MAY SHOW UP LATER
 	MOVE T1,MSCOLD(Q3)	;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (INF,MSCORO,PHYMSC,SOFT,<PHYMSC - Offline return to online when we were told avail>,<<T2,NODE>,<T1,CID>,<T3,CODE>>,<
+	BUG.(INF,MSCORO,PHYMSC,SOFT,<PHYMSC - Offline return to online when we were told avail>,<<T2,NODE>,<T1,CID>,<T3,CODE>>,<
 
-Cause:	A node that indicated an online is not available when the online is 
-	attempted.
+Cause:	A node that indicated an online is not available when the online is
+	attempted.  The remote node could have crashed during the online
+	attempt.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	NODE - node number
 	CID  - connect ID
@@ -1708,9 +1792,13 @@ UNQLOP:	HRRZ T2,UDBPWQ(P3)	;YES. PWQ NON-EMPTY?
 	MOVE P4,T1		;WHERE MSCSIO WANTS IORB ADDRESS
 	CALL ONFTWQ
 	CALL MSCSIO		;START THE IO
-	 JRST [ BUG. (CHK,MSCSIF,PHYMSC,SOFT,<PHYMSC - Start IO failed>,<<P3,UDB>,<P2,KDB>,<P1,CHAN>>,<
+	 JRST [ BUG.(CHK,MSCSIF,PHYMSC,SOFT,<PHYMSC - Start IO failed>,<<P3,UDB>,<P2,KDB>,<P1,CHAN>>,<
 
-Cause:	A call to MSCRIO failed when it was not expected to.
+Cause:	A call to MSCRIO failed when it was not expected to in UNQUNT.  This
+	appears to be a PHYMSC problem.
+
+Action:	If this bug occurs often or is reproducible, change it to a BUGHLT and
+	submit an SPR along with a dump and instructions on reproducing it.
 
 Data:	UDB - UDB address
 	KDB - KDB address
@@ -1881,9 +1969,9 @@ MSCINI::
 	SETZM MSCHSC		;INITIALIZE THE CONTROLLER TIMER WORD
 	SETOM MSCITD		;SET INITIALIZED FLAG
 MSCINA:	BLCAL. (SC.SOA,<<.,INTRPT>>)	;TELL ME WHEN A NODE COMES OR GOES
-	BUG. (HLT,MSCSOA,PHYMSC,SOFT,<PHYMSC - SC.SOA failed>,<<T1,ERRCOD>>,<
+	BUG.(HLT,MSCSOA,PHYMSC,SOFT,<PHYMSC - SC.SOA failed>,<<T1,ERRCOD>>,<
 
-Cause:	Interrupts were requested and failed.
+Cause:	Interrupts were requested and failed.  This has to be a SCAMPI problem.
 
 Data:	ERRCOD - Error Code
 >)
@@ -1946,12 +2034,16 @@ MSCIND:	HRRZ T1,Q1		;ELIMINATE POSSIBLE LH NON-0
 	       CAIN T1,KLPX9		;VC OPEN?
 	       CAIL T2,10		;NO CHECK FOR TOO SOON
 	       SKIPE CIBUGX		;[7.1193]CI DEBUGGING?
-	       BUG. (INF,MSCCDF,PHYMSC,SOFT,<PHYMSC - Connect to disk failure>,<<Q1,NODE>,<T1,ERRCOD>>,<
+	       BUG.(INF,MSCCDF,PHYMSC,SOFT,<PHYMSC - Connect to disk failure>,<<Q1,NODE>,<T1,ERRCOD>>,<
 
-Cause:	A connect failure occurred after an indication that an HSC was 
-	present.
+Cause:	A connect failure to use the disks on an HSC occurred after an
+	indication that an HSC was present.  Connection attempts are not timed
+	out by SCAMPI.  If PHYMSC is in the middle of connecting to a server on
+	another node, and that node crashes, these BUGCHKs continue to appear 
+	until that node reappears.
 
-Action: Find out if this should have a disk on the system.
+Action:	Bring up the remote node as soon as possible.  No other action is
+	required.
 
 Data:	NODE   - node number
 	ERRCOD - error code
@@ -1973,7 +2065,14 @@ TAPCON:	JRST MSCI18		;TEMP!!!
 	BLCAL. (SC.CON,<<.,OURTNM>,<.,YURTNM>,T1,[TCREDT],[TCREDT],<.,INTRPT>,Q3,[0],[HSCBFT],[DGNUM]>)
 	  BUG. (INF,MSCCTF,PHYMSC,SOFT,<PHYMSC - Connect to tape failure>,<<Q1,NODE>,<T1,ERRCOD>>,<
 
-Cause:	There was a failure to connect to the tape controller.
+Cause:	A connect failure to use the tapes on an HSC occurred after an
+	indication that an HSC was present.  Connection attempts are not timed
+	out by SCAMPI.  If PHYMSC is in the middle of connecting to a server on
+	another node, and that node crashes, these BUGCHKs continue to appear 
+	until that node reappears.
+
+Action:	Bring up the remote node as soon as possible.  No other action is
+	required.
 
 Data:	NODE   - node number
 	ERRCOD - error code
@@ -2024,13 +2123,14 @@ MSCI20:	CALL SETP3		;SET UP P3 IF IT EXISTS
 	SKIPA			;NOT THERE
 	JRST MSCI22		;FOUND THE UNIT USE IT
 	HRLOI Q1,-MTAN-1	;YES. DRIVE IS THERE. FIND SLOT TO SAVE IT
-MSCI21:	AOBJP Q1, [BUG.(INF,MSCN2S,PHYMSC,HARD,<PHYMSC - More drives than table space, excess ignored>,<<P2,KDB>,<P1,CHN>>,<
+MSCI21:	AOBJP Q1, [BUG.(INF,MSCN2S,PHYMSC,HARD,<PHYMSC - More tape drives than table space, excess ignored>,<<P2,KDB>,<P1,CHN>>,<
 
-Cause:	The number of tape drives available exceeds the constant value
-	MTAN. Only MTAN drives can be configured.
+Cause:	The number of tape drives available exceeds the constant value MTAN.
+	Only MTAN drives can be configured.
 
-Action:	The monitor should be rebuilt with a value of MTAN large enough to
-	accommodate all the tape drives available to the system.
+Action:	The monitor should be rebuilt after changing MTAN in STG with a value
+	of MTAN large enough to accommodate all the tape drives available to
+	the system.
 
 Data:	KDB - KDB address
 	CHN - Channel number
@@ -2118,9 +2218,10 @@ MSCI78:	CALL SETSUN		;SET UNIT NUMBER
 	MOVE T3,T1		;SAVE UNIT NUMBER
 	MOVE T1,MSCOLD(Q3)	;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (INF,MSCCWM,PHYMSC,HARD,<PHYMSC - Controller not in 576 MODE>,<<T2,NODE>,<T1,CID>,<T3,UNIT>>,<
+	BUG.(INF,MSCCWM,PHYMSC,HARD,<PHYMSC - Controller not in 576 mode>,<<T2,NODE>,<T1,CID>,<T3,UNIT>>,<
 
-Cause:	The HSC controller is not in 576 Bytes per sector mode.
+Cause:	The HSC controller is not in 576 bytes per sector mode.  It cannot be
+	used by TOPS-20 unless it is in 576 bytes per sector mode.
 
 Action: Set the HSC in 576 mode.
 
@@ -2136,9 +2237,13 @@ MSCI38:	CALL SETSUN		;GET UNIT NUMBER
 	MOVE T3,T1		;SAVE UNIT NUMBER
 	MOVE T1,MSCOLD(Q3)	;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG.(INF,MSCDWM,PHYMSC,HARD,<PHYMSC - Disk not in 576 MODE>,<<T2,NODE>,<T1,CID>,<T3,UNIT>>,<
+	BUG.(INF,MSCDWM,PHYMSC,HARD,<PHYMSC - Disk not in 576 mode>,<<T2,NODE>,<T1,CID>,<T3,UNIT>>,<
 
-Cause: The HSC disk is not a 576 Bytes per sector disk.
+Cause:	A disk unit is not a 576 bytes per sector disk.  The disk unit will not
+	be used.  This bug will be seen when a 16 bit HDA (used on VAX systems)
+	is connected to a HSC that TOPS-20 is trying to use.
+
+Action:	No action is required, this bug is for information only.
 
 Data:	NODE - node number
 	CID  - connect ID
@@ -2153,19 +2258,21 @@ Data:	NODE - node number
 
 MSCIN5:	MOVEI P6,MSC5A		;RETURN TO MSC5AA ON RETURN FROM SET CHARACTERISTICS
 	CALL SETCCH		;SET CONTROLLER CHARACTERISTICS
-	SKIPG T3,MSCCID(Q3)	;CHECK FOR VALID CONNECT ID
+	 SKIPG T3,MSCCID(Q3)	;CHECK FOR VALID CONNECT ID
 	RET			;ALL OK QUIT
 	EXCH T1,T3		;SWAP ERROR CODE AND CID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (INF,MSCSCF,PHYMSC,SOFT,<PHYMSC - SETCCH failed to set characteristics>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>,<Q3,INDEX>>,<
+	BUG.(INF,MSCSCF,PHYMSC,SOFT,<PHYMSC - SETCCH failed to set characteristics>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>,<Q3,INDEX>>,<
 
-Cause:	SETCHH failed to set characteristics.
+Cause:	SETCHH failed to set characteristics.  This appears to be a hardware
+	problem with the remote node.
+
+Action:	Field Service should check the remote node's hardware.
 
 Data:	NODE   - node number
 	CID    - connect ID
 	ERRCOD - error code
 	INDEX  - MSCCID table index
-
 >)
 	RET
 				;WAIT FOR SET CHARACTERISTICS TO URN
@@ -2209,7 +2316,8 @@ MSC5AA:	MOVE T1,P.CNTF(Q2)
 	IORM T1,CIDATA(Q3)
 MSCIN7:	HRRZ P2,P2		;START AT THE FIRST UNIT
 	SKIPA
-MSCIN8:	ADD P2,[1,,0]		;ADD 1 TO UNIT NUMBER SO WE DON'T GET OURSELVES TWICE
+
+MSCIN8:	ADD P2,[1,,0]		;ADD 1 TO UNIT NUMBER SO WE DON'T GET OURSELVES TWICE
 	HLRZ T1,P2
 	MOVEI P6,MSCA8		;RETURN FROM NEXTUN TO MSCIA8
 	CALL NEXTUN		;ASK THE HSC WHAT THE NEXT UNIT IS
@@ -2217,9 +2325,14 @@ MSCIN7:	HRRZ P2,P2		;START AT THE FIRST UNIT
 	RET			;DONE
 	EXCH T1,T3		;SWAP ERROR CODE AND CID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (INF,MSCNXF,PHYMSC,SOFT,<PHYMSC - Get next unit failed>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>,<Q3,INDEX>>,<
+	BUG.(INF,MSCNXF,PHYMSC,SOFT,<PHYMSC - Get next unit failed>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>,<Q3,INDEX>>,<
 
 Cause:	Get a next unit failed.  All the units on this HSC50 may not be found.
+	This is seen most often with broken HSC hardware.
+
+Action:	If the hardware checks out OK, and if this bug occurs often or is
+	reproducible, change it to a BUGHLT and submit an SPR along with a dump
+	and instructions on reproducing it.
 
 Data:	NODE   - node number
 	CID    - connect ID
@@ -2229,6 +2342,7 @@ Data:	NODE   - node number
 >)
 	RET
 				;RETURN FROM INTERRUPT AND WAIT TILL 
+
 ;
 ; RETURN FROM MSCIN8 CALL TO NEXTUN
 ; THIS WILL HAVE THE NEW UNIT ON THE HSC STORED IN THE PACKET
@@ -2314,14 +2428,8 @@ MSCI14:	MOVE T1,UDBSLV(P3)	;UNIT NUMBER
 ; READY TO USE.  IT ALSO CHECKS THE SIZE OF THE DISK AND SETS
 ; UP THE CORRECT GEOMETRY OF THE DISK.
 
-NOONL:	 BUG. (HLT,MSCUDB,PHYMSC,SOFT,<PHYMSC - UDB missing>,,<
-
-Cause:	We have just set up a unit during initalization and now
-	we can't find it.
->)
 MSCI1A:	LOAD T1,PKYEST,(Q2)	;[7233] GET STATUS OF ON-LINE ATTEMPT
-	SKIPN T1		;[7233] DID ON-LINE SUCCEED?
-	IFSKP.			;[7233]
+	IFN. T1			;[8913] Did online succeed?
 	  SKIPN CIBUGX		;[7233] NO, ARE WE DEBUGGING?
 	  JRST RTNBUF		;[7233] (Q2) NO, DON'T SCARE THE OPERATOR
 	  CALL SETSUN		;[7233] (Q2/T1) YES, GET UNIT NUMBER FROM THE PACKET
@@ -2329,9 +2437,12 @@ MSCI1A:	LOAD T1,PKYEST,(Q2)	;[7233] GET STATUS OF ON-LINE ATTEMPT
 	  LOAD T3,PKYEST,(Q2)	;[7233] GET THE STATUS CODE AGAIN
  	  BUG.(INF,MSCOLE,PHYMSC,HARD,<PHYMSC - Online failed>,<<T3,STATUS>,<T2,NODE>,<T1,UNIT>>,<
 
-Cause:  An online request failed.  This has been known to happen when 
-	duplicate unit numbers are found, and, in some cases, when the
-	TOPS-20 MSCP server returns a status of offline.
+Cause:	An online request failed.  This has been known to happen when duplicate
+	unit numbers are found, and, in some cases, when the TOPS-20 MSCP
+	server returns a status of offline.
+
+Action:	Check the remote node to see if it crashes or any other information on
+	why the online failed.
 
 Data:	STATUS - Status code in ONLINE end message
 >,RTNBUF,<DB%NND>)		;[7.1210][7233]
@@ -2352,18 +2463,21 @@ Data:	STATUS - Status code in ONLINE end message
 	CALL UNTYPE		;IS IT A VALID UNIT?
 	 SKIPA			;NOPE
 	JRST MSCI17		;YES
+
 	MOVE T1,MSCOLD(Q3)	;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (INF,MSCUKD,PHYMSC,HARD,<PHYMSC - Unknown disk type>,<<T2,NODE>,<T1,CID>>,<
+	BUG.(INF,MSCUKD,PHYMSC,HARD,<PHYMSC - Unknown disk type>,<<T2,NODE>,<T1,CID>>,<
 
-Cause:	The device type is unknown to the system.
+Cause:	A device on HSC is not a device recognized by TOPS-20 and is 
+	not used.
 
-Action: A device on HSC is not a legal TOPS20 device.
+Action:	No action required, this bug is for information only.
 
 Data:	NODE - node number
 	CID  - connect ID
 >,,<DB%NND>)			;[7.1210] 
-;HERE IF THE DISK IS 16-BIT MODE.
+
+;HERE IF THE DISK IS 16-BIT MODE.
 ; 16 BIT DISKS ARE NOT USABLE TO THE PDP-10 SO WE DECLARE THEM
 ; OFFLINE AND DO NOT TRY TO USE THEM
 
@@ -2373,7 +2487,14 @@ MSCI15:	MOVE T1,UDBSLV(P3)	;GET UNIT NUMBER
 	JFCL
 	RET
 
+NOONL:	BUG.(HLT,MSCUDB,PHYMSC,SOFT,<PHYMSC - UDB missing>,,<
+
+Cause:	We have just set up a unit during initalization and now we can't find
+	it.  This indicates a software problem.
+>)				;[8913]
+
 ;RETURN HERE FROM OFFLINE
+
 MSC15A:	CALL SETP3		;FIND THE UDB ETC
 	 CALL NOONL		;OOPS WHERE DID IT GO?
 
@@ -2584,9 +2705,14 @@ GETSER:	STKVAR <DSN>		;LOW-ORDER DSN WORD
 
 	ENDSV.
 
-UDBXTA:	BUG. (INF,MSCTMU,PHYMSC,HARD,<PHYMSC - Too many units for KDB>,<<P2,KDB>,<P1,CHN>>,<
+UDBXTA:	BUG.(INF,MSCTMU,PHYMSC,HARD,<PHYMSC - Too many units for KDB>,<<P2,KDB>,<P1,CHN>>,<
 
-Cause:	There are more units than space for UDB entries.
+Cause:	There are more than PRTMXU units on a particular HSC, therefore there
+	is not enough room in the KDB for UDB entries.
+
+Action:	If you want to support more than PRTMXU units on a HSC, a source
+	rebuild of the monitor is required.  Change the symbol PRTMXU in SCAPAR
+	and rebuild PHYMSC and PHYKLP.
 
 Data:	KDB - KDB address
 	CHN - Channel
@@ -2756,14 +2882,16 @@ MSCC3A:	TXNE T2,DT.GCS		;STILL HAVE AN OUTSTANDING GCS COMMAND?
 	JRST MSCC3B
 	MOVE T1,MSCOLD(Q3)	;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (INF,MSCCRN,PHYMSC,SOFT,<PHYMSC - Connect did not complete in reasonable timeout>,<<T2,NODE>,<T1,CID>,<Q3,INDEX>>,<
+	BUG.(INF,MSCCRN,PHYMSC,SOFT,<PHYMSC - Connect did not complete in reasonable timeout>,<<T2,NODE>,<T1,CID>,<Q3,INDEX>>,<
 
-Cause:	There was a connect request and no response.
+Cause:	There was a connect request and no response.  The remote node probably
+	is sick or has gone away.
+
+Action:	Check the status of the remote node, and reload it if needed.
 
 Data:	NODE  - node number
 	CID   - connect ID
 	INDEX - MSCCID table index
-
 >)
 	BLCAL. (SC.DIS,<MSCOLD(Q3),[0]>)
 	JFCL			;IGNORE ERROR AFTER ABORT
@@ -2876,16 +3004,18 @@ ONLCK1:	CALL SETP3		;SET UNIT NUMBER
 	JUMPN T3,RTNBUF		;NO TRY AGAIN LATER 
 	MOVE Q1,UDBSLV(P3)	;GET THE UNIT NUMBER TO Q1
 	CALLRET MSGAV3		;TRY AND ONLINE THE THING
-;HERE IF THE CONTROLLER IS INSANE
+
+;HERE IF THE CONTROLLER IS INSANE
 DEDKOA:	MOVE T1,MSCOLD(Q3)	;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (INF,MSCCTO,PHYMSC,SOFT,<PHYMSC - Request HSC disconnect - command timeout>,<<T2,NODE>,<T1,CID>>,<
+	BUG.(INF,MSCCTO,PHYMSC,SOFT,<PHYMSC - Request HSC disconnect - command timeout>,<<T2,NODE>,<T1,CID>>,<
 
 Cause:	The HSC has not correctly responded to Get Command Status request.
 
+Action:	Check the remote node for evidence of problems and reload it if needed.
+
 Data:	NODE - node number
 	CID  - connect ID
-
 >)
 	CALL RTNBUF			;RETURN BUFFER
 	TXNE Q3,TAPSID			;CHECK FOR TAPE
@@ -2893,16 +3023,16 @@ Data:	NODE - node number
 	JRST DEDKN3
 DEDKON:	MOVE T1,MSCOLD(Q3)	;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (INF,MSCDIS,PHYMSC,SOFT,<PHYMSC - Request HSC disconnect>,<<T2,NODE>,<T1,CID>,<Q3,INDEX>>,<
+	BUG.(INF,MSCDIS,PHYMSC,SOFT,<PHYMSC - Request HSC disconnect>,<<T2,NODE>,<T1,CID>,<Q3,INDEX>>,<
 
-Cause:	The messages from the HSC indicate a problem.
+Cause:	The messages from the HSC indicate a problem.  The HSC has probably
+	crashed.  The HSC is disconnected and reconnected.
 
-Action: Disconnect and re-connect the HSC-50
+Action:	Check the remote node for evidence of problems.
 
 Data:	NODE   - node number
 	CID    - connect ID
 	INDEX  - MSCCID table index
-
 >)
 DEDKN3:	IOPIOF
 	SKIPG T2,MSCCID(Q3)	;GET CONNECT ID
@@ -2938,11 +3068,12 @@ DEDKNA:	TXZ Q3,TAPSID		;BACK TO DISKS
 
 DEDKN2:	MOVE T1,MSCOLD(Q3)	;GET CONNECT ID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (INF,MSCRLD,PHYMSC,SOFT,<PHYMSC - HSC control reload initiated>,<<T2,NODE>,<T1,CID>>,<
+	BUG.(INF,MSCRLD,PHYMSC,SOFT,<PHYMSC - HSC control reload initiated>,<<T2,NODE>,<T1,CID>>,<
 
-Cause:	The HSC is not responding correctly.
+Cause:	After a disconnect and reconnect to the HSC to clear up problems, the
+	HSC is still not responding correctly and is reloaded.
 
-Action: Do a Maintenance reload to the HSC.
+Action:	Check the remote node for evidence of problems.
 
 Data:	NODE - node number
 	CID  - connect ID
@@ -2963,9 +3094,13 @@ HSCREL:	MOVE T1,MSCOLD(Q3)	;GET CID
 HSCABT:	MOVE T3,T1		;MOVE ERROR CODE
 	MOVE T1,MSCOLD(Q3)	;GET CID
 	CALL SC.NOD		;(T1/T1,T2) GET NODE NUMBER
-	BUG. (CHK,MSCRLF,PHYMSC,SOFT,<PHYMSC - Start or reset failed>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>>,<
+	BUG.(CHK,MSCRLF,PHYMSC,SOFT,<PHYMSC - Start or reset failed>,<<T2,NODE>,<T1,CID>,<T3,ERRCOD>>,<
 
-Cause:	PHYMSC called SCAMPI and was unable to start or reset the remote.
+Cause:	After problems were seen with a HSC, a disconnect and reconnect was
+	tired.  The problems were not cleared up, it was sent a message to
+	reload itself.  The HSC was unable to restart or reset.
+
+Action:	Check the remote node for evidence of problems.
 
 Data:	NODE   - node number
 	CID    - connect ID

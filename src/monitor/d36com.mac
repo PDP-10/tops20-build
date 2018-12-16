@@ -1,3 +1,15 @@
+; Edit= 9172 to D36COM.MAC on 22-Jun-90 by GSCOTT
+;Insure the AC save routines in APRSRV are used by always SEARCHing PROLOG
+;before any SEARCH of MACSYM so that the proper USRSAV macro (from PROLOG) is
+;used in the SAVEAC macro.
+; Edit= 9148 to D36COM.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9056 to D36COM.MAC on 10-Jan-89 by JROSSELL, for SPR #21909
+;Increase the difference between congestion and uncongestion to five blocks 
+; Edit= 9026 to D36COM.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8879 to D36COM.MAC on 10-Aug-88 by RASPUZZI
+;Update BUG. documentation.
 ; UPD ID= 8498, RIP:<7.MONITOR>D36COM.MAC.2,   9-Feb-88 14:50:27 by GSCOTT
 ;TCO 7.1218 - Update copyright notice.
 ; UPD ID= 2223, SNARK:<6.1.MONITOR>D36COM.MAC.137,  17-Jun-85 10:24:06 by NICHOLS
@@ -261,7 +273,7 @@
 ; ***** make T5, T6 preserved. These changes are identified *****
 ; ***** by DBGS2 conditional and ;*LLMOP* comment *****
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1984, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1984, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -282,22 +294,22 @@
 	SUBTTL	V. Brownell, W. Nichols & Tarl Neustaedter
 ;This is the common routine package for DECnet-36.
 
-	SEARCH D36PAR,MACSYM,SCAPAR
+	SEARCH D36PAR		;[9172]
 	SALL
 
 IFN FTOPS10,<
 .CPYRT<
-COPYRIGHT (C) 1984,1988 BY DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+COPYRIGHT (C) 1984,1990 BY DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
 >
 > ;END IFN FTOPS10
 
 IFN FTOPS20,<
-	SEARCH PROLOG
+	SEARCH PROLOG,SCAPAR	;[9172]
 	TTITLE D36COM,,< - Common Routines for DECnet-36>
 	>
 
 IFN FTOPS10,<
-	SEARCH F,S
+	SEARCH F,S,MACSYM,SCAPAR	;[9172]
 	TITLE D36COM - Common Routines for DECnet-36
 	>
 
@@ -316,105 +328,102 @@ IFN FTOPS10,<
 
 IFN FTOPS10,<$RELOC>
 	XRESCD			;RELOC TO HIGHSEG (RSCOD PSECT ON TOPS-20)
-	SUBTTL	Table of Contents
+	Subttl	Table of Contents
 
-
-;		Table of Contents for D36COM
+;		     Table of Contents for D36COM
+;
+;				  Section		      Page
 ;
 ;
-;			   Section			      Page
-;   1. Table of Contents. . . . . . . . . . . . . . . . . . .    2
-;   2. Definitions
-;        2.1.   External References . . . . . . . . . . . . .    3
-;        2.2.   Core manager data structures. . . . . . . . .    4
-;        2.3.   Mongenable parameters . . . . . . . . . . . .    5
-;   3. Data Storage . . . . . . . . . . . . . . . . . . . . .    6
-;   4. Definitions
-;        4.1.   Memory Manager Tables . . . . . . . . . . . .    7
-;   5. MSDs
-;        5.1.   Initialize MS pointer for MB input. . . . . .    9
-;        5.2.   Initialize MS for input . . . . . . . . . . .   10
-;        5.3.   Set up MSD for input on received buffer . . .   11
-;        5.4.   Initialize MSD for output . . . . . . . . . .   12
-;   6. DNSBP
-;        6.1.   Byte routines
-;             6.1.1.     Store a byte pointer . . . . . . . .   13
-;   7. DNF2WG
-;        7.1.   Byte routines
-;             7.1.1.     Fetch a two word global from an MSD.   14
-;   8. MSDs
-;        8.1.   Byte routines
-;             8.1.1.     Get a byte . . . . . . . . . . . . .   15
-;             8.1.2.     Get two bytes. . . . . . . . . . . .   16
-;             8.1.3.     Get HI-ORDER 4 bytes of Ethernet Addr  17
-;             8.1.4.     Get six byte Ethernet Address. . . .   18
-;             8.1.5.     Get two bytes from specified position  19
-;             8.1.6.     Get an extensible field. . . . . . .   20
-;             8.1.7.     Get a byte, skip if non-extensible .   21
-;             8.1.8.     Put a byte into message. . . . . . .   22
-;             8.1.9.     Put two bytes in message . . . . . .   23
-;             8.1.10.    Put two bytes to specified position.   24
-;             8.1.11.    Put four bytes in message. . . . . .   25
-;             8.1.12.    Put HI-ORDER 4 bytes of Ethernet Addr  26
-;             8.1.13.    Put six byte Ethernet Address. . . .   27
-;             8.1.14.    Put an extensible field into message   28
-;             8.1.15.    Put some zero bytes. . . . . . . . .   29
-;             8.1.16.    Skip some bytes. . . . . . . . . . .   30
-;             8.1.17.    Go Backwards some number of bytes. .   31
-;        8.2.   Read and Goto Position. . . . . . . . . . . .   32
-;        8.3.   Link a Message Segment into a Message Block .   34
-;        8.4.   Copy message block. . . . . . . . . . . . . .   35
-;        8.5.   Calculate length of a whole message . . . . .   36
-;        8.6.   Calculate Length of Message Segment . . . . .   37
-;        8.7.   DNMINI - Initialize an allocated message block  38
-;        8.8.   DNCMSD - Copy MSD chain to contiguous block .   39
-;   9. Buffers
-;        9.1.   Copy buffer to a message segment. . . . . . .   40
-;        9.2.   Copy message data to a buffer . . . . . . . .   41
-;  10. BYTBLT - Non fancy versions. . . . . . . . . . . . . .   42
-;  11. BYTBLT - Fancy version . . . . . . . . . . . . . . . .   43
-;  12. Buffers
-;       12.1.   Copy user buffer to a message segment . . . .   54
-;       12.2.   Copy message data to a user buffer. . . . . .   55
-;  13. Core manager
-;       13.1.   Smear a block of memory with value. . . . . .   56
-;       13.2.   Copy some words . . . . . . . . . . . . . . .   57
-;       13.3.   Get Some Words. . . . . . . . . . . . . . . .   58
-;       13.4.   Get Some Zeroed Words . . . . . . . . . . . .   59
-;       13.5.   Free Some Words . . . . . . . . . . . . . . .   60
-;       13.6.   Get a DECnet-36 message block . . . . . . . .   61
-;       13.7.   Free a DECnet-36 message block. . . . . . . .   63
-;       13.8.   Fixed size block allocation entry points. . .   64
-;       13.9.   Memory manager initialization code. . . . . .   66
-;       13.10.  Increment count of emergency buffers. . . . .   68
-;       13.11.  Return number of blocks available (for router)  69
-;       13.12.  Get a Block from a Free Pool. . . . . . . . .   70
-;  14. DNMCUB - Check for trashed UBL . . . . . . . . . . . .   72
-;  15. Core manager
-;       15.1.   Checking routines for debugging only. . . . .   73
-;       15.2.   Check pointer for validity. . . . . . . . . .   74
-;  16. Time
-;       16.1.   Get current time in ms. . . . . . . . . . . .   76
-;  17. Network management
-;       17.1.   NTPARM - parameters . . . . . . . . . . . . .   77
-;       17.2.   NTCTRS - counters . . . . . . . . . . . . . .   78
-;  18. Trace
-;       18.1.   Interface for exec-mode trace.. . . . . . . .   79
-;       18.2.   SCAN's output routines. . . . . . . . . . . .   80
-;       18.3.   Routine store character in shared buffer. . .   81
-;  19. TOPS10
-;       19.1.   AC save routines. . . . . . . . . . . . . . .   82
-;  20. Kontroller data. . . . . . . . . . . . . . . . . . . .   83
-;  21. Initialization routines. . . . . . . . . . . . . . . .   84
-;  22. DCNJB0 - DECnet periodic checks. . . . . . . . . . . .   85
-;  23. NMX
-;       23.1.   Privilege checking routine. . . . . . . . . .   86
-;       23.2.   Time stamp a queued even block. . . . . . . .   87
-;  24. TESTSB
-;       24.1.   Assert that Code is Running in section 1. . .   90
-;  25. TOPS20
-;       25.1.   User mode checking routines.. . . . . . . . .   91
-;  26. End of D36COM. . . . . . . . . . . . . . . . . . . . .   92
+;    1. Definitions
+;        1.1    External References  . . . . . . . . . . . . .   5
+;        1.2    Core manager data structures . . . . . . . . .   6
+;        1.3    Mongenable parameters  . . . . . . . . . . . .   7
+;        1.4    Data Storage . . . . . . . . . . . . . . . . .   8
+;        1.5    Memory Manager Tables  . . . . . . . . . . . .   9
+;    2. MSDs
+;        2.1    Initialize MS pointer for MB input . . . . . .  11
+;        2.2    Initialize MS for input  . . . . . . . . . . .  12
+;        2.3    Set up MSD for input on received buffer  . . .  13
+;        2.4    Initialize MSD for output  . . . . . . . . . .  14
+;        2.5    Byte routines
+;            2.5.1    Store a byte pointer . . . . . . . . . .  15
+;            2.5.2    Fetch a two word global from an MSD  . .  16
+;            2.5.3    Get a byte . . . . . . . . . . . . . . .  17
+;            2.5.4    Get two bytes  . . . . . . . . . . . . .  18
+;            2.5.5    Get HI-ORDER 4 bytes of Ethernet Addr  .  19
+;            2.5.6    Get six byte Ethernet Address  . . . . .  20
+;            2.5.7    Get two bytes from specified position  .  21
+;            2.5.8    Get an extensible field  . . . . . . . .  22
+;            2.5.9    Get a byte, skip if non-extensible . . .  23
+;            2.5.10   Put a byte into message  . . . . . . . .  24
+;            2.5.11   Put two bytes in message . . . . . . . .  25
+;            2.5.12   Put two bytes to specified position  . .  26
+;            2.5.13   Put four bytes in message  . . . . . . .  27
+;            2.5.14   Put HI-ORDER 4 bytes of Ethernet Addr  .  28
+;            2.5.15   Put six byte Ethernet Address  . . . . .  29
+;            2.5.16   Put an extensible field into message . .  30
+;            2.5.17   Put some zero bytes  . . . . . . . . . .  31
+;            2.5.18   Skip some bytes  . . . . . . . . . . . .  32
+;            2.5.19   Go Backwards some number of bytes  . . .  33
+;        2.6    Read and Goto Position . . . . . . . . . . . .  34
+;        2.7    Link a Message Segment into a Message Block  .  36
+;        2.8    Copy message block . . . . . . . . . . . . . .  37
+;        2.9    Calculate length of a whole message  . . . . .  38
+;        2.10   Calculate Length of Message Segment  . . . . .  39
+;        2.11   DNMINI - Initialize an allocated message block  40
+;        2.12   DNCMSD - Copy MSD chain to contiguous block  .  41
+;    3. Buffers
+;        3.1    Copy buffer to a message segment . . . . . . .  42
+;        3.2    Copy message data to a buffer  . . . . . . . .  43
+;        3.3    BYTBLT
+;            3.3.1    Non fancy versions . . . . . . . . . . .  44
+;            3.3.2    Fancy version  . . . . . . . . . . . . .  45
+;        3.4    Copy user buffer to a message segment  . . . .  56
+;        3.5    Copy message data to a user buffer . . . . . .  57
+	Subttl	Table of Contents (page 2)
+
+;		     Table of Contents for D36COM
+;
+;				  Section		      Page
+;
+;
+;    4. Core manager
+;        4.1    Smear a block of memory with value . . . . . .  58
+;        4.2    Copy some words  . . . . . . . . . . . . . . .  59
+;        4.3    Get Some Words . . . . . . . . . . . . . . . .  60
+;        4.4    Get Some Zeroed Words  . . . . . . . . . . . .  61
+;        4.5    Free Some Words  . . . . . . . . . . . . . . .  62
+;        4.6    Get a DECnet-36 message block  . . . . . . . .  63
+;        4.7    Free a DECnet-36 message block . . . . . . . .  65
+;        4.8    Fixed size block allocation entry points . . .  66
+;        4.9    Memory manager initialization code . . . . . .  68
+;        4.10   Increment count of emergency buffers . . . . .  70
+;        4.11   Return number of blocks available (for router)  71
+;        4.12   Get a Block from a Free Pool . . . . . . . . .  72
+;    5. DNMCUB - Check for trashed UBL . . . . . . . . . . . .  74
+;    6. Core manager
+;        6.1    Checking routines for debugging only . . . . .  75
+;        6.2    Check pointer for validity . . . . . . . . . .  76
+;    7. DNGTIM - Get current time in ms. . . . . . . . . . . .  78
+;    8. Network management
+;        8.1    NTPARM - parameters  . . . . . . . . . . . . .  79
+;        8.2    NTCTRS - counters  . . . . . . . . . . . . . .  80
+;    9. Trace
+;        9.1    Interface for exec-mode trace. . . . . . . . .  81
+;        9.2    SCAN's output routines . . . . . . . . . . . .  82
+;        9.3    Routine store character in shared buffer . . .  83
+;   10. TOPS10 - AC save routines  . . . . . . . . . . . . . .  84
+;   11. Kontroller data  . . . . . . . . . . . . . . . . . . .  85
+;   12. TOPS10 - Initialization routines . . . . . . . . . . .  86
+;   13. DCNSEC - DECnet Once-a-second check  . . . . . . . . .  87
+;   14. DCNJB0 - DECnet periodic checks  . . . . . . . . . . .  88
+;   15. NMX
+;       15.1    Privilege checking routine.  . . . . . . . . .  89
+;       15.2    Time stamp a queued even block . . . . . . . .  90
+;   16. TOPS10 - TESTSB - Assert that Code is Running in secti  93
+;   17. TOPS20 - User mode checking routines.  . . . . . . . .  94
+;   18. End of D36COM  . . . . . . . . . . . . . . . . . . . .  95
 	SUBTTL Definitions -- External References
 
 ;External monitor symbols
@@ -551,7 +560,7 @@ IFN FTP4R,MP %RTMXN,1023	;MAXIMUM NODE NUMBER
 					    ; AB-00-00-03
 	MP %RTEMA,<<BYTE (8)253,0,0,4(4)0>> ;Multicast ID "ALL ENDNODES"
 					    ; AB-00-00-04
-	SUBTTL	Data Storage
+	SUBTTL Definitions -- Data Storage
 
 	RESDT
 
@@ -615,9 +624,11 @@ RTRHOM::%RTHOM
 
 ;Freecore pointers
 
+IFN FTOPS10,<			;[9172]
 DCNCOR::BLOCK	1		;POINTER TO MESSAGE BLOCK FREE CORE
 DCNLOC::BLOCK	1		;POINTER TO LOW LOCATION OF FREECORE
 DCNPTR::BLOCK	1		;POINTER TO BIT MAP OF FREECORE
+>				;[9172]
 
 DCNEMR:	BLOCK	1		;EMERGENCY MESSAGE BLOCK THRESHOLD
 DCNTSB::BLOCK	1		;TOTAL SYSTEM BUFFERS (SET UP IN D36INI)
@@ -629,7 +640,7 @@ DCNRHT::BLOCK	1		;HIGH TIDE FOR DCNRSB
 DCNRIF::BLOCK	1		;INPUT RESERVATION FAILURES
 DCNROF::BLOCK	1		;OUTPUT RESERVATION FAILURES
 DCNCNG:	DEC	5		;CONGESTION MESSAGE BLOCK THRESHOLD
-DCNUCG:	DEC	7		;UNCONGESTION MESSAGE BLOCK THRESHOLD
+DCNUCG:	DEC	10		;[9056]UNCONGESTION MESSAGE BLOCK THRESHOLD
 
 IFN FTTRACE!FTMINTrace,<
 
@@ -834,7 +845,7 @@ DNPINR::
 	MOVE MS,T1		;MAKE MS POINT TO MSD
 	RET			;THAT'S ALL FOR A RE-INITIALIZATION
 
-	SUBTTL DNSBP -- Byte routines -- Store a byte pointer
+	SUBTTL MSDs -- Byte routines -- Store a byte pointer
 
 ;DNSBP - Store a byte pointer into an MSD
 ;
@@ -849,7 +860,7 @@ DNPINR::
 	XRESCD
 DNSBP:	LDB T4,[POINT 6,T1,5]	; Fetch P field of byte pointer
 	CAILE T4,44		; One word global?
-	  BUG.(HLT,DNSBPB,D36COM,SOFT,<DNSBP called with OWGBP>,,<
+	BUG.(HLT,DNSBPB,D36COM,SOFT,<DNSBP called with OWGBP>,,<
 
 Cause:	DNSBP was called with a one-word global byte pointer.  DNSPB is
 	only set up to handle local one-word and two-word byte pointers,
@@ -867,7 +878,7 @@ Action:	Either change the caller to pass a two-word byte pointer or upgrade
 	STOR T1,MDPTR,(T3)	; Save the byte pointer
 	RET
 
-	SUBTTL DNF2WG -- Byte routines -- Fetch a two word global from an MSD
+	SUBTTL MSDs -- Byte routines -- Fetch a two word global from an MSD
 
 ;DNF2WG - Fetch a two word global byte pointer from an MSD
 ;
@@ -1361,9 +1372,9 @@ DNRPOS:	LOAD T1,MDBYT,(MS)	;LOAD UP 'BYTES TO GO'
 DNGPOS:	LOAD T6,MDALA,(MS)	;SET UP INDEX FOR MDPTR
 	TLNN MS,770000		;MAKE SURE LEFT HALF ISN'T GARBAGE
 	OPSTR <CAMGE MS,>,CHBOT,+MBLCB ;MAKE SURE WE HAVE AN MS
-	  BUG.(CHK,COMDNP,D36COM,SOFT,<DNGPOS called with bad MS>,,<
+	BUG.(CHK,COMDNP,D36COM,SOFT,<DNGPOS called with bad MS>,,<
 
-Cause:	The ac MS points to memory not used by message blocks.
+Cause:	The AC MS points to memory not used by message blocks.
 	This was found during range checking.
 
 Action:	Trace back to the caller and find out why there is a bad pointer.
@@ -1396,9 +1407,9 @@ Action:	Trace back to the caller and find out why there is a bad pointer.
 DNGOPS:	LOAD T6,MDALA,(MS)	;SET UP INDEX FOR MDPTR
 	TLNN MS,770000		;MAKE SURE LEFT HALF ISN'T GARBAGE
 	OPSTR <CAMGE MS,>,CHBOT,+MBLCB ;MAKE SURE WE HAVE AN MS
-	  BUG.(CHK,COMODP,D36COM,SOFT,<DNGOPS called with bad MS>,,<
+	BUG.(CHK,COMODP,D36COM,SOFT,<DNGOPS called with bad MS>,,<
 
-Cause:	The ac MS points to memory not used by message blocks.
+Cause:	The AC MS points to memory not used by message blocks.
 	This was found during range checking.
 
 Action:	Trace back to the caller and find out why there is a bad pointer.
@@ -1520,10 +1531,14 @@ DNCPM5:	TMNN MDNXT,(P2)		;IS THIS THE LAST MSD?
 	LOAD T6,MDALA,(P2)	;BYTE PTR IN T2 IS INDEXED BY T6
 	MOVE T4,T1		;COPY SOURCE LENGTH TO DEST LENGTH
 	EXTEND T1,[MOVSLJ]	;PREPEND HEADER TO USER DATA
-	  BUG.(CHK,COMMTS,D36COM,SOFT,<New message block too short>,,<
+	BUG.(CHK,COMMTS,D36COM,SOFT,<New message block too short>,,<
 
 Cause:	A MOVSLJ instruction in D36COM has failed.
 
+Action:	If this problem persists and the DOB% facility does not produce
+	a dump, then change this BUGCHK to a BUGHLT and submit an SPR.
+	It is possible that there could be a KL microcode bug here so
+	be sure to include the version you are running in the SPR.
 >,RTN)
 	LOAD P2,MDNXT,(P2)	;GET PTR TO NEXT MSD IN CHAIN
 	JRST DNCPM5		;GO COPY NEXT IF ITS NOT LAST
@@ -1604,7 +1619,6 @@ Cause:	Some caller probably meant to ask for zero bytes of user data in T2
 	pointer to the message block to refresh.
 
 Action:	Find caller on the stack and fix it.
-
 >,RTN)
 	XMOVEI T2,UD.DAT(P1)	;PTR TO LITTLE USER DATA BFR IN MSG BLK
 	LOAD T1,MDALA,+UD.MSD(P1) ;GET MSD'S PTR TO USER DATA
@@ -1756,7 +1770,6 @@ DNCMSD:	SAVEAC <P1,P2,T5,T6>
 
 Cause:	CIDLL while copying a DECnet message to a SCA buffer, saw a
 	bytepointer in a MSD where the first three bits are 5,6 or 7.
-
 >,RTN)
   >
 
@@ -1864,6 +1877,11 @@ CMSDSG:	LOAD T1,MDBYT,(MS)	;# of bytes to copy
 	BUG.(CHK,DNSLJ,CIDLL,SOFT,<MOVSLJ failed>,,<
 
 Cause:	A MOVSLJ instruction did not skip.
+
+Action:	If this problem persists and the DOB% facility does not produce
+	a dump, then change this BUGCHK to a BUGHLT and submit an SPR.
+	It is possible that there could be a KL microcode bug here so
+	be sure to include the version you are running in the SPR.
 >)
 	RET
 
@@ -1949,14 +1967,15 @@ DNCM2B:	OPSTR <CAMLE T1,>,MDBYT,(MS) ;MESSAGE BIG ENOUGH?
 	DMOVE T2,T5		;ALSO POSSIBLY 2-WORD BYTE PTR
 	RETSKP			;RETURN SUCCESS
 
-	SUBTTL BYTBLT - Non fancy versions
+	SUBTTL	Buffers -- BYTBLT -- Non fancy versions
+
 IFE FTBYTBLT,<
 BBM2M0:	ILDB CX,T2		;GET A BYTE
 	IDPB CX,T5		;DEPOSIT A BYTE
 BBM2M:	SOJGE T4,BBM2M0		;COUNT DOWN
 	RETSKP			;AND RETURN
 >;END IFE FTBYTBLT
-	SUBTTL BYTBLT - Fancy version
+	SUBTTL	Buffers -- BYTBLT -- Fancy version
 
 IFN FTBYTBLT,<
 
@@ -2618,7 +2637,6 @@ DNSWDS:	MOVEM T3,(T1)		;STORE THE VALUE TO BE SMEARED
 Cause:	The caller has requested that a very large block be smeared.
 
 Action:	Find out what the caller really wanted to smear and fix the call.
-
 >,DNSWD1)
 	CALLRET XBLTAT		;(T1,T2,T3)COPY MONITOR TO MONITOR
 
@@ -2851,6 +2869,8 @@ Action:	First determine if the pointer is bad, if the check word is trashed,
 	check word is trashed then possible the owner trashed it or the user
 	of the memory block previous to this one wrote too far.  If FTD36MM=0
 	then the owner of the memory block is recorded in the block's header.
+	It has also been determined that COMMMS BUGHLTs can occur because
+	AC 0 got trashed.
 	For more detail see FREE.MAC.
 
 Data:	BUFFER - Address of faulty buffer
@@ -2868,7 +2888,7 @@ IFN FTLSTCOR,<
 	CAMN T3,['GUNNAR']	; Does it match?
 	IFSKP.
 	  MOVE T3,-1(T1)	; Get owner's PC
-	  BUG. (CHK,COMCWT,D36COM,SOFT,<Check word trashed>,<<T1,MEMADR>,<T3,OWNER>>,<
+	  BUG.(CHK,COMCWT,D36COM,SOFT,<Check word trashed>,<<T1,MEMADR>,<T3,OWNER>>,<
 
 Cause:	DNFWDS called with memory to return that had check word at end of
 	requested buffer trashed.
@@ -3030,7 +3050,6 @@ Cause:	DNFMSG caller tried to return a piece of memory not in the
 
 Action:	See stack for caller and find why it is trying to return
 	a bad message block.
-
 >)
 	  RET
 	ENDIF.
@@ -3259,7 +3278,7 @@ CHKCNG:	CAMGE T1,DCNCNG		;#COMPARE WITH DECLARED CONGEST THRESHOLD
 	CAMGE T1,DCNUCG		;#COMPARE WITH DECLARED UNCONGEST THRESHOLD
 	MOVEM T1,DCNUCG		;#UNCONGEST TOO LARGE, REPLACE WITH DCNTSB
 	MOVE T1,DCNUCG		;#GET UN-CONGESTION THRESHOLD
-	SUBI T1,2		;#ASSURE A MARGIN OF AT LEAST 2
+	SUBI T1,5		;[9056]#ASSURE A MARGIN OF AT LEAST 5
 	CAMGE T1,DCNCNG		;# BETWEEN CONGESTION & UNCONGESTION
 	MOVEM T1,DCNCNG		;# TO PREVENT KAF FLIPPING BETWEEN CNG & UCG
 	RET			;#ONLY RETURN FROM CHKCNG
@@ -3314,9 +3333,9 @@ DNGRB2:	JUMPLE T1,DONRET	;#NO, FAIL IF THERE ARE NO MORE BLOCKS
 	LOAD T1,CHLWM,(P1)	;;; Get the low water mark so far
 	LOAD T2,CHAVL,(P1)	;;;  and current available
 	CAMLE T1,T2		;;; Have we gone lower
-	 STOR T2,CHLWM,(P1)	;;; Yes, remember new mark
+	STOR T2,CHLWM,(P1)	;;; Yes, remember new mark
 	OPSTR <SKIPN T1,>,CHPTR,(P1) ;#GET PTR TO FIRST AVAILABLE BLOCK
-	 BUG.(CHK,COMIEL,D36COM,SOFT,<Illegal end of list pointer>,,<
+	BUG.(CHK,COMIEL,D36COM,SOFT,<Illegal end of list pointer>,,<
 
 Cause:	CHAVL, the available count, indicated there was at least one block
 	on the free list, but the first pointer was zero.
@@ -3376,7 +3395,7 @@ IFN FTLSTCOR,<
 	CAMN T1,['GUNNAR']	; Does it match?
 	IFSKP.
 	  MOVE P2,-3(P)		; Caller's PC
-	  BUG. (CHK,COMEBT,D36COM,SOFT,<End of memory block trashed>,<<P1,MEMADR>,<P2,CALLER>>,<
+	  BUG.(CHK,COMEBT,D36COM,SOFT,<End of memory block trashed>,<<P1,MEMADR>,<P2,CALLER>>,<
 
 Cause:	DNFRBL called with block to return that had its last word smashed.
 
@@ -3427,7 +3446,7 @@ DNMCUB::XMOVEI T2,UBLCB			; Address of UBL core block
 	ADDI T1,-3(T2)			; Point to last word
 	MOVE T1,(T1)			; Get test string
 	CAME T1,['GUNNAR']		; Does it match?
-	  BUG. (CHK,D36UBT,D36COM,SOFT,<End of UBL trashed>,,<
+	BUG.(CHK,D36UBT,D36COM,SOFT,<End of UBL trashed>,,<
 
 Cause:	DNADLL called with message received that had its last word smashed.
 
@@ -3456,8 +3475,8 @@ DNCHCH:	SAVEAC <T1,T2,T3,T4>	;SAVE SOME ACS
 	MOVE T3,T2		;COPY IT
 	ADDI T3,CH.LEN*<CHBLKN-1> ;POINTER TO LAST VALID BLOCK
 	CAMG T1,T3		;ARE WE BEYOND GOOD BLOCKS?
-	 CAMGE T1,T2		;OR BELOW GOOD BLOCKS?
-	  BUG.(CHK,COMCHO,D36COM,SOFT,<CH pointer out of range>,,<
+	CAMGE T1,T2		;OR BELOW GOOD BLOCKS?
+	BUG.(CHK,COMCHO,D36COM,SOFT,<CH pointer out of range>,,<
 
 Cause:	In the core block checking routines, the internal pointer
 	to the CH begstr applying to this type of block is bad.
@@ -3468,7 +3487,7 @@ Cause:	In the core block checking routines, the internal pointer
 	SUB T1,T2		;GET RELATIVE ADDRESS WITH BLOCKS
 	IDIVI T1,CH.LEN		;FIND OUT IF WE ARE ON A BOUNDARY
 	SKIPE T2		;IF NO REMAINDER, THE ADDRESS IS GOOD
-	 BUG.(CHK,COMCHB,D36COM,SOFT,<CH pointer off by a few>,,<
+	BUG.(CHK,COMCHB,D36COM,SOFT,<CH pointer off by a few>,,<
 
 Cause:	A pointer internal to the core management routines is off
 	by a few words. This probably means that an AC has been 
@@ -3476,7 +3495,7 @@ Cause:	A pointer internal to the core management routines is off
 >,DNCHX)
 	LOAD T1,CHAVL,(T4)	;GET NUMBER OF AVAILABLE BLOCKS
 	OPSTR <CAMLE T1,>,CHNUM,(T4) ;COMPARE AGAINST TOTAL NUMBER OF BLOCKS
-	 BUG.(CHK,COMCHA,D36COM,SOFT,<Number of available FB blocks to large>,,<
+	BUG.(CHK,COMCHA,D36COM,SOFT,<Number of available FB blocks to large>,,<
 
 Cause:	When checking the CH begstr for a type of block, we noticed that
 	we have more blocks available than we started out with. Since
@@ -3528,8 +3547,8 @@ IFE FTFIXCOR,<			;these checks don't work on page-aligned
 	ADD T4,T3		;ADD IN LOW ADDR, GET HIGHEST LEGAL ADDR FOR FB
 	CAMG P1,T4		;RANGE CHECK THE FB POINTER
 >; End of IFE FTFIXCOR
-	 CAMGE P1,T3		;NOT ABOVE MAX, CHECK FOR BELOW MAX
-	  BUG.(HLT,COMFBO,D36COM,SOFT,<FB pointer is out of range>,,<
+	CAMGE P1,T3		;NOT ABOVE MAX, CHECK FOR BELOW MAX
+	BUG.(HLT,COMFBO,D36COM,SOFT,<FB pointer is out of range>,,<
 
 Cause:	A free block pointer being checked is not pointing to the 
 	free core allocated for this type of block.
@@ -3542,7 +3561,7 @@ IFE FTFIXCOR,<			;these checks don't work on page-aligned
 	SUB T1,T3		;CONVERT POINTER TO RELATIVE ADDR
 	OPSTR <IDIV T1,>,CHSIZ,(P2) ;CONVERT TO ABSOLUTE NUMBER OF BLOCK
 	SKIPE T2		;MAKE SURE WE WERE ON A BLOCK BOUNDARY
-	 BUG.(HLT,COMFBT,D36COM,SOFT,<FB pointer is off by a few>,,<
+	BUG.(HLT,COMFBT,D36COM,SOFT,<FB pointer is off by a few>,,<
 
 Cause:	A free block pointer is off by a few words. This probably means
 	that the user of this pointer had added a constant, and forgot
@@ -3566,8 +3585,8 @@ IFE FTFIXCOR,<			;these checks don't work on page-aligned
 				; pools.
 	CAMG T1,T4		;IS IT ABOVE HIGH RANGE?
 >; End of IFE FTFIXCOR
-	 CAMGE T1,T3		;OR BELOW LOW RANGE?
-	  BUG.(CHK,COMAFB,D36COM,SOFT,<A free block pointer is bad>,,<
+	CAMGE T1,T3		;OR BELOW LOW RANGE?
+	BUG.(CHK,COMAFB,D36COM,SOFT,<A free block pointer is bad>,,<
 
 Cause:	There is a block on a free list whose address is not in the 
 	range expected for this list.  The offending pointer is in P1.
@@ -3595,7 +3614,7 @@ Action:	Somebody back on the stack is probably returning a junk pointer,
 >,DNCHX)
 >; End of IFE FTFIXCOR
 	CAMN FL,P1		;MAKE SURE THIS ISNT THE BLOCK I HAVE
-	 BUG.(CHK,COMFBF,D36COM,SOFT,<FB is already on free list>,,<
+	BUG.(CHK,COMFBF,D36COM,SOFT,<FB is already on free list>,,<
 
 Cause:	The block that P1 points at is already on the free list and
 	is being returned again.
@@ -3640,7 +3659,7 @@ IFN FTLSTCOR,<
 	JRST DNCHFB		;GO AND DO COMPLETE CHECKS FOR THE POINTER
 
 >;END OF IFN FTPARANOID
-	SUBTTL Time -- Get current time in ms.
+	SUBTTL DNGTIM - Get current time in ms.
 
 ;DNGTIM - Get a timestamp in the proper units into T1
 ;
@@ -3993,7 +4012,7 @@ DCNTRA:	SKIPN	T2		;GET ADDRESS OF USER'S BLOCK, AND MAKE SURE
 	JRST	WAKJOB##	;WAKE HIM UP
 
 >;END OF IFN FTTRACE!FTMINTR
-	SUBTTL TOPS10 -- AC save routines
+	SUBTTL	TOPS10 - AC save routines
 
 ;These routines are defined in MACSYM.REL, but we normally don't load
 ;with that, so here they are:
@@ -4069,7 +4088,7 @@ MXLBSZ::KNMMCS
 	XRESCD
 	
 
-	SUBTTL Initialization routines
+	SUBTTL TOPS10 - Initialization routines
 
 ;Initialization Routines, called from SYSINI
 
@@ -4108,7 +4127,7 @@ DNGTC1:	LOAD T2,CHNUM,(T4)	;GET NUMBER OF THIS TYPE OF FREE BLK
 	LOAD T1,IBADR,+IBBLK	;Make sure local node index
 	LDB T1,[POINTR(T1,RN%NOD)] ; and
 	OPSTR <CAMLE T1,>,IBMXA,+IBBLK ; MAXIMUM ADDRESS are consistent
-	  BUG.(CHK,COMBNN,D36COM,SOFT,<Bad local node number>,,<
+	BUG.(CHK,COMBNN,D36COM,SOFT,<Bad local node number>,,<
 
 Cause:	The node number set with the NODE command in the CONFIG file
 	is higher than the DECNET MAXIMUM-ADDRESS value set in the same file.
@@ -4133,10 +4152,10 @@ IFN FTLSTCOR,<ADDI T1,4>	; Overhead words for trace of lost blks
 	STOR T1,CHNUM,+MBLCB	;  and save it
 	CALL DNINIM		;GO INITIALIZE OUR MEMORY MANAGER
 	CALL SCTINI		;CALL SC WHO WILL CALL NSP AND SO ON
-	  BUG.(CHK,COMCID,D36COM,SOFT,<Couldn't initalize DECNET>,,<
+	BUG.(CHK,COMCID,D36COM,SOFT,<Couldn't initalize DECNET>,,<
 
 Cause:	SCTINI has found some reason to object about the DECnet environment.
-	See SCTINI for the reasons it will take a non-skip return.
+	See SCTINI for the reasons it takes a non-skip return.
 
 >,RTN)
 IFN FTOPS10,<
@@ -4220,9 +4239,11 @@ Cause:	The 2 byte julian half-day field in an event message is limited
 	to 9 november 2021. The routine above has calculated the julian
 	half-day, and has found that it overflowed.
 
-	I doubt very much that the date itself has really gone past 2021.
+Action:	I doubt very much that the date itself has really gone past 2021.
 	Probably someone smashed an AC or the routine to get the time
-	from the monitor is returning junk.
+	from the monitor is returning junk. However, on November 9, 2021,
+	it appears that many people will see this problem so prepare your
+	SPR for that date.
 >)
 	RET
 >;END IFN FTOPS10
@@ -4266,7 +4287,7 @@ IFN FTOPS20,<
 	HLRZ T1,T2		;get year
 	CAIL T1,FYEAR 		;range
 	CAIL T1,FYEAR+YRTABL	; check
- 	  BUG.(CHK,NMXTBG,JNTMAN,SOFT,<NMXTIM table obsolete>,,<
+	BUG.(CHK,NMXTBG,JNTMAN,SOFT,<NMXTIM table obsolete>,,<
 
 Cause:	The table used by NMXTIM is obsolete.
 
@@ -4331,7 +4352,7 @@ YEARTB:	^D1826
 YRTABL=.-YEARTB
 	XRESCD
 >
-	SUBTTL TESTSB -- Assert that Code is Running in section 1
+	SUBTTL TOPS10 - TESTSB - Assert that Code is Running in section 1
 
 ;Called only by TESTS1 macro, in TOPS10, defined in D36PAR
 
@@ -4359,7 +4380,8 @@ Action:	This BUG. is called with a PUSHJ P, so look on the top of the
 >;END IFN FTDEBUG
 >;END IFN FTOPS10
 
-	SUBTTL TOPS20 -- User mode checking routines.
+	SUBTTL TOPS20 - User mode checking routines.
+
 IFN FTOPS20,<
 ;CHKBPT - Check out a byte pointer the user has passed us.
 ;Byte size must be null or 8 bit bytes.
@@ -4391,9 +4413,12 @@ $TSTS6:	PUSH P,CX		;Save return address
 	JRST $TSTS7
 	PUSH P,T1
 	MOVE T1,(P)
-	BUG. (CHK,NISEC6,D36COM,SOFT,<Not in section 6>,<<T1,CALADR>>,<
+	BUG.(CHK,NISEC6,D36COM,SOFT,<Not in section 6>,<<T1,CALADR>>,<
 
 Cause:	Code that should be running in section 6 is not.
+
+Action:	If the DOB% facility did not produce a dump, change this to
+	a BUGHLT and submit an SPR with the dump.
 
 Data:	CALADR - Address of routine not in section 6
 >)

@@ -1,3 +1,5 @@
+; Edit= 8880 to DEVICE.MAC on 10-Aug-88 by RASPUZZI
+;Update BUG. documentation. 
 ; UPD ID= 8501, RIP:<7.MONITOR>DEVICE.MAC.2,   9-Feb-88 14:52:00 by GSCOTT
 ;TCO 7.1218 - Update copyright notice.
 ; UPD ID= 2062, SNARK:<6.1.MONITOR>DEVICE.MAC.14,   3-Jun-85 14:28:39 by MCCOLLUM
@@ -175,7 +177,7 @@ Cause:	The monitor could not assign a terminal to a job because
 	    1.  It failed to get resident storage.
 	    2.  The line is not fully active; it is okay for system messages
 		and sendalls.  Need a CNTRL/C on line.
-	    3.  Of a programming error.
+	    3.  Or a programming error.
 >)
 	RET
 
@@ -667,7 +669,10 @@ DEVAV3:	PUSH P,DEV	;SAVE ORIGINAL DEVICE
 Cause:	While checking to see if a device is available to the job,
 	an invalid device designator was passed to a subroutine.
 
-
+Action:	If this problem persists, submit a dump provided by the DOB%
+	facility or create a dump by changing this to a BUGHLT. Look
+	at the dump and see who the caller is that is passing in bad
+	information.
 >)
 	POP P,DEV	;RESTORE ORIGINAL DEVICE
 	HLRZ A,DEVUNT(B)	;SEE WHO ASSIGNED THE TTY

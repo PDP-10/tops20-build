@@ -1,3 +1,14 @@
+; Edit= 9176 to PROLOG.MAC on 28-Jun-90 by GSCOTT
+;Add more SAVEAC routine to APRSRV, saving over a page of code in the monitor.
+; Edit= 9041 to PROLOG.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 8971 to PROLOG.MAC on 22-Sep-88 by RASPUZZI
+;Move FTHIST out of NISRV and put it in PROLOG where it should be.
+; Edit= 8823 to PROLOG.MAC on 8-Apr-88 by RASPUZZI, for SPR #21883
+;Prevent OFNBDB BUGHLTs when the INDEX-TABLE.BIN is damaged. Have GETIDX be
+;defensive about what it finds.
 ; UPD ID= 8599, RIP:<7.MONITOR>PROLOG.MAC.8,  11-Feb-88 16:57:54 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 293, RIP:<7.MONITOR>PROLOG.MAC.7,  12-Nov-87 16:55:10 by GSCOTT
@@ -631,6 +642,7 @@ FTCORBUG==:0			;DECNET-36 - FTPARANOID FOR CORE MANAGER
 FTLSTCOR==:0			;DECNET-36 - TRY TO TRACE LOST CORE
 FTHMMEM==:0			;DECNET-36 - Memory request map
 FTRTST==:0			;DECNET-36 - Router message looper
+NDG FTHIST,0			;[8971] - PHYKNI's history buffer
 >				; END OF IFE DEBUG
 
 ;IF THE MASTER SWITCH IS ON, THE FOLLOWING SWITCH VALUES ARE IN USE
@@ -665,6 +677,7 @@ NDG FTCORBUG,0			;DECNET-36 - FTPARANOID FOR CORE MANAGER
 NDG FTLSTCOR,1			;DECNET-36 - TRY TO TRACE LOST CORE
 NDG FTHMMEM,1			;DECNET-36 - Memory request map
 NDG FTRTST,1			;DECNET-36 - Router message looper
+NDG FTHIST,0			;[8971] PHYKNI's history buffer (off)
 >
 	SUBTTL Processor-specific instructions
 
@@ -1423,7 +1436,7 @@ COMDAT==:^D16			;SIZE OF OWNING PROCESSOR BLOCK
 ;DEFINITIONS FOR MCB MESSAGES
 
 MSHDR==:4			;SIZE OF MESSAGE HEADER
-DEFSTR (MSLNK,0,35,36)	;LINK WORD
+DEFSTR (MSLNK,0,35,36)		;LINK WORD
 DEFSTR (MSDTE,1,2,3)		;DTE # OR ALL ONES FOR LOCAL CONNECITON
 DEFSTR (MSSEG,1,17,12)		;SEG # OF MESSAGE
 DEFSTR (MSLLA,1,33,16)		;LL ADDRESS
@@ -1856,17 +1869,29 @@ DEFINE USRSAV,<
 	SPCSAV(.SAV33,<3>)
 	SPCSAV(.SAV44,<4>)
 	SPCSAV(.SAV12,<1,2>)
+	SPCSAV(.SAV23,<2,3>)	;[9176]
 	SPCSAV(.SAV13,<1,2,3>)
 	SPCSAV(.SAV34,<3,4>)
 	SPCSAV(.SAV24,<2,3,4>)
 	SPCSAV(SAVT,<1,2,3,4>)
 	SPCSAV(.SAV1,<5>)
+	SPCSAV(.SAV66,<6>)	;[9176]
+	SPCSAV(.SAV77,<7>)	;[9176]
 	SPCSAV(.SAV2,<5,6>)
 	SPCSAV(.SAV3,<5,6,7>)
 	SPCSAV(.SAV4,<5,6,7,<^D8>>)
+	SPCSAV(.SA568,<5,6,<^D8>>)	;[9176]
 	SPCSAV(SAVP,<<^D8>,<^D9>,<^D10>,<^D11>,<^D12>,<^D13>>)
+	SPCSAV(.SAV8,<5,6,7,<^D8>,<^D9>,<^D10>,<^D11>,<^D12>>)	;[9176]
 	SPCSAV(SAVPQ,<5,6,7,<^D8>,<^D9>,<^D10>,<^D11>,<^D12>,<^D13>>)
 	SPCSAV(.SAVP1,<<^D8>>)
+	SPCSAV(.SAV99,<<^D9>>)	;[9176]
+	SPCSAV(.SAVAA,<<^D10>>)	;[9176]
+	SPCSAV(.SAVBB,<<^D11>>)	;[9176]
+	SPCSAV(.SAVCC,<<^D12>>)	;[9176]
+	SPCSAV(.SAV89,<<^D8>,<^D9>>)	;[9176]
+	SPCSAV(.SAV8A,<<^D8>,<^D9>,<^D10>>)	;[9176]
+
 >;END OF DEFINE USRSAV
 ;SYMBOLS FOR REFERRING TO FLAGS AND/OR PC ON THE STACK
 
@@ -2762,6 +2787,16 @@ DEFINE IMCALL (ADR,SEC)<
 	IFNB <SEC>,<SEC,,ADR>
    >
 
+GT%SPC==:1B12			;[9041] Special function bit
+
+;Used for CRDIR% GETOK
+  .GOSIZ==:0			;[9041] Size of special argument block
+  .GOBLK==:2			;[9041] Beginning of special argument block
+  .GOUSR==:3			;[9041] Username begins here
+  .GOABK==:16			;[9041] User argument block begins here
+
+GEFLSZ==:206			;[9041] Block size for file workings
+
 DEFINE GTOKM	(FUN,ARGS,EXTRA,BLKADR) <
 	SKIPGE CX,GTOKPR+FUN	;SEE IF NEED TO VERIFY IT
 	SKIPA			;YES. DO VERIFICATION CODE THEN
@@ -3543,7 +3578,7 @@ DEFSTR DRNAM,15,35,36		;POINTER TO NAME STRING
 DEFSTR DRPSW,16,35,36		;POINTER TO PASSWORD STRING
 DEFSTR DRPRV,17,35,36		;PRIVILEGE BITS
 DEFSTR DRMOD,20,35,36		;MODE BITS
-DEFSTR DRDAT,21,35,36		;TIME AND DATE OF LAST LOGIN
+DEFSTR DRDAT,21,35,36		;[9041] Time and date of last interactive login
 DEFSTR DRUGP,22,35,36		;USER GROUPS
 DEFSTR DRDGP,23,35,36		;DIRECTORY GROUPS
 DEFSTR DRUDT,24,35,36		;LAST UPDATE TIME OF DIR
@@ -3563,6 +3598,10 @@ DEFSTR DRPUD,36,35,36		;Password use data
   DEFSTR DRPCU,36,17,18		;Current password use count
   DEFSTR DRPMU,36,35,18		;Maximum password use count 0 = none set
 DEFSTR DRPPN,37,35,36		;TOPS-10 project-programmer number
+DEFSTR DRNIL,40,35,36		;[9041] Last non-interative login
+DEFSTR DRFPA,41,35,36		;[9041] Password failure count word
+  DEFSTR DRFIL,41,17,18		;[9041] Failed interactive attempts
+  DEFSTR DRFNL,41,35,18		;[9041] Failed non-interactive attempts
 
 	.DIHL0==:100		;LENGTH OF DIR PAGE 0 HEADER (+ SPARES)
 	.DIHL1==:3		;LENGTH OF HEADER FOR DIR PAGES 1 & UP
@@ -3740,10 +3779,12 @@ DCSIZE==:5			;SIZE OF CACHE
 
 DEFSTR IDXFB,0,35,18		;POINTER TO FDB FOR THIS DIRECTORY
 DEFSTR IDXSD,0,17,18		;SUPERIOR DIRECTORY
-DEFSTR IDXIB,1,35,30		;DISK ADDRESS OF INDEX BLOCK OF DIR
+DEFSTR IDXIB,1,35,22		;[8823] Disk address of INDEX BLOCK of dir
+DEFSTR IDXMB,1,13,8		;[8823] These must be 0
 	IDXFLP==5		;BIT POSITION OF IDXFL IN DEFSTR
 DEFSTR IDXFG,1,IDXFLP,6		;FLAGS
 	IDX%IV==:1		;THIS IDX ENTRY IS INVALID
+	IDX%MX==:1		;[8823] Maximum IDXFG value
 MSKSTR (IDXIV,1,<<IDX%IV>B<IDXFLP>>)
 
 ; INDEX TABLE FIELDS IN THE PSB

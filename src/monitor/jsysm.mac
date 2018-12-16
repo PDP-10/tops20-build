@@ -1,3 +1,40 @@
+; Edit= 9163 to JSYSM.MAC on 19-Apr-90 by LOMARTIRE, for SPR #22085
+;Prevent NSKDIS BUGHLTs for TVTs due to edits 9041 and 9061
+; Edit= 9148 to JSYSM.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9126 to JSYSM.MAC on 3-Oct-89 by GSCOTT
+;Don't CFOBF% at LOG21 unless the SOBE% loop times out, don't clear SBDLP at
+;CSBDAV, remove edit 9120 as it was a bad idea.
+; Edit= 9110 to JSYSM.MAC on 16-Jun-89 by GSCOTT
+;Prevent undeserved TIMEX2 errors from HSYS% on a ^ECEASE NOW.
+; Edit= 9080 to JSYSM.MAC on 10-Mar-89 by WADDINGTON
+;Use JI%ASN instead of "1B1" at GETJI1:. Now if only we documented this
+;behaviour...
+; Edit= 9074 to JSYSM.MAC on 28-Feb-89 by GSCOTT
+;Output terminal origin when logging out. 
+; Edit= 9072 to JSYSM.MAC on 28-Feb-89 by RASPUZZI
+;Prevent NSKDIS BUGHLTs when attaching to a job from a CTERM terminal. Small
+;race condition existed where someone else could have the CTMLOK and deep down
+;in the bowls of CTHSRV, we would try to LOCK the CTMLOK and of course want to
+;block since someone else had it. You can't block when you are NOSKED.
+; Edit= 9066 to JSYSM.MAC on 7-Feb-89 by GSCOTT
+;Save $2 at HSYS4+4.
+; Edit= 9061 to JSYSM.MAC on 17-Jan-89 by GSCOTT
+;Edit 9041 introduced a rare timing problem evidenced by vanishing TDBs.
+; Edit= 9058 to JSYSM.MAC on 12-Jan-89 by GSCOTT
+;Add SMON function .SFBUG to set SAVTRE. Reverse sense of SMON function
+;.SFHDT. ITRAP on errors in SMON function .SFDCD. 
+; Edit= 9041 to JSYSM.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 8993 to JSYSM.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8955 to JSYSM.MAC on 26-Aug-88 by LOMARTIRE
+;Improve BUG. documentation some more
+; Edit= 8902 to JSYSM.MAC on 12-Aug-88 by RASPUZZI
+;Update BUG. documentation.
+; Edit= 8834 to JSYSM.MAC on 21-Apr-88 by GSCOTT (TCO 7.1279)
 ; UPD ID= 8705, RIP:<7.MONITOR>JSYSM.MAC.95,  21-Apr-88 16:11:20 by GSCOTT
 ;TCO 7.1279 - Don't validate the job number passed to the USAGE JSYS if the 
 ; entry type is .USENT.  This is so that MOUNTR has no problem writing tape
@@ -756,7 +793,7 @@
 ;<4.1.MONITOR>MEXEC.MAC.439, 16-Nov-79 11:46:24, EDIT BY MILLER
 ;CHANGE ALLMSG TO TIME-OUT TTMSG
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -774,7 +811,7 @@
 ;	SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
 
 
-	SEARCH PROLOG,MONSYM,SERCOD,ACTSYM
+	SEARCH PROLOG,MONSYM,SERCOD,ACTSYM,TTYDEF ;[9072]
 	TTITLE JSYSM,,< - JSYS Code from MEXEC   >
 	Subttl	Table of Contents
 
@@ -800,21 +837,21 @@
 ;   12. SETSN JSYS . . . . . . . . . . . . . . . . . . . . . .  33
 ;   13. SETNM/GETNM JSYSes . . . . . . . . . . . . . . . . . .  34
 ;   14. GETJI JSYS . . . . . . . . . . . . . . . . . . . . . .  35
-;   15. SWTCH/LITES/USRIO JSYSes . . . . . . . . . . . . . . .  41
-;   16. PEEK JSYS  . . . . . . . . . . . . . . . . . . . . . .  42
-;   17. XPEEK% JSYS  . . . . . . . . . . . . . . . . . . . . .  43
-;   18. CRJOB JSYS . . . . . . . . . . . . . . . . . . . . . .  45
-;   19. LOGIN JSYS . . . . . . . . . . . . . . . . . . . . . .  51
-;   20. DTACH JSYS . . . . . . . . . . . . . . . . . . . . . .  56
-;   21. ATACH JSYS . . . . . . . . . . . . . . . . . . . . . .  62
-;   22. LGOUT JSYS . . . . . . . . . . . . . . . . . . . . . .  70
-;       22.1    Logout Another Job . . . . . . . . . . . . . .  71
-;       22.2    Set PSI to Logout Another Job  . . . . . . . .  73
-;       22.3    Perform Logout . . . . . . . . . . . . . . . .  74
-;       22.4    Perform GETOK for LGOUT  . . . . . . . . . . .  79
-;       22.5    Decrement Mount Counts . . . . . . . . . . . .  80
-;   23. Session Logging Functions  . . . . . . . . . . . . . .  81
-;   24. Routine To Break Links . . . . . . . . . . . . . . . .  93
+;   15. SWTCH/LITES/USRIO JSYSes . . . . . . . . . . . . . . .  42
+;   16. PEEK JSYS  . . . . . . . . . . . . . . . . . . . . . .  43
+;   17. XPEEK% JSYS  . . . . . . . . . . . . . . . . . . . . .  44
+;   18. CRJOB JSYS . . . . . . . . . . . . . . . . . . . . . .  46
+;   19. LOGIN JSYS . . . . . . . . . . . . . . . . . . . . . .  52
+;   20. DTACH JSYS . . . . . . . . . . . . . . . . . . . . . .  57
+;   21. ATACH JSYS . . . . . . . . . . . . . . . . . . . . . .  63
+;   22. LGOUT JSYS . . . . . . . . . . . . . . . . . . . . . .  71
+;       22.1    Logout Another Job . . . . . . . . . . . . . .  72
+;       22.2    Set PSI to Logout Another Job  . . . . . . . .  74
+;       22.3    Perform Logout . . . . . . . . . . . . . . . .  75
+;       22.4    Perform GETOK for LGOUT  . . . . . . . . . . .  80
+;       22.5    Decrement Mount Counts . . . . . . . . . . . .  81
+;   23. Session Logging Functions  . . . . . . . . . . . . . .  82
+;   24. Routine To Break Links . . . . . . . . . . . . . . . .  95
 	Subttl	Table of Contents (page 2)
 
 ;		     Table of Contents for JSYSM
@@ -822,31 +859,31 @@
 ;				  Section		      Page
 ;
 ;
-;   25. USAGE JSYS . . . . . . . . . . . . . . . . . . . . . .  94
-;       25.1    SYSTEM-DATA.BIN Format . . . . . . . . . . . .  95
-;       25.2    Record Definitions . . . . . . . . . . . . . .  96
-;       25.3    Functions Performed by Job 0 Fork  . . . . . . 100
-;       25.4    Set Checkpoint Interval  . . . . . . . . . . . 101
-;       25.5    Make Usage or Session Entry  . . . . . . . . . 102
-;       25.6    Fill Record From Table . . . . . . . . . . . . 103
-;       25.7    Fill Arbitrary Record  . . . . . . . . . . . . 106
-;       25.8    Fill In Usage Entry Header . . . . . . . . . . 108
-;       25.9    Compute Length of User Entry . . . . . . . . . 113
-;       25.10   Copy String to Usage Block . . . . . . . . . . 115
-;       25.11   Get Length of Disk Usage Block . . . . . . . . 116
-;       25.12   Find and Fetch Entry In Caller's List  . . . . 117
-;       25.13   Wait For Free Space  . . . . . . . . . . . . . 118
-;       25.14   Get/Put Message on Job 0 Queue . . . . . . . . 119
-;       25.15   Enable Account Validation  . . . . . . . . . . 120
-;       25.16   Set/Read Accounting Shift Change . . . . . . . 122
+;   25. USAGE JSYS . . . . . . . . . . . . . . . . . . . . . .  96
+;       25.1    SYSTEM-DATA.BIN Format . . . . . . . . . . . .  97
+;       25.2    Record Definitions . . . . . . . . . . . . . .  98
+;       25.3    Functions Performed by Job 0 Fork  . . . . . . 102
+;       25.4    Set Checkpoint Interval  . . . . . . . . . . . 103
+;       25.5    Make Usage or Session Entry  . . . . . . . . . 104
+;       25.6    Fill Record From Table . . . . . . . . . . . . 105
+;       25.7    Fill Arbitrary Record  . . . . . . . . . . . . 108
+;       25.8    Fill In Usage Entry Header . . . . . . . . . . 110
+;       25.9    Compute Length of User Entry . . . . . . . . . 115
+;       25.10   Copy String to Usage Block . . . . . . . . . . 117
+;       25.11   Get Length of Disk Usage Block . . . . . . . . 118
+;       25.12   Find and Fetch Entry In Caller's List  . . . . 119
+;       25.13   Wait For Free Space  . . . . . . . . . . . . . 120
+;       25.14   Get/Put Message on Job 0 Queue . . . . . . . . 121
+;       25.15   Enable Account Validation  . . . . . . . . . . 122
+;       25.16   Set/Read Accounting Shift Change . . . . . . . 124
 ;   26. Usage Support Routines
-;       26.1    Initialization . . . . . . . . . . . . . . . . 124
-;       26.2    Checkpoint File  . . . . . . . . . . . . . . . 131
-;       26.3    Queued Message Handler . . . . . . . . . . . . 135
-;       26.4    Checkpoint/Shift Change Timing . . . . . . . . 136
-;       26.5    Write Usage File . . . . . . . . . . . . . . . 139
-;       26.6    Update Checkpoint File . . . . . . . . . . . . 141
-;   27. End of JSYSM . . . . . . . . . . . . . . . . . . . . . 145
+;       26.1    Initialization . . . . . . . . . . . . . . . . 126
+;       26.2    Checkpoint File  . . . . . . . . . . . . . . . 133
+;       26.3    Queued Message Handler . . . . . . . . . . . . 137
+;       26.4    Checkpoint/Shift Change Timing . . . . . . . . 138
+;       26.5    Write Usage File . . . . . . . . . . . . . . . 141
+;       26.6    Update Checkpoint File . . . . . . . . . . . . 143
+;   27. End of JSYSM . . . . . . . . . . . . . . . . . . . . . 147
 	SUBTTL Local Definitions
 
 ;This file contains JSYS and job 0 level code removed from the MEXEC and JSYSA
@@ -920,10 +957,11 @@ EDDT=:<MSEC1,,.>		;START IN SECTION 1 ON EDDT$G FROM MDDT
 ; RETURNS +2: SUCCESS
 
 .HSYS::	MCENT
-	MOVE 2,CAPENB		;CHECK USER CAPABILITIES
-	TXNN 2,SC%WHL+SC%OPR+SC%MNT ;USER ALLOWED TO DO HALT?
+	MOVE T3,CAPENB		;[9041] Check user capabilities
+	TXNN T3,SC%WHL+SC%OPR+SC%MNT ;[9041] User allowed to do halt?
 	RETERR(CAPX2)		;NO, RETURN BAD
-	JUMPG 1,HSYS1		;JUMP UNLESS ABORTING SHUTDOWN
+	GTOKM (.GOHSY,<T1,T2>,MRETNE) ;[9041] Get ACJ's blessing
+	JUMPG T1,HSYS1		;JUMP UNLESS ABORTING SHUTDOWN
 	MOVE T1,HSYST1		;GET OLD TIME
 	JUMPE T1,HSYS0		;IF NONE, DONT TYPE MESSAGE
 	SETZM HSYST1		;CLEAR OLD TIME
@@ -962,14 +1000,15 @@ HSYS1:	PUSH P,1		;HOLD THE DESIRED SHUTDOWN
 ;	CALL TADDIF
 ; RETURN +1, A/ MILLISECONDS TO SHUTDOWN
 
-TADDIF:	PUSH P,1
-	CALL LGTAD		;GET CURRENT TIME AND DATE
-	POP P,2
-	SUBM 2,1		;GET POSITIVE DIFFERENCE OF TIMES
-	CAML T1,[^D8,,0]	;WITHIN 8 DAYS?
+TADDIF:	ADDI T1,1		;[9110] Add a tick to prevent TIMEX2
+	PUSH P,T1		;[9110] Save the user's time
+	CALL LGTAD		;[9110] (/T1) Get current time and date
+	POP P,T2		;[9110] Get the user's date plus fudge factor
+	SUBM T2,T1		;[9110] Get positive difference of times
+	CAML T1,[^D8,,1]	;[9110] Within 8 days and a tick?
 	JRST [	MOVSI T1,377777	;NO, RETURN VERY LARGE NUMBER
 		RET]
-	MUL T1,[^D<24*3600*1000>]	;MILLISECONDS/DAY
+	MUL T1,[^D<24*3600*1000>] ;MILLISECONDS/DAY
 	DIV T1,[1B17]		;SHIFT BINARY POINT
 	RET
 
@@ -1055,12 +1094,16 @@ CHKHS4:	MOVX T1,SF%RMT!SF%LCL!SF%PTY!SF%MCB!SF%NVT!SF%LAT ;[7479]
 	CFORK
 	 BUG.(HLT,HSYFRK,JSYSM,SOFT,<HSYS - Job 0 CFORK failed>,,<
 
-Cause:	This will occur if the CFORK JSYS fails to create a fork for
+Cause:	This occurs if the CFORK JSYS fails to create a fork for
 	shutting down the system.
 
-	This failure will occur if the forks are totally used up, or if job
+	This failure occurs if the forks are totally used up, or if job
 	0 has used the maximum number of forks permitted.  NUFKS contains this
 	maximum number.
+
+Action:	This is almost always caused by running GALAXY under job 0.
+	Investigate why there are too many forks under job 0 and move
+	some of them out.
 >)
 	MOVE T2,[MSEC1,,HSYS4]	;SET IT TO START NEXT SHUTDOWN PHASE
 	MSFRK			;START FORK IN MONITOR MODE
@@ -1074,8 +1117,6 @@ HSYS4:	MOVX T1,USRCTX		;USER MODE FLAGS WORD
 	MOVEM 1,FFL		;ESTABLISH USUAL JSYS CONTEXT
 	SETZM FPC		;SET PC
 	MCENTR
-	MOVX T1,SF%RMT!SF%LCL!SF%PTY!SF%MCB!SF%NVT
-	ANDCAM T1,FACTSW	;ONLY ALLOW CTY TO LOGIN
 	MOVE 6,[XWD -NJOBS+1,1]	;START WITH JOB 1
 	SKIPGE JOBRT(6)		;LOOK FOR EXISTING JOB
 HSYS41:	AOBJN 6,.-1
@@ -1182,7 +1223,7 @@ THSYS1:	HRROI T2,[ASCIZ / at /]
 	SETZ T3,0
 	SOUT
 	MOVE T2,HSYST1		;TELL ACTUAL TIME
-	MOVEI T3,0
+	MOVX T3,OT%SCL		;[9074] Standard format suppress columnization
 	ODTIM			;IN MESSAGE
 	HRROI T2,[ASCIZ /]
 /]
@@ -1246,7 +1287,7 @@ DWNMSG:	STKVAR <<MSG,20>>
 	HRROI T2,[ASCIZ /, up again at /]
 	SOUT
 	MOVE T2,HSYST4		;GET UPTIME
-	MOVEI T3,0		;STANDARD FORMAT
+	MOVX T3,OT%SCL		;[9074] Standard format suppress columnization
 	ODTIM			;CONVERT TIME TO TEXT
 DWNMS1:	HRROI T2,[ASCIZ /]
 /]
@@ -1598,7 +1639,7 @@ RETA3:	UMOVEM 1,1		;RETURN VALUES IN 1,2,3
 	 ITERR()		;FAILED
 	JRST MR3		;RETURN 1, 2 AND 3
 
-;[7.***] Internal GTDAL.
+;[7.1200] Internal GTDAL.
 ;Call with T1/ directory
 ;Returns +1 if failed, 1/ error
 ;Returns +2 if ok
@@ -1673,20 +1714,26 @@ HPT1:	NOSKED
 ;  1/ -LENGTH,,TABLENUMBER  OR 0
 
 .SYSGT::MCENT
-	MOVSI 4,-GTBSIZ
-	CAMN 1,SYMTAB(4)
-	JRST SYSGT1
-	AOBJN 4,.-2
-	XCTU [SETZM 2]		;NOT FOUND RETURN 0
+	MOVSI T4,-GTBSIZ	;[9041] Make AOBJN loop counter
+	DO.			;[9041]
+	  CAMN T1,SYMTAB(T4)	;[9041] Is this a legal table?
+	  JRST SYSGT1		;[9041] Yes, process user request
+	  AOBJN T4,TOP.		;[9041] Check another slot
+	OD.			;[9041]
+	XCTU [SETZM T2]		;Not found return 0
 	JRST MRETN
 
-SYSGT1:	HLRZ 2,GTTSZ(4)		;SIZE
-	MOVN 2,2		;NEGATE IT
-	HRLI 4,0(2)		;COMBINE WITH TABLE NUMBER
-	UMOVEM 4,2		;GIVE TO USER
-	HRRZ T3,T4		;GET TABLE NUMBER
-	SETZ T2,		;GET OFFSET ZERO
-	XCT GTGET(T3)		;GO GET THE FIRST ENTRY
+SYSGT1:	CALLX (MSEC1,CKMMOD)	;[9041] (/) Coming from monitor mode?
+	IFNSK.			;[9041] If not,
+	  S1XCT <GTOKM (.GOSGT,<T1>)> ;[9041] Ask if user can do this
+	ENDIF.			;[9041]
+	HLRZ T2,GTTSZ(T4)	;Get table size
+	MOVN T2,T2		;Negate it
+	HRLI T4,0(T2)		;Combine with table number
+	UMOVEM T4,T2		;Give to user
+	HRRZ T3,T4		;Get table number
+	SETZ T2,		;Get offset zero
+	XCT GTGET(T3)		;Go get the first entry
 	JRST MR1		;[7.1200] Return AC1 to user and MRETN
 	SUBTTL GETAB JSYS
 
@@ -1699,23 +1746,28 @@ SYSGT1:	HLRZ 2,GTTSZ(4)		;SIZE
 ; RETURN +2: 1/ DATA
 
 .GETAB::MCENT
-	MOVSI 2,(1B1)
-	TDNN 2,CAPMSK		;GETAB CAPABILITY EXISTS?
+	MOVX T2,SC%GTB		;Get privilege needed
+	TDNN T2,CAPMSK		;GETAB CAPABILITY EXISTS?
 	RETERR(GTABX3)		;NO
-	HLRZ 2,1		;INDEX OR -1
-	MOVEI 3,0(1)		;TABLE NUMBER
-	CAIL 3,GTBSIZ		;LEGAL NUMBER?
+	HLRZ T2,T1		;INDEX OR -1
+	MOVEI T3,0(T1)		;TABLE NUMBER
+	CAIL T3,GTBSIZ		;LEGAL NUMBER?
 	RETERR(GTABX1)		;NO
-	HLRZ 1,GTTSZ(3)		;GET SIZE OF TABLE
-	CAIN 2,-1		;INDEX OF -1?
+	HLRZ T1,GTTSZ(T3)	;GET SIZE OF TABLE
+	CAIN T2,-1		;INDEX OF -1?
 	JRST RETN1		;YES, RETURN NEG OF TABLE SIZE
-	CAIL 2,0(1)		;INDEX WITHIN BOUNDS?
+	CAIL T2,0(T1)		;INDEX WITHIN BOUNDS?
 	RETERR(GTABX2)
+	CALLX (MSEC1,CKMMOD)	;[9041] (/) Previous mode monitor?
+	IFNSK.			;[9041] If not,
+	  UMOVE T4,T1		;[9041] Get ACJ data
+	  S1XCT <GTOKM (.GOGTB,<T4>,MRETNE)> ;[9041] Get ACJ's blessing
+	ENDIF.			;[9041]
 	XCT GTGET(T3)		;GET WORD
-	UMOVEM 1,1		;RETURN IT TO USER
+	UMOVEM T1,T1		;RETURN IT TO USER
 	SMRETN
 
-RETN1:	XCTU [MOVNM 1,1]	;RETURN NEG OF LENGTH
+RETN1:	XCTU [MOVNM T1,T1]	;RETURN NEG OF LENGTH
 	SMRETN
 
 ;[7.1200]
@@ -2035,7 +2087,7 @@ GETJIX:	UMOVEM P3,2		;UPDATE USERS PTR
 ;BUT IT IS NOT THE JOB'S CONTROLLING TERMINAL
 
 GETJI6:	SKIPA T2,[-1]		;[7.1200] Indicate no owning job
-GETJI1:	TLO 2,(1B1)		;SAY ASSIGNED
+GETJI1:	TXO T2,<JI%ASN>		;[9080] Say assigned
 GETJI4:	XCTU [SKIPE 3]		;DOES USER WANT FIRST ENTRY?
 	JRST GETJIX		;NO, NOTHING TO DO
 	SKIPG T1,T2		;[7.1200] Skip if it's a job index
@@ -2079,7 +2131,29 @@ GETJIT:	MOVE T1,GBLJNO(P4)	;User's Global Job Number
 	MOVE T1,JBBSEQ(P4)	;[7259]Get Batch Sequence number
 	MOVE T1,JBBNAM(P4)	;[7259]Get Batch Job name
 	MOVE T1,BATRID(P4)	;[7259]Get Batch request ID
+	CALL GETICT		;[9041] Get job's connect time
+	MOVE T1,NLDLGN(P4)	;[9041] Get job's last non-interactive login
 NGTJIT==.-GETJIT
+
+;[9041]
+;GETICT - Routine called by GETJI% monitor call to obtain a job's
+;connect time. Connect time is actually calculated as CONSTO minus
+;current TODCLK. CONSTO contains the TODCLK of when the job logged
+;in. Consequently, GETJI% returns the connect time in TODCLK units.
+;
+; Call with:
+;	P4/ JSB mapped in of target job
+;	CALL GETICT
+;
+; Returns:
+;	+1 - Always, with
+;	     T1/ Job's connect time (TODCLK units)
+
+	XSWAPCD
+
+GETICT:	MOVE T1,TODCLK		;Get TODCLK of when job started
+	SUB T1,CONSTO(P4)	;Subtract current TODCLK and get connect time
+	RET			;Finished
 
 ;ACTION ROUTINES FOR ITEMS NOT AVAILABLE IN SINGLE MOVE
 
@@ -2577,15 +2651,16 @@ CRJXXX:	UNLOCK CRJLCK		;FREE THE STORAGE BLOCK
 
 
 .LOGIN::MCENT
-	STKVAR <LOGUSR>		;ALLOCATE STORAGE FOR USER NUMBER
+	STKVAR <LOGUSR,PSWEXP,INTER> ;[9041] Temp storage
 	MOVEM T1,LOGUSR		;REMEMBER USER NUMBER
 	GTOKM (.GOLOG,<T1>,[RETERR ()])	;GETOK AND RETERR IF ILLEGAL
+	SETZM INTER		;[9041] Say interactive unless otherwise found
 	MOVE A,JOBNO
 	MOVEI B,777777
 	TDNE B,JOBDIR(A)	; Is this job currently logged in?
 	RETERR(LGINX5)
 	;SKIPN FREJOB		;ANY JOB SLOTS LEFT (1 NEEDED FOR ATTACH'ES)
-	;RETERR (LGINX6)		;NO, DO NOT ALLOW LOGINS.
+	;RETERR (LGINX6)	;NO, DO NOT ALLOW LOGINS.
 	MOVE A,LOGUSR		;SET UP USER NUMBER
 	CALL CNVDIR		;CONVERT THIS NUMBER TO A DIRECTORY #
 	MOVEM A,P1		;SAVE (STRUCTURE UNIQUE CODE,,DIRECTORY NUMBER)
@@ -2602,28 +2677,33 @@ CRJXXX:	UNLOCK CRJLCK		;FREE THE STORAGE BLOCK
 ; 2. USER IS A SC%WHL OR SC%OPR
 ;CHECK FOR THESE CONDITIONS
 
-	MOVE A,CTRLTT		;CTRL TTY OF THIS JOB
-	CALL PTGETJ		;GET JOB NO. OF JOB OWNING PTY OR -1
-	MOVE B,A
-	JUMPL B,LOGI2		;JUMP IF NOT A PTY
-	HRRZ D,JOBDIR(B)	;GET "WHO" OF CONTROLLING JOB
-	HRRZ C,LOGUSR		;GET "WHO" IS TRYING TO LOGIN HERE
-	CAMN C,D		;SAME?
+	SKIPE T1,CRJFLG		;[9041] Is it a CRJOB%?
+	TRNN T1,2		;[9041] Yes. No-update bit on?
+	SKIPA			;[9041] No, could be an interactive job
+	SETOM INTER		;[9041] Must be non-interactive
+	SKIPGE T1,CTRLTT	;[9041] Get controlling TTY of this job
+	SETOM INTER		;[9041] If -1, then non-interactive job
+	CALL PTGETJ		;(T1/T1) GET JOB NO. OF JOB OWNING PTY OR -1
+	JUMPL T1,LOGI2		;JUMP IF NOT A PTY
+	HRRZ T4,JOBDIR(T1)	;GET "WHO" OF CONTROLLING JOB
+	CAMN T4,JOBDIR		;[9041] Is "WHO" same as job 0 (OPERATOR)?
+	SETOM INTER		;[9041] If so, then non-interactive job
+	HRRZ T3,LOGUSR		;GET "WHO" IS TRYING TO LOGIN HERE
+	CAMN T3,T4		;SAME?
 	JRST LOGI1		;YES, NO PASSWORD CHECK
-	MOVE A,B		;CONTROLLING JOB NUMBER FOR CALL
-	CALL GJCAPS		;GET CAPABILITIES OF CONTROLLING JOB
-	MOVE B,A
-	TXNE B,SC%WHL+SC%OPR	;CONTROLLING JOB HAS CAPABILITIES?
+	CALL GJCAPS		;(T1/T1) GET CAPABILITIES OF CONTROLLING JOB
+	TXNE T1,SC%WHL+SC%OPR	;CONTROLLING JOB HAS CAPABILITIES?
 	JRST LOGI1		;YES, NO PASSWORD CHECK
 ;ALSO BYPASS PASSWORD CHECK IF IN THE MIDST OF CRJOB AND THE
 ;CREATOR OF THIS JOB ASKED FOR PASSWORD TO BE BYPASSED AND THE
 ;CREATOR WAS AN ENABLED WHEEL/OPERATOR.
-LOGI2:	SKIPE T2,CRJFLG	;IS THIS A CRJOB INTERNAL LOGIN?
+LOGI2:	SKIPE T2,CRJFLG		;IS THIS A CRJOB INTERNAL LOGIN?
 	TRNN T2,1		;YES. REQUESTED TO BYPASS PSWD CHK?
 	SKIPA			;NO. SO CHECK IT.
 	JRST LOGI1		;YES. BYPASS CHECKING PASSWORD.
-CHKPVL:	CALL CHKPSW
-	 JRST LOGI3		;INCORRECT PASSWORD
+CHKPVL:	CALL CHKPSW		;[9041] (/T2) Check to see if password is correct
+	 JRST LOGI3		;[9041] Incorrect password
+	MOVEM T2,PSWEXP		;[9041] Save password expiration date and time
 	; ..
 
 	; ..
@@ -2650,16 +2730,33 @@ LOGI1:	SETZM D			;ASSUME WE HAVE AN ACCOUNT STRING
 	CALL LGTAD		;DO LOCAL GTAD
 	LOAD T2,DRDAT,(Q1)	;PICK UP LAST LOGIN D&T
 	MOVEM T2,LSTLGN		;SAVE IT FOR GETJI
-	JUMPL A,LOGI4		;DONT SET LOGIN TIME IF DAYTIME NOT SET
+	LOAD T2,DRNIL,(Q1)	;[9041] Get last non-interactive login
+	MOVEM T2,NLDLGN		;[9041] Save it here
+	JUMPL T1,LOGI4		;DONT SET LOGIN TIME IF DAYTIME NOT SET
 ;DO NOT UPDATE LAST-LOGIN DATE IF REQUESTOR OF A PRIVILEGED CRJOB
 ;SAID NOT TO. THIS IS FOR SERVER LOGINS, SUCH AS FILE TRANSFER.
 	SKIPE T3,CRJFLG		;IS IT A CRJOB?
 	TRNN T3,2		;YES. NO-UPDATE BIT ON?
 	SKIPA			;NO, SO UPDATE AS NORMAL
-	JRST LOGI4		;YES. BYPASS THE UPDATE.
-	STOR A,DRDAT,(Q1)	;UPDATE TIME
-
-LOGI4:	UMOVEM B,1		;GIVE USER TIME OF LAST LOGIN
+	IFSKP.			;[9041]
+	  SKIPE INTER		;[9041] Is job batch?
+	  JRST LOGBAT		;[9041] Yes, handle non-interactive
+	  STOR T1,DRDAT,(Q1)	;[9041] Update interactive time
+	  JRST LOGI4		;[9041] And go on
+	ENDIF.			;[9041]
+LOGBAT:	STOR T1,DRNIL,(Q1)	;[9041] Update last non-interactive login
+	;..
+	;..
+LOGI4:	MOVE T1,LSTLGN		;[9041] Get last interactive login
+	UMOVEM T1,T1		;[9041] Pass to user
+	MOVE T1,NLDLGN		;[9041] Get last non-interactive login
+	UMOVEM T1,T2		;[9041] And give to user
+	MOVE T1,PSWEXP		;[9041] Get password expiration
+	UMOVEM T1,T3		;[9041] And pass this up to user
+	CALL UPDDIR		;[9041] (/) Make sure directory is updated
+	LOAD T1,DRFPA,(Q1)	;[9041] Get password failure counts
+	UMOVEM T1,T4		;[9041] Give them to the user
+	SETZRO DRFPA,(Q1)	;[9041] Now clear them out
 	HRRZ T1,LOGUSR		;[7.1051] Get the user number
 	CAMN T1,JOBDIR		;[7.1051] Does it match job 0 (OPERATOR)?
 	SKIPA T1,[1,,0]		;[7.1051] Yes, add one to left half
@@ -2715,10 +2812,20 @@ BP$020:				;(MOVE A,JOBNO): BREAKPOINT FOR CREATE MAIN FORK
 	SMRETN
 
 ;HERE IF INCORRECT PASSWORD
-LOGI3:	ULKDIR
-	SKIPN A			;APPLY PENALTY ONLY IF NECESSARY
-	CALL PASPEN
-	RETERR(LGINX4)
+LOGI3:	SKIPE INTER		;[9041] Interactive login attempt?
+	IFSKP.			;[9041] If so,
+	  INCR DRFIL,(Q1)	;[9041] Count it
+	ELSE.			;[9041] Else, non-interactive
+	  INCR DRFNL,(Q1)	;[9041] And count it correctly
+	ENDIF.			;[9041]
+	NOINT			;[9041] ULKDIR goes OKINT
+	ULKDIR			;[9041] Now unlock mapped directory
+	SKIPN T1		;[9041] Apply penalty only if necessary
+	CALL PASPEN		;[9041] (/) Make user wait for password penalty
+	OKINT			;[9041] Interrupts are OK now
+	RETERR(LGINX4)		;[9041] And return an error
+
+	ENDSV.			;[9041]
 	SUBTTL DTACH JSYS
 
 	SWAPCD			;[7.1200]
@@ -2730,11 +2837,12 @@ LOGI3:	ULKDIR
 	MRETNG			;NONE, ASSUME OK
 	CALL PTYGBB		;ARE WE CONTROLLED BY BATCH?
 	IFSKP.
-	ANDL. T1
-	  MOVX T1,SC%WHL!SC%OPR ;IF CONTROLLED BY BATCH,
-	  TDNN T1,CAPENB	;MUST HAVE WHEEL OR OPR
-	  ITERR (CAPX1)	;NOT ENOUGH PRIVILEGES
+	  ANDL. T1
+	    MOVX T1,SC%WHL!SC%OPR ;IF CONTROLLED BY BATCH,
+	    TDNN T1,CAPENB	;MUST HAVE WHEEL OR OPR
+	    ITERR (CAPX1)	;NOT ENOUGH PRIVILEGES
 	ENDIF.
+	GTOKM (.GODTC,)		;[9041] Let ACJ decide if user can do this
 	MOVX T1,.CTTRM		;FINISH OUTPUT ON CONTROLLING TERMINAL
 	DOBE			; BECAUSE TTYDAS WILL RELEASE BUFFERS
 	 ERJMP	.+1		;IGNORE ERRORS
@@ -2764,21 +2872,50 @@ LDTAC2:	SKIPGE T2,CTRLTT	;DOES JOB HAVE A CONTROLLING TERMINAL?
 	CALL STADYN		;POINT TO DYNAMIC DATA
 	 JRST LDTAC3		;NOT ACTIVE. SHOULDN'T HAPPEN
 	CALL TTFWAK		;WAKE UP PROCESS IN INPUT WAIT ON THIS LINE
-	MOVE T2,LDTALN		;T2/ LINE NUMBER
-	CALL TTYDAS		;DEASSIGN DYNAMIC DATA
-	 JRST [	UNLOKK DEVLKK	;FAILED - UNLOCK DEVICE LOCK
-		OKINT		;LCKDVL WENT NOINT
-		TXZN T1,1B0	;ERROR OR WAIT?
-		RET		;ERROR. CURRENTLY NO WAY TO HANDLE THIS
-		HRL T1,LDTALN	;T1/(LINE NUMBER,,ADDRESS OF TEST ROUTINE)
-		MDISMS		;WAIT UNTIL DEALLOCATION IS POSSIBLE
-		JRST LDTAC2]	;TRY AGAIN
-
+	;..
+	;..
+
+;[9163] The NOSKED is needed to insure that the TDB is not removed due to
+;[9163] a rescheduling event.  However, for TVTs, it is possible that during
+;[9163] the deassign process, the TCB will be locked and the process will have
+;[9163] to MDISMS.  Well, this is a problem due to the NOSKED.  Therefore,
+;[9163] the following code will check to see it the terminal is a LAT terminal.
+;[9163] If so, then we will go NOSKED.  Otherwise, we won't.  LAT terminals 
+;[9163] appear to be the only ones which exhibit the problem of being deassigned
+;[9163] due to a rescheduling event.
+
+	MOVE T2,LDTALN		;[9061] Load the object terminal's line number
+        LOAD T1,TTSTY,(T2)	;[9163] Get the line type
+        CAIN T1,TT.LAH		;[9163] Is it a LAT terminal?
+	 NOSKED			;[9163][9061] Prevent vanishing TDBs
+
+	SKIPE HDTCOF		;[9061] Hangup on detach?
+	CALL TTHNGU		;[9061] (T2/) Have terminal, will travel...
+	MOVE T2,LDTALN		;Load the line number into T2 again please
+	CALL TTYDAS		;(T2/T1,T2) Deassign dynamic data
+	IFNSK.			;[9061] If that failed
+	  MOVE T2,LDTALN	;[9163] Get internal line number
+          LOAD T2,TTSTY,(T2)	;[9163] Get the line type
+          CAIN T2,TT.LAH	;[9163] Is it a LAT terminal?
+	   OKSKED		;[9163][9061] Let the scheduler run again
+	  UNLOKK DEVLKK		;[9061] Unlock device lock
+	  OKINT			;[9061] Counteract that LCKDVL went NOINT
+	  TXZN T1,1B0		;[9061] Error or wait?
+	  RET			;[9061] Should not happen 
+	  HRL T1,LDTALN		;[9061] Make line,,address of test routine
+	  MDISMS		;[9061] Wait until deallocation is possible
+	  JRST LDTAC2		;[9061]  and then try this whole thing again
+	ENDIF.			;[9061] End of TTYDAS failure code
+	MOVE T1,LDTALN		;[9163] Get internal line number
+        LOAD T1,TTSTY,(T1)	;[9163] Get the line type
+        CAIN T1,TT.LAH		;[9163] Is it a LAT terminal?
+	 OKSKED			;[9163][9061] Let the scheduling begin
+
 LDTAC3:	SETOM CTRLTT		;INDICATE JOB DOESN'T HAVE CONTROLLING TERMINAL
 	MOVE T1,JOBNO
 	HRROS JOBPT(T1)
 	UNLOKK DEVLKK		;UNLOCK DEVICE LOCK
-	OKINT
+	OKINT			;LCKDVL went NOINT
 	RET
 
 ;LDET2 - DETACH JOB FROM TERMINAL WITHOUT DEALLOCATING TERMINAL DATA
@@ -2984,14 +3121,10 @@ ATACH5:	RETERR(ATACX1)		;NO
 		TDNN T1,CAPENB	;IS LOGGED-IN, TEST CAPS
 		 RETERR (CAPX1)	;NOT GOOD ENOUGH
 		JRST .+1]	;OK, CONTINUE IN-LINE
-	TXNE Q1,AT%NAT		;DOING ATACH OR UNATTACH?
-	IFSKP.			;IF ATTACH
-	 HRRZ T4,CTRLTT		;ASSUME THIS IS THE TTY #
-	 TXNE Q1,AT%TRM		;IS IT A PROXY?
-	 MOVE T4,Q3		;[7.1200] Yep
-	 HRRZ T3,Q1		;Get global job number
-	 GTOKM (.GOATJ,<T3,T4>,[RETERR()]) ;LET ACJ SNIFF THIS
-	ENDIF.
+	HRRZ T4,CTRLTT		;[9041] Assume this is the TTY #
+	TXNE Q1,AT%TRM		;[9041] Is it a proxy?
+	MOVE T4,Q3		;[9041] Yes, get right job number
+	GTOKM (.GOATJ,<Q1,T4>,[RETERR()]) ;[9041] Let ACJ sniff this
 
 	MOVE T3,ATACDR		;REFETCH OTHER USER NUMBER
 	MOVE T2,JOBNO		;GET THIS JOB NUMBER
@@ -3107,11 +3240,19 @@ ATACH7:	SETOM CTRLTT(Q2)	;INDICATE JOB HAS NO CONTROLLING TERMINAL
 ATACH2:	TXNE Q1,AT%NAT		;REQUESTED NO ATTACH?
 	JRST ATACH4		;YES
 	MOVEM Q3,ATACLN		;[7.1200] No, make sure line right
-	MOVE T2,Q3		;[7.1200] Prepare for LDET2
 	NOINT			; ..
 	CAMN Q3,CTRLTT		;[7.1200] Need to give away my terminal?
 	CALL LDET2		;YES, DETACH THIS JOB BUT KEEP DYNAMIC DATA
-	NOSKED
+	MOVE T4,TTACTL(Q3)	;[9072] Here's the terminal's TDB
+	LOAD T4,TLTYP,(T4)	;[9072] Get terminal type
+	MOVE T4,LTYTAB(T4)	;[9072] And convert it to a number
+	CAIE T4,NW%CH		;[9072] Are we a CTERM terminal?
+	IFSKP.			;[9072] If so,
+	  LOCK CTMLOK		;[9072] Lock the CTERM lock before we begin
+	ENDIF.			;[9072]
+	NOSKED			;[9072] Go NOSKED
+	CAIN T4,NW%CH		;[9072] Did we lock the CTERM lock?
+	UNLOCK CTMLOK		;[9072] Yes we did, race is over
 
 ;ASSIGN OBJECT JOB TO CORRECT TERMINAL
 
@@ -3379,21 +3520,21 @@ LOG1:	HRRE 1,CTRLTT
 
 ;[7.1260] Wait for logout message to complete, time out if it takes too long
 
-	MOVEI T4,^D15		;WAIT FOR 15 SECONDS MAX
-LOG21:	HRRE T1,CTRLTT		;GET TTY #
-	JUMPL T1,LOG2		;NONE
+	MOVEI T4,^D30		;[9126] Wait for 30 seconds 
+LOG21:	HRRE T1,CTRLTT		;Get controlling terminal number
+	JUMPL T1,LOG2		;No controlling terminal
 	MOVEI T1,.TTDES(T1)	;[7.1230] Get designator
-	SOBE			;LOGOUT MESSAGE COMPLETE?
-	IFNSK.
-	  MOVEI T1,^D1000	;NO, WAIT A SECOND
-	  DISMS
-	  SOJG T4,LOG21		;TRY AGAIN OR GIVE UP
-	ENDIF.
-	SKIPGE T1,CTRLTT	;[7.1260] Any controlling terminal here
-	JRST LOG2		;[7.1260] Nope
-	TXO T1,.TTDES		;[7.1260] Make a terminal designator for it
-	CFOBF%			;[7.1260] Flush output buffer for good measure
-	 ERJMP .+1		;[7.1260] Ignore errors
+	SOBE			;Is the logout message complete?
+	IFNSK.			;Nope, buffer is not empty
+	  MOVEI T1,^D1000	;Load a second to sleep
+	  DISMS			;Zzzz...
+	  SOJG T4,LOG21		;Try again or give up if waited long enough
+	  SKIPGE T1,CTRLTT	;[9126] Tired of waiting, any controlling TTY?
+	  JRST LOG2		;[9126] Nope, let's get out of here
+	  TXO T1,.TTDES		;[9126] Make a terminal designator for it
+	  CFOBF%		;[9126] Flush output buffer since we timed out
+	   ERJMP .+1		;[9126] Ignore errors from the flush
+	ENDIF.			;[9126] End of code to wait for logout message
 
 ;[7.1260] Here to hang up connection depending on variables set by x-SETSPD.
 
@@ -3545,13 +3686,7 @@ LOGTOK:	CALL LOGDOB		;(T1/T1) Check designator and do a DOBE
 	 ERJMPS LOGTK1		;Ignore error, preserve pointer in T1
 LOGTK1:	MOVE T2,MURDER		;Reload the murdering job
 	HLRE T2,JOBPT(T2)	;Get controlling terminal of that job
-	JUMPL T2,LOGTK2		;If job is detached then don't say anything
-	MOVEM T2,MURDER		;Save murdering terminal number
-	HRROI T2,[ASCIZ /, TTY /] ;Load the usual identification string
-	CALL LOGMES		;(T1,T2/T1) Output that to the terminal
-	MOVE T2,MURDER		;Get terminal number of the killer again
-	MOVEI T3,^D8		;Load the octal radix we desire
-	CALL LGNOUT		;(T1,T2,T3/T1) Output that octal number
+	CALL LOGORG		;[9074] (T1,T2/T1) Send job's location
 LOGTK2:	CALLRET	LOGCR		;(T1/T1) Output a CRLF and return
 
 ;Perform USAGE for logout, called from LOG0
@@ -3584,12 +3719,18 @@ LOGON1:	MOVEI T1,.USLGI		;Load the login function for USAGE
 
 ;[7456] XUSAGE - A small routine to output UXXFAI BUGCHK
 
-XUSAGE:	BUG.(CHK,UXXFAI,JSYSM,HARD,<USAGE JSYS failure>,,<
+XUSAGE:	BUG.(CHK,UXXFAI,JSYSM,HARD,<USAGE JSYS failure>,<<LSTERR,LSTERR>>,<
 
 Cause:	The monitor attempted to perform a USAGE% call to log either a
-	login, logout, or session entry and it failed. There is no
+	login, logout, or session entry and it failed.  There is no
 	reasonable explanation for the failure of this JSYS call.
->)
+
+Action:	Use the DOB% facility to produce a dump and submit an SPR.
+	Also, if you have a procedure for reproducing this problem
+	please include it with the SPR.
+
+Data:	LSTERR - error code from USAGE JSYS.
+>)				;[9061] 
 	RET			;CONTINUE
 
 ;PARAMETER BLOCK FOR LOGIN/LOGOUT/SESSION CHANGE CALLS
@@ -3716,7 +3857,7 @@ LOGUS1:	CALL LOGDOB		;(T1/T1) Check designator and do a DOBE
 	MOVE T2,CTRLTT(P1)	;Get controlling terminal number
 	CALL LOGJO1		;(T1,T2,P1,P2/T1) Type job and terminal info
 
-	HRROI T2,[ASCIZ /,  Used /] ;Begin to output the
+	HRROI T2,[ASCIZ /, Used /] ;[9074] Begin to output the
 	CALL LOGMES		;(T1,T2/)  run time used message
 	MOVE T2,JSSRTM(P1)	;[7.1006] Load the session run time
 	CALL LOGTIM		;(T1,T2/) Print run time
@@ -3815,7 +3956,7 @@ DETMS0:	ASUBR <ATAJN,ATALN>	;JOB # , LINE #
 	CALL LOGMES		;(T1,T2/T1) Output the message
 	MOVE T2,ATAJN		;Get the detached job's global job number
 	CALL LOGNUM		;Print that next
-	HRROI T2,[ASCIZ / from TTY /] ;Load the remainder of the message
+	HRROI T2,[ASCIZ / from TTY/] ;[9074] Load the remainder of the message
 	JRST ATAMS3		; and join the code below
 
 ;[7456] ATAMSG - print a message on logging terminal when a job is attached
@@ -3834,7 +3975,8 @@ ATAMSG:	ASUBR <ATAJN,ATALN>	;Place to save job #, line #
 	CALL LOGMES		;(T1,T2/T1) Print that on logging terminal
 	MOVE T2,ATAJN		;Get the global job number attaching
 	CALL LOGNUM		;(T1,T2/T1) Print it
-	HRROI T2,[ASCIZ / to TTY /] ;Load a label for the terminal number
+	HRROI T2,[ASCIZ / to TTY/] ;[9074] Load a label for the terminal number
+
 ATAMS3:	CALL LOGMES		;(T1,T2/T1) Print that the logging terminal
 	MOVE T2,ATALN		;Load the line number attached from or to
 	MOVEI T3,^D8		;Load octal radix for terminal numbers
@@ -3844,6 +3986,7 @@ ATAMS3:	CALL LOGMES		;(T1,T2/T1) Print that the logging terminal
 
 ;[7456] LOGJOB - outputs the message you see when you logout
 ;[7456] LOGJO1 - output that message for another job
+;[9074] LOGJO2 - output comma return space current time
 ;[7456]
 ;[7456] Call with:
 ;[7456]		T1/ Output designator
@@ -3871,27 +4014,15 @@ LOGJO1:	HRROI T2,[ASCIZ / Job /] ;Load the job indentifier
 	  HRROI T2,ACCTSR(P1)	;Point to the account string
 	  CALL LOGMES		;(T1,T2/T1) Print it
 	ENDIF.			;End of case of logged in job
-	SKIPL CTRLTT(P1)	;Skip if detached
-	IFSKP.			;If detached
-	  HRROI T2,[ASCIZ /, Detached/] ;Point to detached string
-	  CALL LOGMES		;(T1,T2/T1) Print it
-	ELSE.			;If not detached
-	  HRROI T2,[ASCIZ /, TTY /] ;Point t terminal
-	  CALL LOGMES		;(T1,T2/T1) Print it
-	  MOVE T2,CTRLTT(P1)	;Load the line number
-	  MOVEI T3,^D8		;Print tty number in octal
-	  CALL LGNOUT		;(T1,T2,T3/T1) Print it
-	ENDIF.
+	MOVE T2,CTRLTT(P1)	;Load terminal number
+	CALL LOGORG		;[9074](T1,T2/T1) Output TTY number and origin
 
 LOGJO2:	HRROI T2,[ASCIZ /,
   at /]				;Here to add a crlf and the current date time
 	CALL LOGMES		;(T1,T2/T1)
-	PUSH P,T1		;Save the output designator
-	CALL LGTAD		;(/T1,T2) Do local GTAD into T1 (T2 smashed)
-	MOVE T2,T1		;Copy the current universal date time over
-	POP P,T1		;Restore destination designator
-	SETZ T3,		;Output format is standard date and time
-	ODTIM			;Format and output date and time
+	SETO T2,		;[9074] The time is now
+	MOVX T3,OT%SCL		;[9074] Standard format suppress columnization
+	ODTIM			;No, format and output date and time
 	 ERNOP.			;Ignore errors
 	RET			;Return from LOGJOB
 
@@ -3940,6 +4071,48 @@ LOGNUM:	MOVEI 3,^D10		;DECIMAL FOR TIMES, ETC.
 LGNOUT:	NOUT
 	 ERJMP .+1
 	RET
+
+;[9074] Routine to send ", Detached" or ", TTY n" or ", TTY n origin".
+;Call with:
+;	T1/ output designator
+;	T2/ terminal number
+;Returns +1 always with T1 updated
+
+LOGORG:	IFL. T2			;[9074] Detached?
+	  HRROI T2,[ASCIZ /, Detached/] ;[9074] Point to detached string
+	  CALLRET LOGMES	;[9074] (T1,T2/T1) Print it and return
+	ENDIF.			;[9074] Not detached
+
+	STKVAR <OLINE,ODES,<NTINFB,1+.NWNU1>,<NTINFO,MAXLW*2>> ;[9074]
+
+	MOVEM T2,OLINE		;[9074] Save line number
+	TXO T2,.TTDES		;[9074] Make it a TTY designator
+	MOVEM T2,.NWLIN+NTINFB	;[9074]  and save it in the NTINF block
+	MOVEI T2,.NWNU1+1	;[9074] Load size of block
+	MOVEM T2,.NWABC+NTINFB	;[9074] Save size of block
+	SETZM .NWFNC+NTINFB	;[9074] Function zero
+	MOVX T2,<ASCIZ/ />	;[9074] Load a space
+	MOVEM T2,NTINFO		;[9074]  and save it here
+	MOVEI T2,NTINFO		;[9074] Point to place to store the string
+	HRLI T2,(Point 7,0,6)	;[9074] Point to first character to skip space
+	MOVEM T2,.NWNNP+NTINFB	;[9074]  and save it in the NTINF block
+	SETOM .NWTTF+NTINFB	;[9074] Assume no node name if NTINF fails
+
+	HRROI T2,[ASCIZ /, TTY/] ;[9074] Point to string to identify terminal
+	CALL LOGMES		;[9074] (T1,T2/T1) Print it
+	MOVE T2,OLINE		;[9074] Load the line number
+	MOVEI T3,^D8		;[9074] Print tty number in octal
+	CALL LGNOUT		;[9074] (T1,T2,T3/T1) Print it
+	MOVEM T1,ODES		;[9074] Save designator
+
+	MOVEI T1,NTINFB		;[9074] Point to block
+	NTINF%			;[9074] Get origin info
+	 ERJMP .+1		;[9074] This probably will not fail today
+	MOVE T1,ODES		;[9074] Reload the output designator
+	SKIPGE .NWTTF+NTINFB	;[9074] No node name?
+	RET			;[9074] Yes, just return now
+	HRROI T2,NTINFO		;[9074] Point to block
+	CALLRET LOGMES		;[9074] (T1,T2/T1) Send that and return
 
 ;PRINTS   [JOB N DETACHED BY NAME] TO TTY OF JOB BEING ATTACHED
 ; OR UNATTACHED.
@@ -4000,10 +4173,8 @@ DIRFIX:	MOVE 1,TMPPTR		;RESTORE BUFFER POINTER
 ;Returns +1 always with all links broken and terminal reset.
 
 BLINKS::SAVEAC <T1,T2>		;Save a couple of ACs
-	MOVX T1,TL%CRO!TL%COR!TL%SAB!TL%ABS!TL%STA!TL%OBJ ;acc links ref advice
 	SKIPGE T2,CTRLTT	;Get TTY number
 	 RET			;Return now if detached
-	CAMN T2,CTYLNO		;Is it the CTY?
 	MOVX T1,TL%CRO!TL%COR!TL%SAB!TL%STA!TL%OBJ ;Yes, ref advice and links
 	MOVEI T2,-1		;All remote links to be cleared
 	TLINK			;Break links, set advice and links bits
@@ -5078,9 +5249,9 @@ Cause:	If the GTJFN (GJ%PHY,GJ%OLD) or the OPENF (OF%RD, OF%WR, OF%RTD) on the
 	checkpoint file.  If the second try GTJFN and OPENF fail, the UXXCRE
 	BUGHLT occcurs.
 
-Action:	Analyze the error code from the failing JSYS, and use EDDT to patch the
-	system so that you can fix the checkpoint file so that the error does
-	not happen.
+Action:	Analyze the error code from the failing JSYS, and use EDDT to 
+	bring the system up without accounting and repair the problem.  
+	This can be done by putting a RET at USGINI.
 >)				;[7.1279]
 		JRST USGIN1]	;TRY AGAIN
 
@@ -5097,7 +5268,7 @@ Cause:	USGINI invoked OPENF (OF%RD, OF%WR, OF%RTD), which failed to open the
 	USAGE file ACCOUNT:SYSTEM-DATA.BIN.
 
 Action:	Use EDDT to bring the system up without accounting and repair the
-	problem.
+	problem.  This can be done by putting a RET at USGINI.
 >)				;[7.1279]
 	HRRZ T1,T1		;GET RID OF OPEN FLAGS
 	FFFFP			;FIND-FIRST-FREE-FILE PAGE
@@ -5105,7 +5276,8 @@ Action:	Use EDDT to bring the system up without accounting and repair the
 	MOVE T1,USGJFN		;JFN AGAIN
 	MOVE T2,[1,,.FBBYV]	;GET PAGE COUNT
 	MOVEI T3,T4		; INTO T4
-	GTFDB
+	GTFDB%
+	 ERJMP .+1
 	HRRZS T4		;PAGE # ONLY
 	CAME Q1,T4		;CORRECT NUMBER
 	BUG.(INF,USGHOL,JSYSM,HARD,<Lost page(s) in usage file>,,<
@@ -5147,19 +5319,21 @@ Cause:	The file ACCOUNT:CHECKPOINT.BIN.1 could not be referenced for one
 	to be a possibility.
 
 	After the above GTJFN or OPENF has failed, then a GTJFN (GJ%PHY,
-	GJ%NEW) is attempted.  If this succeeds, then UXXCKP will occur if a
+	GJ%NEW) is attempted.  If this succeeds, then UXXCKP occurs if a
 	failure happens on one of the following: the subsequent OPENF
 	(OF%WR,OF%RD), the call to ASGSWP to allocate CKPSIZ words, or the SOUT
 	writing CKPSIZ words to the checkpoint file.
 
 	If the GTJFN (GJ%PHY, GJ%NEW) fails, then another GTJFN (GJ%PHY,
-	GJ%DEL) is attempted, and its failure will cause UXXCKP.  If this GTJFN
+	GJ%DEL) is attempted, and its failure causes UXXCKP.  If this GTJFN
 	succeeds, however, then a CHFDB (turning off FB%DEL to undelete the
-	file) is done, and its failure will also cause UXXCKP.
+	file) is done, and its failure also causes UXXCKP.
 
 Action:	Use EDDT to patch the system so that you can bring up the system
-	without the checkpoint file being referenced.  Then get the checkpoint
-	file into a state such that none of the above failures will occur.
+	without the checkpoint file being referenced.  This can be done by 
+	putting a RET at USGINI and bringing the system up.  Then get the 
+	checkpoint file into a state such that none of the above failures 
+	occurs.
 >)				;[7.1279]
 		JRST USGIN5]
 	MOVEM T1,CKPJFN		;SAVE JFN
@@ -5472,7 +5646,7 @@ USGMAP:	CAMN A,CKPGID		;IS THIS PAGE ALREADY MAPPED?
 Cause:	USGMAP wants to map a page of a file into FPG0 via SETMPG.
 	It calls JFNOFN to convert the JFN.PN atom to OFN.PN, which SETMPG
 	wants.  If JFNOFN fails, this BUGHLT occurs.  Some reasons that JFNOFN
-	will fail are: JFN is not associated with a disk file; JFN is not open;
+	fail are: JFN is not associated with a disk file; JFN is not open;
 	attempt to create a new page table for a file that is not open for
 	writing; attempt to create a new page table for a directory file;
 	attempt to create a new page table for which there is no room on disk.
@@ -5649,7 +5823,7 @@ USGCLS:	STKVAR <NJFN>
 	 JRST [	BUG.(CHK,UXXCL1,JSYSM,HARD,<Unable to create new usage file>,<<T1,ERRCOD>>,<
 
 Cause:	The USAGE file ACCOUNT:SYSTEM-DATA.BIN could not be created. This error
-	will occur if a JFN cannot be obtained on the file or if it cannot be
+	occurs if a JFN cannot be obtained on the file or if it cannot be
 	opened.
 
 Data:	ERRCOD - JSYS error code
@@ -5660,7 +5834,7 @@ Data:	ERRCOD - JSYS error code
 	 JRST [	BUG.(CHK,UXXCL2,JSYSM,HARD,<Unable to open new usage file>,<<T1,ERRCOD>>,<
 
 Cause:	This bug indicates that the USAGE file ACCOUNT:SYSTEM-DATA.BIN could
-	not be opened.  This will occur if a JFN cannot be obtained on the file
+	not be opened.  This occurs if a JFN cannot be obtained on the file
 	or if the file cannot be opened.
 
 Data:	ERRCOD - JSYS error code
@@ -5675,12 +5849,14 @@ Data:	ERRCOD - JSYS error code
 	CHFDB
 	 ERJMP .+1		;WE TRIED
 	HRRZS T1		;RESTORE JFN
-	CLOSF			;CLOSE OUT FILE
-	 BUG.(CHK,UXXCL3,JSYSM,HARD,<Unable to close usage file>,,<
+	CLOSF%			;CLOSE OUT FILE
+	 BUG.(CHK,UXXCL3,JSYSM,HARD,<Unable to close usage file>,<<T1,ERRCOD>>,<
 
 Cause:	This bug indicates that TOPS-20 could not CLOSF the USAGE file
 	ACCOUNT:SYSTEM-DATA.BIN.  This bug is highly unlikely unless the JFN
 	has been lost.
+
+Action:	Look at the JSYS error code and figure out what could have happened.
 
 Data:	ERRCOD - JSYS error code
 >,,<DB%NND>)			;[7.1279][7.1210] 

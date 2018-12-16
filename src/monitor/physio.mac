@@ -1,4 +1,19 @@
-; UPD ID= 8703, RIP:<7.MONITOR>PHYSIO.MAC.15,  20-Apr-88 11:21:53 by RASPUZZI
+; Edit= 9148 to PHYSIO.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9058 to PHYSIO.MAC on 12-Jan-89 by GSCOTT
+;Add SMON function .SFBUG to set SAVTRE. Reverse sense of SMON function
+;.SFHDT. ITRAP on errors in SMON function .SFDCD. 
+; Edit= 9004 to PHYSIO.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8980 to PHYSIO.MAC on 6-Oct-88 by GSCOTT
+;*PERFORMANCE* Don't do PDB reads or writes on disks that cannot possibly be
+;accessed by another KL10 system (disk single ported and not MSCP served).
+;Also don't light U1.OFS when there is no CI and the disk has both MASSBUS
+;ports connected to this system. 
+; Edit= 8908 to PHYSIO.MAC on 16-Aug-88 by GSCOTT
+;Update BUG. documentation. 
+; Edit= 8833 to PHYSIO.MAC on 20-Apr-88 by RASPUZZI (TCO 7.1278)
+;Install TCO 7.1278 - supress ONSTR/OFFSTR and make RELRNG a BUGCHK again.
 ;TCO 7.1278 - Put ONSTR and OFFSTR under CIBUGX.
 ; UPD ID= 8594, RIP:<7.MONITOR>PHYSIO.MAC.14,  11-Feb-88 16:57:01 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
@@ -500,7 +515,7 @@
 ;<4.1.MONITOR>PHYSIO.MAC.26, 10-Nov-79 11:08:37, EDIT BY DBELL
 ;TCO 4.1.1012 - TEST US.ACT CORRECTLY AT CHK6+3
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -554,11 +569,11 @@
 ;   18. UDSKIO and MDSKIO  . . . . . . . . . . . . . . . . . .  78
 ;   19. PAGEM Interface  . . . . . . . . . . . . . . . . . . .  86
 ;   20. Operator Intervention, Restart and Timeout . . . . . .  88
-;   21. Homeblock and PDB Routines . . . . . . . . . . . . . . 105
-;   22. Error Recovery . . . . . . . . . . . . . . . . . . . . 124
-;   23. Mountable Structure Support Routines . . . . . . . . . 130
-;   24. Subroutines  . . . . . . . . . . . . . . . . . . . . . 133
-;   25. End of PHYSIO  . . . . . . . . . . . . . . . . . . . . 140
+;   21. Homeblock and PDB Routines . . . . . . . . . . . . . . 106
+;   22. Error Recovery . . . . . . . . . . . . . . . . . . . . 125
+;   23. Mountable Structure Support Routines . . . . . . . . . 131
+;   24. Subroutines  . . . . . . . . . . . . . . . . . . . . . 134
+;   25. End of PHYSIO  . . . . . . . . . . . . . . . . . . . . 141
 	SUBTTL Parameters
 
 ;LATENCY OPTIMIZATION PARAMETERS
@@ -819,17 +834,17 @@ PHYBHC:	HRRZ T2,UDBALT(P5)	;[7.1148] An alternate?
 PHYBYE:	MOVX T1,US.TPD		;SET THREE PORT OFFLINE
 	IORM T1,UDBSTS(P5)	;GONE FOREVER
 	SKIPE CIBUGX		;[7402]UNDER CIBUGX CONDITIONAL
-	BUG. (INF,PHYCPI,PHYSIO,HARD,<CI path ignored for Massbus disk>,<<P3,OUDB>,<P5,NUDB>>,<
+	BUG.(INF,PHYCPI,PHYSIO,HARD,<CI path ignored for Massbus disk>,<<P3,OUDB>,<P5,NUDB>>,<
 
 Cause:	TOPS-20 is able to access a disk over the CI (through another system's
-	MSCP server) but it already has had access to the disk via the Massbus.
-	The system will ignore the CI path.
+	MSCP server) but it already has had access to the disk via the MASSBUS.
+	The system ignores the CI path.
 
 Action:	No action is required.  The purpose of the BUGINF is to let you know
-	that the system will not use the CI path to the disk even if the
-	Massbus path is disabled.
+	that the system does not use the CI path to the disk even if the
+	MASSBUS path is disabled.
 
-	If you were to reboot the system after disabling the Massbus path,
+	If you were to reboot the system after disabling the MASSBUS path,
 	then TOPS-20 would see the disk through an MSCP server only and
 	would use that path for access.
 
@@ -850,15 +865,14 @@ Data:	OUDB - Old UDB (path)
 SETDSN::CAMN T1,UDBDSH(P3)	;HAS DSN
 	CAME T2,UDBDSN(P3)	; CHANGED?
 	IFNSK.
-	   SAVEAC <Q1,Q2>	;YES
-	   DMOVE Q1,UDBDSH(P3)	;PRESERVE OLD DSN
-	   DMOVEM T1,UDBDSH(P3)	;SET NEW DSN
-	   DMOVE T1,Q1		;RETRIEVE OLD DSN
-	   IOR T1,T2		;WAS THERE ONE
-	   SKIPN T1		; THERE?
-	   RET			;NO, WE'RE JUST GETTING STARTED
-	   DMOVE T1,Q1		;YES, RETRIEVE OLD AGAIN
-	   CALL CFSDSN		;(T1,T2,P3/) TELL CFS ABOUT THE CHANGE
+	  SAVEAC <Q1,Q2>	;YES
+	  DMOVE Q1,UDBDSH(P3)	;PRESERVE OLD DSN
+	  DMOVEM T1,UDBDSH(P3)	;SET NEW DSN
+	  DMOVE T1,Q1		;RETRIEVE OLD DSN
+	  IOR T1,T2		;WAS THERE ONE
+	  JUMPE T1,R		;[8980] Return now if none was there
+	  DMOVE T1,Q1		;YES, RETRIEVE OLD AGAIN
+	  CALL CFSDSN		;(T1,T2,P3/) TELL CFS ABOUT THE CHANGE
 	ENDIF.
 	RET
 	SUBTTL Check Unit Existance
@@ -927,15 +941,13 @@ FNDCKS::CALL FNDCKU		;GET C K AND ABSOLUTE U
 	TRNN P2,-1		;REALLY A K?
 	RET			;NO ALL DONE
 	MOVE T3,KDBIUN(P2)	;GET AOBJN WORD
-FNDCS0:	CAME P3,0(T3)		;FIND IT
-	IFNSK.
+FNDCS0:	CAMN P3,0(T3)		;[8980] Find it?
+	IFSKP.			;[8980] Not a match
 	  AOBJN T3,FNDCS0	;NO KEEP LOOPING
-	  BUG. (HLT,PHYNUN,PHYSIO,SOFT,<PHYSIO no unit number>,<<T1,CHAN>,<T2,KONT>,<P3,UDB>>,<
+	  BUG.(HLT,PHYNUN,PHYSIO,SOFT,<PHYSIO - No unit number found in FNDCKS>,<<T1,CHAN>,<T2,KONT>,<P3,UDB>>,<
 
-Cause:	A unit number could not be found for a given CDB, KDB, UDB.
-	This indicates a software problem.
-
-Action:	Analyse the dump. Insure that P3 contains a valid UDB.
+Cause:	A unit number could not be found for a given CDB, KDB, UDB in FNDCKS.
+	This indicates a software problem.  P3 may not contain a valid UDB.
 
 Data:	CHAN - Channel number
 	KONT - Controller number
@@ -973,12 +985,15 @@ PHYALL:	MOVE T1,Q1		;GET LENGTH
 	HRLI T1,.RESP1		;PRIORITY
 	MOVX T2,RS%SE0!.RESUP	;UNITS POOL, SECTION 0
 	CALL ASGRES		;GET STG
-	JRST [ BUG.(INF,PHYICE,PHYSIO,HARD,<PHYINI - Failed to assign resident STG>,,<
+	JRST [ BUG.(INF,PHYICE,PHYSIO,SOFT,<PHYINI - Failed to assign resident STG>,,<
 
-Cause:	The routine PHYALC was called to allocate storage for data such
-	as a CDB, KDB, or UDB, but there was not enough free resident
-	storage to allocate it.  The monitor will simply forget about
-	any device for which it cannot build tables.
+Cause:	The routine PHYALC was called to allocate storage for data such as a
+	CDB, KDB, or UDB, but there was not enough free resident storage to
+	allocate it.  The monitor ignores any device for which it cannot
+	build tables.
+
+Action:	The monitor can be rebuilt with a larger units pool by adding to symbol
+	.RESUQ in STG and rebuilding the monitor.
 >)
 		   RET]
 	MOVE T4,T1		;GET ADDRESS
@@ -992,11 +1007,11 @@ Cause:	The routine PHYALC was called to allocate storage for data such
 
 ;HERE WHEN GIVEN AN ILLEGAL ARGUMENT TO ALC
 
-INIERR:	BUG.(HLT,PHYICA,PHYSIO,HARD,<PHYINI - Illegal argument to core alloc>,,<
+INIERR:	BUG.(HLT,PHYICA,PHYSIO,SOFT,<PHYINI - Illegal argument to core alloc>,,<
 
-Cause:	The routine PHYALC was called asking for a negative number
-	of words.  This routine is called to allocate resident storage
-	for data such as CDB's, KDB's, and UDB's.
+Cause:	The routine PHYALC was called asking for a negative number of words.
+	This routine is called to allocate resident storage for data such as
+	CDBs, KDBs, and UDBs.
 >)
 	SUBTTL Restart 
 
@@ -1108,14 +1123,17 @@ PHYINU::HLL Q3,UDBSTS(P3)	;SET UP LEFT HALF FOR SOME TESTS
 	TXNE Q3,US.POS		;IORB WE EXPECTED
 	HRRZ T1,UDBPWQ(P3)	;FROM EITHER QUEUE
 	CAIE T1,(P4)		;??
-	BUG.(HLT,ILTWQ,PHYSIO,HARD,<PHYINT - TWQ OR PWQ INCORRECT>,,<
+	BUG.(HLT,ILTWQ,PHYSIO,HARD,<PHYINT - TWQ or PWQ incorrect>,,<
 
-Cause:	In the PHYINT routine to handle an interrupt, after the lower
-	level interrupt code has returned, a check is made to see if
-	the IORB returned matched the first element of either the position
-	wait queue or the transfer wait queue.  The returned IORB did not match
-	the first element in the queue checked.
->)		;NO.
+Cause:	In the PHYINT routine to handle an interrupt, after the lower level
+	interrupt code has returned, a check is made to see if the IORB
+	returned matched the first element of either the position wait queue or
+	the transfer wait queue.  The returned IORB did not match the first
+	element in the queue checked.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
+>)				;NO.
 	SKIPE UDBERR(P3)	;ERROR RECOVERY IN PROGRESS?
 	JRST INTERR		;YES - MUST CALL LOWER LEVEL IN ALL CASES
 	MOVE T1,IRBSTS(P4)	;YES - ANY ERROR INDICATION?
@@ -1297,11 +1315,14 @@ DONIR1:	HRRZ T2,IRBIVA(P4)	;GET CALLERS INTERRUPT ADDRESS
 	MOVE T1,P4		;COPY IORB FOR CALL
 	CALLRET (T2)		;CALL
 
-DONIR2:	BUG.(CHK,PHYNIR,PHYSIO,HARD,<PHYSIO - Null interrupt routine at operation done>,,<
+DONIR2:	BUG.(CHK,PHYNIR,PHYSIO,SOFT,<PHYSIO - Null interrupt routine at operation done>,,<
 
 Cause:	The routine DONIRB, when terminating a long IORB, attempted to notify
 	higher level code about the finished IORB, but the field in the IORB
 	that contained the address to call was zero.
+
+Action:	If this BUGCHK is persistant on the system, change it to a BUGHLT and
+	send in an SPR with the dump and how to reproduce the problem.
 >)
 	RET
 
@@ -1339,9 +1360,12 @@ SIO1:	SAVEPQ			;SAVE CALLERS REGISTERS ON LOCAL STACK
 	CALL GETCUB		;YES, COMPUTE UDB FROM PAGEM ADDRESS
 	 BUG.(HLT,ILPDAR,PHYSIO,HARD,<PHYSIO - Illegal disk address in PAGEM request>,,<
 
-Cause:	The routine PHYSIO was called to queue up an IORB for PAGEM, but
-	the disk or swapping address, or unit was illegal.  All such
-	arguments should have been checked by the caller.
+Cause:	The routine PHYSIO was called to queue up an IORB for PAGEM, but the
+	disk or swapping address, or unit was illegal.  All such arguments
+	should have been checked by the caller.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 				;T1 HAS UNIT ADDRESS (LINEAR)
 	MOVEI T2,-CST5(P4)	;GET CORE PAGE NUMBER
@@ -1523,10 +1547,12 @@ PDN2:	HRRZ P4,IRBLNK(Q1)	;GET NEW CURRENT IORB
 	SKIPN T1		; ??
 	BUG.(CHK,NRFTCL,PHYSIO,HARD,<PHYSIO - No requests found for cylinder seeked>,,<
 
-Cause:	The routine PHYPDN was called on a position-done interrupt
-	to transfer any IORBs that were on the position wait queue
-	into the transfer wait queue; but no IORBs were found which
-	were for this cylinder.
+Cause:	The routine PHYPDN was called on a position-done interrupt to transfer
+	any IORBs that were on the position wait queue into the transfer wait
+	queue; but no IORBs were found which were for this cylinder.
+
+Action:	If this BUGCHK is persistant on the system, change it to a BUGHLT and
+	send in an SPR with the dump and how to reproduce the problem.
 >)
 	RET			;YES - ALL IS WELL
 
@@ -1536,11 +1562,12 @@ PDN3:	MOVE Q1,P4		;MOVE DOWN THE LIST
 PDN4:	CALL FNDCKU		;[7264](P1,P3/T1,T2,T3)GET CHAN,CONTROLLER,UNIT
 	BUG.(CHK,NPWQPD,PHYSIO,HARD,<PHYSIO - Null PWQ at position done>,<<T1,CHAN>,<T2,CONTRL>,<T3,UNIT>>,<
 
-Cause:	A position-done interrupt occurred, and the routine PHYPDN was
-	called to move IORBs from the position wait queue into the
-	transfer wait queue, but the position wait queue was empty.
+Cause:	A position-done interrupt occurred, and the routine PHYPDN was called
+	to move IORBs from the position wait queue into the transfer wait
+	queue, but the position wait queue was empty.
 
-Action:	If the problem persists, notify field service
+Action:	If the problem persists, Field Service should check out the unit
+	specified in the additional data.
 
 Data:	CHAN - The channel number
 	CONTRL - The controller number (-1 if no controller)
@@ -1566,9 +1593,11 @@ SETUDB::MOVE T2,CDBIUN(P1)	;GET UDB TABLE POINTER
 	CAIL T1,(T3)		;LEGAL?
 	BUG.(HLT,PYILUN,PHYSIO,HARD,<PHYSIO - Illegal unit number>,,<
 
-Cause:	The routine SETUDB was called to find the UDB and KDB pointers
-	given the CDB and unit number, but the unit number given was
-	out of range.
+Cause:	The routine SETUDB was called to find the UDB and KDB pointers given
+	the CDB and unit number, but the unit number given was out of range.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 	ADD T2,T1		;GET UDB
 	SKIPN P3,(T2)		; ...
@@ -1602,9 +1631,12 @@ SETIRB::HRRZ P4,UDBPWQ(P3)	;ASSUME POSITIONING
 	JUMPN P4,R		;RETURN IF THERE REALLY WAS ONE
 	BUG.(HLT,NOIORB,PHYSIO,HARD,<SETIRB - Missing IORB>,,<
 
-Cause:	The routine SETIRB was called for an active unit to return
-	the currently active IORB for the unit, but the position wait
-	queue or transfer wait queue was empty.
+Cause:	The routine SETIRB was called for an active unit to return the
+	currently active IORB for the unit, but the position wait queue or
+	transfer wait queue was empty.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 
 ;DETERMINE THE UNIT RELATIVE ADDRESS FOR A DISK REQUEST
@@ -1830,11 +1862,14 @@ ONFTWQ::HRRZ T2,IRBLNK(T1)	;CHECK LINK OF NEW IORB IS NULL
 
 IRBNNT:	BUG.(HLT,ILRBLT,PHYSIO,HARD,<PHYSIO - IORB link not null at ONF/STWQ>,,<
 
-Cause:	One of the routines ONFTWQ or ONSTWQ was called to insert an IORB
-	into the transfer wait queue, but the link word for that IORB
-	was not zero.  IORBs should always contain a null link when
-	they are created or removed from a queue, so that many queue
-	handling errors can be detected.
+Cause:	One of the routines ONFTWQ or ONSTWQ was called to insert an IORB into
+	the transfer wait queue, but the link word for that IORB was not zero.
+	IORBs should always contain a null link when they are created or
+	removed from a queue, so that many queue handling errors can be
+	detected.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 
 ;HERE TO PLACE AN IORB AS THE SECOND ELEMENT ON A UNITS TWQ
@@ -1871,10 +1906,13 @@ ONPWQ::	HLRZ T2,UDBPWQ(P3)	;GET TAIL POINTER
 
 IRBERR:	BUG.(HLT,ILTWQP,PHYSIO,HARD,<PHYSIO - PWQ or TWQ tail pointer incorrect>,,<
 
-Cause:	The pointer to the last element in the position wait queue or
-	transfer wait queue (UDBPWQ or UDBTWQ) points to an IORB which
-	has a non-null link to further IORBs.  This is checked in various
-	routines such as ONTWQ, ONPWQ, ONSTWQ, ONFPWQ, CONSTW, or CONSPW.
+Cause:	The pointer to the last element in the position wait queue or transfer
+	wait queue (UDBPWQ or UDBTWQ) points to an IORB which has a non-null
+	link to further IORBs.  This is checked in various routines such as
+	ONTWQ, ONPWQ, ONSTWQ, ONFPWQ, CONSTW, or CONSPW.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 
 ;HERE TO PLACE AN IORB AT THE FRONT OF THE PWQ
@@ -1898,9 +1936,12 @@ ONFPWQ::HRRZ T2,IRBLNK(T1)	;CHECK LINK OF NEW IORB IS NULL
 
 IRBNNL:	BUG.(HLT,ILIRBL,PHYSIO,HARD,<PHYSIO - IORB link not null at ONFPWQ>,,<
 
-Cause:	The routine ONFPWQ was called to place an IORB at the front
-	of the position wait queue for a unit.  But the link field
-	in the IORB pointing to the next IORB was not null.
+Cause:	The routine ONFPWQ was called to place an IORB at the front of the
+	position wait queue for a unit.  But the link field in the IORB
+	pointing to the next IORB was not null.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 ;HERE TO REMOVE AN ARBITRARY ELEMENT FROM THE TWQ
 ;T1/ PREDECESSOR OF ELEMENT TO BE REMOVED
@@ -1927,11 +1968,13 @@ CNSTW1:	HRRM T3,IRBLNK(T1)	;POINT PREDECESSOR TO SUCCESSOR
 
 CNSTWE:	BUG.(HLT,ILCNST,PHYSIO,HARD,<PHYSIO - Illegal call to CONSTW>,,<
 
-Cause:	The routine CONSTW was called to remove an element from the
-	transfer wait queue of a unit, but the arguments are illegal.
-	Either the arguments are null, or CONSTW is trying to remove more than
-	one element because it was passed more than one arguement.
+Cause:	The routine CONSTW was called to remove an element from the transfer
+	wait queue of a unit, but the arguments are illegal.  Either the
+	arguments are null, or CONSTW is trying to remove more than one element
+	because it was passed more than one arguement.
 
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 
 ;HERE TO REMOVE AN ARBITRARY ELEMENT FROM THE PWQ
@@ -1963,10 +2006,13 @@ CNSPW1:	HRRM T3,IRBLNK(T1)	;POINT PREDECESSOR TO SUCCESSOR
 
 CNSPWE:	BUG.(HLT,ILCNSP,PHYSIO,HARD,<PHYSIO - Illegal call to CONSPW>,,<
 
-Cause:	The routine CONSPW was called to remove an element from the
-	position wait queue of a unit, but the arguments are illegal.
-	Either the arguments are null, or CONSPW is trying to remove more
-	than one element because it was passed more than one arguement.
+Cause:	The routine CONSPW was called to remove an element from the position
+	wait queue of a unit, but the arguments are illegal.  Either the
+	arguments are null, or CONSPW is trying to remove more than one element
+	because it was passed more than one arguement.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 
 ;UTILITY TO DEQUEUE THE HEAD OF A UNITS TWQ
@@ -2005,6 +2051,9 @@ IRBMIS:	BUG.(HLT,TWQNUL,PHYSIO,HARD,<PHYSIO - PWQ OR TWQ was null at a seek or t
 Cause:	When I/O completed on a unit, either OFFTWQ or OFFPWQ was called to
 	remove the current IORB from the position wait queue or the transfer
 	wait queue.  The error occurred because the queue was empty.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 
 
@@ -2436,19 +2485,25 @@ STRTI1:	MOVE T1,UDBST1(P3)	;GET UNIT STATUS
 	TXNE T1,US.POS!US.ACT	;OR UNIT ALREADY BUSY?
 	BUG.(HLT,ILUST1,PHYSIO,HARD,<PHYSIO - Unit status inconsistent at SIO>,,<
 
-Cause:	The STRTIO routine was called to start IO on a unit for an IORB,
-	but the unit or controller status indicated that the unit was
-	already active.  IO should never be started on an active drive.
->)		;YES, ERROR
+Cause:	The STRTIO routine was called to start IO on a unit for an IORB, but
+	the unit or controller status indicated that the unit was already
+	active.  IO should never be started on an active drive.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
+>)				;YES, ERROR
 
 	MOVX T1,CS.AC2		;CHECK NOT OUT OF PHASE
 	TDNE T1,CDBSTS(P1)	;BY SEEING IF STACKED COMMAND ACTIVE
 	BUG.(HLT,ILCHS1,PHYSIO,HARD,<PHYSIO - Illegal channel status at SIO>,,<
 
-Cause:	The STRTIO routine was called to begin IO for an IORB, but the
-	channel status indicated that the channel was already active
-	doing a stacked command.
->)		;YES, ERROR
+Cause:	The STRTIO routine was called to begin IO for an IORB, but the channel
+	status indicated that the channel was already active doing a stacked
+	command.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
+>)				;YES, ERROR
 STRTI2:	MOVX T1,CS.AC1		;CHANNEL GOING ACTIVE
 	IORM T1,CDBSTS(P1)	; ...
 	MOVX T1,KS.ACT		;AND CONTROLLER
@@ -2514,27 +2569,35 @@ STKIO1:	MOVX T1,CS.AC1		;GET PRIMARY CHANNEL ACTIVE FLAG
 	BUG.(HLT,ILUST5,PHYSIO,SOFT,<PHYSIO - Illegal channel or controller state at STKIO>,,<
 
 Cause:	The STKIO routine was called to stack up a second command for a
-	channel, so that the CDB and KDB (if it exists) should have been
-	marked as active.  However, at least one of them wasn't active.
->)		;WRONG, COMPLAIN
+	channel, so that the CDB and KDB (if it exists) should have been marked
+	as active.  However, at least one of them wasn't active.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
+>)				;WRONG, COMPLAIN
 
 	MOVE T1,UDBSTS(P3)	;CHECK ON UNIT STATUS
 	TXNE T1,US.ACT		;UNIT SHOULD BE ACTIVE
 	TXNE T1,US.POS		;BUT NOT POSITIONING
 	BUG.(HLT,ILUST6,PHYSIO,SOFT,<PHYSIO - Illegal unit state at STKIO>,,<
 
-Cause:	The STKIO routine was called to stack up a second command for
-	a channel, but the unit either was not active or was doing
-	positioning.
->)		;OTHERWISE LOSE
+Cause:	The STKIO routine was called to stack up a second command for a
+	channel, but the unit either was not active or was doing positioning.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
+>)				;OTHERWISE LOSE
 	MOVX T1,CS.AC2		;NOW GET SECOND CHANNEL ACTIVE FLAG
 	TDNE T1,CDBSTS(P1)	;ALREADY BUSY?
 	BUG.(HLT,ILCHS2,PHYSIO,HARD,<PHYSIO - Illegal channel state at STKIO>,,<
 
-Cause:	The STKIO routine was called to set up a second command for
-	a channel, but the channel status indicated it already had
-	a second command in progress.
->)		;YES, ERROR
+Cause:	The STKIO routine was called to set up a second command for a channel,
+	but the channel status indicated it already had a second command in
+	progress.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
+>)				;YES, ERROR
 	IORM T1,CDBSTS(P1)	;WILL NOW HAVE BOTH ACTIVE
 	CALL SETIO		;SETUP
 	CALL CDSSTK(T1)		;CALL LOWER LEVELS
@@ -2565,9 +2628,14 @@ STRPA:	HRRZ T1,UDBTWQ(P3)	;CHECK IF POSITIONING LEGAL NOW
 	SKIPA			;NONE OF THE ABOVE
 	BUG.(CHK,ILUST2,PHYSIO,HARD,<PHYSIO - Unit status inconsistent at SPS>,,<
 
-Cause:	The routine STRTPS was called to begin a positioning request
-	for a unit, but the status indicated that the unit was already
-	active and the transfer wait queue was nonempty.
+Cause:	The routine STRTPS was called to begin a positioning request for a
+	unit, but the status indicated that the unit was already active and the
+	transfer wait queue was nonempty.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGCHK.  If this BUGCHK persists and no
+	hardware problem can be found, change this BUGCHK to a BUGHLT and send
+	in an SPR with the dump and how to reprduce the problem.
 >)
 	TRNN P2,-1		;IS THERE A CONTROLLER?
 	JRST STRTP1		;NO
@@ -2575,9 +2643,11 @@ Cause:	The routine STRTPS was called to begin a positioning request
 	TDNE T1,KDBSTS(P2)	;ALREADY ACTIVE?
 	BUG.(HLT,ILUST4,PHYSIO,HARD,<PHYSIO - Controller active at SPS>,,<
 
-Cause:	The routine STRTPS was called to begin positioning on a
-	unit, but the controller status indicated it was already
-	busy.
+Cause:	The routine STRTPS was called to begin positioning on a unit, but the
+	controller status indicated it was already busy.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 	IORM T1,KDBSTS(P2)	;NO - MAKE IT ACTIVE
 STRTP1:	MOVX T1,US.ACT!US.POS	;UNIT SOON POSITIONING
@@ -2740,10 +2810,13 @@ SEK2:	HRRZ P4,IRBLNK(Q1)	;ADVANCE CURRENT REQUEST
 	TXNE T1,US.POS!US.ACT	;UNIT IDLE?
 	BUG.(HLT,ILUST3,PHYSIO,HARD,<PHYSIO - SCHSEK - Impossible unit status>,,<
 
-Cause:	The SCHSEK routine was called to start a position request for
-	a unit, but the status of the unit indicated it was not idle.
-	SCHSEK should only be called when a unit becomes inactive.
->)		;NO, COMPLAIN
+Cause:	The SCHSEK routine was called to start a position request for a unit,
+	but the status of the unit indicated it was not idle.  SCHSEK should
+	only be called when a unit becomes inactive.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
+>)				;NO, COMPLAIN
 	CALL STRTPS		;START POSITIONING
 	 JFCL			;COULDNT POSITION THIS UNIT, OPERATOR NEEDED
 	RET
@@ -3009,11 +3082,14 @@ LTMUNI:	HRRZ T1,UDBTWQ(P3)	;ANYTHING ON THE TRANSFER WAIT QUEUE?
 	CALL UDSLTM(T2)		;GET BEST TRANSFER ON THIS UNIT
 	 BUG.(HLT,PHYLTF,PHYSIO,HARD,<PHYSIO - SCHLTM - Unexpected LATOPT failure>,,<
 
-Cause:	The routine SCHLTM was called to do disk latency optimization,
-	by scanning all units for the best IORB.  A unit was found to have a
+Cause:	The routine SCHLTM was called to do disk latency optimization, by
+	scanning all units for the best IORB.  A unit was found to have a
 	nonnull transfer wait queue, but the lower level code to select the
 	best IORB for that unit gave the non-skip return, indicating that no
 	IORBs existed.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 				; T1/ LATENCY IN USEC (0 MEANS PREFERED IORB)
 				; T2/ PRED. TO BEST IORB
@@ -3496,10 +3572,12 @@ GETIRB:	SKIPN NSKED		;NOSKED?
 	SKIPN UIOLST		;YES - ANY LEFT
 	BUG.(HLT,UIONIR,PHYSIO,HARD,<UDSKIO - No IORB for NOSKED fork>,,<
 
-Cause:	The routine UDSKIO was called to do special I/O for a fork,
-	and to do the I/O it uses one of a group of preallocated IORBs.
-	There were no free IORBS left, and the fork could not
-	block because it was NOSKED.
+Cause:	The routine UDSKIO was called to do special I/O for a fork, and to do
+	the I/O it uses one of a group of preallocated IORBs.  There were no
+	free IORBS left, and the fork could not block because it was NOSKED.
+
+Action:	Field Service should check the system.  It is unlikely that a software
+	problem could cause this BUGHLT.
 >)
 GETICC:	PIOFF
 	MOVE P4,@UIOLST		;GET SUCCESSOR
@@ -3551,8 +3629,8 @@ GIVIRB:				;RETURN AN IORB
 	 CAILE P4,<UDIORB-1+<NUIORB*UIOLEN>> ;LEGAL?
 	  BUG. (HLT,BADIRB,PHYSIO,SOFT,<Bad IORB passed to GIVIRB>,,<
 
-Cause:	An IORB was passed to GIVIRB that does not have a legal address.
-	This indicates a software problem in the monitor.
+Cause:	An IORB was passed to GIVIRB that does not have a legal address.  This
+	indicates a software problem in the monitor.
 >)
 	PIOFF
 	EXCH P4,UIOLST		;NEW HEAD OF LIST
@@ -3584,13 +3662,15 @@ DRMIO::	PUSH P,P4		;SAVE P4, IORB MUST BE IN P4 FOR IRYFCN
 	  CALL ISOCSH		;[7.1015] (T1/)Is OFN which owns page cached?
 	    BUG.(HLT,TCSOFN,PHYSIO,SOFT,<Transfer of cached OFN page>,,<
 
-Cause:	An attempt has been made to transfer a core page to disk.
-	However, this page belongs to a cached OFN and this should not 
-	happen.
+Cause:	An attempt has been made to transfer a core page to disk.  However,
+	this page belongs to a cached OFN and this should not happen.
 
-Action:	Trace the stack and locate the caller.  All callers should be 
-	aware of cached OFN pages and take appropriate action to insure
-	that these pages are not transfered.
+Action:	Submit an SPR along with the dump and any information that might be
+	helpful.
+
+	Trace the stack and locate the caller.  All callers should be aware of
+	cached OFN pages and take appropriate action to insure that these pages
+	are not transfered.
 >)				;[7.1015] It is cached - error!
 	ENDIF.			;[7.1015] 
 	DPB T2,IRYFCN		;STORE IN IORB
@@ -3887,8 +3967,7 @@ UNICK1:	MOVE T1,UDBSTS(P3)	;GET STATUS FOR CHECKING
 	TXNE T1,US.TPD		;CHECK FOR THREE PORTED DISK
 	RET			;QUIT NOTHING WE WANT TO DO WITH THIS UNIT
 	HRRE T3,UDBSTR(P3)	;[7.1063]Get structure number
-	SKIPGE T3		;[7.1063]Part of a structure?
-	IFSKP.			;[7.1063]If yes...
+	IFGE. T3		;[8980] Part of a structure?
 	  MOVE T2,UDBST1(P3)	;[7.1063]Get second flag word
 	  TXNN T1,US.OFS	;[7.1063]Is the unit offline?
 	  TXNE T2,U1.SOF	;[7.1063]Or was it offline last pass?
@@ -3936,11 +4015,11 @@ UNICK3:	IOPION
 ;Here for once-a-minue check. IOPIOF!
 
 UNICK4:	LOAD T1,US.RTY,UDBSTS(P3) ;Get error retry count
-	CAIGE T1,MSGLIM		;At max count?
-	IFNSK.			;If not
-	 ADDI T1,1		;Increase it
-	 STOR T1,US.RTY,UDBSTS(P3)
-	 CALLRET ONRET
+	CAIL T1,MSGLIM		;[8980] At max count?
+	IFSKP.			;[8980] If not
+	  ADDI T1,1		;Increase it
+	  STOR T1,US.RTY,UDBSTS(P3)
+	  CALLRET ONRET
 	ENDIF.
 	SKIPN PHYSEC		;Minute boundary?
 	JRST UNICK3		;YES - PRINT MESSAGE
@@ -3949,10 +4028,10 @@ UNICK4:	LOAD T1,US.RTY,UDBSTS(P3) ;Get error retry count
 ;Here to see if some form fo operator assitance needed. IOPIOF!
 
 UNICK5:	MOVX T1,US.OMS		;OPERATOR MESSAGE ON MINUTE?
-	TDNN T1,UDBSTS(P3)	; ??
-	IFNSK.			;If not
-	 IOPION			;Enable interrupts again
-	 JRST UNICKT		; CHECK TIMEOUT	 
+	TDNE T1,UDBSTS(P3)	;[8980] Skip if not
+	IFSKP.			;[8980] If not
+	  IOPION		;Enable interrupts again
+	  JRST UNICKT		;Check timeout	 
 	ENDIF.
 	CALL UNITRY		;DO RETRY
 	 JRST UNICK4		;FAILED - DO RETRY	
@@ -4025,10 +4104,13 @@ Cause:	The routine UNICKT checks the status of each unit periodically.  During
 	BUGINF can be followed by other BUGINFs or BUGCHKs when the device
 	finally responds (such as PH2DNA).
 
-Action:	If the involved device is a tape drive controlled by a DX20, a
-	common cause of the BUGINF is the microcode halting.  Reloading
-	the microcode will fix the problem.  Other causes are hardware
-	failures, and Field Service should examine the problem.
+Action:	This BUGINF is usually caused by flakey or broken hardware.  Field
+	Service should examine the problem.
+
+	If the involved device is a tape drive controlled by a DX20, a common
+	cause of the BUGINF is the microcode halting.  Reloading the DX20
+	microcode with DX20LD fixs the problem, and the DX20 should be
+	monitored by Field Service.
 
 Data:	CHAN - The channel number
 	CONTRL - The controller number (-1 if no controller)
@@ -4045,7 +4127,7 @@ ONRET:	SKIPN PHYIFL		;SHOULD WE TURN ON INTS?
 	IOPION			;YES, AT LONG LAST
 	SETZM PHYIFL		;USUALLY WE DON'T WANT TO
 	RET
-
+
 UNICK8:	IOPIOF			;INTERLOCK CHECK
 	MOVE T1,UDBODT(P3)	;CHECK OVERDUE TIME
 	JUMPE T1,ONRET		;UNTIMED
@@ -4185,15 +4267,15 @@ UDBCHK:	SAVET			;Preserve the T's
 	  IORM T2,SDBSTS(T1)	;And set it in the SDB
 	  SETZRO STRTMR,(T1)	;Clear the timestamp word
 	  SKIPE CIBUGX		;[7.1278] Wanna see this?
-	  BUG. (CHK,OFFSTR,PHYSIO,SOFT,<UDBCHK - Structure has been marked offline>,<<T3,STRNUM>,<P3,UDB>>,<
+	  BUG.(CHK,OFFSTR,PHYSIO,SOFT,<UDBCHK - Structure has been marked offline>,<<T3,STRNUM>,<P3,UDB>>,<
 
-Cause:	PHYSIO has detected that a disk unit has been offline long enough
-	to mark the structure to which it belongs as offline. This interval
-	has been preset by the system manager.
+Cause:	PHYSIO has detected that a disk unit has been offline long enough to
+	mark the structure to which it belongs as offline.  This interval has
+	been preset by the system manager.
 
-Action:	The second additional data word of this BUGCHK shows the address of
-	the UDB of the offending disk drive. Determine why this drive is
-	offline and repair the condition.
+Action:	The second additional data word of this BUGCHK shows the address of the
+	UDB of the offending disk drive.  Determine why this drive is offline
+	and repair the condition.
 
 Data:	STRNUM - The structure number that has been marked offline
 	UDB - The address of the UDB of the disk drive that caused this
@@ -4217,11 +4299,11 @@ Data:	STRNUM - The structure number that has been marked offline
 
 UDBCK1:	MOVX T1,U1.SOF		;Clear U1.SOF
 	ANDCAM T1,UDBST1(P3)	; to prevent this BUGCHK from repeating
-UDBCK2:	BUG. (CHK,STRNIL,PHYSIO,SOFT,<UDBCHK - Illegal structure number in offline UDB>,<<T3,STRNUM>,<P3,UDB>>,<
+UDBCK2:	BUG.(CHK,STRNIL,PHYSIO,SOFT,<UDBCHK - Illegal structure number in offline UDB>,<<T3,STRNUM>,<P3,UDB>>,<
 
 Cause:	Routine UDBCHK found that bit U1.SOF had been set in the UDB of a
 	structure that was associated with the PS structure or with no
-	structure at all. This should not occur.
+	structure at all.  This should not occur.
 
 Action:	No action is necessary, but if this BUCGHK occurs repeatedly, the
 	conditions that led to this situation should be investigated.
@@ -4269,10 +4351,12 @@ STRSC1:	MOVE T1,STRTAB(T3)	;Get back the SDB address
 	TDNN T2,SDBSTS(T1)	;[7.1278] Is this structure now offline?
 	IFSKP.			;[7.1278] If so,
 	  SKIPE CIBUGX		;[7.1278] Don't BUGCHK unless we want to
-	  BUG. (CHK,ONSTR,PHYSIO,SOFT,<UDBCHK - Structure has been marked online>,<<T3,STRNUM>>,<
+	  BUG.(CHK,ONSTR,PHYSIO,SOFT,<UDBCHK - Structure has been marked online>,<<T3,STRNUM>>,<
 
 Cause:	A structure that had been previsouly marked offline due an offline
 	disk unit is now online again.
+
+Action:	No action is required, this BUG is for information only.
 
 Data:	STRNUM - The number of the structure that is now online
 >,,<DB%NND>)			;[7.1278]
@@ -4280,7 +4364,6 @@ Data:	STRNUM - The number of the structure that is now online
 	ANDCAM T2,SDBSTS(T1)	;Set the structure online
 	SETZRO STRTMR,(T1)	;Clear the timestamp for good measure
 	RET			;Structure is now online again
-
 	SUBTTL Homeblock and PDB Routines
 
 ;CHBSTR - SETS IS.ERR IF THE DRIVE HAS GONE OFFLINE.  THIS WILL CAUSE THE
@@ -4322,11 +4405,16 @@ CHBDON:	SAVEPQ
 	TXZE T1,U1.PDR		;NO, IS IT PDB READ?
 	JRST CHBPDB		;YES
 	TXZN T1,U1.PDW		;NO, IS IT PDB WRITE?
-	BUG. (CHK,PDBSTA,PHYSIO,SOFT,<PHYSIO - Inconsistent state of UDB status bits>,<<T1,STATUS>>,<
+	BUG.(CHK,PDBSTA,PHYSIO,SOFT,<PHYSIO - Inconsistent state of UDB status bits>,,<
 
-Cause:	UDBST1 is inconsistent.
+Cause:	CHBDON is called by DONIRB as the exit routine for the home block IORB.
+	This allows the monitor to process the completed IORB before the poller
+	can see the completed request.  However, CHBDON was called with UDBST1
+	bits indicating that no homeblock read, PDB read, or PDB write was in
+	progress.
 
-Data:	STATUS - UDB status bits
+Action:	If this BUGCHK is reproducable, change it to a BUGHLT, and seind in an
+	SPR with the dump and instructions on how to reproduce the problem.
 >,,<DB%NND>)			;[7.1210] 
 	MOVEM T1,UDBST1(P3)	;YES, CLEAR THE BIT AND DO CHECK AGAIN
 	CALL GIVIRB		;(P4/) RETURN IORB
@@ -4349,9 +4437,30 @@ CHBDER:	TXNN T1,IS.DTE!IS.DVE	;HARD ERRORS
 	MOVX T2,HM2BLK		;HOMEBLOCK 2
 	CALLRET RDHBLK		;READ THE HOMEBLOCK
 
-CHBPDR:	TXO T1,U1.PDR		;SET PDR BIT
-	MOVEM T1,UDBST1(P3)
+;[8980] Here when homeblock read is complete, schedule a PDB read if needed.
+;PDB reads/writes are NOT needed if the disk cannot possibly be seen from
+;another system: it is not MSCP served and is ported only to us (front end
+;disk, don't care disk, both massbus ports to this system, or locked on one
+;massbus port).
+
+CHBPDR:	MOVE T2,UDBSTS(P3)	;[8980] Load UDB status bit
+	TXNE T2,US.CIA!US.CIP	;[8980] Is this a MSCP disk?
+	JRST CHBPDY		;[8980] Yes, must read/write PDB
+	TXNN T1,U1.FED!U1.DCR	;[8980] Load the front end disk and don't care
+	SKIPE UDB2ND(P3)	;[8980] Or is this disk ported to us too?
+	JRST CHBPDN		;[8980] Yes, no need to PDB read/write
+	TXNE T2,US.2PT		;[8980] Both ports not to us, is disk dual port
+	JRST CHBPDY		;[8980] Yes, we must do the PDB read/writes
+
+CHBPDN:	TXZ T1,U1.OFS		;[8980] Insure that forced offline bit is clear
+	MOVEM T1,UDBST1(P3)	;[8980] Save updated status bits
+	RET			;[8980] Return
+
+CHBPDY:	TXO T1,U1.PDR		;[8980] Set PDB read in progress
+	MOVEM T1,UDBST1(P3)	;[8980] Store updated status bits
 	CALLRET RDPDB		;AND READ NEW PDB
+
+;Here when PDB read has completed, check the PDB data and rewrite if needed.
 
 CHBPDB:	MOVEM T1,UDBST1(P3)	;STORE UDB STATUS
 	CALL CHKPDB		;IS THE STATUS ON THE DISK OK?
@@ -4472,21 +4581,24 @@ CHKPDB:	DMOVE T1,UDBSER(P3)	;GET THE SERIAL NUMBER FROM THE PDB
 	CAMN T2,UDBDSN(P3)	;CHECK AGAINST DRIVE SERIAL NUMBER
 	CAME T1,UDBDSH(P3)	; AND SEE IF IT IS THE SAME
 	IFNSK.
-	   DMOVE T1,UDBDSH(P3)	;DON'T MATCH, STORE CURRENT DRIVE SERIAL NUMBER
-	   DMOVEM T1,UDBPDB(P3)	; IN PDB
-	   IOR T1,T2		;CHECK FOR ZERO SERIAL NUMBER
-	   SKIPE T1		;IS IT ZERO?
-	   CALLRET RSTPDB	;NO, RESET PDB NODE INFO
-	   BUG. (CHK,PHYNOS,PHYSIO,HARD,<PHYSIO - No serial number for disk drive>,<<P1,CHAN>,<P2,CONT>,<P3,UNIT>>,<
+	  DMOVE T1,UDBDSH(P3)	;DON'T MATCH, STORE CURRENT DRIVE SERIAL NUMBER
+	  DMOVEM T1,UDBPDB(P3)	; IN PDB
+	  IOR T1,T2		;CHECK FOR ZERO SERIAL NUMBER
+	  JUMPN T1,RSTPDB	;[8908] Jump if non zero serial number
+	  CALL FNDCKU		;[8908] (P1-P3/T1-T3) Get cku numbers
+	  BUG.(CHK,PHYNOS,PHYSIO,HARD,<PHYSIO - No serial number for disk drive>,<<P1,CHAN>,<P2,CONT>,<P3,UNIT>>,<
 
-Cause:	The serial number of the drive is missing.
+Cause:	The serial number of a disk drive is missing (zero).  A non-zero unique
+	disk drive serial number is required for all disks in a TOPS-20
+	environment.  The drive is marked as offline and is not used.
 
-Action:	Call Field Service.
+Action:	Field Service must be called to set a non-zero unique serial number for
+	the disk drive.
 
 Data:	CHAN - Channel number
 	CONT- Controller number
 	UNIT - Unit number
->,,<DB%NND>)			;[7.1210] 
+>,,<DB%NND>)			;[8908][7.1210] 
 	   MOVX T1,US.OFS	;THROW THE DRIVE OFFLINE
 	   IORM T1,UDBSTS(P3)	;BYE
 	   RETSKP		;DON'T RE-WRITE THE BLOCKS
@@ -4506,9 +4618,11 @@ Data:	CHAN - Channel number
 	IFSKP.
 	   MOVX T1,U1.DCR	;YES, SET DON'T-CARE
 	   IORM T1,UDBST1(P3)	; ACCESS
-	   BUG. (INF,PHYDCR,PHYSIO,SOFT,<PHYSIO - Disk being treated as DON'T-CARE>,<<P1,CHAN>,<P2,CONT>,<P3,UNIT>>,<
+	   BUG.(INF,PHYDCR,PHYSIO,SOFT,<PHYSIO - Disk being treated as DON'T-CARE>,<<P1,CHAN>,<P2,CONT>,<P3,UNIT>>,<
 
 Cause:	A don't-care disk was found on a don't-care drive.
+
+Action:	No action required, this bug is for information only.
 
 Data:	CHAN - The channel number
 	CONT - The controller number or -1
@@ -4521,19 +4635,24 @@ Data:	CHAN - The channel number
 
 	   TXNE T1,U1.DCU	;IS IT A DON'T-CARE DRIVE?
 	   IFSKP.
-	      BUG. (INF,PHYDCU,PHYSIO,SOFT,<PHYSIO - Do-care disk on don't-care drive>,<<P1,CHAN>,<P2,CONT>,<P3,UNIT>>,<
+	      BUG.(INF,PHYDCU,PHYSIO,SOFT,<PHYSIO - Do-care disk on don't-care drive>,<<P1,CHAN>,<P2,CONT>,<P3,UNIT>>,<
 
 Cause:	A standard disk has been detected on a drive which has been declared
-	DON'T-CARE.
+	DON'T-CARE.  This combination is treated as a standard drive.
+
+Action:	Either set the disk as don't-care, or set the drive as do-care.
 
 Data:	CHAN - The channel number
 	CONT - The controller number or -1
 	UNIT - The unit number
 >,,<DB%NND>)			;[7.1210] 
 	   ELSE.
-	      BUG. (INF,PHYDCD,PHYSIO,SOFT,<PHYSIO - Don't-care disk on do-care drive>,<<P1,CHAN>,<P2,CONT>,<P3,UNIT>>,<
+	      BUG.(INF,PHYDCD,PHYSIO,SOFT,<PHYSIO - Don't-care disk on do-care drive>,<<P1,CHAN>,<P2,CONT>,<P3,UNIT>>,<
 
-Cause:	A don't-care disk has been encountered on a standard drive.
+Cause:	A don't-care disk has been encountered on a standard drive.  This
+	combination is treated as a standard drive.
+
+Action:	Either set the disk as a "do-care" or set the drive as "don't-care".
 
 Data:	CHAN - The channel number
 	CONT - The controller number or -1
@@ -4547,17 +4666,15 @@ CHKPD3:	SKIPN FESER		;QUIT IF FE HASN'T GIVEN US SERIAL NUMBERS YET
 		SKIPE PROFLG	;CHECK FOR USE OF SECONDARY PROTOCOL
 		CALL PTHSTS	;(T1/T2) GET CI STATUS
 		 RETSKP		;NO ALL OK FOR NOW
-		BUG. (HLT,BADFEV,PHYSIO,SOFT,<CHKPDB - Wrong or bad front-end version>,,<
+		BUG.(HLT,BADFEV,PHYSIO,SOFT,<CHKPDB - Wrong or bad front-end version>,,<
 
-Cause:	The front-end did not send a type 40 message to idenify the
+Cause:	The RSX20F front-end did not send a type 40 message to idenify the
 	front-end disk serial numbers.
 
-Action: Fix the front-end.
+Action:	Run a more recent copy of the RSX20F front-end software.  Version 16-00
+	of RSX20F was released with TOPS-20 version 7.0.
 >)]
-	TXNE T1,U1.FED		;IS THIS A FE DISK?
-	RETSKP			;YES DON'T RE-WRITE ANYTHING
-
-	CALLRET UPDPDB		;CHECK PDB VALUES AND UPDATE IF NECESSARY
+	CALLRET UPDPDB		;(P3/) Check PDB values and update if necessary
 ;RSTPDB - RESET THE UDB'S PDB LEAVING NOTHING BUT OUR OWN NODE'S STATUS AND THE
 ;DISK'S SERIAL NUMBER.
 ; P3/ UDB
@@ -4572,15 +4689,14 @@ RSTPDB:	CALL CLRPDB		;(/) CLEAR THE PDB
 	JRST [	HRLZM T1,UDBNPR(P3) ;NO SET PROCESSOR STATUS AND QUIT
 		RET]
 	MOVE T2,CDBSTS(P5)	;GET STATUS
-	TXNN T2,CS.CIP		;CI TYPE CHANNNL?
+	TXNN T2,CS.CIP		;CI type channel?
 	JRST [	HRLZM T1,UDBNPR(P3) ;NO SET PROCESSOR STATUS AND QUIT
 		RET]
-	MOVE T3,T1		;SAVE SERIAL NUMBER
 	SKIPL T1,CDBNOD(P5)	;GET OUR NODE
 	CALL PTHSTS		;(T1/T2) GET THE STATUS OF THE CI
 	 RET			;NONE DON'T WRITE ANYTHING TILL WE EXIST
 	ADD T1,P3		;ADD UDB OFFSET
-	HRL T2,T3		;SET SERIAL NUMBER IN LEFT HALF
+	HRL T2,APRSER		;[8980] Set serial number in left half
 	MOVEM T2,UDBP00(T1)	;STORE STATUS
 	RET
 ;WRTPDB - WRITE UDB'S PDB TO THE DISK
@@ -4634,61 +4750,40 @@ WRTPDB:	MOVE P4,UDBCHB(P3)	;GET THE ADDRESS OF THE IORB TO USE
 ;	 +2: NO CHANGES MADE
 ;
 ; LOCAL AC USAGE:  Q2/ OUR CI NODE NUMBER
-;		   Q3/ OUR CPU SERIAL NUBER
 
 UPDPDB:	STKVAR <UPDAT>		;"UPDATE THE DISK" FLAG
 	SETZM UPDAT		;ASSUME NOT UPDATING
-	MOVE T1,APRSER		;[7357]	Get our CPU serial number
-	MOVE Q3,T1		;PRESERVE IT
 	SKIPN P5,CHNTAB+7	;CHECK FOR POSSIBLE CI
 	JRST UPDNCI		;NON-CI PROCESSOR
 	MOVE T3,CDBSTS(P5)	;GET THE STATUS OF THE CHANNEL
 	TXNE T3,CS.CIP		;IS THIS REALLY A CI?
-	IFSKP.
+	JRST UDBPCI		;[8980] Yes, we have a CI
 
-;We are not on a CI
+;We are not on a CI and we have a disk that must have a port that we don't know
+;about.  This disk will be placed offline and not used until it is single
+;ported to us again.  
 
-UPDNCI:	   SETO Q2,		;NO, SET NODE NUMBER TO -1 (NOT ON CI)
-	   MOVX T3,U1.OFS	;GET FORCED-OFFLINE INDICATOR
-	   MOVEI Q1,C%SBLL-1	;CHECK FOR CI NODES
-UPDNLP:	   MOVE T1,P3		;GET UDB ADDRESS
-	   ADD T1,Q1		;GET NODE NUMBER TO LOOK AT
-	   SKIPN T2,UDBP00(T1)	;ANYNODY THERE?
-	   IFSKP.
-	      TXNE T2,UDB%MA	;YES, IN MAINTENANCE MODE?
-	      ANSKP.
-	         MOVX T2,US.2PT		;NO, IS DISK
-	         TDNN T2,UDBSTS(P3) 	; MULTI-ACCESS?
-	         IFSKP.
-	            IORM T3,UDBST1(P3)	;YES, FORCE DISK OFFLINE
-	            JRST UPDOUT	;FINISH
-	         ENDIF.
-	         SETOM UPDAT		;NO, INDICATE UPDATE NEEDED
-	         SETZM UDBP00(T1)	;FLUSH OLD INFORMATION
-	   ENDIF.
-	   SOJGE Q1,UPDNLP	;NEXT NODE
-	   ANDCAM T3,UDBST1(P3)	;CLEAR FORCED-OFFLINE INDICATOR
-	   JRST UPDOUT		;FINISH
-	ENDIF.
-
+UPDNCI:	MOVX T3,U1.OFS		;[8980] Get forced-offline flag bit please
+	IORM T3,UDBST1(P3)	;[8980] Force disk offline
+	SETO Q2,		;[8980] Set node number to -1 (not on CI)
+	JRST UPDOUT		;[8980] Write the PDB if needed
+
 ;We are on a CI
 
-	SKIPGE Q2,CDBNOD(P5)	;GET OUR NODE NUMBER
-	RET			;NONE THERE, THEN NOT ABLE TO USE CI YET
+UDBPCI:	SKIPGE Q2,CDBNOD(P5)	;[8980] Get our node number
+	RETSKP			;[8980] Not able to use CI, don't write PDB
 	MOVE T4,Q2		;GET THE NODE NUMBER
 	ADD T4,P3		;FIND THE OFFSET INTO THE UDB
 	HLRZ T3,UDBP00(T4)	;GET THE PREVIOUS SERIAL NUMBER
-;...
-;...
-	CAMN T3,Q3		;ARE THEY THE SAME?
-	IFSKP.
-	   MOVE T1,Q2		;NO, THEN WE MUST RE-WRITE SINCE DISK WAS MOVED
-	   CALL PTHSTS		;(T1/T2) GET STATUS
-	    SETO T2,		;NO CI
-	   HRL T2,Q3		;FIX UP SERIAL NUMBER
-	   MOVEM T2,UDBP00(T4) 	;SET IN UDB
-	   SETOM UPDAT		;FLAG MUST RE-WRITE
-	   JRST UPDDID		;FLAG DISK OFFLINE FOR NOW
+	CAMN T3,APRSER		;[8980] Are they the same?
+	IFSKP.			;[8980] No
+	  MOVE T1,Q2		;NO, THEN WE MUST RE-WRITE SINCE DISK WAS MOVED
+	  CALL PTHSTS		;(T1/T2) GET STATUS
+	   SETO T2,		;NO CI
+	  HRL T2,APRSER		;[8980] Fix up serial number
+	  MOVEM T2,UDBP00(T4) 	;SET IN UDB
+	  SETOM UPDAT		;FLAG MUST RE-WRITE
+	  JRST UPDDID		;FLAG DISK OFFLINE FOR NOW
 	ENDIF.
 	MOVX T1,U1.OFS		;CLEAR FORCED-FFLINE
 	ANDCAM T1,UDBST1(P3)	; STATUS
@@ -4710,50 +4805,47 @@ UPDLOP:	CAMN Q1,Q2		;CHECK FOR OUR NODE
 	JRST UPDEND		;YES, MOVE ON
 	SKIPE CFSSTS(Q1)	;IS THERE A CFS CONNECTION?
 	IFSKP.
-	   MOVE T2,Q1		;NO, SET UP REMOTE NODE NUMBER
-	   CALL ISIT20		;(T2/) IS REMOTE SYSTEM TOPS-20?
-	   IFNSK.
-	      SETZM UDBP00(T1)	;NO, CLEAR OLD DATA
-	      SETOM UPDAT	;INDICATE WE MUST UPDATE DISK'S PDB
-	   ELSE.
+	  MOVE T2,Q1		;NO, SET UP REMOTE NODE NUMBER
+	  CALL ISIT20		;(T2/) IS REMOTE SYSTEM TOPS-20?
+	  IFSKP.		;[8980] Yes it is a TOPS-20 system
 	    JRST UPDDID		;YES, DECLARE DISK OFFLINE - SOMETHING IS WRONG
-	   ENDIF.
+	  ENDIF.		;[8980] Not a TOPS-20 system
+	  SETZM UDBP00(T1)	;[8980] Clear old data
+	  SETOM UPDAT		;[8980] Indicate we must update disk's PDB
 	ENDIF.
 UPDEND:	SOJGE Q1,UPDLOP		;TRY NEXT NODE
 	MOVX T3,U1.OFS		;CLEAR
 	ANDCAM T3,UDBST1(P3)	; FORCED-OFFLINE
 	SETZ T3,		;INDICATE NOT SETTING OFFLINE
 	JRST UPDDI1		;MOVE ON
-
+
 UPDDID:	MOVX T3,U1.OFS		;FORCE DISK OFFLINE
 	IORM T3,UDBST1(P3)	;SET CURRENT STATUS
 UPDDI1:	MOVX T1,US.2PT
-;...
-;...
 	TDNE T1,UDBSTS(P3)	;IS DISK MULTI-ACCESS?
 	IFSKP.
-	   SKIPN T3		;NO, ARE WE OFFLINING?
-	   ANSKP.
-	      MOVE T1,Q2	;YES, GET OUR NODE NUMBER
-	      ADD T1,P3		;GET OUR
-	      MOVE T3,UDBP00(T1) ; STATUS
-	      CALL CLRPDB	;(/) CLEAR ALL NODES' ENTRIES
-	      MOVEM T3,UDBP00(T1) ;RESET OUR STATUS
-	      SETOM UPDAT	;INDICATE RE-WRITE NEEDED
+	  IFN. T3		;[8980] Nope, are we offlining this disk?
+	    MOVE T1,Q2		;YES, GET OUR NODE NUMBER
+	    ADD T1,P3		;GET OUR
+	    MOVE T3,UDBP00(T1)	; STATUS
+	    CALL CLRPDB		;(P3/) Clear all nodes' entries
+	    MOVEM T3,UDBP00(T1) ;RESET OUR STATUS
+	    SETOM UPDAT		;INDICATE RE-WRITE NEEDED
+	  ENDIF.
 	ENDIF.
 	SKIPL T1,Q2		;GET OUR NODE NUMBER
 	CALL PTHSTS		;(T1/T2) GET THE PATH STATUS
 UPDOUT:	 SETO T2,		;NO CI
-	HRL T2,Q3		;GET CPU SERIAL NUMBER
+	HRL T2,APRSER		;[8980] Get CPU serial number
 	ADD Q2,P3		;GET UDB OFFSET
 	CAMN T2,UDBP00(Q2)	;OUR NODE INFO OK?
 	IFSKP.
-	   MOVEM T2,UDBP00(Q2) ;NO, FIX IT
-	   RET			;AND QUIT
+	  MOVEM T2,UDBP00(Q2)	;NO, FIX IT
+	  RET			;AND QUIT
 	ENDIF.
 	SKIPE UPDAT		;CHECK FOR RE-WRITE
 	RET			;REWRITE NECESSARY
-	RETSKP			;NO-REWRITE THE DISK
+	RETSKP			;Do not rewrite the PDB
 
 	ENDSV.
 ;CLRPDB - CLEAR ALL NODES' ENTRIES IN THE UDB'S PDB
@@ -4792,6 +4884,7 @@ PCKOFL:	TDNN Q2,UDBSTS(P3)	;CHECK FOR TAPE
 	TDNN P4,UDBSTS(P3)	;IS THIS A DUAL PORTED DRIVE?
 	RET			;NO FORGET IT
 	MOVX T1,U1.FED!U1.DCR	;IS THIS A DON'T CARE DISK OR A FRONT-END DISK?
+	SKIPN UDB2ND(P3)	;[8980] Or are both ports to this system?
 	TDNE T1,UDBST1(P3)	;THEN WE DON'T BOTHER IT
 	RET			;THEN DON'T BOTHER IT
 	MOVX T1,U1.STC		;SET STATUS CHANGE
@@ -4825,9 +4918,10 @@ PYCOF1:	MOVE P4,P3		;FIND ADDRESS
 	TDNN Q2,UDBSTS(P3)	;CHECK FOR TAPE
 	SKIPN UDBP00(P4)	;HAS NODE EVER ACCESSED THE DISK??
 	RET			;NO
-	MOVX T1,US.2PT		;YES, DISK
-	TDNN T1,UDBSTS(P3)	; STILL MULTI-ACCESS?
-	RET			;NO
+	MOVX T1,US.2PT		;Yes, load multi-access bit
+	SKIPN UDB2ND(P3)	;[8980] Both ports on this system?
+	TDNN T1,UDBSTS(P3)	; or still multi-access?
+	RET			;Not multi access or bort ports on this system
 	MOVX T1,U1.FED!U1.DCR	;YES, FRONT-END
 	TDNE T1,UDBST1(P3)	; OR DON'T CARE?
 	RET			;YES
@@ -4963,10 +5057,9 @@ FRHOMB:	CAMN P4,UDBCHB(P3)	;CHECK TO SEE IF THIS IS THE HOMEBLOCK ENTRY
 	HRRZ T2,UDBPWQ(P3)	;GET THE BEGINNING OF THE QUEUE
 FRHBLP:	MOVE T1,T2		;POINTER TO PREVIOUS
 	HRRZ T2,IRBLNK(T1)	;GET THE FORWARD LINK
-	JUMPE T2,[ BUG. (HLT,HOMGON,PHYSIO,SOFT,<FRTHOB - Missing homeblock IORB>,<<P1,CHN>,<P2,KONT>,<P3,UNIT>>,<
+	JUMPE T2,[ BUG.(HLT,HOMGON,PHYSIO,SOFT,<FRTHOB - Missing homeblock IORB>,<<P1,CHN>,<P2,KONT>,<P3,UNIT>>,<
 
-Cause:	Missing homeblock IORB when we believe there should be one on
-	the PWQ.
+Cause:	Missing homeblock IORB when we believe there should be one on the PWQ.
 
 Data:	CHN - The channel number
 	KONT - The controller number
@@ -5177,12 +5270,12 @@ SETSTR::STKVAR <STRSTN,SDBADR>	;ALLOCATE STORAGE
 	CALL CHKCKU		;THEN FIND THE UDB ADDRESS
 	 BUG.(HLT,UNFWSS,PHYSIO,SOFT,<Unit not found creating SDB for structure>,,<
 
-Cause:	The routine SETSTR was called to build an SDB for a structure.
-	One of its arguments is the channel, controller, and unit numbers
-	of a unit which had already been known to exist.  But when the
-	routine CHKCKU was called to find the UDB of the unit, the routine
-	failed to find the unit.
->)		;SHOULD BE THERE!
+Cause:	The routine SETSTR was called to build an SDB for a structure.  One of
+	its arguments is the channel, controller, and unit numbers of a unit
+	which had already been known to exist.  But when the routine CHKCKU was
+	called to find the UDB of the unit, the routine failed to find the
+	unit.
+>)				;SHOULD BE THERE!
 	HLRZ T2,STRSTN		;GET LOGICAL UNIT NUMBER WITHIN THE STRUCTURE
 	ADD T2,SDBADR		;ADD IN SDB ADDRESS
 	MOVEM T1,SDBUDB(T2)	;STORE UDB ADDRESS IN SDB
@@ -5480,17 +5573,19 @@ DGUMP4:	SKIPE P3,(Q3)		;UDB PRESENT?
 
 ; DCUNIT ROUTINE TO SET/CLEAR DON'T CARE BIT
 ;
-;
-DCUNIT::STKVAR <SETCLR>		;SAVE UNIT STATUS
-	MOVEM T2,SETCLR
-	UMOVE T1,(T2)		;GET CHANNEL NUMBER
-	UMOVE T3,2(T2)		;GET UNIT NUMBER
-	UMOVE T2,1(T2)		;GET CONTROLLER NUMBER
+;[9058] Called with T2/ address of 3 word user argument block
+;	argblock+0/ controller number
+;	argblock+1/ kontroller number or -1
+;	argblock+2/ unit number 
+
+DCUNIT::UMOVE T1,.SVDCC(T2)	;[9058] Get channel number
+	UMOVE T3,.SVDCU(T2)	;[9058] Get unit number
+	UMOVE T2,.SVDCK(T2)	;[9058] Get controller number
 	SETO T4,		;DISKS ONLY
 	NOSKED			;NO INTERRUPTS
 	IOPIOF			;TURN OFF INTERRUPTS TO PREVENT CHANGES
 	CALL CHKCKU		;CHECK FOR LEGAL
-	JRST DCUBAD		;BAD QUIT
+	 JRST DCUBAD		;[9058] Bad, return error
 	MOVX T2,U1.DCU		;SET DON'T-CARE DRIVE
 	IORM T2,UDBST1(T1)	; IN UDB
 	MOVX T2,U1.OFS		;SET DRIVE ONLINE
@@ -5502,7 +5597,7 @@ DCUNIT::STKVAR <SETCLR>		;SAVE UNIT STATUS
 
 DCUBAD:	IOPION			;ENABLE INTERRUPTS
 	OKSKED			;AND SCHED
-	RETBAD ()		;AND RETURN ERROR
+	ITERR ()		;[9058] and return error
 
 	SUBTTL End of PHYSIO
 

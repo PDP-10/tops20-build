@@ -1,3 +1,11 @@
+; Edit= 9172 to NTMAN.MAC on 22-Jun-90 by GSCOTT
+;Insure the AC save routines in APRSRV are used by always SEARCHing PROLOG
+;before any SEARCH of MACSYM so that the proper USRSAV macro (from PROLOG) is
+;used in the SAVEAC macro.
+; Edit= 9007 to NTMAN.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8931 to NTMAN.MAC on 23-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8570, RIP:<7.MONITOR>NTMAN.MAC.3,  11-Feb-88 11:43:49 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; *** Edit 7318 to NTMAN.MAC by MCCOLLUM on 11-Jun-86, for SPR #21246
@@ -121,7 +129,7 @@
 ;Removed old edit histories, because most of the routines described
 ;no longer exist.
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1984, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1984, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -142,7 +150,7 @@
 ;TITLE NTMAN - Network Management Interface for DECnet-36
   	SUBTTL	Jim Halpin, Gunnar Lindell, & Tarl Neustaedter
 
-	SEARCH D36PAR,MACSYM
+	SEARCH D36PAR		;[9172]
 	SALL
 
 IFN FTOPS20,<
@@ -151,10 +159,10 @@ IFN FTOPS20,<
 	>
 
 IFN FTOPS10,<
-	SEARCH F,S
+	SEARCH F,S,MACSYM	;[9172]
 	TITLE NTMAN - Network Management interface for DECnet-36
 .CPYRT<
-COPYRIGHT (C) 1984,1988 BY DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
+COPYRIGHT (C) 1984,1990 BY DIGITAL EQUIPMENT CORPORATION, MAYNARD, MASS.
 >
 	$RELOC
 >;END IFN FTOPS10
@@ -665,7 +673,11 @@ IFN FTOPS10,STOR T6,NXUUO,+NMXVAR ;** TOPS10 CALLS US WITH M/ UUO EXECUTED
 Cause:	There is an error code stored in field NXERR after a return from 
 	NTMAN with a skip return.
 
-Action:	Put a non-skip return in the routine giving the error call.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Find the caller and put a non-skip 
+	return in the routine giving the error call.
 >,RTN)
   >
 	LOAD T2,NXADR,+NMXVAR	;GET ADDRESS OF USER'S ARGUMENT BLOCK
@@ -687,7 +699,11 @@ Cause:	A routine has returned non-skip, but has not given
 	an error code by calling NTExxx. A return to the top level found 
 	field NXERR zero.
 
-Action:	Determine which routine is failing, and make the error return
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and
+        determine which routine is failing, and make the error return
 	give an error code.
 >)
 IFN FTOPS10,<
@@ -861,6 +877,11 @@ Cause:	While dispatching by function code, the function code is found
 	to be out of range. Since the function code the user supplies is 
 	checked in GETBLK, this means that field NXFNC has been trashed 
 	in the meantime.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,NTEMPE)
 	CAXL P1,.NTNOD		;RANGE CHECK ENTITY
 	CAXLE P1,.NTARE		;  TYPE.
@@ -870,6 +891,11 @@ Cause:	While double checking the entity ID before dispatching
 	on it, the value was found to be illegal. Since the
 	value the user supplies is checked at GETBLK, this means that
 	field NXENT has been trashed.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,NTEMPE)
 IFN FTDEBUG <
 	CALLRET @.+1-.NTTEV(T1)	;DISPATCH TO APPROPRIATE ROUTINE.
@@ -1038,7 +1064,11 @@ Cause:	In the process of reading a value from the user string,
 	item. The AC "NT" points to the descriptor for this item, and
 	field NTSEQ tells which item is being referred to.
 
-Action:	Fix the entry for this item to contain a valid format type.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Fix the entry for this item 
+	to contain a valid format type.
 >,NTEMPE)
 	CALL <-NT.FC>+@[	;DISPATCH ACCORDING TO FORMAT TYPE
 		IFIW <NMXRNC&777777> ;ORDINARY CODED.
@@ -1158,7 +1188,12 @@ IFN FTDEBUG <
 
 Cause:	There is an illegal function in the PRSCOU routine. NXFNC 
 	is wrong.
-	>,NTEMPE)]
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+>,NTEMPE)]
 
 	LOAD T2,NXENT,+NMXVAR	;Get the Entity Type so we can dispatch
 	CALL <-.NTNOD>+@[	;Dispatch according to Entity Type
@@ -1331,6 +1366,11 @@ COULNE:	BUG.(CHK,NTMBCL,NTMAN,SOFT,<Bad counter byte length>,,<
 
 Cause:	While generating output for a numeric field, there has been a 
 	request to generate an illegal number of bytes.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,NTEMPE)
 	CALL <-1>+@[IFIW <PUTBYT&777777> ;PUT A SINGLE BYTE
 		IFIW <PUT2BT&777777> ;PUT A DUO BYTE
@@ -1348,6 +1388,11 @@ ADDTWO:	MOVX T1,2		;Only two words if no bit mask
 
 Cause:	A DECnet Layer has returned an invalid length for a
 	Counter Block.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,NTEMPE)
 
 	RETSKP
@@ -1372,7 +1417,11 @@ SELITM:
 Cause:	The criteria is out of range for selecting items to return (for .NTSHO) 
 	dependent on the selection criteria.
 
-Action:	Fix the check in GETBLK or find out who is trashing field NXSEL
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and fix the 
+	check in GETBLK or find out who is trashing field NXSEL.
 >,NTEUFO)
 	CAXN T1,.NTCOU		;IS THIS SHOW COUNTERS?
 	 JRST PRSCOU		;Yes, jump to Counter Processing Routine
@@ -1392,6 +1441,11 @@ Cause:	It is necessary to know the node type (executor,remote, or loop)
 	to select entries to return (for function .NTSHO). Other entities  
 	(circuit, lines) should have this field zero. This field is set by  
 	ENTCVT.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,NTEMPE)
 	MOVE P2,[NTAPL		;NO NODE TYPE, DO THEM ALL
 		NTA.E		;BIT INDICATING APPLIES TO EXECUTOR NODE
@@ -1407,6 +1461,11 @@ Cause:	To determine entries to return (for function .NTSHO),
 	it is necessary to know the Line type (CI,NI,DTE,...). 
 	Other entities (Nodes,Modules) should have this field
 	zero. This field is set by ENTCVT.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,NTEMPE)
 	MOVE P3,[NTDEV		;NO LINE TYPE, DO THEM ALL
 		NTD.D		;APPLIES TO DTE'S
@@ -1964,11 +2023,15 @@ Cause:	The controller field in a line-id is out of range. The value
 	AC.
 				Note:	
 	
-	A controller is any device driver to which a router will interface.
+	A controller is any device driver to which a router interfaces.
 	It is currently used to define the name of a Circuit/Line,
 	under the assumption that each Kontroller will control only
 	a single line type.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,RTN)
 ;WE KNOW THAT ALL DEVICE NAMES ARE AT MOST 4 BYTES LONG, AND THUS FIT IN A WORD
 	HRLI T2,(POINT 7,)	;WE STORE THE DATA IN 7 BIT BYTES INTERNALLY
@@ -2086,15 +2149,18 @@ NMXLAY:
 	CAXGE T3,NMXMIN
 	BUG.(CHK,NTMDVI,NTMAN,SOFT,<NMXDSP value illegal>,,<
 
-Cause:	There will be a call to a "layer" to obtain or set a value for
+Cause:	There is a call to a "layer" to obtain or set a value for
 	an item. The routine value in the descriptor block pointed
 	to by NT is illegal.
 
-Action:	Examine the data structure pointed to by NT. In all probability
-	this is caused by a trashed NT, since the descriptor block
-	generation macros are supposed to range check this value.
-
-Note:	A "layer" is any routine described at NMXDSP.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and examine 
+	the data structure pointed to by NT. In all probability this is 
+	caused by a trashed NT, since the descriptor block generation macros 
+	are supposed to range check this value.  A "layer" is any routine 
+	described at NMXDSP.
 >,NTEMPE)
 	CALLRET @NMXDSP(T3)	;CALL LAYER-LEVEL ROUTINE
 
@@ -2124,7 +2190,11 @@ NMXEVT:
 Cause:	The event function supplied by a DECnet layer to NMXEVT was
 	out of range.
 
-Action:	Make callers of NMXEVT supply the correct function code
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and make callers 
+	of NMXEVT supply the correct function code.
 >,RTN)
 
 ;Dispatch to appropriate routine
@@ -2370,7 +2440,10 @@ Cause:	The signal queue was full when a new signal was logged.
 	NMLT20 that a device needs attention/reload.
 
 Action:	Restart NMLT20, or turn off malfunctioning DECnet device.
-	If necessary, reload any devices by hand
+	If necessary, reload any devices by hand.  Note that this has
+	been known to occur at startup.  If this is the case, simply
+	increase the size of the signal queue.  You must have sources
+	in order to do this, however, as NMXSLN resides in D36PAR.MAC.
 >,EVSIG2)
 
 ;If no BUGCHK, come here and insert event into signal queue
@@ -2722,8 +2795,11 @@ NTEVQ1:	MOVE P2,T1		;P2 := ^NE
 Cause:	An event was received from a DECnet layer, and the entity type
 	is not legal.
 
-Action:	Find the routine that logged the event, and change it to
-	a legal entity type.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and find the 
+	routine that logged the event, and change it to a legal entity type.
 >,NTEMPE)
 	  ENDIF.
 	ENDIF.
@@ -2824,6 +2900,11 @@ NMXWT3:	LOAD T1,NTTYP,(NT)	;GET DATA TYPE OF THIS PARAMETER
 
 Cause:	While formatting output for a show, the format block for
 	this item has been found to have an illegal format type.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,NTEMPE)
 	CALLRET @.+1-NT.FC(T1)
 	  IFIW <NMXWCD&777777>	;ORDINARY CODED. HANDLE AS INTEGER
@@ -2859,10 +2940,14 @@ Cause:	Output for a SHOW is being formatted, and there has been a request
 	to generate a CODED field of more than one byte. This can't be 
 	done.
 
-Action:	Look at the descriptor block pointed to by NT. Check to see if
-	this item is supposed to be a multiple byte coded. If not, fix
-	the item's entry. If it is correct, you are going to have to write
-	the code to handle multiple byte codeds.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and look at the 
+	descriptor block pointed to by NT. Check to see if this item is 
+	supposed to be a multiple byte code. If not, fix the item's entry. 
+	If it is correct, you are going to have to write the code to handle 
+	multiple byte codes.  
 >,NTEMPE)
 	TXO T1,NT.CNM		;INDICATE CODED NON MULTIPLE (PP 148 OF NM)
 	CALL PUTBYT		;DEPOSIT DATA TYPE BYTE IN USER STRING
@@ -2977,6 +3062,11 @@ NMXWNU:	LOAD T2,NTLEN,(NT)	;GET LENGTH IN BYTES OF THIS NUMBER
 
 Cause:	When generating output for a numeric field, something other than 
 	Decimal, Hexadecimal or Octal was requested.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,NTEMPE)
 	MOVE T1,<-NT.FDU>+[	;GET NICE TYPE.
 		0_3		;DECIMAL UNSIGNED IS FORMAT 0
@@ -2995,6 +3085,11 @@ NMXWCE:	BUG.(CHK,NTMBDL,NTMAN,SOFT,<Bad multiple byte length>,,<
 
 Cause:	While generating output for a numeric field, there has been
 	a request to generate an illegal number of bytes.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,NTEMPE)
 	CALLRET @.(T2)
 	  IFIW <PUTBYT&777777>	;PUT A SINGLE BYTE
@@ -3222,6 +3317,11 @@ NMXRBE:	BUG.(CHK,NTMILN,NTMAN,SOFT,<Illegal number size>,,<
 Cause:	When going to read a numeric value from the user's string, 
 	the format descriptor block for this item has specified an illegal
 	number of bytes to read.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,NTEMPE)
 	CALLRET @.(T1)		;DISPATCH
 	IFIW <GETBYT&777777>	;GET A SINGLE BYTE

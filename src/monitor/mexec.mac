@@ -1,6 +1,30 @@
-; UPD ID= 8692, RIP:<7.MONITOR>MEXEC.MAC.32,   5-Apr-88 15:13:47 by RASPUZZI
-;TCO 7.1266 - Make sure we ask "Why Reload?" and "Run CHECKD?" if someone
-;	      hit the ENABLE/DISK buttons.
+; Edit= 9167 to MEXEC.MAC on 27-Apr-90 by GSCOTT
+;Since the EXEC now rescans commands as of edit 4432, clear the RSCAN buffer
+;when entering the mini-EXEC so that EXEC won't get confused when restarted. 
+; Edit= 9148 to MEXEC.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9113 to MEXEC.MAC on 30-Jun-89 by GSCOTT
+;Include (if appopriate) system name, structure name, date time on messages to
+;CTY, all users, and ORION. 
+; Edit= 9109 to MEXEC.MAC on 15-Jun-89 by GSCOTT
+;Use XGVEC% in CRJOB startup code so that non section zero entry vectors work.
+; Edit= 9093 to MEXEC.MAC on 26-May-89 by GSCOTT
+;Prevent ILMNRFs (and possibly other bad things) by moving the entry point to
+;LOGBUG into RSCOD so it can be called from any section. 
+; Edit= 9041 to MEXEC.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 8998 to MEXEC.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8964 to MEXEC.MAC on 8-Sep-88 by RASPUZZI
+;Add CLUDGR joining sequence to occur after CFSJYN has finished.
+;Insert call to CLUJYN after CFS joining has completed.
+; Edit= 8924 to MEXEC.MAC on 22-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
+; Edit= 8818 to MEXEC.MAC on 5-Apr-88 by RASPUZZI (TCO 7.1266)
+;Install TCO 7.1266. Ask the startup questions when someone hits ENABLE/DISK
+;buttons.
 ; UPD ID= 8681, RIP:<7.MONITOR>MEXEC.MAC.31,   6-Mar-88 19:54:09 by GSCOTT
 ;TCO 7.1253 - Don't cause CHKR to be blocked while we copy a DOB.
 ; UPD ID= 8654, RIP:<7.MONITOR>MEXEC.MAC.29,  18-Feb-88 20:46:47 by GSCOTT
@@ -750,7 +774,7 @@
 ;<4.1.MONITOR>MEXEC.MAC.439, 16-Nov-79 11:46:24, EDIT BY MILLER
 ;CHANGE ALLMSG TO TIME-OUT TTMSG
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -777,53 +801,63 @@
 ;				  Section		      Page
 ;
 ;
-;    1. Assembly Parameters  . . . . . . . . . . . . . . . . .   3
-;    2. Job and System Initialization  . . . . . . . . . . . .   4
-;        2.1    Job Initialization . . . . . . . . . . . . . .   8
-;        2.2    Non-zero Jobs  . . . . . . . . . . . . . . . .  10
-;        2.3    CRJOB Created Job  . . . . . . . . . . . . . .  12
-;        2.4    Read MONNAM.TXT (GETNAM) . . . . . . . . . . .  18
+;    1. Assembly Parameters  . . . . . . . . . . . . . . . . .   4
+;    2. Job and System Initialization  . . . . . . . . . . . .   5
+;        2.1    Job Initialization . . . . . . . . . . . . . .   9
+;        2.2    Non-zero Jobs  . . . . . . . . . . . . . . . .  11
+;        2.3    CRJOB Created Job  . . . . . . . . . . . . . .  13
+;        2.4    Read MONNAM.TXT (GETNAM) . . . . . . . . . . .  19
 ;    3. Job 0 Forks
-;        3.1    Initialization (RUNDD) . . . . . . . . . . . .  19
-;        3.2    Page Movement to Disk (DDMP) . . . . . . . . .  31
-;        3.3    KLIPA Checking (IPACHK)  . . . . . . . . . . .  33
-;        3.4    CI Buffer Checks (CIRUN) . . . . . . . . . . .  34
-;        3.5    CHKR Initialization  . . . . . . . . . . . . .  35
-;        3.6    Fork Startup (RUNDIR/RUNDII) . . . . . . . . .  38
-;        3.7    Set Error Address (MONBKX) . . . . . . . . . .  40
-;        3.8    Make System Restart Record (LOGSST)  . . . . .  41
-;        3.9    Ask "Why Reload?" (WHYRLD) . . . . . . . . . .  43
-;        3.10   Ask "Run CHECKD?" (RUNCKD) . . . . . . . . . .  44
-;        3.11   Timeout starup questions (TIMOUT)  . . . . . .  45
-;        3.12   Check "Why Reload?" Response (MATRLA)  . . . .  46
-;        3.13   Get Time and Date for Startup (RDDTAD) . . . .  48
-;        3.14   Start Next Special job (DONSJ) . . . . . . . .  49
-;        3.15   Scheduler Tests  . . . . . . . . . . . . . . .  50
-;        3.16   Fork Error Catcher . . . . . . . . . . . . . .  51
-;        3.17   Periodic Checker (CHKR)  . . . . . . . . . . .  53
-;            3.17.1   Start DOB SETSPD (DOBSSP)  . . . . . . .  56
-;            3.17.2   Kill DOB SETSPD (DOBKSP) . . . . . . . .  57
-;            3.17.3   Magtape Online (MTASSP)  . . . . . . . .  58
-;            3.17.4   TGHA Check (CHKMOS)  . . . . . . . . . .  59
-;            3.17.5   Check Swapping Space (CHKDMS)  . . . . .  60
-;            3.17.6   Check OFNs Used (CHKOFN) . . . . . . . .  61
-;            3.17.7   Check System Structure Space (CHKDKS)  .  62
-;            3.17.8   Utility Routines . . . . . . . . . . . .  65
-;    4. Mini-EXEC  . . . . . . . . . . . . . . . . . . . . . .  67
-;        4.1    Command Dispatch . . . . . . . . . . . . . . .  69
-;        4.2    BLT Swappable Monitor (Historical) . . . . . .  70
-;        4.3    Reset Command  . . . . . . . . . . . . . . . .  71
-;        4.4    Exec Command . . . . . . . . . . . . . . . . .  72
-;        4.5    Jump Command . . . . . . . . . . . . . . . . .  73
-;        4.6    Get/Start/Dump Commands  . . . . . . . . . . .  74
-;        4.7    Utility Routines . . . . . . . . . . . . . . .  75
-;        4.8    Handle Interrupts (EXECI)  . . . . . . . . . .  76
-;    5. BUGxxx Processing  . . . . . . . . . . . . . . . . . .  78
-;        5.1    BUGHLT In Job Context (EXBUGH) . . . . . . . .  85
-;        5.2    Store Time For BUGxxx (CHKBGS) . . . . . . . .  86
-;        5.3    Log Parity Error (PFCPJ0)  . . . . . . . . . .  87
-;    6. Send Message To All Lines (ALLMSG) . . . . . . . . . .  88
-;    7. End of MEXEC . . . . . . . . . . . . . . . . . . . . .  89
+;        3.1    Initialization (RUNDD) . . . . . . . . . . . .  20
+;        3.2    Page Movement to Disk (DDMP) . . . . . . . . .  32
+;        3.3    KLIPA Checking (IPACHK)  . . . . . . . . . . .  34
+;        3.4    CI Buffer Checks (CIRUN) . . . . . . . . . . .  35
+;        3.5    CHKR Initialization  . . . . . . . . . . . . .  36
+;        3.6    Fork Startup (RUNDIR/RUNDII) . . . . . . . . .  39
+;        3.7    Set Error Address (MONBKX) . . . . . . . . . .  41
+;        3.8    Make System Restart Record (LOGSST)  . . . . .  42
+;        3.9    Ask "Why Reload?" (WHYRLD) . . . . . . . . . .  44
+;        3.10   Ask "Run CHECKD?" (RUNCKD) . . . . . . . . . .  45
+;        3.11   Timeout starup questions (TIMOUT)  . . . . . .  46
+;        3.12   Check "Why Reload?" Response (MATRLA)  . . . .  47
+;        3.13   Get Time and Date for Startup (RDDTAD) . . . .  49
+;        3.14   Start Next Special job (DONSJ) . . . . . . . .  50
+;        3.15   Scheduler Tests  . . . . . . . . . . . . . . .  51
+;        3.16   Fork Error Catcher . . . . . . . . . . . . . .  52
+;        3.17   Periodic Checker (CHKR)  . . . . . . . . . . .  54
+;            3.17.1   Sniff the ACJ (CHKACJ) . . . . . . . . .  57
+;            3.17.2   Start DOB SETSPD (DOBSSP)  . . . . . . .  59
+;            3.17.3   Kill DOB SETSPD (DOBKSP) . . . . . . . .  60
+;            3.17.4   Magtape Online (MTASSP)  . . . . . . . .  61
+;            3.17.5   TGHA Check (CHKMOS)  . . . . . . . . . .  62
+;            3.17.6   Check Swapping Space (CHKDMS)  . . . . .  63
+;            3.17.7   Check OFNs Used (CHKOFN) . . . . . . . .  64
+;            3.17.8   Check SPTs in use (CHKSPT) . . . . . . .  65
+;            3.17.9   Check Boot Structure Space (CHKDKS)  . .  66
+;            3.17.10  Expunge Boot Structure (EXPALL)  . . . .  68
+;            3.17.11  Utility Routines . . . . . . . . . . . .  72
+;    4. Mini-EXEC  . . . . . . . . . . . . . . . . . . . . . .  75
+;        4.1    Command Dispatch . . . . . . . . . . . . . . .  77
+;        4.2    BLT Swappable Monitor (Historical) . . . . . .  78
+;        4.3    Reset Command  . . . . . . . . . . . . . . . .  79
+;        4.4    Exec Command . . . . . . . . . . . . . . . . .  80
+;        4.5    Jump Command . . . . . . . . . . . . . . . . .  81
+;        4.6    Get/Start/Dump Commands  . . . . . . . . . . .  82
+;        4.7    Utility Routines . . . . . . . . . . . . . . .  83
+;        4.8    Handle Interrupts (EXECI)  . . . . . . . . . .  84
+	Subttl	Table of Contents (page 2)
+
+;		     Table of Contents for MEXEC
+;
+;				  Section		      Page
+;
+;
+;    5. BUGxxx Processing  . . . . . . . . . . . . . . . . . .  86
+;        5.1    BUGHLT In Job Context (EXBUGH) . . . . . . . .  93
+;        5.2    Store Time For BUGxxx (CHKBGS) . . . . . . . .  94
+;        5.3    Log Parity Error (PFCPJ0)  . . . . . . . . . .  95
+;    6. Send Message To All Lines (ALLMSG) . . . . . . . . . .  96
+;    7. End of MEXEC . . . . . . . . . . . . . . . . . . . . .  97
 	SUBTTL Assembly Parameters
 
 	EXTN <BRDTIM,DDMPF,MOSULE,HNGU0F,HNGU1F,BUGTL>
@@ -1123,6 +1157,7 @@ NOTJB0:	MOVE 1,JOBNO		;FIRST FEW JOBS ARE SPECIAL,
 	MOVE 3,TTICB2
 	SFCOC
 	CALL BLINKS		;[7.1230] () Do a TLINK to clear links/advice
+	;...
 
 ;GO START THE EXEC. IF SYSTEM IS STAND-ALONE, TELL THE USER
 
@@ -1269,18 +1304,19 @@ STCJB2:	TXNE Q2,CJ%ETF		;WANT A FILE. AN EXEC TOO?
 	TXNE Q2,CJ%ACS		;AC SET REQUESTED?
 	CALL BLTMU
 	MOVEI T1,.FHSLF		;GET THE ENTRY VECTOR
-	GEVEC			;GET THE ENTRY VECTOR
-	TLNN T2,777000		;TOPS10 STYLE?
-	JRST STCJ2A		;NO. TOPS20 STYLE, IF ANYTHING.
-	HRRZ T3,CRJEVO		;OLD STYLE. WHERE DOES START POINT?
-	CAILE T3,1		;START OR REENTER, I HOPE.
-	JRST SCJXX3		;NO. FAIL.
-	UMOVE T2,120		;GET JOBSA
-	TRNE T3,-1		;OR IF 1,
-	UMOVE T2,124		;GET JOBREN
-	SKIPA
-STCJ2A:	ADD T2,CRJEVO		;NEW STYLE, ADD OFFSET TO BASE.
-	HRRZM T2,-1(P)		;WHERE MRETN WILL GO.
+	XGVEC%			;[9109] Get the length and address of ent vec
+	IFXN. T2,777000		;[9109] TOPS-10 style entry vector?
+	  HRRZ T3,CRJEVO	;[9109] Old style, where does start point?
+	  CAILE T3,1		;[9109] Start or reenter?
+	   JRST SCJXX3		;[9109] No, fail
+	  XCTU [HRRZ T2,120]	;[9109] Assume start, load JOBSA
+	  TRNE T3,-1		;[9109] Was it reenter?
+	  XCTU [HRRZ T2,124]	;[9109] Yes, get JOBREN instead
+	ELSE.			;[9109] Otherwise its a TOPS-20 style 
+	  MOVE T2,CRJEVO	;[9109] New style, get offset into it and
+	  ADD T2,T3		;[9109]  add in the base address form XGVEC
+	ENDIF.			;[9109] Desired address is now in T2
+	MOVEM T2,-1(P)		;WHERE MRETN WILL GO.
 	CALL SUCANS		;SETUP CRJANS WITH SUCCESS
 	CALL SCJWTA		;WAIT FOR ATTACH, IF WANTED
 	JRST MRETN		;AND GO TO USER MODE.
@@ -1511,6 +1547,16 @@ IFN FTKLIPA,<
 Cause:	At system startup we tried to read in the CI20 ucode.  Routine KLPUCD
 	in module PHYKLP got a JSYS error while attempting the read.
 
+Action:	This BUG will only appear if the system has a KLIPA and if the GTJFN% 
+	attempt on the file succeeded.  So, the I/O on the file failed (OPENF%,
+	RIN%, SFPTR%, SIN%, CLOSF%) or the monitor was unable to obtain 
+	enough free space to hold the microcode.  First, insure that the file
+	is not corrupted.  If, after this is done, this BUG still persists, 
+	make it dumpable and submit an SPR with the dump and a copy of 
+	MONITR.EXE.  If possible, include any known method for reproducing 
+	the problem and/or the state of the system at the time the BUG was 
+	observed.
+
 Data:	ERRCOD - Error code returned
 >,,<DB%NND>)			;[7.1210] 
 	 ENDIF.
@@ -1581,6 +1627,7 @@ Cause:	A CFORK and MSFRK was done to create and start a fork for one of
 	CALL CFGTJB		;Initialize CFS Global Job numbers
 	CALL MNTPS		;And mount PS: correctly
 ;   >	;IFN CFSCOD
+	XCALL (XCDSEC,CLUJYN)	;[8964](/) Now check CLUDGR connections
 
 ;IF DBUGSW IS 0 OR 1, TELL ALL USERS THAT SYSTEM IS RESTARTING
 
@@ -1840,7 +1887,6 @@ Cause:	CFORK% failed to create the old "Job 0" fork that runs CHKR or the
 	fork could not be be started in monitor mode with the MSFRK% JSYS.
 
 Data:	ERRCOD - Error code returned from JSYS
-
 >)
 	XMOVEI T2,RUNDEC	;Where to proceed
 	MSFRK			;Continue things below
@@ -1867,30 +1913,34 @@ DDMP00:	MOVE T1,TODCLK		;GET THE CURRENT TIME
 	MOVEM T1,DDPTIM		;AND SAVE IT FOR THE SCHED TO CHECK
 	SETZM DDPDUE		;RESET THE OVERDUE COUNTER
 	MOVE T1,DRMFRE		;DRUM SPACE LOW?
-	CAMGE T1,DRMIN0
-	JRST [	TMSG <DDMP: Swapping space low action
->
-		JRST DDMPA]
+	CAML T1,DRMIN0		;[9113] Is the swapping space low?
+	JRST DDMPA		;[9113] Nope, don't say anything
+	MOVEI T1,.PRIOU		;[9113] Point to the console terminal
+	CALL BCRLF		;[9113] (T1/T1) Output a crlf first
+	CALL BSTAMP		;[9113] Output crlf and time of day
+	TMSG < DDMP: Swapping space low action
+>				;[9113] Output message to the console 
+
 DDMPA:	IFE. P1			;Check which flavor we are doing
-	 CALL DDMP		;DO THE WORK
-	  NOP
+	  CALL DDMP		;DO THE WORK
+	   NOP
 	ELSE.
-	 CALL DDMPF		;DO force out
-	 AOS DDCFSF
+	  CALL DDMPF		;DO force out
+	  AOS DDCFSF
 	ENDIF.
 	IFE. P1			;If this was a regular run
-	 MOVX A,^D60000		;SET TIME FOR NEXT CYCLE AS 1 MINUTE
-	 ADD A,TODCLK		;When to do it again
-	 MOVEM A,DDTIME
+	  MOVX A,^D60000	;SET TIME FOR NEXT CYCLE AS 1 MINUTE
+	  ADD A,TODCLK		;When to do it again
+	  MOVEM A,DDTIME
 	ENDIF.
 	SETZM P1
-	SKIPE DDCFSF		;Need another force?
-	IFNSK.			;If so
-	 MOVEI T1,^D50		;Wait a short while
-	 DISMS			;""
+	SKIPN DDCFSF		;[9113] Need another force?
+	IFSKP.			;[9113] Yes
+	  MOVEI T1,^D50		;Wait a short while
+	  DISMS			;""
 	ELSE.
-	 MOVEI A,DDPWAT		;The test
-	 HDISMS			;Wait a bit
+	  MOVEI A,DDPWAT	;The test
+	  HDISMS		;Wait a bit
 	ENDIF.
 	EXCH P1,DDCFSF		;Zero the word, get new value for flag
 	JRST DDMP00		;And do it again
@@ -1900,10 +1950,15 @@ DDMPA:	IFE. P1			;Check which flavor we are doing
 DDMPER:	BUG.(CHK,DDMINT,MEXEC,SOFT,<Unexpected interrupt in DDMP process>,<<ITFPC,ITFPC>,<LSTERR,LSTERR>>,<
 
 Cause:	An unexpected error has occurred in the process which handles
-	migration of pages to disk.  The error handler will attempt
+	migration of pages to disk.  The error handler attempts
 	to reinitialize the context and resume processing.  The
 	stack may be examined for an indication of where the error
 	occurred.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	ITFPC - PC when error occurred.
 	LSTERR - Last error code in fork.
@@ -1940,12 +1995,13 @@ IPACHK:	CALL CHKKLP		;(/T2) Ask the port driver
 	  RET			;Did it. Say so.
 	  BUG.(CHK,NOLODF,MEXEC,SOFT,<Could not find CI-20 microcode load program>,,<
 
-Cause:	The KLIPA (IPA20) RAM needs to be reloaded.  The file
+Cause:	The KLIPA (IPA20) RAM needs to be reloaded.  The program
 	BS:<SYSTEM>IPALOD.EXE is supposed to be run to do this.  However,
-	the file does not exist.  TOPS-20 is now ignoring the CI20.
+	the program does not exist.  TOPS-20 is now ignoring the CI20.
 
-Action:	If you wish to use the CI20, you must install the load file in
-	BS:<SYSTEM>IPALOD.EXE and reload the system.
+Action:	If you wish to use the CI20, you must install the load progam, which 
+	also contains the CI20 microcode, as BS:<SYSTEM>IPALOD.EXE and reload 
+	the system.
 >,,<DB%NND>)			;[7.1210][7.1112]
 	  CALL KLPNLF		;DECLARE THE KLIPA DEAD
 	  RET
@@ -1964,9 +2020,9 @@ Cause:	The KLIPA (IPA20) RAM needs to be dumped.  The file
 	BS:<SYSTEM>IPADMP.EXE is supposed to be run to do this.  However,
 	the file does not exist.
 
-Action:	Something has happened which warrants dumping the CI-20 microcode in
-	order to get information to diagnose a problem.  It is advisable to put
-	the dump program on the system.
+Action:	Currently, TOPS-20 does not support dumping of the CI20 via the
+	IPADMP.EXE program.  Presently, nothing in TOPS-20 should be 
+	attempting to dump the KLIPA and this BUG should never appear.
 >,,<DB%NND>)			;[7.1210][7.1112]
 	CALL KLPNDF		;RELOAD AND START THE PORT
 	RET
@@ -2012,6 +2068,13 @@ RUNDEC:	MOVX T1,USRCTX		;Start with user context set
 
 Cause:	The CHKR fork failed to get a JFN for the ERROR.REPORT file.
 
+Action:	Based upon the error code returned from GTJFN%, attempt to diagnose
+	the problem.  If all appears to be in order and the BUG still 
+	persists, make it dumpable and submit an SPR with the dump and a 
+	copy of MONITR.EXE.  If possible, include any known method for 
+	reproducing the problem and/or the state of the system at the time 
+	the BUG was observed.
+
 Data:	ERRCOD - GTJFN error code
 >,,<DB%NND>)			;[7.1210] 
 	MOVE 2,[44B5+1B20]
@@ -2019,6 +2082,13 @@ Data:	ERRCOD - GTJFN error code
 	 BUG.(CHK,SERFOF,MEXEC,HARD,<Cannot OPENF error report file>,<<T1,ERRCOD>>,<
 
 Cause:	The CHKR fork could not open the ERROR.REPORT file.
+
+Action:	Based upon the error code returned from OPENF%, attempt to diagnose
+	the problem.  If all appears to be in order and the BUG still 
+	persists, make it dumpable and submit an SPR with the dump and a 
+	copy of MONITR.EXE.  If possible, include any known method for 
+	reproducing the problem and/or the state of the system at the time 
+	the BUG was observed.
 
 Data:	ERRCOD - OPENF error code
 >,,<DB%NND>)			;[7.1210] 
@@ -2183,8 +2253,12 @@ MONBKX::MOVEM 1,MONBK
 Cause:	The monitor was attempting to enable interrupts on the monitor error 
 	channels. This BUG. indicates that the AIC failed.
 
-Data:	LSTERR - Last process error
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
+Data:	LSTERR - Last process error
 >,R)]
 	RET
 	SUBTTL Job 0 Forks -- Make System Restart Record (LOGSST)
@@ -2224,12 +2298,12 @@ LOGSS2:	TMSG <  Not a valid response (?=HELP)
 LOGSS3:	MOVX T1,RL%LEN
 	MOVX T2,RL%SIZ
 	CALL ALCSEB		;GET SYSERR STORAGE
-	 JRST [BUG.(CHK,SYSERF,MEXEC,HARD,<LOGSST - No SYSERR storage for restart entry>,,<
+	 JRST [BUG.(CHK,SYSERF,MEXEC,SOFT,<LOGSST - No SYSERR storage for restart entry>,,<
 
 Cause:	ALCSEB in LOGSST failed to allocate a SYSERR storage block.
 
-Action: As a result, there will be no restart reason entered in ERROR.SYS.
-
+Action: As a result, there is no restart reason entered in ERROR.SYS.
+	This is informational and no action is required.
 >)
 		RET]
 	MOVEM T1,Q1
@@ -2528,11 +2602,15 @@ JB0INT:	BUG.(CHK,JB0INX,MEXEC,SOFT,<Unexpected interrupt in job 0 during initial
 
 Cause:	An unexpected error has occurred in Job 0 which results
 	in control being transferred to the default error handler.
-	This has happened during job 0 initialization.
-	The error handler will attempt to reset the context and
-	continue at the specified error address,
-	however some system resources may be
-	hung as a result of locks not being cleared.  The stack
+	This has happened during job 0 initialization.  The error handler 
+	attempts to reset the context and continue at the specified 
+	error address, however some system resources may be hung as a result 
+	of locks not being cleared.  
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  In the dump, the stack
 	can be examined to determine what was in progress when
 	the error occurred.
 
@@ -2565,10 +2643,10 @@ J0EMER:	BUG.(HLT,STRTER,MEXEC,SOFT,<Fatal error while processing previous startu
 
 Cause:	When a software channel 34 or 35 interrupt happens on fork
 	0, the monitor transfers control to the routine specified in
-	MONBK.  This address will often be the starting address of
+	MONBK.  This address is often the starting address of
 	JB0INT.  JB0INT handles errors in fork 0.  While JB0INT is doing its
 	error recovery, it sets MONBK to J0EMER, so that this STRTER BUGHLT
-	will occur if another error happens during JB0INT execution.
+	occurs if another error happens during JB0INT execution.
 >)
 
 ;CLRINT - CLEAR THE INTERRUPT SYSTEM
@@ -2593,6 +2671,7 @@ CHKR::	TSTMS0			;BE SURE NO SECTION 0
 	SETZM CHKDUE		;RESET THE OVERDUE COUNTER
 	CALL KNIJB0		;Check on the KLNI's
 	CALL LLMJB0		;[7432]Check on LLMOP
+	CALL CHKACJ		;[9041] Check ACJ fork
 ;   IFN CFSCOD,<
 	CALL CFTADC		;See if a TAD is around
 	IFSKP.			;If so
@@ -2665,6 +2744,107 @@ CHKUM2:	MOVE B,DDTIME		;Time for DDMP
 	MOVSI B,FHV1		;LOW BLOCK PRIORITY
 	HDISMS
 	JRST CHKR
+	SUBTTL Job 0 Forks -- Periodic Checker (CHKR) -- Sniff the ACJ (CHKACJ)
+;[9041]
+;CHKACJ - Routine called by CHKR every periodic scan. It checks to see
+;if the ACJ fork has died or is supposed to be started.
+;
+; Called with:
+;	no arguments
+;	CALL CHKACJ
+;
+; Returns:
+;	+1 - Always
+
+CHKACJ:	SKIPG ACJRUN		;Is ACJ running in user context?
+	SKIPE ACJRUN		;Are we running in monitor context?
+	RET			;Not running at all, see ya
+	SKIPE T1,ACJFKH		;Has CHKR started an ACJ fork?
+	JRST CHKAC1		;Yes, go see how it is doing
+
+;Here when we have determined that a user has requested an ACJ fork be
+;started up as part of the monitor.
+
+	MOVX T1,GJ%SHT+GJ%OLD+GJ%PHY ;ACJ must be around and use system definition
+	HRROI T2,[ASCIZ /DEFAULT-ACJ:/] ;Get ACJ from here
+	SETZB T3,T4		;Start it normally
+	CALL RUNDIR		;(T1-T4/T1) Fire that puppy up
+	IFSKP.			;If it succeeded,
+	  MOVEM T1,ACJFKH	;Save fork handle
+	  RET			;And done
+	ENDIF.
+;RUNDIR may return No such ... and therefore, a range check of
+;GTJFN% error codes is done here.
+	CAIL T1,GJFX16		;Beginning of error range
+	CAILE T1,GJFX24		;Are they cool errors?
+	JRST BADACJ		;No, something bad happened
+	MOVX T1,GJ%SHT+GJ%OLD+GJ%PHY ;Now try a different one
+	HRROI T2,[ASCIZ /SYSTEM:ACJ.EXE/] ;This is the one
+	SETZB T3,T4		;Fire it up
+	CALL RUNDIR		;(T1-T4/T1) Try and start the ACJ
+	IFSKP.			;Started!
+	  MOVEM T1,ACJFKH	;Save fork handle
+	  RET			;And done
+	ENDIF.
+	CAIL T1,GJFX16		;Beginning of error range
+	CAILE T1,GJFX24		;Are they cool errors?
+	JRST BADACJ		;No, something far worse
+	BUG.(CHK,NOACJF,MEXEC,SOFT,<No ACJ file to run>,,<
+
+Cause:	CHKR attempted to service a user request to start up an ACJ fork
+	under job 0. This request failed because CHKR could not find an
+	ACJ program to run.
+
+Action:	One of two things can be done:
+
+	1. Define DEFAULT-ACJ: on the system to point to the ACJ program.
+
+	2. Insure that there is an ACJ.EXE on SYSTEM:
+>,,<DB%NND>)			;Report problem
+
+CHKAC2:	SETOM ACJRUN		;Say no ACJ fork
+	SETZM ACJFKH		;And have no fork handle either
+	RET			;Done
+
+BADACJ:	BUG.(CHK,JB0NMF,MEXEC,SOFT,<Job 0 - no more forks to start an ACJ>,<<T1,ERR>>,<
+
+Cause:	RUNDIR was called to attempt to start up an ACJ fork within the
+	monitor and this call failed for some reason.
+
+Action:	Find out why this call failed. Look at the error code. It is possible
+	that the system already has too many forks running under job 0. If this
+	is the case, move some of the programs that are run under job 0 to
+	another job.
+
+Data:	ERR - Error code from RUNDIR
+>,,<DB%NND>)
+	JRST CHKAC2		;Clean up mess
+
+;Here when a known ACJ is running under job 0. CHKR is just going to
+;open the door and peek in on it. It is assumed that T1 has the ACJ
+;relative fork handle
+
+CHKAC1:	RFSTS%			;Get ACJ's status
+	 ERJMP SHOOT		;If failed, shoot it
+	LDB T1,[POINTR T1,RF%STS] ;Get fork status
+	CAIE T1,.RFHLT		;Is it halted
+	CAIN T1,.RFFPT		; or forced termination?
+	IFSKP. <RET>		;Everything is cool, let it be
+
+;Here to shoot the ACJ fork
+SHOOT:	MOVE T1,ACJFKH		;Get fork handle back
+	KFORK%			;Bye-bye ACJ fork
+	 ERJMP .+1		;What error?
+	BUG.(CHK,ACJDIE,MEXEC,SOFT,<ACJ fork has crashed>,,<
+
+Cause:	The ACJ fork was running under monitor context but has terminated.
+	The monitor is killing the fork.
+
+Action:	Find out why the ACJ fork died. It is possible it crashed because
+	of a coding error within the program. Debug the ACJ in user mode.
+	The ACJ can be restarted in monitor context.
+>,,<DB%NND>)			;Write an obituary for the ACJ
+	JRST CHKAC2		;And clean up it's mess
 
 	SUBTTL Job 0 Forks -- Periodic Checker (CHKR) -- Start DOB SETSPD (DOBSSP)
 
@@ -2683,7 +2863,7 @@ DOBSSP:	SKIPE DOBFRK		;[7.1253] Is there still a fork running?
 	HRLM T1,DOBFRK		;[7.1253] Save fork number
 	RET			;[7.1253]  then return
 
-;[7.***] Here if couldn't get a fork for SETSPD, probably this site is running
+;[7.1081] Here if couldn't get a fork for SETSPD, probably this site is running
 ;all of GALAXY under SYSJOB or something like that.
 
 DOBSS0:	TMSG <
@@ -2704,7 +2884,7 @@ DOBSS0:	TMSG <
 
 DOBKSP:	HLRZ T1,DOBFRK		;Get the fork handle for DOBFRK
 	RFSTS%			;Read fork's status
-	ERJMP DOBKS3		;Murder it if error
+	 ERJMP DOBKS3		;Murder it if error
 	LDB T1,[POINTR T1,RF%STS] ;Get fork status
 	CAIE T1,.RFHLT		;Is it halted
 	CAIN T1,.RFFPT		; or forced termination?
@@ -2772,23 +2952,28 @@ RUNMO1:	MOVEI T3,1		;SYS START UP ENTRY
 CHKDMS:	MOVE 1,DRMFRE
 	CAMLE 1,DRMIN0		;DRUM SPACE LOW?
 	RET			;NO
-	STKVAR <<MSGBBF,^D70>>
-	HRROI 2,[ASCIZ /
-[Caution--Swapping space low]
-/]
-	MOVX T3,SF%MS0
-	TDNE T3,FACTSW		;WANT LEVEL 0 MESSAGES?
-	CALL ALLMSG		;YES, DO IT
-	HRROI T1,MSGBBF		;WHERE IT'S GOING
-	HRROI T2,[ASCIZ /
-*****Swapping space low, /]
-	SETZM T3
-	SOUT			;COPY IT
-	MOVE 2,DRMFRE
-	CALL CHKH1		;DO MORE
-	MOVEI T2,MSGBBF
-	MOVEI T3,.QBSYS		;.QBDTY VALUE FOR SYSTEM MESSAGE
-	CALLRET WROPR0		;DO IT
+
+;Send message about swapping space
+
+	STKVAR <<MSGBBF,^D70>>	;[9113] A place to build strings
+
+	MOVE T3,FACTSW		;[9113] Do we 
+	TXNN T3,SF%MS0		;[9113]  want level 0 messages?
+	IFSKP.			;[9113] Yes
+	  HRROI T1,MSGBBF	;[9113] Start the message here please
+	  CALL BNNAME		;[9113] (T1/T1) Start with crlf, bell, sys name
+	  HRROI T2,[ASCIZ /: Caution, swapping space low]
+/]				;[9113] Point to informative message
+	  CALL BASCIZ		;[9113] (T1,T2/T1) Append that information
+	  HRROI T2,MSGBBF	;[9113] Point back at buffer
+	  CALL ALLMSG		;[9113] (T2/) Send the message
+	ENDIF.			;[9113] Done with message code
+
+	HRROI T1,MSGBBF		;[9113] Where it's going now
+	HRROI T2,[ASCIZ/ Swapping space low, currently /] ;[9113] The message
+	MOVE T4,DRMFRE		;[9113] Load the value to print
+	CALLRET BMESS		;[9113] (T1,T2,T4/) Build message and send
+
 	ENDSV.
 	SUBTTL Job 0 Forks -- Periodic Checker (CHKR) -- Check OFNs Used (CHKOFN)
 	
@@ -2816,32 +3001,40 @@ CHKOFN:	NOSKED			;[7247] Lock up system
 	 JFCL			;[7247] 
 	OKSKED			;[7247] Safe to run again!
 	RET			;[7247] 
+	SUBTTL Job 0 Forks -- Periodic Checker (CHKR) -- Check SPTs in use (CHKSPT)
+
+;Here to check to see if SPT space is about to run out, give a message if so.
 
 CHKSPT:	MOVE 1,SPTC
 	CAMGE 1,SPC1		;SPT LOW?
 	RET			;NO
-	STKVAR <<MSGBBF,^D70>>
-	HRROI 2,[ASCIZ /
-[Caution--SPT space low]
-/]
-	MOVE T3,FACTSW
-	TXNE T3,SF%MS0		;WANT LEVEL 0 MESSAGES?
-	CALL ALLMSG		;YES, DO IT
-	HRROI T1,MSGBBF
-	HRROI T2,[ASCIZ /
-*****SPT space low, /]
-	SETZM T3
-	SOUT			;COPY STRING
-	MOVN 2,[NOFN-SSPT]
-	SUB 2,SPTC		;SPACE LEFT
-	CALL CHKH1		;DO REST OF MESSAGE
-	MOVEI T2,MSGBBF		;GET START
-	MOVEI T3,.QBSYS		;.QBDTY VALUE FOR SYSTEM MESSAGE
-	CALLRET WROPR0		;AND WRITE IT
-	ENDSV.
-	SUBTTL Job 0 Forks -- Periodic Checker (CHKR) -- Check System Structure Space (CHKDKS)
 
-;CHECK DSK SPACE
+;Send out a message about the SPT space
+
+	STKVAR <<MSGBBF,^D70>>	;[9113] Place to build strings
+
+	MOVE T3,FACTSW		;[9113] Do we
+	TXNN T3,SF%MS0		;[9113]  want level 0 messages?
+	IFSKP.			;[9113] Yes, we do
+	  HRROI T1,MSGBBF	;[9113] Point to buffer
+	  CALL BNNAME		;[9113] (T1/T1) Send the name first
+	  HRROI T2,[ASCIZ /: Caution, SPT space low]
+/]				;[9113] Point to informative message
+	  CALL BASCIZ		;[9113] (T1,T2/T1) Send that last
+	  HRROI T2,MSGBBF	;[9113] Point to message buffer again
+	  CALL ALLMSG		;[9113] (T2/) Blast them
+	ENDIF.			;[9113] End of message code
+
+	HRROI T1,MSGBBF		;[9113] Point to place to build the message
+	HRROI T2,[ASCIZ/ SPT space low, currently /] ;[9113] The message
+	MOVN T4,[NOFN-SSPT]	;[9113] Load total
+	SUB T4,SPTC		;[9113] Compute the space left
+	CALLRET BMESS		;[9113] (T1,T2,T4/) Build and send message
+
+	ENDSV.
+	SUBTTL Job 0 Forks -- Periodic Checker (CHKR) -- Check Boot Structure Space (CHKDKS)
+
+;This routine is called to check disk space on the boot structure.
 
 CHKDKS:	SKIPGE T1,EXPFRK	;EXPUNGE FORK RUNNING?
 	RET			;YES - EXIT QUIETLY
@@ -2854,29 +3047,59 @@ CKDKS1:	MOVEI T1,PSNUM		;[7.1112]Use boot structure
 	SUB 1,SYSSPC		;LESS 'BUFFER'
 	CAILE 1,SYWRND		;LOW?
 	RET			;NO
-	STKVAR <<MSGBBF,^D70>,SAVSIZ>
-	MOVEM T2,SAVSIZ
-	HRROI 2,[ASCIZ /
-[Caution--Disk space low on system structure]
-/]
-	MOVE T3,FACTSW
-	TXNE T3,SF%MS0		;WANT LEVEL 0 MESSAGES?
-	CALL ALLMSG		;YES, DO IT
+
+;We need to output a message about the disk space on BS.
+
+	STKVAR <<MSGBBF,^D70>,SAVSIZ,SAVSTR> ;[9113] Storage for message
+	MOVEM T2,SAVSIZ		;[9113] Save the free space count
+	MOVE T2,STRTAB+PSNUM	;[9113] Load the SDB address for STRTAB
+	MOVE T2,SDBNAM(T2)	;[9113] Load the name of that structure
+	MOVEM T2,SAVSTR		;[9113] Save real structure name
+
+	MOVE T3,FACTSW		;[9113] Load current system state
+	TXNN T3,SF%MS0		;[9113] Are level 0 messages wanted today?
+	IFSKP.			;[9113] Yes, they are
+	  HRROI T1,MSGBBF	;[9113] Point to message buffer
+	  CALL BNNAME		;[9113] (T1/T1) Start with node name
+	  HRROI T2,[ASCIZ/: Caution, disk space low on structure /] ;[9113]
+	  CALL BASCIZ		;[9113] (T1,T2/T1) Append that string
+	  MOVE T2,SAVSTR	;[9113] Load real structure name
+	  CALL B6BIT		;[9113] (T1,T2/T1) Convert that to SIXBIT
+	  HRROI T2,[ASCIZ/:]
+/]				;[9113] Complete the message
+	  CALL BASCIZ		;[9113] (T1,T2/T1) Append that string
+	  HRROI T2,MSGBBF	;[9113] Point to that string now please
+	  CALL ALLMSG		;[9113] (T2/) Now send it everywhere
+	ENDIF.			;[9113] Fall through to send message to ORION
+
+;Send a message to ORION about the BS: space
+
+	HRROI T1,MSGBBF		;[9113] Load the address of buffer
+	CALL BSTAMP		;[9113] (T1/T1) The time goes first
+	HRROI T2,[ASCIZ/ Disk space low on structure /] ;[9113] Message
+	CALL BASCIZ		;[9113] (T1,T2/T1) Append this string
+	MOVE T2,SAVSTR		;[9113] Get structure name
+	CALL B6BIT		;[9113] (T1,T2/T1) Convert that from SIXBIT
+	HRROI T2,[ASCIZ/:, /]	;[9113] Tie off previous string
+	CALL BASCIZ		;[9113] (T1,T2/T1) append that string
+	MOVE T2,SAVSIZ		;[9113] Load free count
+	CALL BNOUT		;[9113] (T1,T2/T1) Output that number
+	HRROI T2,[ASCIZ/ free
+/]				;[9113] Tie off previous string
+	CALL BASCIZ		;[9113] (T1,T2/T1) append that string
+	MOVEI T2,MSGBBF		;[9113] Point to beginning of resident buffer
+	MOVEI T3,.QBSYS		;[9113] .QBDTY value for system message
+	CALL WROPR0		;[9113] (T1,T2,T3/) Send the message to ORION
+
 	SKIPN T1,EXPTIM		;ENOUGH TIME SINCE LAST EXPUNGE?
 	MOVX T1,<EXWTIM*^D60000> ;DONT DO EXPUNGES IN FIRST n MIN
 	CAMG T1,TODCLK
 	CALL EXPALL		;YES, DO EXPUNGE *
-	HRROI T1,MSGBBF		;ADDRESS OF BUFFER
-	HRROI T2,[ASCIZ /
-*****Disk space low on system structure, /]
-	SETZM T3
-	SOUT
-	MOVE T2,SAVSIZ		;RECOVER FREE SPACE
-	CALL CHKH1
-	MOVEI T2,MSGBBF		;START OF MESSAGE
-	MOVEI T3,.QBSYS		;.QBDTY VALUE FOR SYSTEM MESSAGE
-	CALLRET WROPR0		;DO IT
-
+	RET			;[9113] Return
+
+	ENDSV.			;[9113] End of STKVAR for CHKDKS
+	SUBTTL Job 0 Forks -- Periodic Checker (CHKR) -- Expunge Boot Structure (EXPALL)
+
 ;ROUTINE TO DO EXPUNGE * WHEN DISK SPACE LOW
 ;START FORK AND MARK IT RUNNING
 ;	CALL EXPALL
@@ -2891,7 +3114,7 @@ EXPALL:	MOVX T1,CR%CAP		;PASS CAPABILITIES DOWN
 	CFORK			;CREATE FORK
 	 BUG.(HLT,EXPAFK,MEXEC,SOFT,<EXPALL - Job 0 CFORK failed>,,<
 
-Cause:	This will happen if the CFORK JSYS fails to create a fork
+Cause:	This happens if the CFORK JSYS fails to create a fork
 	for doing the system-wide expunge of structure BS:. This could most
 	likely happen if all the fork slots are used up.
 >)				;[7.1112]
@@ -2902,7 +3125,7 @@ Cause:	This will happen if the CFORK JSYS fails to create a fork
 
 ;EXPUNGE FORK STARTS HERE
 
-EXPAL0:	MOVX T1,USRCTX	;SET FUNNY JSYS CONTEXT
+EXPAL0:	MOVX T1,USRCTX		;SET FUNNY JSYS CONTEXT
 	MOVEM T1,FFL
 	SETZM FPC		;SET PC
 	MCENTR
@@ -2910,17 +3133,34 @@ EXPAL0:	MOVX T1,USRCTX	;SET FUNNY JSYS CONTEXT
 	HRRZS EXPFRK		;SAY WE ARE DONE
 	HALTF			;AND STOP
 
-EXPAL1:	MOVX T2,SF%CDE!SF%BTE
-	TDNE T2,FACTSW		;ANY BIT TABLE ERRORS?
-	RET			;YES. DON'T EXPUNGE
-	HRROI T2,[ASCIZ /
-[Deleted files will be expunged from system structure in 30 seconds]
-/]
-	MOVE T3,FACTSW
-	TXNE T3,SF%MS1		;WANT LEVEL 1 MESSAGES?
-	CALL ALLMSG
-	MOVEI T1,^D30000
+;Worker routine for EXPAL0
+
+EXPAL1:	STKVAR <<MSGBBF,^D70>,SAVSIZ,SAVSTR> ;[9113] Storage for message
+	MOVE T2,FACTSW		;[9113] Load current system settings
+	TXNE T2,SF%CDE!SF%BTE	;[9113] Bit table errors on startup?
+	RET			;[9113] Yes, don't expunge
+	MOVE T1,STRTAB+PSNUM	;[9113] Load the SDB address for STRTAB
+	MOVE T1,SDBNAM(T1)	;[9113] Load the name of that structure
+	MOVEM T1,SAVSTR		;[9113] Save it for later
+
+	TXNN T2,SF%MS1		;[9113] Are level 1 messages wanted?
+	IFSKP.			;[9113] Yes
+	  HRROI T1,MSGBBF	;[9113] Point to message buffer
+	  CALL BNNAME		;[9113] (T1/T1) Give system identification
+	  HRROI T2,[ASCIZ/: Deleted files will be expunged from structure /] ;[9113] 
+	  CALL BASCIZ		;[9113] (T1,T2/T1) Append that string
+	  MOVE T2,SAVSTR	;[9113] Save real structure name
+	  CALL B6BIT		;[9113] (T1,T2/T1) Convert that to SIXBIT
+	  HRROI T2,[ASCIZ/: in 30 seconds]
+/]				;[9113] Complete the message
+	  CALL BASCIZ		;[9113] (T1,T2/T1) Append that string
+	  HRROI T2,MSGBBF	;[9113] Point to that message now
+	  CALL ALLMSG		;[9113] (T2/) Yes send the message
+	ENDIF.
+
+	MOVEI T1,^D30000	;Load thirty seconds
 	DISMS			;GIVE USERS TIME TO UNDELETE
+
 	MOVX T1,RC%AWL		;ALLOW WILD CARDS
 	HRROI T2,[ASCIZ "BS:<*>"] ;[7.1112]Clean up Boot Structure
 	RCDIR			;GET FIRST DIRECTORY NUMBER
@@ -2929,10 +3169,18 @@ EXPAL1:	MOVX T2,SF%CDE!SF%BTE
 Cause:	RCDIR% failed to translate the first directory of BS:<*> to a
 	directory number in routine EXPALL.
 
-Action:	The system-wide expunge of PS: has not been done.
-
+Action:	The system-wide expunge of PS: has not been done.  There may be
+	hardware or directory structure problems with the boot structure.
+        If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)				;[7.1112]
 		JRST EXPAL3]	;WE TRIED
+;	JRST EXPAL2		;[9113] Start expunging
+
+;Loop to expunge each directory
+
 EXPAL2:	SETZ T1,		;NOTHING SPECIAL
 	MOVE T2,T3		;PUT DIRECTORY NUMBER IN RIGHT PLACE
 	DELDF			;EXPUNGE
@@ -2944,62 +3192,154 @@ EXPAL2:	SETZ T1,		;NOTHING SPECIAL
 	 ERJMP EXPAL3		;QUIT ON FAILURE
 	TXNN T1,RC%NMD		;DONE?
 	JRST EXPAL2		;NO - KEEP GOING
+
+;Here when we have completed looping through all directories on BS:.
 
-EXPAL3:	MOVX T1,<EXWTIM*^D60000>	;DONE, SET NEXT POSSIBLE TIME
+EXPAL3:	MOVX T1,<EXWTIM*^D60000> ;DONE, SET NEXT POSSIBLE TIME
 	ADD T1,TODCLK
 	MOVEM T1,EXPTIM
-	HRROI T2,[ASCIZ /
-[System structure expunge completed]
-/]
-	MOVE T3,FACTSW
-	TXNE T3,SF%MS1		;WANT LEVEL 1 MESSAGES?
-	CALL ALLMSG		;NOTIFY USERS
-	RET			;DONE
+
+	MOVE T3,FACTSW		;[9113] Load current settings
+	TXNN T3,SF%MS1		;[9113] Want level 1 messages?
+	IFSKP.			;[9113] Yes
+	  HRROI T1,MSGBBF	;[9113] Point to message buffer
+	  CALL BNNAME		;[9113] (T1/T1) Start with showing id
+	  HRROI T2,[ASCIZ/: Expunge of structure /] ;[9113] More message
+	  CALL BASCIZ		;[9113] (T1,T2/T1) Get that string off right
+	  MOVE T2,SAVSTR	;[9113] Get real structure name
+	  CALL B6BIT		;[9113] (T1,T2/T1) Convert that to SIXBIT
+	  HRROI T2,[ASCIZ/: completed]
+/]				;[9113] Complete the message
+	  CALL BASCIZ		;[9113] (T1,T2/T1) Append that string
+	  HRROI T2,MSGBBF	;[9113] Point to that string now please
+	  CALL ALLMSG		;[9113] (T2/) Notify users
+	ENDIF.			;[9113] End of sendall code
+	MOVEI T1,PSNUM		;[9113] Use boot structure
+	CALL GSTRPG		;[9113] (T1/T1,T2) Get count of used and free
+	MOVEM T2,SAVSIZ		;[9113] Save free now
+	HRROI T1,MSGBBF		;[9113] Where it's going
+	CALL BSTAMP		;[9113] (T1/T1) Timestamp first
+	HRROI T2,[ASCIZ/ Expunge completed for structure /] ;[9113] Message
+	CALL BASCIZ		;[9113] (T1,T2/T1) Start that string please
+	MOVE T2,SAVSTR		;[9113] Load the name of that structure
+	CALL B6BIT		;[9113] (T1,T2/T1) Convert that from SIXBIT
+	HRROI T2,[ASCIZ/:, /]	;[9113] Tie off previous string
+	CALL BASCIZ		;[9113] (T1,T2/T1) append that string
+	MOVE T2,SAVSIZ		;[9113] Load free count
+	CALL BNOUT		;[9113] (T1,T2/T1) Output that number
+	HRROI T2,[ASCIZ/ free
+/]				;[9113] Tie off previous string
+	CALL BASCIZ		;[9113] (T1,T2/T1) append that string
+	MOVEI T2,MSGBBF		;[9113] Point to beginning of resident buffer
+	MOVEI T3,.QBSYS		;[9113] .QBDTY value for system message
+	CALLRET WROPR0		;[9113] (T1,T2,T3/) Send the message to ORION
+
+	ENDSV.			;[9113] End of that STKVAR at EXPAL1
 	SUBTTL Job 0 Forks -- Periodic Checker (CHKR) -- Utility Routines
 
-;UTILITY NUMBER PRINTERS
-;DECIMAL PRINT FOR LESS THAN 18 BIT NUMBERS
-;OCTAL PRINT FOR MORE THAN 18 BIT NUMBERS DOES DDT HALFWORD FORMAT.
+;[9113] Here to convert a SIXBIT word in T2 to a ASCIZ string.
+;Call with
+;	T1/ destination designator
+;	T2/ SIXBIT word
+;Returns +1 always
 
-;A/ BYTE POINTER, IF TTDECP CALLED
-;B/ NUMBER TO PRINT
-;	CALL TTXXXP	;XXX=(DEC,OCT)
-;NUMBER PRINTED TO PRIMARY OUTPUT
+B6BIT:	JUMPE T2,R		;[9113] Return if end of SIXBIT
+	SETZ T3,		;[9113] Load a clear word to rotate into
+	ROTC T2,6		;[9113] Get one character into T3
+	ADDI T3,"A"-'A'		;[9113] Convert to ASCII from SIXBIT
+	IDPB T3,T1		;[9113] Store character
+	JRST B6BIT		;[9113] Loop for all characters
 
-TTDECP:	SKIPA C,[^D10]		;DECIMAL
-TTOCTP:	MOVEI C,^D8		;IN OCTAL
-	TLNN B,-1		;LH NON-0?
-	JRST TTOCT1		;NO, SIMPLE PRINT
-	PUSH P,B		;SAVE DATA
-	HLRZ B,B		;PRINT LH
-	NOUT
-	 JFCL
-	MOVEI B,","		;PRINT ,,
-	IDPB B,A
-	IDPB B,A
-	POP P,B			;RECOVER DATA
-	HRRZ B,B
-TTOCT1:	NOUT			;PRINT RH
-	 JFCL
-	RET
+;[9113] Here to append a ASCIZ strings
+;Call BASCIZ with
+;	T1/ destination designator
+;	T2/ source designator
+;Call BCRLF to append a string with
+;	T1/ destination designator
+;Returns +1 always, smashes T3
+
+BCRLF:	HRROI T2,CRLF		;[9113] Point to crlf
+BASCIZ:	SETZ T3,		;[9113] Terminate on null
+	SOUT			;[9113] Send the string
+	 ERJMP .+1		;[9113] Ignore that problem please
+	RET			;[9113] Return +1 always with T1 updated
+
+;[9113] Here to do a NOUT of a decimal number.
+;Call with 
+;	T1/ destination designator
+;	T2/ number
+;Returns +1 always, smashes T3
+
+BNOUT:	MOVEI T3,^D10		;[9113] Send number outin decimal
+	NOUT			;[9113] Slowly grind the number out
+	 ERJMP .+1		;[9113] Again be ignorant
+	RET			;[9113]  and then return
 
-;Here to put number in message and provide time stamp.
-;	T1/ byte pointer to use
+;[9113] Here to append the system name to a message to be sent to all users.
+;Call with
+;	T1/ destination designator
+;Returns +1 always, T2 and T3 updated.
 
-CHKH1:	CALL TTDECP		;OUTPUT DECIMAL
-	MOVEI 2," "
-	IDPB T2,T1		;PUNCTUATE
-	PUSH P,T1		;SAVE POINTER
-	CALL LGTAD		;CURRENT TIME AND DATE
-	MOVE T2,T1
-	POP P,T1
-	SETZM T3
-	IFG. T2
-	 ODTIM			;INCLUDE TAD WITH MESSAGE
-	ENDIF.
-	HRROI T2,CRLF		;[7.1119] Point to crlf
-	SOUT			;MAKE IT PRETTY
-	RET
+BNNAME:	HRROI T2,[ASCIZ/
+[/]				;[9113] Point to crlf bell bracket
+	CALL BASCIZ		;[9113] (T1,T2/T1) Start the string
+	DMOVE T2,OURNAM		;[9113] Load the local DECnet node name
+	CAMN T2,[ASCII/TOPS2/]	;[9113] Is the node name
+	CAME T3,[ASCII/0/]	;[9113] Unchanged from the default?
+	IFSKP.			;[9113] Yes
+	  MOVE T2,T1		;[9113] Copy the destination pointer
+	  MOVX T1,.GTHNS	;[9113] Number to name conversion function
+	  SETO T3,		;[9113] -1 means local host name please
+	  GTHST%		;[9113] Try getting internet host name
+	  IFNJE.		;[9113] If that worked
+	    MOVE T1,T2		;[9113] Get pointer back in T1
+	    RET			;[9113]  and return with internet name used
+	  ENDIF.		;[9113] So, no DECnet or Internet name to use
+	  HRROI T1,[ASCIZ/System/] ;[9113] Point to string to use
+	  EXCH T1,T2		;[9113] Swap output pointer with input pointer
+	  CALLRET BASCIZ	;[9113] (T1,T2/T1) Append that string in last
+	ENDIF.			;[9113] So the local DECnet name will be used
+	HRROI T2,OURNAM		;[9113] Point to local system name
+	CALLRET BASCIZ		;[9113] (T1,T2/T1) Send that along and return
+
+;[9113] Routine to output a timestamp for any message if system time set.
+;Call with 
+;	T1/ destination designator
+;Returns +1 always, T2 and T3 smashed
+
+BSTAMP:	PUSH P,T1		;[9113] Save output pointer for a little bit
+	CALL LGTAD		;[9113] (/T1) Get current time and date
+	POP P,T2		;[9113] Restore the pointer to T2
+	EXCH T1,T2		;[9113] Swap the time with the pointer
+	JUMPLE T2,R		;[9113] Return now if time not set
+	SETO T2,		;[9113] Now is the time
+	SETZ T3,		;[9113] Default format
+	ODTIM%			;[9113] Now do it in normal short format
+	 ERJMP .+1		;[9113] Avoid MONNEJ
+	RET			;[9113]  and return
+
+;[9113] Here to build string to send to ORION.
+;Call with
+;	T1/ Byte pointer to current position in buffer
+;	T2/ ASCIZ message pointer to be appended to buffer
+;	T3/ Address of start of buffer to send to ORION
+;	T4/ number to print, in decimal radix
+;Returns +1 always with message sent
+
+BMESS:	MOVE T3,T1		;[9113] Start of buffer is right here
+	STKVAR <BMESMP,BMESAS,BMESNP> ;[9113] Some storage for later
+	MOVEM T2,BMESMP		;[9113] Save pointer to message
+	HRRZM T3,BMESAS		;[9113] Save start of buffer
+	MOVEM T4,BMESNP		;[9113] Save number to print
+	CALL BSTAMP		;[9113] (T1/T1) Yes output time first
+	MOVE T2,BMESMP		;[9113] Load message pointer
+	CALL BASCIZ		;[9113] (T1,T2/T1) Append that message string
+	MOVE T2,BMESNP		;[9113] Copy number to print
+	CALL BNOUT		;[9113] (T1,T2/T1) Send the number
+	CALL BCRLF		;[9113] (T1/T1) Output a crlf to tie off string
+	MOVE T2,BMESAS		;[9113] Point to beginning of resident buffer
+	MOVEI T3,.QBSYS		;[9113] .QBDTY value for system message
+	CALLRET WROPR0		;[9113] (T1,T2,T3/) Send the message to ORION
 	SUBTTL Mini-EXEC
 
 ;'MINI-EXEC' - SIMPLE COMMAND INTERPRETER FOR SPECIAL FUNCTIONS
@@ -3010,13 +3350,16 @@ EXEC2:	MOVE T1,JOBBIT
 	IFXN. T1,LOGIOB		;LOGIN OR OUT?
 	  BUG.(CHK,EXILGO,MEXEC,SOFT,<EXECI - Interrupt during login or logout>,,<
 
-Cause: Control has passed to the mini-exec because the top fork hit a
+Cause:	Control has passed to the mini-exec because the top fork hit a
 	terminating condition or monitor interrupt.  The top fork EXEC may
 	have been wiped out.  In addition, the job was trying to log in or
-	out.
+	out.  The fork is put into an infinite wait state since any other 
+	action might lead to further itraps, interrupts, looping, etc.
 
-Action: The fork is put into an infinite wait state since any other action
-	might lead to further itraps, interrupts, looping, etc.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	  WAIT%			;YES, SOME KIND OF DISASTER. GO AWAY QUIETLY.
 	ENDIF.
@@ -3274,6 +3617,9 @@ EXECI2:	MCENTR
 	MOVEI 1,100
 	CFIBF			;CLEAR INPUT BUFFER
 	 ERJMP	EXECI4		;error while attempting to LOG IN/OUT
+	HRROI T1,BHC		;[9167] Point to global zero word
+	RSCAN			;[9167] Clear RSCAN buffer for EXEC
+	 ERJMP .+1		;[9167] Ignore any and all errors today
 	CALL CLRINT		;CLEAR THE SOFTWARE INTERRUPT SYSTEM
 	TRNN 2,2		;CHANNEL 34?
 	JRST EXECI3
@@ -3317,6 +3663,11 @@ Cause:	An attempt to log in/out a job has failed when it should have succeded.
 	terminal, then logout the job is made.  If either of these fail,
 	the job is put in a permanent wait state.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
 Data:	JOBPT - The terminal number
 	LSTERR - The reason of the failure
 >,,<DB%NND>)			;[7.1210] 
@@ -3335,7 +3686,13 @@ Data:	JOBPT - The terminal number
 ;ACCEPTS IN T1/	ADDRESS OF SYSERR BLOCK
 ;RETURNS +1:	ALWAYS
 
-LOGBUG::SAVEAC <Q1,Q2,P1>
+;[9093] Make LOGBUG a RSCOD entry point so it can be called from any section.
+
+	RESCD			;[9093] Callable from any section
+LOGBUG::XCALLRET (MSEC1,XLOGBU)	;[9093] Get to section one now
+
+	SWAPCD			;[9093] Back to section one swappable
+XLOGBU:	SAVEAC <Q1,Q2,P1>	;[9093] Save some ACs
 	TRVAR <BUGSP,BUGPNM,BUGTAD,<LOGBUF,^D70>,<QBLK,4>>
 	MOVEM T1,Q1		;SAVE POINTER TO SYSERR BLOCK
 	HRROI T1,LOGBUF		;POINTER TO BLOCK
@@ -3417,14 +3774,12 @@ LOGBUG::SAVEAC <Q1,Q2,P1>
 
 LOGBF5:	SKIPG Q2,SEBDAT+BG%RCT(Q1) ;GET COUNT OF REGISTERS SAVED
 	JRST LOGBF7		;NO REGISTERS TO BE TYPED
-	SKIPN SAVTRE		;SAVING TREES?
-	IFSKP.
-	   FMSG <  Additional Data: >  ;YES
-	ELSE.
-	   FMSG <
-*Additional data: >
-	ENDIF.
-	XMOVEI T4,SEBDAT+BG%REG(Q1)	;GET POINTER TO REGISTER AREA
+	SKIPE SAVTRE		;[9113] Saving trees?
+	SKIPA T2,[-1,,[ASCIZ/, Data: /]] ;[9113] Yes, Saving trees
+	HRROI T2,[ASCIZ/
+*Additional data: /]		;[9113] Not saving trees be verbose
+	CALL BASCIZ		;[9113] (T1,T2/T1) Send that text along
+	XMOVEI T4,SEBDAT+BG%REG(Q1) ;GET POINTER TO REGISTER AREA
 LOGBF6:	MOVE T3,[NO%MAG+10]	;TYPE THEM IN UNSIGNED OCTAL
 	MOVE T2,0(T4)		;GET NEXT REG TO TYPE
 	NOUT
@@ -3590,9 +3945,14 @@ BUGHLT at /]
 CHKRI:	BUG.(CHK,JB0CSH,MEXEC,SOFT,<Job 0 crash>,<<ITFPC,PC>,<LSTERR,LSTERR>>,<
 
 Cause:	An unexpected interrupt has occurred in the job 0 fork which
-	checks system status.  The context will be reinitialized, and
-	the process restarted.  The stack may be examined to determine
-	the situation which caused the error.
+	checks system status.  The context is reinitialized, and
+	the process is restarted.  
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  In the dump, the stack may be 
+	examined to determine the situation which caused the error.
 
 Data:	PC - PC at which error occurred.
 	LSTERR - Last error code for this fork.
@@ -3646,11 +4006,10 @@ PFCPJ0::SAVEQ
 	RET
 	SUBTTL Send Message To All Lines (ALLMSG)
 
-;SEND TEXT TO ALL LINES, WAIT FOR COMPLETION
-; 2/ PTR TO ASCIZ MESSAGE
+;Send text to all lines
+;Call with T2/ pointer to ASCIZ message
 ;	CALL ALLMSG
-; RETURN +1 ALWAYS, WAIT LONG ENOUGH FOR MESSAGE TO APPEAR ON 110 BAUD
-;LINES.
+;Returns +1 always
 
 ALLMSG::SETZ 1,			;SAY NO WAIT
    REPEAT 0,<
@@ -3663,11 +4022,22 @@ ALLMSG::SETZ 1,			;SAY NO WAIT
 	 ERCAL MESFAL		;[7.1086] Failure, let CTY now
 	RET			; AND RETURN
 
-MESFAL::BUG.(INF,TTFSMS,MEXEC,SOFT,<Failed to send system message>,,<
+MESFAL::BUG.(INF,TTFSMS,MEXEC,SOFT,<Failed to send system message>,<<LSTERR,LSTERR>>,<
 
 Cause:	The most likely reason for this failure is that RSX20F cannot
 	complete the previous TTMSG request. Typically this is caused by a
 	hung DH11 line, but could be a software bug as well.
+
+Action:	Look at the error code which explains the reason for the send 
+	failure.  Some error conditions (such as a remote CI node going
+	down) can cause this BUG to appear and are perfectly legitimate.
+	If this BUG persists and the last error appears to be something 
+	suspicious, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
+Data:	LSTERR - Last TOPS-20 error code for this fork
 >,,<DB%NND>)			;[7.1210][7.1200][7.1086] Bug!
 	RET			;[7.1086] Now return
 	SUBTTL End of MEXEC

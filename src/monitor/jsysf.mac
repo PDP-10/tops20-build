@@ -1,6 +1,90 @@
-; UPD ID= 8715, RIP:<7.MONITOR>JSYSF.MAC.18,  19-May-88 16:10:38 by GSCOTT
-;TCO 7.1290 - Don't enforce minimum password length if CRDIR called from
-; monitor mode (like from FILCRD when building directories on a new structure).
+; Edit= 9174 to JSYSF.MAC on 25-Jun-90 by GSCOTT
+;In PWDICT, only check CD%PEN if CD%LEN is set. 
+; Edit= 9169 to JSYSF.MAC on 17-May-90 by LOMARTIRE, for SPR #22083
+;Prevent CRDIR% with CD%DAC from losing JSB freespace after edit 8856
+; Edit= 9148 to JSYSF.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9125 to JSYSF.MAC on 29-Sep-89 by GSCOTT
+;Prevent CFSMTOs when OPENF% fails for magtape with OPNX9.
+; Edit= 9124 to JSYSF.MAC on 26-Sep-89 by GSCOTT
+;Fix bug causing ILLUUOs if OPENF% blocked after edit 9122.
+; Edit= 9123 to JSYSF.MAC on 22-Sep-89 by LOMARTIRE, for SPR #22073
+;Allow SFBSZ% to update byte size for a new, empty file 
+; Edit= 9122 to JSYSF.MAC on 22-Sep-89 by GSCOTT
+;Prevent two systems from using a shared tape drive at the same time by
+;returning OPNX32 (OPENF%) or ASNDX4 (ASND%).
+; Edit= 9103 to JSYSF.MAC on 8-Jun-89 by GSCOTT
+;Make proper check for both tape names the same when setting the first one at
+;SET1ST in ARCF JSYS. 
+; Edit= 9086 to JSYSF.MAC on 7-Apr-89 by GSCOTT
+;Bug in edit 9077 caused extra punctuation on devices like NUL: and LPT:. 
+; Edit= 9081 to JSYSF.MAC on 14-Mar-89 by GSCOTT
+;Move a little JFNS code around to prevent calling JFNSAT while CSKED. 
+; Edit= 9078 to JSYSF.MAC on 9-Mar-89 by GSCOTT
+;PWDICT had a fencepost error causing 39 character passwords to be illegal.
+; Edit= 9077 to JSYSF.MAC on 9-Mar-89 by GSCOTT
+;Perform major surgery on JFNS to fix hangs and other bugs. 
+; Edit= 9073 to JSYSF.MAC on 28-Feb-89 by RASPUZZI
+;Yet another spot I forgot to use UNLOCK/LOCK for the JFN lock and file lock.
+;Discovered while using TV. Your welcome, Sam. JFNS% is going to need a
+;rewrite.
+; Edit= 9063 to JSYSF.MAC on 26-Jan-89 by GSCOTT
+;Always call ACJ when FB%SEC bit changes on a file.
+; Edit= 9060 to JSYSF.MAC on 17-Jan-89 by RASPUZZI
+;Let someone expire a password by setting the password expiration date and
+;time to -1 in CRDPED. I didn't take into account this case in edit 9050,
+;shame on me.
+; Edit= 9054 to JSYSF.MAC on 10-Jan-89 by GSCOTT
+;Search SYSTEM:PASSWORD.DICTIONARY when setting passwords to help prevent
+;users from setting easily guessed passwords. 
+; Edit= 9052 to JSYSF.MAC on 5-Jan-89 by RASPUZZI
+;Clear the .CDPSW, .CDUGP and .CDDGP words for the ACJ if a user is clearing
+;any of them. This is a hint so the ACJ can aid in determining if someone is
+;compromising the system (ROOT-DIRECTORY in particular).
+; Edit= 9050 to JSYSF.MAC on 5-Jan-89 by RASPUZZI
+;Add code to check password expiration date and time setting so one can not
+;set it too far in the future with the password expiration feature enabled.
+; Edit= 9049 to JSYSF.MAC on 29-Dec-88 by RASPUZZI
+;Have .GOCFD pass the .FBCTL bits instead of just 0 or 1. Also, have .GOOPN
+;indicate to the ACJ whether the file being opened is new or not.
+; Edit= 9046 to JSYSF.MAC on 22-Dec-88 by RASPUZZI
+;Prevent RESCHK BUGHLTs by making sure we have the right size for freespace
+;blocks!
+; Edit= 9041 to JSYSF.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 9025 to JSYSF.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8901 to JSYSF.MAC on 12-Aug-88 by RASPUZZI
+;Update BUG. documentation.
+; Edit= 8856 to JSYSF.MAC on 5-Jul-88 by GSCOTT
+;Insure that no partial directory is built when CRDIR bombs in new directory. 
+; Edit= 8844 to JSYSF.MAC on 19-May-88 by GSCOTT (TCO 7.1290)
+;Prevent <OPERATOR> directory from getting full of zeroes when a new structure
+;is created and minimum password length is greater than 6 by not checking
+;minimum password length when CRDIR called from monitor mode. 
+; Edit= 8831 to JSYSF.MAC on 15-Apr-88 by RASPUZZI
+;Prevent bad error messages from JFNS% when COPYing from TTY:. Seems we are
+;leaving the FILLCK set because UNLCKF does not undo FILLCK for TTYs. Make
+;sure FILLCK is cleared before exitting JFNS%.
+; Edit= 8829 to JSYSF.MAC on 14-Apr-88 by RASPUZZI
+;Prevent more hung jobs by having JFNS% release the FILLCK along with the
+;JFNLCK before potentially page faulting.
+; Edit= 8820 to JSYSF.MAC on 7-Apr-88 by RASPUZZI
+;Mr. VANISH is back! Fix yet another hung job case where JFNS% is using a copy
+;on write page to barf the file name into. Release the JFNLCK before
+;outputting characters.
+; Edit= 8817 to JSYSF.MAC on 31-Mar-88 by RASPUZZI
+;Prevent hung jobs because edit 8801 missed to exit points of JFNS% in the
+;attribute handling routine.
+; Edit= 8811 to JSYSF.MAC on 29-Mar-88 by RASPUZZI, for SPR #21880
+;Install edit 8804 into 7.0 monitor. Note, there is no bug here, it has been
+;installed to protect the monitor's innocence for later editting in case
+;someone gets into edit 3062 dangerousness.
+; Edit= 8801 to JSYSF.MAC on 17-Mar-88 by RASPUZZI
+;Prevent ILMNRFs or RELBADs by having GNJFN% and JFNS% use the JFNLCK when
+;dealing with important information in the JFN block. 
 ; UPD ID= 8684, RIP:<7.MONITOR>JSYSF.MAC.17,  17-Mar-88 19:12:21 by RASPUZZI
 ;TCO 7.1257 - Make DIRINI entry point for CRDIR%.
 ; UPD ID= 8665, RIP:<7.MONITOR>JSYSF.MAC.16,  24-Feb-88 17:40:48 by RASPUZZI
@@ -310,7 +394,7 @@
 ;<4.1.MONITOR>JSYSF.MAC.109, 26-Nov-79 11:04:19, EDIT BY MILLER
 ;TCO 4.1.1026. LOCK FILLCK IN JFNDCR AND IN CLZMRC
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -353,7 +437,90 @@ DEFAC (F1,P5)
 
 ERUNLD::CALL UNLCKF
 	RETERR()
-
+	Subttl	Table of Contents
+
+;		     Table of Contents for JSYSF
+;
+;				  Section		      Page
+;
+;
+;    1. Utility Routines
+;        1.1    Set Byte Number  . . . . . . . . . . . . . . .   5
+;        1.2    Set Byte Number  . . . . . . . . . . . . . . .   6
+;        1.3    Reduce Map Count . . . . . . . . . . . . . . .   7
+;        1.4    Check TTY JFNs . . . . . . . . . . . . . . . .   8
+;        1.5    Change JFN Ownership . . . . . . . . . . . . .  11
+;    2. ARCF JSYS  . . . . . . . . . . . . . . . . . . . . . .  12
+;    3. ASND JSYS  . . . . . . . . . . . . . . . . . . . . . .  27
+;    4. BKJFN JSYS . . . . . . . . . . . . . . . . . . . . . .  29
+;    5. CHFDB JSYS . . . . . . . . . . . . . . . . . . . . . .  30
+;    6. CLOSF JSYS . . . . . . . . . . . . . . . . . . . . . .  40
+;    7. CLZFF JSYS . . . . . . . . . . . . . . . . . . . . . .  43
+;    8. CRDIR JSYS . . . . . . . . . . . . . . . . . . . . . .  51
+;    9. DELF JSYS  . . . . . . . . . . . . . . . . . . . . . . 140
+;   10. DELNF JSYS . . . . . . . . . . . . . . . . . . . . . . 141
+;   11. DSMNT JSYS . . . . . . . . . . . . . . . . . . . . . . 143
+;   12. DVCHR JSYS . . . . . . . . . . . . . . . . . . . . . . 144
+;   13. ERSTR JSYS support . . . . . . . . . . . . . . . . . . 148
+;   14. FFFFP JSYS . . . . . . . . . . . . . . . . . . . . . . 149
+;   15. FFUFP JSYS . . . . . . . . . . . . . . . . . . . . . . 153
+;   16. GACTF JSYS . . . . . . . . . . . . . . . . . . . . . . 156
+;   17. GDSTS JSYS . . . . . . . . . . . . . . . . . . . . . . 157
+;   18. GFUST JSYS . . . . . . . . . . . . . . . . . . . . . . 158
+;   19. GTFDB JSYS . . . . . . . . . . . . . . . . . . . . . . 160
+;   20. GTSTS JSYS . . . . . . . . . . . . . . . . . . . . . . 162
+;   21. INIDR JSYS . . . . . . . . . . . . . . . . . . . . . . 163
+;   22. JFNS JSYS  . . . . . . . . . . . . . . . . . . . . . . 164
+;       22.1    JFN Supplied . . . . . . . . . . . . . . . . . 166
+;           22.1.1    Copy Filename  . . . . . . . . . . . . . 167
+;           22.1.2    FDB Items of Disk JFN  . . . . . . . . . 172
+;           22.1.3    Dates for Disk JFN . . . . . . . . . . . 176
+;           22.1.4    Parse Only JFN . . . . . . . . . . . . . 177
+;           22.1.5    Non-Disk non-Parse Only JFN  . . . . . . 178
+;           22.1.6    Attributes . . . . . . . . . . . . . . . 179
+;           22.1.7    Display Routines . . . . . . . . . . . . 182
+;           22.1.8    Store String . . . . . . . . . . . . . . 183
+;           22.1.9    Store Number . . . . . . . . . . . . . . 185
+;           22.1.10   Store Character  . . . . . . . . . . . . 186
+;           22.1.11   Unlock and Free Space Return . . . . . . 187
+;       22.2    String Supplied  . . . . . . . . . . . . . . . 188
+;       22.3    Global Subroutines . . . . . . . . . . . . . . 192
+;   23. MOUNT JSYS . . . . . . . . . . . . . . . . . . . . . . 194
+;   24. MTOPR JSYS . . . . . . . . . . . . . . . . . . . . . . 195
+;   25. OPENF JSYS . . . . . . . . . . . . . . . . . . . . . . 197
+;   26. RCDIR JSYS . . . . . . . . . . . . . . . . . . . . . . 209
+;   27. RCUSR JSYS . . . . . . . . . . . . . . . . . . . . . . 226
+;   28. RDDIR JSYS . . . . . . . . . . . . . . . . . . . . . . 232
+	Subttl	Table of Contents (page 2)
+
+;		     Table of Contents for JSYSF
+;
+;				  Section		      Page
+;
+;
+;   29. RFBSZ JSYS . . . . . . . . . . . . . . . . . . . . . . 233
+;   30. RFPTR JSYS . . . . . . . . . . . . . . . . . . . . . . 234
+;   31. RFTAD JSYS . . . . . . . . . . . . . . . . . . . . . . 235
+;   32. RLJFN JSYS . . . . . . . . . . . . . . . . . . . . . . 236
+;   33. RNAMF JSYS . . . . . . . . . . . . . . . . . . . . . . 238
+;   34. SACTF JSYS . . . . . . . . . . . . . . . . . . . . . . 241
+;   35. SDSTS JSYS . . . . . . . . . . . . . . . . . . . . . . 244
+;   36. SFBSZ JSYS . . . . . . . . . . . . . . . . . . . . . . 245
+;   37. SFPTR JSYS . . . . . . . . . . . . . . . . . . . . . . 246
+;   38. SFTAD JSYS . . . . . . . . . . . . . . . . . . . . . . 249
+;   39. SFUST JSYS . . . . . . . . . . . . . . . . . . . . . . 250
+;   40. SIBE JSYS  . . . . . . . . . . . . . . . . . . . . . . 253
+;   41. SIZEF JSYS . . . . . . . . . . . . . . . . . . . . . . 254
+;   42. SMAP JSYS support  . . . . . . . . . . . . . . . . . . 256
+;   43. STDIR JSYS . . . . . . . . . . . . . . . . . . . . . . 258
+;   44. STPPN JSYS . . . . . . . . . . . . . . . . . . . . . . 259
+;   45. STSTS JSYS . . . . . . . . . . . . . . . . . . . . . . 260
+;   46. SWJFN JSYS . . . . . . . . . . . . . . . . . . . . . . 261
+;   47. UFPGS JSYS . . . . . . . . . . . . . . . . . . . . . . 262
+;   48. WILD% JSYS . . . . . . . . . . . . . . . . . . . . . . 264
+;   49. End of JSYSF . . . . . . . . . . . . . . . . . . . . . 270
+	SUBTTL Utility Routines -- Set Byte Number
+
 ; Set file byte number common code
 ; Call:	A	; Byte number
 ;	CALL SFBNR
@@ -383,6 +550,7 @@ SFBNR::	TQNN <RNDF>
 		JRST SFBNR1]	;EXIT
 SFBNR1:	SETZM FILCNT(JFN)	;FORCE NEW WINDOW NEXT OPERATION
 	RETSKP
+	SUBTTL Utility Routines -- Set Byte Number
 
 NFBSZ::	CAIE B,7		;IF USER SWITCHES TO NON-ASCII,
 	TQO <PASLSN>		;THEN ASSUME IT'S NOT AN EDIT FILE
@@ -404,7 +572,7 @@ NFBSZ::	CAIE B,7		;IF USER SWITCHES TO NON-ASCII,
 	MOVEM C,FILLEN(JFN)
 	DPB B,PBYTSZ		; Deposit new byte size
 	RET
-
+	SUBTTL Utility Routines -- Reduce Map Count
 ; This routine is called from write copy code in pagem to reduce the
 ; The map count of a page
 ; Call:	1	; Ofn.pn
@@ -422,7 +590,8 @@ JFNDCR::CALL OFNJXL
 JFNDC0:	CALL LUNLKF		;UNLOCK JFN AND STRUCTURE LOCK'
 	OKINT			;AND UNDO THE NOINT
 	RET
-
+	SUBTTL Utility Routines -- Check TTY JFNs
+
 ;ROUTINES TO CHECK TTY'S.
 
 ;CALL	JFN			;SOME KIND OF SOURCE/DESTINATION DESIGNATOR
@@ -526,6 +695,7 @@ SETUNT:	EXCH A,B
 	 RET
 	RETSKP
    >				;END OF REPEAT 0
+	SUBTTL Utility Routines -- Change JFN Ownership
 
 ;ROUTINE TO REASSIGN OWNERSHIP OF A JFN. THIS IS USED WHENEVER
 ;A NEW FORK NEEDS TO ASSUME RESPONSIBILITY FOR THE JFN. EXAMPLES
@@ -544,7 +714,8 @@ REAJFN::HLRZ T1,FILVER(JFN)	;GET PRESENT OWNER
 	MOVE T1,FORKN		;NO. GET THIS FORK'S NUMBER
 	HRLM T1,FILVER(JFN)	;AND SET IT AS NEW OWNER
 	RETSKP			;AND DONE
-
+	SUBTTL ARCF JSYS
+
 ; ARCF Jsys
 ; 1:JFN, 2: Function code, 3: Function dependent, normally 0
 ; Returns +1 always
@@ -709,6 +880,7 @@ RETTST:	MOVX T1,^D2*^D60*^D1000	; Busy wait for file to appear
 	CALL UPDDIR		; Get it back to disc
 	RETBAD(ARCX14)		; Tell 'em it failed
 	JRST ARRST		; [7207] restore the contents of offline file
+
 ARRFR2:	CAIE T1,IPCFX7		; [7207] PID overquota?
 	CAIN T1,MONX06		; [7207] or out of free space?
 	SKIPA			; [7207] yes, wait for QUASAR to read a packet
@@ -741,7 +913,7 @@ ARRST:	MOVE T1,CAPENB
 	TQNE <OPNF>		; Cannot be open
 	ERRJMP OPNX1,ARCFX
 	SKIPE .FBADR(P3)	; File have contents?
-	BUG.(HLT,OFFONX,JSYSF,SOFT,<ARRST - File marked offline has index blk ptr>,,<
+	BUG.(HLT,OFFONX,JSYSF,SOFT,<ARRST - File marked offline has index block pointer>,,<
 
 Cause:	In restoring an offline file, it was discovered the file already
 	has some contents.
@@ -781,8 +953,6 @@ Cause:	In restoring an offline file, it was discovered the file already
 		MOVEI T1,RNMX10
 		JRST ARCFXX]	; Bomb
 	PUSH P,T1		; Save OFN
-
-;...
 
 ; More of ARRST
 
@@ -832,7 +1002,7 @@ Cause:	The FDB for a file being restored from offline does not exist.
 	POP P,JFN
 	POP P,STS
 	RETSKP			; Done
-
+
 ARCFXX:	CALL USTDIR		; Release current JFN
 	CALL UNLCKF
 ARCF1X:	POP P,DEV
@@ -934,6 +1104,8 @@ ARSST1:	TXCE Q2,AR%O1		; Do run 1 stuff?
 	ANDCAM T1,.FBBBT(P3)	; Yes, clear migration & archive rq
 	TXNN Q2,AR%OFL		; Want a flush?
 	RETSKP			; No, done here
+	;..
+	;..
 	SKIPE .FBTP1(P3)	; See if both sets of tape info set
 	SKIPN .FBTP2(P3)
 	RETSKP			; Not all tape info around
@@ -947,7 +1119,7 @@ ARSST1:	TXCE Q2,AR%O1		; Do run 1 stuff?
 
 SET1ST:	XCTU [MOVE T1,.ARTP1(Q3)] ; Get tape id
 	LOAD T2,ARTP2,(P3)	; Get other tape ID (shouldn't be one)
-	CAMN T2,T3		; A match?
+	CAMN T2,T1		;[9103] A match?
 	RETBAD(ARCFX7)		; Yes, not allowed
 	STOR T1,ARTP1,(P3)	; Set tape tape id
 	ULOAD T1,AR%TSN,.ARSF1(Q3) ; Get saveset #
@@ -1046,7 +1218,7 @@ CKNAON:	LOAD T1,FBFLG,(P3)
 	TXNN T1,FB%OFF		; Offline?
 	RETBAD(ARCFX9)		; No
 	RETSKP
-
+
 ; See if the default is to archive rather than migrate a file
 
 CKARDF:	HRRZ T1,FILDDN(JFN)	; Get directory # file is from
@@ -1063,7 +1235,7 @@ Cause:	The directory number of the currently mapped directory does not
 	TXNE T1,CD%DAR		; Is the default to archive ?
 	RETSKP			; Yes
 	RET			; No
-
+
 ;Routine to check read, write, execute, and append access restrictions imposed
 ;by the archive/virtual disk system.
 ;
@@ -1113,7 +1285,7 @@ CKADON:	MOVE T1,T3
 	POP P,T3
 	RET
 
-
+	SUBTTL ASND JSYS
 
 ; Assign device
 ; 1/ DEVICE DESIGNATOR
@@ -1132,17 +1304,24 @@ ASND0:	CALL LCKDVL
 	MOVEM T2,ASNDIX		;SAVE INDEX INTO DEVICE TABLES
 	TXNN C,DV%AS		;ASSIGNABLE DEVICE?
 	RETERR(ASNDX1,<UNLOKK DEVLKK>)
-	SKIPN ASNPAS		;FIRST PASS?
-	JRST [	HLRZ T4,DEVUNT(T2) ;GET OWNING JOB
-		CAMN T4,JOBNO	;THIS JOB?
-		JRST .+1	;YES. DON'T BOTHER WITH ACJ THEN
-		UNLOKK DEVLKK	;YES
-		OKINT		;ALLOW INTS NOW
-		MOVE T1,ASNUAR	;GET USER'S ARG
-		GTOKM (.GOASD,T1,[RETERR ()])		;DO GETOK AND RETURN IF ERROR
-		MOVE T1,ASNUAR	;GET BACK ARG
-		AOS ASNPAS	;ON SECOND PASS NOW
-		JRST ASND0]	;AND CONTINUE
+	SKIPE ASNPAS		;[9122] First pass?
+	IFSKP.			;[9122] Yes
+	  HLRZ T4,DEVUNT(T2)	;[9122] Get owning job
+	  CAMN T4,JOBNO		;[9122] This job?
+	  IFSKP.		;[9122] Not assigned to this job
+	    UNLOKK DEVLKK	;[9122] Unlock device lock for ACJ call
+	    OKINT		;[9122] Allow ints now
+	    MOVE T1,ASNUAR	;[9122] Get user's arg
+	    GTOKM (.GOASD,T1,[RETERR ()]) ;[9122] Do GETOK and return if error
+	    MOVE T1,ASNUAR	;[9122] Get back user's arg
+	    AOS ASNPAS		;[9122] On second pass now
+	    JRST ASND0		;[9122] Restart on second pass
+	  ENDIF.		;[9122] End of "dev not assigned to this job"
+	ENDIF.			;[9122] End of "first pass" code
+	MOVE T1,ASNDIX		;[9122] Get back the index into device tables
+	CALL CFSMTA		;[9122] (T1/) Check for cluster MTA access
+	 RETERR (ASNDX4,<UNLOKK DEVLKK>) ;[9122] Dev in use by another system
+
 	HRRZ P3,DEV		;GET DISPATCH TABLE
 	CAIE P3,TTYDTB		;[7365] Is this a terminal?
 	IFSKP.			;[7365]
@@ -1157,6 +1336,7 @@ ASND0:	CALL LCKDVL
 	  ENDIF.		;[7365]
 	  MOVE B,ASNDIX		;[7365] Restore index to device tables
 	ENDIF.			;[7365]
+
 	CALL DSMNT0		;DISMOUNT IT IF NECESSARY
 	 JFCL
 	MOVSI A,(DV%ASN)
@@ -1167,7 +1347,8 @@ ASND0:	CALL LCKDVL
 	UNLOKK DEVLKK
 	SMRETN
 
-
+	SUBTTL BKJFN JSYS
+
 ; Backup file pointer by 1 byte
 ; Call:	1	JFN
 ;	BKJFN
@@ -1207,7 +1388,8 @@ BKJBYT:	MOVE A,JFN
 	CALL DBP
 	UMOVEM A,1
 	SMRETN
-
+	SUBTTL CHFDB JSYS
+
 ; Change fdb
 ; Call:	LH(1)	; Offset
 ;	RH(1)	; Jfn
@@ -1219,7 +1401,7 @@ BKJBYT:	MOVE A,JFN
 	CALL CHFDB0		;DO THE WORK
 	 ITERR ()		;ERROR OCCURED
 	JRST MRETN		;SUCCESSFUL
-
+
 CHFDB0:	STKVAR <CHFDBA,CHFDBD,CHFDBT>
 	XCTU [HRRZ JFN,T1]	;SETUP THE JFN
 	ULOAD T1,CF%DSP,T1	;GET DISPLACEMENT
@@ -1237,8 +1419,26 @@ CHFDB0:	STKVAR <CHFDBA,CHFDBD,CHFDBT>
 	LOAD A,STR,(JFN)	;[7.1063]Get the JFN's structure number
 	CALL CKSTOF		;[7.1063](T1/T1)Is the structure offline?
 	 JRST CHFDX		;[7.1063]Return "structure is offline"
+	UMOVE T1,T1		;[9041] Get user's AC 1
+	LOAD T1,CF%DSP,T1	;[9041] Get word to be hacked
+	CAIE T1,.FBCTL		;[9041] Attacking this word?
+	IFSKP.			;[9041] If we are diddling .FBCTL,
+	  UMOVE T2,T2		;[9041] Now get mask of things to be changed
+	  TXNN T2,FB%SEC	;[9041] Diddling secure bit?
+	  IFSKP.		;[9041] If so
+	    UMOVE T3,T3		;[9041] Get user's AC 3
+	    TXNN T3,FB%SEC	;[9041] Is this set to 1?
+	    IFSKP.		;[9041] If so,
+	      CALL CHFSET	;[9041] (JFN/) Say we are setting this
+	       JRST CHFDX	;[9041] Failed, oh well
+	    ELSE.		;[9041] Else we are clearing
+	      CALL CHFCLR	;[9041] (JFN/) Can we clear it?
+	       JRST CHFDX	;[9041] ACJ said no
+	    ENDIF.		;[9041]
+	  ENDIF.		;[9041]
+	ENDIF.			;[9041]
 	CALL GETFDB		; Get the fdb
-	ERRJMP DESX3,CHFDX
+	 ERRJMP DESX3,CHFDX
 	MOVEM A,CHFDBA		; SAVE FDB ADDRESS
 	LOAD B,FBLEN,(A)	; Get the length of this FDB
 	CAMG B,CHFDBD		; Is it the FDB bigger than offset?
@@ -1249,6 +1449,7 @@ CHFDB0:	STKVAR <CHFDBA,CHFDBD,CHFDBT>
 	CAIE D,.FBCTL		;YES. CHANGING FLAG WORD?
 	SKIPA			;NO. PROCEED
 	JRST CHFDB6		;YES. CAN'T DO IT
+
 	ANDCM B,WRTR(D)		; Writer bits?
 	JUMPN B,CHFDB1		; No, check owner and wheel
 	JAND <OPNF,WRTF>,,CHFDB2 ;IF FILE IS OPEN FOR WRITE, THEN OK
@@ -1367,13 +1568,34 @@ CHFD10:	TXNN B,FB%DEL		; Changing state of deleted?
 	POP P,B			; Clean up stack
 	POP P,A
 	JRST CHFDB9		; Fail
+
+;[9041]
+;CHFSET/CHFCLR - Jacket routine to set things up for CHFDB% GETOK.
+;
+; Call with:
+;	JFN/ Index into JFN block
+;	CALL CHFSET to set FB%SEC
+;	       or
+;	CALL CHFCLR to clear FB%SEC
+;
+; Returns:
+;	+1 - ACJ said no,
+;	+2 - Success, allow setting of FB%SEC
+;
 
+CHFCLR:	TDZA T2,T2		;[9063] Flag that we are clearing it and skip
+CHFSET:	MOVEI T2,1		;Say we are setting FB%SEC
+	MOVEI T1,.GOCFD		;Say which ACJ function to do
+	CALL ACJOFL		;(T1,T2,JFN/) Now get permission
+	 RETBAD ()		;Can't do it
+	RETSKP			;Success!
+
 ; Access tables for chfdb
 
 ;BITS WHICH CAN BE CHANGED IF PROGRAM HAS WRITE ACCESS TO FILE
 
 WRTR:	0			;FBTYP ,, FBLEN
-	FB%NOD+FB%FCF+FB%FOR	;FBFLG
+	FB%SEC+FB%NOD+FB%FCF+FB%FOR ;[9041] FBFLG
 	0			;FBEXL
 	0			;FBADR
 	0			;FBPRT
@@ -1407,7 +1629,7 @@ WRTR:	0			;FBTYP ,, FBLEN
 ;BITS WHICH CAN BE CHANGED IF PROGRAM HAS OWNER ACCESS TO FILE
 
 OWNER:	0			;FBTYP ,, FBLEN
-	FB%PRM+FB%TMP+FB%DEL+FB%NOD+FB%INV+FB%FCF+FB%FOR ;FBFLG
+	FB%SEC+FB%PRM+FB%TMP+FB%DEL+FB%NOD+FB%INV+FB%FCF+FB%FOR ;[9041] FBFLG
 	0			;FBEXL
 	0			;FBADR
 	000000777777		;FBPRT
@@ -1437,11 +1659,11 @@ OWNER:	0			;FBTYP ,, FBLEN
 	0			;FBSS1
 	0			;FBTP2
 	0			;FBSS2
-
+
 ;BITS WHICH CAN BE CHANGED IF PROGRAM HAS WHEEL OR OPERATOR CAPABILITIES
 
 WOPR:	0			;FBTYP ,, FBLEN
-	FB%PRM+FB%TMP+FB%DEL+FB%NOD+FB%INV+FB%FCF+FB%NDL+FB%WNC+FB%FOR ;FBFLG
+	FB%SEC+FB%PRM+FB%TMP+FB%DEL+FB%NOD+FB%INV+FB%FCF+FB%NDL+FB%WNC+FB%FOR ;[9041] FBFLG
 	0			;FBEXL
 	0			;FBADR
 	000000777777		;FBPRT
@@ -1471,7 +1693,8 @@ WOPR:	0			;FBTYP ,, FBLEN
 	0			;FBSS1
 	0			;FBTP2
 	0			;FBSS2
-
+	SUBTTL CLOSF JSYS
+
 ; Close a file
 ; Call:	RH(1)	; Jfn
 ;	1(0)	; If 1 do not release jfn
@@ -1590,7 +1813,8 @@ CLZMFE:	CALL GETFDB		;GET THE FDB FOR THIS JFN
 	TDNE B,.FBCTL(A)	;DON'T CAUSE WRITE IF ALREADY CLEAR
 	ANDCAM B,.FBCTL(A)	;CLEAR NONX
 	CALLRET USTDIR		;RELEASE DIRECTORY AND RETURN
-
+	SUBTTL CLZFF JSYS
+
 ;CLOSE FILES RELATIVE TO SPECIFIED FORK
 ; 1/	CZ%NIF (B0) - NO INFERIOR FORK FILES
 ;	CZ%NSF (B1) _ NOT AT SPECIFIED FORK
@@ -1701,9 +1925,9 @@ CLZFF5:	UMOVE C,1
 	ADD A,[^D1000,,0]	;WAIT FOR A SEC
 	HRRI A,BLOCKW		;SHORT WAIT
 	JRST CLZFW0		;AND WAIT A WHILE
-
+
 CLZFM1:	UMOVE A,1		;GET FLAGS SET BY USER
-	MOVE B,-1(P)		;PASS DOWN JFN
+	HRRZ B,-1(P)		;[8811] Get JFN number only
 	CALL CLZDO		;DO THE WORK
 	 JRST CLZFFW		;FAILED TO CLOSE, CHECK IF BLOCKING
 CLZFF6:	UMOVE C,1
@@ -1751,10 +1975,10 @@ CLZFF8:	CAIE A,DESX3		;[7384]ASSIGNED?
 ;HERE IF CAN'T CLOSE BECAUSE SERVICE ROUTINE WANTS TO BLOCK
 
 CLZFFW:	TQZN <BLKF>		;SERVICE ROUTINE WANT TO BLOCK?
-	 JRST CLZFF7		;NO, GO UNLOCK AND EXIT
+	JRST CLZFF7		;NO, GO UNLOCK AND EXIT
 	UMOVE B,1		;GET USER FLAGS AGAIN
 	TXNE B,CZ%ABT	;WAS THE USER TRYING TO ABORT?
-	 BUG.(CHK,CLZABF,JSYSF,HARD,<CLZFFW - Service routine blocked on an abort close>,,<
+	BUG.(CHK,CLZABF,JSYSF,HARD,<CLZFFW - Service routine blocked on an abort close>,,<
 
 Cause:	The device dependent service routine for a CLOSF% wants to block,
 	but the user has specified an abort close.
@@ -1771,14 +1995,14 @@ CLZFW0:	ADJSP P,-2		;CLEAN UP STACK
 ;RETURNS +1	NOT CLOSED OR ABOUT TO BLOCK IF BLKF IS 1
 ;	 +2	CLOSED OK
 
-CLZDO:	STKVAR <CLZDOA,CLZDOJ>
+CLZDO:	STKVAR <CLZDOA,CLZDOJ,CLZDOX> ;[9122]
 	MOVEM A,CLZDOA		; SAVE FLAGS
 	MOVEM B,CLZDOJ		; SAVE JFN
 	CALL CHKENQ		; CHECK IF CLOSING IS ALLOWED BY ENQ/DEQ
 	 RET			; FILE IS LOCKED, DONT CLOSE IT
 	MOVE A,CLZDOA		; GET FLAGS BACK
 	TQZE <BLKF>		; SEE IF FLAG IS OFF
-	 BUG.(CHK,BLKF3,JSYSF,HARD,<CLZDO - BLKF set before call to service routine>,,<
+	BUG.(CHK,BLKF3,JSYSF,HARD,<CLZDO - BLKF set before call to service routine>,,<
 
 Cause:	BLKF has been set before the call to the device dependent service
 	routine which should be responsible for setting this bit.
@@ -1798,7 +2022,8 @@ Action:	If this BUGCHK persists, change it to a BUGHLT and find out where
 	MOVX C,DV%OPN
 	TDNN C,DEVCHR(A)	;ASSIGNED BECAUSE OF OPEN?
 	RETSKP			;NO.
-
+	HRRZM T1,CLZDOX		;[9122] Save index to device tables
+
 ;OPEN BIT IS STILL SET IN DEVICE TABLES. FOR TELETYPES, THIS WILL NOT
 ;BE TRUE BECAUSE THE DEVICE-DEPENDENT CODE BOTH DEASSIGNS THE
 ;DATA BLOCK AND CLEANS UP THE DEVICE TABLES.
@@ -1856,7 +2081,9 @@ CLZDOB:	STKVAR <SVDES>
 	CAME DEV,SVDES 		;CHECK TO SEE IF DEVICE THE SAME
 	RETBAD (DESX4)		;YOU CAN'T CHANGE DESCRIPTOR
 	RETSKP			;CONTINUE
-;CRDIR -  CREATE FILE DIRECTORY OR MODIFY PARAMETERS.
+	SUBTTL CRDIR JSYS
+
+;CRDIR -  CREATE FILE DIRECTORY OR MODIFY PARAMETERS.
 ;ACCEPTS:
 ;	A/ POINTER TO STRUCTURE:<DIRECTORY> STRING
 ;	B/ (FLAGS,,ADDRESS OF ARGUMENT BLOCK)
@@ -1864,8 +2091,8 @@ CLZDOB:	STKVAR <SVDES>
 
 ;	CRDIR
 
-; ReturnS +1: Error
-;	  +2:Success
+; Returns +1: Error
+;	  +2: Success
 ;		A/ (STRUCTURE UNIQUE CODE,,DIRECTORY number)
 
 ; In parameter block
@@ -1877,6 +2104,7 @@ CLZDOB:	STKVAR <SVDES>
 ;		CD%DIR	;FILES-ONLY DIRECTORY
 ;		CD%ANA	;ALPHANUMERIC ACCOUNTS ALLOWED
 ;		CD%RLM	;REPEAT SYSTEM MESSAGES ON LOGIN
+;		CD%SEC	;[9041] Secure directory
 ;	.CDLOQ=5	; PERMANENT STORAGE (LOGGED-OUT) QUOTA
 ;	.CDNUM=6	; DIR NUMBER
 ;	.CDFPT=7	; DEFAULT FILE PROTECTION
@@ -1890,18 +2118,606 @@ CLZDOB:	STKVAR <SVDES>
 ;	.CDDAC=17	; Pointer to default account
 ;	.CDDNE=20	; Default online expiration
 ;	.CDDFE=21	; Default offline expiration
-
+
 .CRDIR::MCENT
-	GTOKM (.GOCRD,)		;GETOK CREDIR
+	CALL CKMMOD		;[9041] (/) Monitor mode?
+	IFNSK.			;[9041] No, then gotta ask ACJ
+	  CALL CRDGOK		;[9041] (/) Get a kiss from ACJ
+	   ITERR ()		;[9041] Guess ACJ isn't in a suck-face mood
+	  CALL PWDICT		;[9054] (/T1) See if password in dictionary
+	   ITERR ()		;[9054] Password was illegal in some way
+	ENDIF.			;[9041]
 	UMOVE Q3,2		;GET FLAGS AND POINTER TO BLOCK
 	UMOVE A,1		;GET STRING POINTER TO NAME
 	MOVEI B,2*MAXLW+2	;39-DEV:<39-DIR> + 1 HEADER WORD
 	CALL CPYUSR		;Copy directory name string
 	 ITERR CRDIX3		;No room in jsb
+	NOINT			;[8856] Be NOINT the entire time
 	CALL CRDIR0		;GO DO THE WORK
-	 ITERR ()		;AN ERROR OCCURED
+	 ITERR (,OKINT)		;[8856] An error occured
+	OKINT			;[8856] Housekeeping 
 	JRST MRETN		;EXIT
-;CRDIR0 - ROUTINE TO DO CRDIR JSYS
+
+;[9041]
+;CRDGOK - Routine called before any CRDIR% work is done. This routine
+;sets up a special argument block for the ACJ and asks permission from
+;the ACJ for this user.
+;
+; Called with:
+;	no arguments
+;	CALL CRDGOK
+;
+; Returns:
+;	+1 - Failure,
+;	     T1/ Error code
+;	+2 - Success, ACJ is allowing the CRDIR%
+
+CRFSP==<.GOABK+.CDFPA+1>	;[9046] Number of words in free space block
+
+CRDGOK:	SKIPN ACJFN		;Have an ACJ?
+	RETSKP			;No, don't bother to ask
+	SAVEQ			;Save the destroyed items
+	STKVAR <CRDFRB,ERCOD,<LOGNM,MAXLW*2>> ;Temp storage
+	SETZM LOGNM		;Clear first word
+	NOINT			;No bothering me while I have freespace
+	HRRZI T1,CRFSP		;Want this many words of freespace
+	HRLI T1,.RESP3		;Lock down freespace if there ain't none
+	MOVEI T2,.RESGP		;Get it from the general pool
+	CALL ASGRES		;(T1,T2/T1) Get freespace block
+	 RETBAD (MONX05,OKINT)	;Couldn't so don't let CRDIR% happen
+	MOVEM T1,CRDFRB		;Stash freespace block address
+	MOVEI T2,CRFSP		;Get block size
+	MOVEM T2,.GOSIZ(T1)	;And save it here
+	UMOVE T2,T2		;Get user flags
+	MOVEM T2,.GOBLK(T1)	;Save user's flag
+	UMOVE T2,T1		;Get user's byte pointer
+	TLC T2,-1		;Does we have -1,,ADDR?
+	TLCN T2,-1		;Well?
+	HRLI T2,(POINT 7,)	;Yes we do, make it legal
+	XCTBU [ILDB T3,T2]	;Get first character
+	 ERJMP CRDGK0		;Bad user
+	;..
+	;..
+	XMOVEI T1,.GOUSR(T1)	;Username string starts here
+	TXO T1,<OWGP. 7>	;Make it a one word global byte pointer
+	CAIE T3,.CHDI1		;Does string begin with a valid
+	CAIN T3,.CHDI2		;  directory punctuation ?
+	IFSKP.			;No, so check for logical name
+	  MOVEI T4,LOGNM	;Put logical name here
+	  HRLI T4,(POINT 7,)	;Make real byte pointer
+	  IDPB T3,T4		;Save first character
+	  DO.			;Scan all characters
+	    XCTBU [ILDB T3,T2]	;Get another character
+	     ERJMP CRDGK0	;Failed
+	    CAIE T3,.CHDI1	;Get a directory starter?
+	    CAIN T3,.CHDI2	;How about this kind?
+	    JRST CRDGO0		;Yes, there is a directory here somewhere
+	    IDPB T3,T4		;Save character in case of logical name
+	    JUMPN T3,TOP.	;Null character? If not, get more
+	  OD.
+	  MOVE T3,T1		;Get destination location of logical name
+	  HRROI T2,LOGNM	;Here's the logical name
+	  MOVEI T1,.LNSJB	;Want job logical
+	  LNMST%		;Try to translate logical name
+	  IFJER.		;If can't
+	    CAIE T1,LNSTX1	;No such job logical?
+	    JRST CRDGK1		;Nope, something bad happened
+	    MOVEI T1,.LNSSY	;Try system wide
+	    LNMST%		;Do it
+	     ERRJMP (RCDIX2,CRDGK1)
+	  ENDIF.
+	  JRST CRDGO1		;Logical name translated, so use it
+	ELSE.			;Started with directory delimiter
+	  MOVE T1,[POINT 7,[ASCIZ/DSK:/]] ;Default the device then
+	  STDEV%		;Convert logical names to physical
+	   ERJMP CRDGK0		;Something blew up
+	  MOVE T1,CRDFRB	;Get freespace block back
+	  XMOVEI T1,.GOUSR(T1)	;Username string starts here
+	  TXO T1,<OWGP. 7>	;Make it a one word global byte pointer
+	  DEVST%		;Put the physical name there
+	   ERJMP CRDGK0		;Failed, cleanup the spill
+	  MOVEI T2,":"		;End the string name with a colon
+	  IDPB T2,T1		;Slam in ":"
+	ENDIF.
+	;...
+
+;At this point, T1 has an updated byte pointer and we can now copy from user
+;space.
+	;...
+CRDGO0:	MOVE Q1,T1		;Put byte pointer here
+	UMOVE T2,T1		;Get user's byte pointer back
+	TLC T2,-1		;Does we have -1,,ADDR?
+	TLCN T2,-1		;Well?
+	HRLI T2,(POINT 7,)	;Yes we do, make it legal
+	MOVEI T3,<MAXLW+MAXLC+4> ;Get maximum character count
+	DO.			;Loop over all characters
+	  XCTBU [ILDB T4,T2]	;Get a byte from the user
+	   ERJMP CRDGK0		;Something bad happened
+	  JUMPE T4,CRDG05	;If null, don't check
+	  CAIL T4,"A"+40	;Are we lowercase?
+	  CAILE T4,"Z"+40	;Still in lowercase range?
+	  SKIPA			;No, don't tickle the character
+	  TRZ T4,40		;Raisin this character to new heights
+	  CAIN T4,"V"-100	;Is it ^V?
+	  ERRJMP (GJFX56,CRDGK1) ;Yes, this is not good
+	  MOVE T1,T4		;Put character in good place first
+	  CAIN T1,.CHDEV	;Device terminator?
+	  JRST CRDG05		;Skip the quote check
+	  CAIE T1,.CHDI1	;Get a directory starter?
+	  CAIN T1,.CHDI2	;How about this kind?
+	  JRST CRDG05		;Skip the quote check
+	  CAIE T1,.CHDT1	;Directory terminator?
+	  CAIN T1,.CHDT2	;Or goofy kind?
+	  JRST CRDG05		;Skip the quote check
+	  CAIN T1,"."		;How about a seperator?
+	  JRST CRDG05		;Yes, don't check for quote
+	  CALL QUOCHK		;(T1/) Need a ^V?
+	   SKIPA		;No, so continue
+	  ERRJMP (GJFX56,CRDGK1) ;Not a good directory spec
+CRDG05:	  IDPB T4,Q1		;Save in monitor block
+	  JUMPE T4,ENDLP.	;All done?
+	  SOJG T3,TOP.		;Too many characters?
+	  MOVEI T4,.CHNUL	;Yes, end with null now
+	  IDPB T4,Q1		;Stash the null
+	OD.
+CRDGO1:	MOVEI T1,.CDFPA+1	;Make sure we get the whole block
+	MOVE T3,CRDFRB		;Get back freespace block
+	XMOVEI T3,.GOABK(T3)	;Want to stash user arg block here
+	XCTU [HRRZ T2,2]	;Get address of argument block in user space
+	CALL BLTUM1		;(T1-T3/T1-T3) Get user's argument block in freespace
+	;..
+	;..
+;[9052]
+;We will clear out the password byte pointer word, the user group word
+;and the directory group word if these items are being set to nothing.
+;This flags the ACJ so it can make wonderfully intelligent decisions.
+
+	MOVE T1,CRDFRB		;Here's the freespace address
+	UMOVE T2,T2		;[9052] Get user's argument block
+	TXNN T2,CD%PSW		;[9052] User trying to set password?
+	IFSKP.			;[9052] If so,
+	  HRRZ T3,T2		;[9052] Get argument block address
+	  XCTU [SKIPN T3,.CDPSW(T3)] ;[9052] Did we get a byte pointer?
+	  IFSKP.		;[9052] If so,
+	    TLC T3,-1		;[9052] did user get lazy with -1,,ADDR?
+	    TLCN T3,-1		;[9052] Well?
+	    HRLI T3,(POINT 7,)	;[9052] Yes we do, make it legal
+	    XCTBU [ILDB T4,T3]	;[9052] Get a byte from user
+	    SKIPN T4		;[9052] Is it a null?
+	    SETZM <.GOABK+.CDPSW>(T1) ;[9052] Yes, say so for ACJ
+	  ENDIF.		;[9052]
+	ENDIF.			;[9052]
+	TXNN T2,CD%UGP		;[9052] Trying to set user groups?
+	IFSKP.			;[9052] If so,
+	  HRRZ T3,T2		;[9052] Get the user's argument block
+	  XCTU [SKIPN T3,.CDUGP(T3)] ;[9052] Pointer to user groups?
+	  IFSKP.		;[9052] User has a block here
+	    UMOVE T3,(T3)	;[9052] Get first word of argument block
+	    SOSG T3		;[9052] Is it 1 or less? If so, then no groups
+	  ENDIF.		;[9052]
+	  SETZM <.GOABK+.CDUGP>(T1) ;[9052] No user groups, clear this
+	ENDIF.			;[9052]
+	TXNN T2,CD%DGP		;[9052] Setting directory groups?
+	IFSKP.			;[9052] Looks like it
+	  HRRZ T3,T2		;[9052] Get argument block
+	  XCTU [SKIPE T3,.CDDGP(T3)] ;[9052] Any directory groups?
+	  IFSKP.		;[9052] User has a block here
+	    UMOVE T3,(T3)	;[9052] Get first word of argument block
+	    SOSG T3		;[9052] Is it 1 or less? If so, then no groups
+	  ENDIF.		;[9052]
+	  SETZM <.GOABK+.CDDGP>(T1) ;[9052] Flag no directory groups
+	ENDIF.			;[9052]
+	GTOKM (.GOCRD,<T1>,CRDGK1) ;Get permission from ACJ
+	CALL RELRES		;(T1/) Give back freespace block
+	OKINT			;Interrupts are cool now
+	RETSKP			;And return good because the ACJ said so
+
+;Here on failures
+CRDGK0:	MOVE T1,LSTERR		;Error will be here
+CRDGK1:	MOVEM T1,ERCOD		;Save error code for a bit
+	MOVE T1,CRDFRB		;Get freespace block back
+	CALL RELRES		;(T1/) Give it back
+	OKINT			;Interruptable now
+	MOVE T1,ERCOD		;Retrieve error code
+	RETBAD ()		;And back to caller
+
+	ENDSV.			;End of CRDGOK's STKVAR scope
+
+;[9054] PWDICT - routine to see if password is in password dictionary
+;and checks length of supplied password.  Smashes T1-T4.
+;	
+;Returns +1 If illegal password (password found in dictionary or too short)
+;	T1/ CRDI30 if password too short
+;	T1/ CRDI33 if password in dictionary
+;	T1/ ARGX01 if password too long
+;Returns +2 If legal password (long enough password not found in dictionary)
+;
+;Note AC STS is P1, JFN is P2
+
+	PWDBSZ==MAXLW*2		;Size of password dictionary buffer (80 chars)
+
+;The following two tables are used to remember where each letter starts in the
+;password dictionary.  These tables are built once and then used by anyone 
+;searching the password dictionary.
+
+NR PWDWRT,1			;Write date-time of the file
+NR PWDXPT,<"Z"-"A">+1		;For each letter, byte count where it starts
+NR PWDXPG,<"Z"-"A">+1		;For each letter, page count,,mapped page
+
+;First determine if we have any work to do today.
+
+PWDICT:	SAVEPQ			;Mind your Ps and Qs (STS is P1 and JFN is P2)
+	TRVAR <PWDCNT,PWDPAG,PWDPGC,PWDPTR,<PWDSTR,MAXLW>,<PWDBUF,PWDBSZ>>
+	UMOVE T2,2		;Load user's AC2
+	TXNN T2,CD%PSW		;Setting password?
+	RETSKP			;Nope, return OK
+	TXNN T2,CD%LEN		;[9174] Does .CDLEN have flags in it?
+	IFSKP.			;[9174] Yes, need to check encryption flag
+	  TLZ T2,-1		;Get the address only
+	  UMOVE T1,.CDLEN(T2)	;Load the user's flag words from block
+	   ERJMP RSKP		;Skip return if this fails
+	  TXNE T1,CD%PEN	;Password is encrypted already?
+	  RETSKP		;Yes, skip return now
+	ENDIF.			;[9174] Check the non-encrypted password
+
+;[9054] User is setting a password, read in the password converting it to upper
+;case and counting characters.
+
+	UMOVE T1,.CDPSW(T2)	;Load pointer to password please
+	TLC T1,-1		;Check for -1,,address
+	TLCN T1,-1		; and if it is so
+	HRLI T1,(POINT 7)	;  make it a real 7 bit byte pointer
+	MOVEI T2,PWDSTR		;Point to place to build string
+	HRLI T2,(POINT 7)	;Make that a byte pointer too
+	MOVSI T4,-<MAXLW*5>	;[9078] Load -40,,0 for AOB pointer
+	SETZM PWDSTR		;Clear first word for later check
+	DO.			;Loop to convert lowercase to upper case
+	  XCTBU [ILDB T3,T1]	;Get a character of password
+	   ERJMP [RETBAD (ARGX01)] ;Return "Invalid Password"
+	  CAIL T3,"a"		;Is it 
+	  CAILE T3,"z"		; lowercase?
+	  CAIA			;Nope, keep going
+	  SUBI T3,"a"-"A"	;Convert to upper case
+	  IDPB T3,T2		;Store in our special place
+	  JUMPE T3,ENDLP.	;If that was the null, get out of the loop
+	  AOBJN T4,TOP.		;Count char and loop if more room there
+	  RETBAD (ARGX01)	;Password too long, return "Invalid password"
+	OD.			;End of upper case conversion loop
+	SKIPN PWDSTR		;Is there a non null password now?
+	RETSKP			;Null password always is good
+
+;The right half of T4 now contains the character count for this password.
+
+	TLZ T4,-1		;Clear the left half (AOB count)
+	CAMGE T4,MINPAS		;Is this password string long enough?
+	RETBAD (CRDI30)		;No, return failure
+
+;Continue only if password dictionary feature is enabled.
+
+	SKIPN PWDFLG		;If this cell is nonzero then we continue
+	RETSKP			;Skip return if dictionary not enabled
+				;Fall through to consult password dictionary
+
+;[9054] We have the password to check, try and get the password file opened.
+
+	MOVX T1,GJ%SHT!GJ%OLD!GJ%PHY ;Please find an old file physical 
+	HRROI T2,[ASCIZ/SYSTEM:PASSWORD.DICTIONARY/] ;This is the file
+	GTJFN%			;Try and get a JFN on it
+	 ERJMP RSKP		;Skip return if we can't get JFN on it
+	MOVEM T1,JFN		;We got a JFN, save it
+	MOVX T2,FLD(7,OF%BSZ)!OF%RD ;Reading 7 bit bytes today
+	OPENF%			;Pry it open
+	 IFJER.			;If error
+	   MOVE T1,JFN		;Reload the JFN
+	   RLJFN%		;Release it
+	    ERJMP .+1		;Ignore errors
+	   RETSKP		;Skip return to allow password
+	 ENDIF.			;End of OPENF failure code
+
+;File is open, get its size in pages for later.
+
+	SIZEF%			;Get size of file
+	 ERJMP PWDPOK 		;(JFN/) If error, punt file and skip return
+	MOVEM T3,PWDPGC		;Save page count here right now
+	MOVE Q3,PWDPGC		;Save the page counter (incase index built)
+
+;Get the file's last write date and see if is the same one we just read.
+
+	MOVX T2,<1,,.FBWRT>	;Getting one word, the last write date
+	MOVX T3,T4		;Getting it into T4 this time
+	GTFDB%			;Get that word from the file's FDB
+	 ERJMP PWDPOK		;If error just get out of here
+	CAMN T4,PWDWRT		;Does the last write data match?
+	SKIPN PWDXPG		;Is there an index built for "A"?
+	SKIPA T1,[PWDXPG,,PWDXPG+1] ;Nope, have to rebuild, load index
+	JRST PWDPLP		;Yes, we have already read this file once
+	SETZM PWDXPG		;Clear the first index entry
+	BLT T1,PWDXPG+<"Z"-"A">	;Clear all entries in the table 
+	MOVEM T4,PWDWRT		;Save this as the new last write date
+	SETOM PWDPAG		;Indicate first page to map is page zero
+	SETZM PWDCNT		;Indicate that buffer is empty now
+
+;[9054] OK, we have decided to rebuild the index pointers to the password file.
+;Set up PWDXPT+char/ character count in page to start at
+;	PWDXPG+char/ pages left in file,,page currently mapped
+;This is used by the code on the next page
+
+PWDILP:	MOVE Q1,PWDCNT		;Copy the character counter before call
+	MOVE Q2,PWDPAG		;Copy the page number in file
+	HRL Q2,PWDPGC		; and the page counter for possible later use
+	CALL PWDCHR		;(JFN/T1) Read first character of line
+	 JRST PWDPLP		;End of file, we are done now
+	CAIGE T1,"A"		;Is it A yet?
+	IFSKP.			;Yes, it is a legal starting character
+	  CAILE T1,"Z"		;Is it greater than Z?
+	  MOVEI T1,"Z"		;Yes, use last index in table for this
+	  SKIPE PWDXPG-"A"(T1)	;Do we know where this starts yet?
+	  IFSKP.		;Nope, we have the beginning of it
+	    MOVEM Q1,PWDXPT-"A"(T1) ; and save it there for later use
+	    MOVEM Q2,PWDXPG-"A"(T1) ;  and save that for later use also please
+	  ENDIF.		;Finished with this line
+	  CAIN T1,"Z"		;Was that Z?
+	  JRST PWDPLP		;Yes, we are now finished building index
+	ENDIF.			;End of legal character check
+	DO.			;Now we need a loop to eat until EOL
+	  CALL PWDCHR		;(JFN/T1) Load the next character
+	   JRST PWDPLP		;Give up if it is now the end of the file
+	  CAIN T1,.CHLFD	;Is it a linefeed?
+	  JRST PWDILP		;Yes, start of a new line
+	  LOOP.			;Nope, keep looking for end of line
+	OD.			;End of loop eating until end of line
+
+;[9054] Here when the pointers to the beginning of each word are known, find
+;the proper one for this file and set it up for reading.  From the stored index
+;entries, we will extract a new PWDCNT, PWDPTR, PWDPGC, PWDPAG.  This code also
+;sets P3/ first password character for later checking.
+
+PWDPLP:	SETOM PWDPAG		;Assume that we are going to start 
+	SETZM PWDCNT		; at the beginning of the file
+	MOVEM Q3,PWDPGC		;  so reset these three things to reflect that
+	MOVE P3,PWDSTR		;Load first word of password
+	LSH P3,-^D<36-7>	;Shift over to proper position for an index
+	CAIGE P3,"A"		;Less than the first index?
+	JRST PWDLOP		;Yes, it was less than "A" start at beginning
+	CAILE P3,"Z"		;Is the first character bigger than last index?
+	MOVEI P3,"Z"		;Yes, start with last index instead
+
+	SKIPN T2,PWDXPG-"A"(P3)	;Get count,,page number only if one set
+	JRST PWDLOP		;Start at beginning of file if no index set
+	HRREM T2,PWDPAG		;Save the page number to start at
+	HLRZM T2,PWDPGC		; and the pages left to map in file
+	MOVE T2,PWDXPT-"A"(P3)	;Load the character count in buffer to start
+	MOVEM T2,PWDCNT		;Save the count of characters in buffer
+	MOVEI T2,PGSIZ*5	;Load max characters that could be in buffer
+	SUB T2,PWDCNT		;Compute what character we were on today
+	ADJBP T2,[POINT 7,FPG0A] ;Get the file text pointer to that next char
+	MOVEM T2,PWDPTR		; and save it for lower level routines
+	SKIPL PWDPAG		;Do we need to map in the page?
+	CALL PWDMAP		;(JFN/) Yes, map it in now please
+				;Fall through to PWDLOP
+
+;[9054] Loop through the password file reading a line at a time from it and
+;checking the furnished password.  P3/ first character of password.
+
+PWDLOP:	CALL PWDLIN		;(JFN/) Read a line from password file
+	 JRST PWDPOK		;If end of file we are done
+	MOVE T1,PWDBUF		;Load the first word of buffer
+	LSH T1,-^D<36-7>	;Shift over to proper position for an index
+	CAMLE T1,P3		;Are we to the next letter yet?  (watch ^Ls!)
+	JRST PWDPOK		;Yes, password is not found in file
+
+;Check this entry against the supplied password.
+
+	CALL PWDMAT		;(/) Check password against line from dict
+	 JRST PWDLOP		;Password was not found, check next one in file
+
+;Entry was found in the dictionary, give the user an error code please.
+
+	CALL PWDCLS		;(JFN/) Close the password file JFN
+	RETBAD (CRDI33)		;Return invalid password error code
+
+;Here if password is OK, close the file and return +2.
+
+PWDPOK:	CALL PWDCLS		;(JFN/) Close password file
+	RETSKP			;Skip return because password is OK
+
+;Here to close password file, call with JFN/ file's open JFN
+;Returns +1 always.
+
+PWDCLS:	SETZ T1,		;Indicate no mapping desired
+	MOVEI T2,FPG0A		;Load address (not page number)
+	CALL SETMPG		;(T1,T2/) Unmap old page
+
+	MOVE T1,JFN		;Load JFN of password file
+	CLOSF%			;Close it
+	 ERJMP .+1		;Ignore errors at this point
+	RET			;Return +1 always
+
+;[9054] Compare password against the string we read in.  Each entry specifies
+;a base word.  If after the base word there is a comma, then suffixes are
+;possible.  Each suffix is listed after the word.  If the suffix is preceeded
+;by a backslash then the last base word letter is deleted before the suffix is
+;checked.  If the suffix starts with quote, the last base word's letter is
+;doubled.
+;
+;Examples:	ABACK = ABACK
+;		ABBY, 'S = ABBY, ABBY'S
+;		ABLE, \Y = ABLE, ABLY
+;		ABUT, S, "ED, "ING = ABUT, ABUTS, ABUTTED, ABUTTING
+;
+;AC usage in this routine
+;	T1/ last non matching character from password string
+;	T2/ pointer to password string
+;	T3/ last character from dictionary string
+;	T4/ pointer to directory string entry
+;	Q1/ copy of T1 at last match
+;	Q2/ copy of T2 at last match
+;Returns +1 if password didn't match
+;Returns +2 if password matched
+
+PWDMAT:	MOVEI T2,PWDSTR		;Point to place to build string
+	HRLI T2,(POINT 7)	;Make that a byte pointer too
+	MOVEI T4,PWDBUF		;Point to password buffer
+	HRLI T4,(POINT 7)	;Make a byte pointer out of that
+ 	SETZ T1,		;Clear current character
+	DO.			;Loop looking at the characters
+	  DMOVE Q1,T1		;Save last password character and pointer match
+	  ILDB T1,T2		;Load a byte from the source password
+	  ILDB T3,T4		;Load a dictionary word pointer
+	  CAIN T1,(T3)		;Does this character match?
+	  JRST TOP.		;Yep keep looking
+	OD.			;End of character compare loop
+
+	CAIE T3,","		;Is it the end of a base word
+	CAIN T3,.CHCRT		; or is it a return (end of word)?
+	JUMPE T1,RSKP		;Yes, and if end of string, we match base word
+
+	CAIN T3,.CHCRT		;Is it end of dictionary entry?
+	RET			;Yes, word was not found
+	SETZ STS,		;Assume match is at last base word character
+	CAIN T3,","		;Is it a comma at end of base word?
+	JRST PWDMA2		;Yes, try suffixes
+	ILDB T3,T4		;No, check next character for backslash case
+	CAIE T3,","		;Comma?
+	RET			;Nope, mismatch before last char, try next word
+	AOJA STS,PWDMA2		;Rememember to match \suffix only
+;[9054] Here if password didn't match the dictionary word.  See if it matches
+;any suffix of this base word.  Now the ACs are:
+;	T1/ Last non matching character from password string
+;	T2/ ILDB pointer to last non matching password string
+;	T3/ Last character from dictionary string (comma)
+;	T4/ ILDB pointer to dictionary string entry, last character was comma
+;	Q1/ Last matched password character (character previous to one in T1)
+;	Q2/ ILDB pointer to last match (copy of T2 that got character in Q1) 
+;	Q3/ Copy of T4 that points to first real suffix character
+;	STS/ Nonzero if backslash suffix should be only possible try
+;	JFN/ still has the JFN of the password file
+;	P3/ still has first character of attempted password string
+
+PWDMA2:	ILDB T3,T4		;Load the character after the comma
+	CAIE T3," "		;Is it a space?
+	RET			;Nope, no match possible check next word
+	MOVE Q3,T4		;Copy the current pointer
+	ILDB T3,T4		;Get character after the space
+
+	IFN. STS		;If backslash case
+	  CAIE T3,"\"		;Is it a backslash?
+	  JRST PWDMA5		;No, look for next suffix
+	  DMOVE T1,Q1		;Reload last character matched and its pointer
+	  JRST PWDMA3		; and look at this suffix to see if it matches
+	ENDIF.			;Not a backslash
+
+	CAIE T3,""""		;Is it a quote?
+	IFSKP.			;Yes
+	  DMOVE T1,Q1		;Copy the old pointer back
+	  ILDB T1,T2		;Load the next character
+	  CAIN T1,(Q1)		;Is the last matched equal the current char?
+	  JRST PWDMA3		;Yes, continue checking the other characters
+	  JRST PWDMA5		;Nope, look for next suffix
+	ENDIF.			;End of quote case
+
+	MOVE T4,Q3		;Not special char, copy pointer to the suffix
+	DMOVE T1,Q1		;Reload last character matched and its pointer
+				;Fall through to PWDMA3
+;[9054] Keep checking the suffix and the base string.
+;Now the ACs should be
+;	T1/ last non-matched character from password string
+;	T2/ ILDB pointer to last non-matching password character
+;	T3/ last character from dictionary string 
+;	T4/ ILDB pointer to dictionary suffix substring
+;	Q1/ last matched password character
+;	Q2/ ILDB pointer to last matched password character
+
+;Now we are ready to see if this word matches the suffix.
+;T2/ ILDB pointer to password string at time of last match
+;T4/ ILDB pointer to directory suffix entry
+
+PWDMA3:	DO.			;Loop for checking suffix
+	  ILDB T1,T2		;Get next character of password string
+	  ILDB T3,T4		;Get the next character of the suffix
+	  CAIN T1,(T3)		;Does this match?
+	  JRST TOP.		;Yes check the next character	  
+	OD.
+	CAIE T3,.CHCRT		;Is it a return or
+	CAIN T3,","		; is it the end of the suffix
+	JUMPE T1,RSKP		;  and end of password?  If so, password found
+
+;Here to eat characters from the directory suffixes until a comma or return
+;is seen.  If a comma, check next suffix.  If a return, return +2 (not found).
+
+PWDMA5:	DO.			;No match, we have to eat until next suffix
+	  CAIN T3,","		;End of suffix?
+	  JRST PWDMA2		;Now try next suffix
+	  CAIN T3,.CHCRT	;End of this line?
+	  RET			;Yes, not found, read next line from file
+	  ILDB T3,T4		;Get next character
+	  JRST TOP.		; and check it next
+	OD.			;End of suffix eat loop
+;[9054] Routine to read a line from password dictionary.
+;Call with JFN/ jfn of the file.
+;Returns +1 if format error or EOF
+;Returns +2 if line found, line returned in PWDBUF TRVAR.
+
+PWDLIN:	MOVEI Q1,<PWDBSZ*5>-1	;Load max characters to store in buffer
+	MOVEI Q2,PWDBUF		;Point to password buffer
+	HRLI Q2,(POINT 7)	; rather get a byte pointer to it
+	DO.			;Loop to pick out characters from file
+	  CALL PWDCHR		;(JFN/T1) Read a character from the file
+	   RET			;End of file, return +1
+	  IDPB T1,Q2		;Store the non null character please
+	  CAIE T1,.CHCRT	;Is it a return?
+	  SOJGE Q1,TOP.		;Nope, keep going if there is room
+	  JUMPL Q1,R		;Return +1 if line too long
+	  CALL PWDCHR		;(JFN/T1) Get the next character please
+	   RET			;End of file after return before line feed
+	  CAIE T1,.CHLFD	;Is it a line feed?
+	  RET			;Nope, return now if format error
+	OD.			;Now we have a line stored in the buffer
+	RETSKP			;Skip return to indicate a line was read
+	
+;[9054] Routine to read one non null character from password dictionary file.
+;Call with JFN/ file's JFN
+;Returns +1 if EOF or error
+;Returns +2 with T1/ character
+
+PWDCHR:	SOSGE PWDCNT		;Is there a character available?
+	IFSKP.			;If so
+	  ILDB T1,PWDPTR	;Get a character
+	  JUMPN T1,RSKP		;Skip return for non null
+	  JRST PWDCHR		;Get next character if null
+	ENDIF.			;End of characters available code
+
+;No characters left, we have to play like we are a PMAP JSYS and get more data.
+
+	SOSGE PWDPGC		;Count down one page
+	RET			;End of file
+	AOS PWDPAG		;Get to next page number please
+	CALL PWDMAP		;(JFN/) Map in the next page of the file
+	MOVE T1,[POINT 7,FPG0A]	;Point to address we mapped file into
+	MOVEM T1,PWDPTR		;Store the pointer to the data
+	MOVEI T2,PGSIZ*5	;Load number of 7 bit bytes there
+	MOVEM T2,PWDCNT		;Store as bytes available
+	JRST PWDCHR		;OK, now get a byte
+
+;[9054] Local routine to map in a page of the password dictionary file.
+;Call with JFN/ the JFN of the file
+;Returns +1 always
+
+PWDMAP:	SETZ T1,		;Indicate no mapping desired
+	MOVEI T2,FPG0A		;Load address (not page number)
+	CALL SETMPG		;(T1,T2/) Unmap old page
+	MOVE T1,PWDPAG		;Get page number to map
+	MOVE T2,JFN		;Get JFN of the file
+	IMULI T2,MLJFN		;Compute internal address of it
+	HLL T1,FILOFN(T2)	;Get OFN,,pn
+	MOVX T2,<PTRW!FPG0A>	;Get access and address of page to map
+	CALL SETMPG		;(T1,T2/) Map that page in for us
+	SKIP FPG0A		;Page fault it in
+	 ERJMP R		;Return now if file damage
+	RET			;Return to caller
+	ENDTV.			;End of PWDICT's TRVAR
+
+;CRDIR0 - ROUTINE TO DO CRDIR JSYS
 ;ACCEPTS IN A/	POINTER TO NAME STRING IN JSB
 ;	   Q3/	(FLAGS,,POINTER TO PARAMETER BLOCK IN USER SPACE) - USER'S AC2
 ;	CALL CRDIR0
@@ -1909,7 +2725,6 @@ CLZDOB:	STKVAR <SVDES>
 ;	 +2:	SUCCESSFUL
 
 ; LOCAL VARIABLE DEFINITIONS (STORED IN JSB FREE SPACE)
-
 ;CRDIRN		;HOLDS POINTER TO COPY OF USER'S STRING IN JSB
 ;CRDIRS		;POINTER TO GTJFN STRING OF COMPLETE DIRECTORY NAME
 ;CRDIRD		;DIRECTORY NUMBER
@@ -1944,18 +2759,19 @@ CLZDOB:	STKVAR <SVDES>
 ;CALL TO ULKSTR IF CNVSTR HAS BEEN CALLED.
 ; * * * *
 
-CRDNWH:CD%LEN!CD%PSW!CD%FPT!CD%DPT!CD%RET!CD%DGP!CD%DAC
+
+CRDNWH:	CD%LEN!CD%PSW!CD%FPT!CD%DPT!CD%RET!CD%DGP!CD%DAC
+
 CDNWF==1B0			;BIT IN CRDFLG - NEW FILE BEING CREATED
 CDDIR==1B1			;BIT IN CRDFLG - SUPERIOR IS FILES-ONLY
 CDREC==1B2			;RECONSTRUCTING A DIRECTORY
+CDERR==777777B35		;[8856] Error code that bombed new dir create
+
+;Miscellaneous setup for CRDIR.
 
 CRDIR0:: EA.ENT
 	JSBVAR <CRDIRN,<CRDIRS,40>,CRDIRD,CRDIRE,CRDIRJ,CRDIRF,CRDIRA,CRDIRT,<CRDDNM,MAXLW+4>,CRDSTX,CRDIRB,CRDLEN,CRDCPY,CRDCAP,CRDTMP,CRDDEV,CRDSTR,CRDSUP,CRDWHL,CRDDIQ,CRDDOQ,CRDDSQ,CRDFLG,CRDUFL,CRDSFL,NAMPTR,<UGDRNM,2*MAXLW+1>>,[RETBAD (CRDIX3)] ;[7.1192]
-	;..								       
-     
-;MISCELLANEOUS SETUP FOR CRDIR
 
-	;..
 	SETZM CRDFLG		;INITIALIZE FLAG WORD
 	MOVE Q1,DIRORA		;GET BASE ADDRESS OF DIRECTORY
 	HRRZ Q2,Q3		;GET ADDRESS OF USER'S BLOCK
@@ -1967,6 +2783,8 @@ CRDIR0:: EA.ENT
 	ANDX B,CD%RNA+CD%NCE+CD%NED+CD%FED+777777 ;NO, ONLY ALLOW THESE FLAGS
 	MOVEM B,CRDUFL		;SAVE THE FLAGS
 	HRLI A,(POINT 7,0,34)	;FORM BYTE POINTER TO NAME STRING
+	;..
+	;..
 
 ;MAKE CRDIRN POINT TO FREE SPACE HOLDING STR:<DIRECTORY> STRING
 ;AS INPUT BY USER
@@ -2002,12 +2820,12 @@ CRDIR0:: EA.ENT
 	ENDIF.			;[7103]
 	TXNN Q3,CD%NUM		;SPECIFYING A NUMBER?
 	JRST CRDI0B		;NO
-
+
 ;USER HAS SPECIFIED A DIRECTORY NUMBER.  SEE IF IT IS THE NUMBER FOR
 ;THE DIRECTORY SPECIFIED IN THE STR:<DIRECTORY> STRING
 
 	TXNE A,RC%NOM		;A REAL DIRECTORY ?
-	JRST [	SETOM CRDIRF ;NO, MARK THAT DIR # SHOULD BE CHECKED LATER
+	JRST [	SETOM CRDIRF	;NO, MARK THAT DIR # SHOULD BE CHECKED LATER
 		JRST CRDI0B ]	;GO SET UP GTJFN STRING FOR NEW DIRECTORY
 	XCTU [SKIPG B,.CDNUM(Q2)] ;GET NUMBER FROM USER
 	RETBAD (CRDIX8,<CALL CRDIR6>) ;ILLEGAL DIR NUMBER
@@ -2089,7 +2907,7 @@ CRDI0C:	MOVEI D,.CHDT1		;ASSUME TYPE 1 PUNCTUATION (ANGLE BRACKETS)
 	CAIE C,.CHDI1		;TYPE 1 PUNCTUATION ?
 	MOVEI D,.CHDT2		;NO, GET TYPE 2 CLOSING BRACKET (SQUARE BRACKET)
 	MOVEM D,CRDIRB		;SAVE TERMINATING BRACKET
-
+
 ;COPY JUST THE DIRECTORY NAME INTO LOCAL STORAGE (CRDDNM) AND COMPUTE
 ;ITS LENGTH. MAKE IT END WITH NULL
 
@@ -2120,7 +2938,8 @@ CRDI0E:	CAME B,CRDIRB		;IS IT EXPECTED TERMINATING BRACKET ?
 	JRST CRDI0M		;NO, GO ON
 	;..
 
-;RCDIR GAVE NO-MATCH AND USER SPECIFIED A DIRECTORY NUMBER.  SEE IF IT
+
+;RCDIR GAVE NO-MATCH AND USER SPECIFIED A DIRECTORY NUMBER.  SEE IF IT
 ;EXISTS ON THE GIVEN STRUCTURE
 
 	;..
@@ -2177,6 +2996,11 @@ CRDI0G:	MOVE A,CRDIRT		;GET POINTER TO DESTINATION AGAIN
 		RETBAD () ]	;RETURN ERROR
 	MOVEM A,CRDIRJ		;SAVE THE JFN OF THE DIRECTORY FILE
 	CALL CRDCWH		;CLEAR WHEEL
+
+;Get superior directory number and save for later.  If user can connect to
+;superior directory without a password, he is a logical WHEEL for this
+;directory.
+
 	MOVE A,CRDIRJ		;GET THE JFN
 	IMULI A,MLJFN		;CONVERT TO JFN BLOCK OFFSET
 	HRRZ B,FILDDN(A)	;GET HW DIR NUMBER OF SUPERIOR
@@ -2197,18 +3021,21 @@ CRDI0G:	MOVE A,CRDIRT		;GET POINTER TO DESTINATION AGAIN
 	SETOM CRDWHL		;YES - USER IS A LOGICAL WHEEL
 	MOVE B,DIRORA		;POINT TO START OF DIRECTORY
 	LOAD B,DRMOD,(B)	;GET MODE BITS
-	TXNE B,CD%DIR		;IS THIS A FILES-ONLY DIRECTORY?
-	JRST [	MOVX B,CDDIR	;YES. INDICATE IT IN THE LOCAL FLAG WORD
-		IORM B,CRDFLG	;..
-		JRST .+1]
+	TXNN B,CD%DIR		;[8856] Is this a FILES-ONLY directory?
+	IFSKP.			;[8856] Yes
+	  MOVX B,CDDIR		;[8856] Load the local flag 
+	  IORM B,CRDFLG		;[8856] Set it in the local flag word
+	ENDIF.			;[8856] 
 	CALL USTDIR		;UNLOCK DIR
+
+;See if directory file exists, and remember dir number if it does exist.
+
 	HRRZ A,CRDIRJ		;GET JFN OF DIRECTORY FILE
 	MOVE B,[1,,.FBCTL]	;NOW SEE IF THE FILE EXISTS
 	MOVEI C,D		;GET FLAGS INTO D
 	GTFDB
 	TXNN D,FB%DIR!FB%NXF	;IS THIS A DIR OR NON-EX FILE?
-	JRST [	MOVEI A,CRDIX9	;NO, ILLEGAL FORMAT DIRECTORY FILE
-		JRST CRDIR4]	;GO CLEAN UP AND BOMB OUT
+	ERRJMP (CRDIX9,CRDIR4)	;[8856] Internal format of dir is incorrect
 	MOVE B,[1,,.FBDRN]	;GET DIR NUMBER
 	MOVEI C,C
 	GTFDB
@@ -2216,7 +3043,6 @@ CRDI0G:	MOVE A,CRDIRT		;GET POINTER TO DESTINATION AGAIN
 	SETZM CRDCPY		;ASSUME DON'T HAVE TO CALL CPYBAK
 	TXNN D,FB%NXF		;FILE EXIST YET?
 	JRST CRDIR1		;YES, NOT CREATING A NEW DIR
-	;..
 ;HERE WHEN CREATING A NEW DIRECTORY
 ;	CRDSUP/DIRECTORY OF SUPERIOR
 ;	CRDSTX/ STRUCTURE NUMBER
@@ -2315,7 +3141,7 @@ CRDI0P:	MOVX B,.STDSD		;GET DEFAULT SUBDIR QUOTA
 	SKIPL B			;DON'T ALLOW NEGATIVE
 	CAMLE B,C		;WILL IT FIT?
 	ERRJMP(CRDI13,CRDI0I)	;NO - SUPERIOR LIQ EXCEEDED OR .LT. 0
-
+
 ;DON'T ALLOW CREATION OF LOGIN SUBDIRECTORY UNDER A FILES-ONLY SUPERIOR.
 ;NOTE THAT THIS CODE HAS BEEN SKIPPED IF SUPERIOR IS ROOT-DIRECTORY
 
@@ -2363,6 +3189,9 @@ CRDI0A:	SKIPL A			;NEGATIVE IS ILLEGAL
 
 Cause:	There was an error in creating the Root-Directory.  Either the
 	FDB could not be mapped or the index table could not be set up.
+
+Action:	Use CHECKD to determine if the disk is OK. If you cannot repair
+	the structure with CHECKD, then it may need to be rebuilt.
 >)
 		JRST CRDIR1]	;ROOT DIR NOW EXISTS, DONT REINITIALIZE
 
@@ -2413,7 +3242,7 @@ CRDIAB:	HRRZ A,CRDSUP		;IS THE SUPERIOR ROOT-DIRECTORY?
 	LOAD A,DRSDM,(Q1)
 	MOVEM A,CRDDSQ
 	CALL USTDIR		;UNLOCK THE DIRECTORY
-
+
 ;MAP THE SUPERIOR AND ADJUST ITS QUOTAS BY THE AMOUNT GIVEN TO
 ;THE NEW DIRECTORY
 
@@ -2473,8 +3302,7 @@ CRDIR1:	SKIPE CRDWHL		;LOGICAL WHEEL OR OPERATOR?
 	JRST CRDR1B		;YES. OK TO DO ANYTHING
 	MOVE A,FACTSW		;NO. DOES SYSTEM ALLOW USER TO CHANGE THINGS?
 	TXNN A,SF%CRD		;CAN USER CHANGE FIELDS
-	JRST [	MOVEI A,CRDIX1	;NO
-		JRST CRDIR4]
+	ERRJMP (CRDIX1,CRDIR4)	;[8856] No
 	HLLZ A,Q3		;GET REQUESTED FUNCTIONS
 	ANDCM A,CRDNWH		;COMPARE AGAINST ALLOWED FUNCTIONS
 	JUMPN A,[MOVEI A,CRDIX1	;WANT TO DO SOMETHING NOT ALLOWED
@@ -2485,21 +3313,15 @@ CRDIR1:	SKIPE CRDWHL		;LOGICAL WHEEL OR OPERATOR?
 	 JRST CRDIR4		;FAILED.
 	MOVX B,DC%CN		;B/CHECK FOR ABILITY TO CONNECT
 	CALL DIRCHK		;CAN USER ACCESS THIS DIRECTORY?
-	 JRST [	CALL USTDIR	;NO. UNLOCK THE DIRECTORY LOCKED BY SETDIR
-		MOVEI A,CRDIX1	;WHEEL OR OPERATOR REQUIRED
-		JRST CRDIR4]	;TAKE ERROR RETURN
+	 ERRJMP (CRDIX1,CRDIR7)	;[8856] No, wheel or operator required
 	MOVE B,DIRORA		;GET ADDRESS OF MAPPED DIRECTORY
 	LOAD B,DRPSW,(B)	;GET OFFSET OF PASSWORD BLOCK
 	SKIPN B			;IF NONE, DIRECTORY HAS NO PASSWORD
-	 JRST [	CALL USTDIR	;UNLOCK THE DIRECTORY LOCKED BY SETDIR
-		MOVEI A,CRDIX1	;WHEEL OR OPERATOR REQUIRED
-		JRST CRDIR4]	;TAKE ERROR RETURN
+	ERRJMP (CRDIX1,CRDIR7)	;[8856] Wheel or operator required
 	ADD B,DIRORA		;GET ABSOLUTE ADDRESS OF PASSWORD BLOCK
 	MOVE C,1(B)		;GET FIRST WORD AFTER HEADER
 	TLNN C,774000		;IF FIRST CHARACTER IS NULL, NO PASSWORD
-	 JRST [	CALL USTDIR	;UNLOCK THE DIRECTORY LOCKED BY SETDIR
-		MOVEI A,CRDIX1	;WHEEL OR OPERATOR REQUIRED
-		JRST CRDIR4]	;TAKE ERROR RETURN
+	ERRJMP (CRDIX1,CRDIR7)	;[8856] Wheel or operator required if no pswd
 	UMOVE B,3		;GET POINTER TO PASSWORD AS INPUT BY USER
 	CALL CHKPSX		;SEE IF USER GAVE CORRECT PASSWORD
 	 JRST [	ULKDIR		;FAILED. UNLOCK THE DIRECTORY LOCKED BY SETDIR
@@ -2521,7 +3343,7 @@ CRDR1B:	HRRZ A,CRDIRD		;GET DIR NUMBER
 	TXNE Q3,CD%NUM		;IS USER SPECIFYING A DIR NUMBER
 	UMOVE A,.CDNUM(Q2)	;YES, GET THE NUMBER
 	CAME A,CRDIRD		;IS THIS A MATCH OF WHAT IS IN DIR FILE
-	RETBAD (CRDIX2)		;NO, DIR NUMBER MUST MATCH EXISTING #
+	ERRJMP (CRDIX2,CRDIR4)	;[8856] No, dir number must match existing num
 	TXNE Q3,CD%DEL		;DELETE WANTED?
 	 JRST DELDIR		;Yes
 	MOVE A,CRDIRJ		;GET THE JFN OF THE DIR FILE
@@ -2534,8 +3356,7 @@ CRDR1B:	HRRZ A,CRDIRD		;GET DIR NUMBER
 	 JRST [	BUG.(CHK,CRDSDF,JSYSF,HARD,<CRDIR1 - SETDIR failed on new directory>,,<
 
 Cause:	SETDIR failed to map in a directory which has been newly created by
-	CRDIR%. The CRDIR% call will fail and the directory will not be
-	created.
+	CRDIR%. The CRDIR% call fails and the directory is not created.
 >)
 		JRST CRDIR4]
 
@@ -2549,8 +3370,7 @@ Cause:	SETDIR failed to map in a directory which has been newly created by
 	MOVE B,CRDLEN		;GET LENGTH OF STRING
 	CALL SETMSB		;SET UP MASK FOR LAST WORD
 	CALL CPYDIR		;PUT THIS NAME IN THE DIR
-	 RETBAD(CRDIX4,<ULKDIR	;FAILED TO GET ROOM IN DIR
-			JRST CRDIR4>)
+	 ERRJMP (CRDIX4,CRDIR7)	;[8856] Failed to get room, return error
 	MOVEI B,.TYNAM		;MARK THIS AS A NAME STRING
 	STOR B,NMTYP,(A)	;...
 	SUB A,DIRORA		;GET RELATIVE ADDRESS OF BLOCK
@@ -2576,25 +3396,26 @@ CRDR1S:	TXNN Q3,CD%PSW		;WANT TO SET PASSWORD?
 	XCTBU [	ILDB T1,T1]	;Get first character of password
 	JUMPN T1,CRDR2A		;If non-null, OK
 	SKIPN CRDWHL		;Must be WHOPER or have connect to superior
-	RETBAD (CRDIX1,<ULKDIR>) ; in order to change password to null
+	ERRJMP (CRDIX1,CRDIR7)	;[8856] Nope, return error
 GPVR1:	SETZM T2		;Null password always uses encryption version 0
 	STOR T2,DRPEV,(Q1)	;...
 	MOVE T1,DIRORA		;Null password has no block
 	JRST CRDRP3		;Go store it
+
+;Password is not null, copy to monitor space
+
 CRDR2A:	UMOVE T1,.CDPSW(Q2)	;Get pointer to password
 	CALL CPYFUS		;Copy to free storage
-	 RETBAD (CRDIX3,<ULKDIR>) ;JSB full
+	 ERRJMP (CRDIX3,CRDIR7)	;[8856] JSB full
 	HRLI T1,-7		;Make lookup pointer to JSB block
 	MOVEM T1,CRDIRN		;Save pointer
 	MOVE T3,CRDUFL		;Get user's flags
 	TXNE T3,CD%PEN		;Already encrypted?
 	JRST CRDRP1		;Yes
-	CALL CKMMOD		;[7.1290] Check if previous context monitor
-	 CAIA			;[7.1290] Nope, check password length
-	JRST CRDR2B		;[7.1290] Yes, probably it is MSTR
-	CALL CHPLEN		;[7.1231] (/) Check password length
-	 RETBAD (CRDI30,<CALL CRDIR6
-			 ULKDIR>) ;[7.1231] Password not long enough
+	;..
+	;..
+;Here when password is of proper length, check for encryption
+
 CRDR2B:	SETZM T1		;[7.1290] Assume unencrypted structure
 	STOR T1,DRPEV,(Q1)	;Store encryption version number
 	MOVE T1,CRDSFL		;Get status flags for the structure
@@ -2608,55 +3429,62 @@ GPVR2:	MOVE T1,PSENVR		;Yes, use latest encryption
 	LOAD T1,DRPEV,(Q1)	;Load the encryption version to use
 	MOVE T2,CRDIRN		;Get JSB pointer
 	CALL ENCPAS		;Encrypt password
-         RETBAD(CRDI28,<CALL CRDIR6
-			ULKDIR>) ;Bad version number
-SKPENC:	JRST CRDRP2		;Go store the password
+	 ERRJMP (CRDI28,CRDIR7)	;[8856] Bad version number probably
+	JRST CRDRP2		;[9041] Go store the password
 
-	;Here if password encryption version number was supplied
+;Here if encrypted password with version number was supplied
+
 CRDRP1:	HRRZ T2,CRDUFL		;Get length of arguments
 	CAIGE T2,.CDPDT		;Are they there? (version and date)
-	 RETBAD(CRDI26,<CALL CRDIR6
-			ULKDIR>)
+	ERRJMP (CRDI26,CRDIR7)	;[8856] Nope
 	UMOVE T1,.CDPEV(Q2)	;Get user-supplied encryption version
 	JUMPE T1,CRDP1A		;Bypass structure check if zero (unencrypted)
-
 	MOVE T3,CRDSFL		;Get status flags for the structure
 	TXNN T3,MS%CRY		;Is password encryption on for this structure?
-	 RETBAD(CRDI27,<CALL CRDIR6
-			ULKDIR>)
+	ERRJMP (CRDI27,CRDIR7)	;[8856] Nope
 
 CRDP1A:	CALL CHKPEV		;Test validity of encryption version number
-	 RETBAD(CRDI28,<CALL CRDIR6
-			ULKDIR>) ;Bad version number
+	 ERRJMP (CRDI28,CRDIR7)	;[8856] Bad version number
 	STOR T1,DRPEV,(Q1)	; And remember it
 	UMOVE T1,.CDPDT(Q2)	;Get user-supplied encryption date
 	STOR T1,DRPDT,(Q1)	; And remember it
+
+;Here with properly encrypted password to set in directory.
+
 CRDRP2:	MOVE T1,CRDIRN		;Recover JSB address
 	CALL SETMSK		;Store in directory
 	CALL CPYDIR		;And copy string to directory
-	 RETBAD(CRDIX4,<CALL CRDIR6
-			ULKDIR>)
-	MOVEI B,.TYNAM		;MARK AS NAME BLOCK
-	STOR B,NMTYP,(A)	;...
-CRDRP3:	LOAD B,DRPSW,(Q1)	;GET POINTER TO OLD PASSWORD STRING
-	SUB A,DIRORA		;GET RELATIVE ADR OF PASSWORD STRING
-	STOR A,DRPSW,(Q1)	;STORE NEW PASSWORD STRING POINTER
-	JUMPE B,CRDIR2
+	 ERRJMP (CRDIX4,CRDIR7)	;[8856] Owie
+	SKIPN P3,PASEXP		;[9041] Password expiration turned on?
+	IFSKP.			;[9041] Yes,
+	  PUSH P,T1		;[9041] Save name block address
+	  CALL LGTAD		;[9041] (/T1) Get current time
+	  HRLZS P3		;[9041] Get password expiration days in left
+	  ADD T1,P3		;[9041] Add it to make new password expiration date and time
+	  STOR T1,DRPED,(Q1)	;[9041] Stash it in directory
+	  CALL UPDDIR		;[9041] (/) Update directory
+	  POP P,T1		;[9041] Restore name block address
+	ENDIF.			;[9041]
+	MOVEI T2,.TYNAM		;MARK AS NAME BLOCK
+	STOR T2,NMTYP,(T1)	;...
+CRDRP3:	LOAD T2,DRPSW,(Q1)	;GET POINTER TO OLD PASSWORD STRING
+	SUB T1,DIRORA		;GET RELATIVE ADR OF PASSWORD STRING
+	STOR T1,DRPSW,(Q1)	;STORE NEW PASSWORD STRING POINTER
+	JUMPE T2,CRDIR2
 	CALL RELDFR		;Release storage if any
 CRDIR2:	CALL CRDIR6		;RELEASE JSB STORAGE
-
+
 ;SET DEFAULT ACCOUNT STRING
 
 CRDIR3:	TXNN Q3,CD%DAC		;WANT TO SET DEFAULT ACCOUNT?
 	JRST CRDR3F		;NO, PROCEED
 	UMOVE A,.CDDAC(Q2)	;GET POINTER TO ACCOUNT
 	CALL CPYFUS		;DRAG IT IN
-	 RETBAD (CRDIX3,<ULKDIR>)
-	MOVEM A,CRDIRN		;SAVE ADDRESS OF STRING
+	 ERRJMP (CRDIX3,CRDIR7)	;[8856] JSB free space?
+	MOVEM A,CRDIRN		;[9169] Save address of string
 	CALL SETMSK		;STORE IN DIRECTORY
 	CALL CPYDIR		;AND COPY STRING TO DIRECTORY
-	 RETBAD (CRDIX4,<CALL CRDIR6
-			 ULKDIR>)
+	 ERRJMP (CRDIX4,CRDIR7)	;[8856] Can't do it
 	MOVEI B,.TYNAM		;MARK IT AS A NAME BLOCK
 	STOR B,NMTYP,(A)	;
 	LOAD B,DRACT,(Q1)	;GET POINTER TO OLD ACCOUNT
@@ -2673,14 +3501,16 @@ CRDR3F:	TXNN Q3,CD%PRV		;SETTING PRIVILEGES?
 	JRST CRDR3G		;NO. SKIP THIS THEN
 	UMOVE A,.CDPRV(Q2)	;Get privilege bits
 	MOVE B,CAPENB		;LIMIT POSSIBLE PRIVS TO CURRENT USER
-	TXNN B,SC%WHL!SC%OPR	;UNLESS WHOPER
-	JRST [	MOVE B,A
-		ANDCM B,CAPENB
-		JUMPE B,.+1
-		MOVEI A,CRDI20
-		CALL USTDIR
-		JRST CRDIR4]
-	STOR A,DRPRV,(Q1)	;YES
+	TXNE B,SC%WHL!SC%OPR	;[8856] Privs enabled right now?
+	IFSKP.			;[8856] Nope
+	  MOVE B,A		;[8856] Copy requested priv word
+	  ANDCM B,CAPENB	;[8856] Leave requested bits we don't have
+	  IFN. B		;[8856] Are we granting a priv that we own?
+	    MOVEI A,CRDI20	;[8856] Wheel, oper, or requested cap required
+	    JRST CRDIR7		;[8856] Unlock directory and return error
+	  ENDIF.		;[8856] Otherwise
+	ENDIF.			;[8856]  it is OK to set the requested caps
+	STOR A,DRPRV,(Q1)	;[8856] Set requested capabilities
 	;..
 ;SET MODES
 
@@ -2700,27 +3530,55 @@ CRDR3G:	UMOVE A,.CDMOD(Q2)	;GET MODE BITS
 	TXNE A,CD%DIR		;TRYING TO MAKE THIS FILES ONLY?
 	JRST CRDI0J		;YES. OK
 	MOVEI A,CRDI17		;NO. CAN'T MAKE THIS A USER DIRECTORY
-	CALL USTDIR		;UNLOCK THE DIRECTORY
-	JRST CRDIR4		;TAKE ERROR ROUTE
+	JRST CRDIR7		;[8856] Unlock directory, return error
 CRDI0J:	STOR A,DRMOD,(Q1)	;YES
-
+
 ;SET LOGIN DATE
 
 CRDI0K:	UMOVE A,.CDLLD(Q2)	;GET LAST LOGIN DATE
 	LOAD B,DRDAT,(Q1)	;GET PREVIOUS DATE
 	CAMG A,B		;IS THE NEW DATE BEFORE CURRENT DATE?
-	JRST CRDPUC		;YES, DONT LET TIME GO BACKWARDS
+	JRST CRDSNI		;[9041] Yes, don't let time go backwards
 	TXNE Q3,CD%LLD		;WANT TO SET IT?
 	STOR A,DRDAT,(Q1)	;YES
+
+;[9041] Check for non-interactive set and password fail count
+CRDSNI:	MOVE T1,CRDUFL		;Get user's flags
+	TXNN T1,CD%SNI		;Wanna set non-interactive time?
+	JRST CRDSFC		;No, go on to password fail count
+	HRRZ T1,CRDUFL		;Get length of arguments
+	CAIGE T1,.CDNLD		;Is it there?
+	ERRJMP (CRDI26,CRDIR7)	;No
+	MOVE T1,CAPENB		;Get privs
+	TXNN T1,SC%WHL!SC%OPR	;Is user prived?
+	ERRJMP (CRDIX1,CRDIR7)	;No, don't let him change this
+	UMOVE T1,.CDNLD(Q2)	;Yes, get it
+	STOR T1,DRNIL,(Q1)	;Store it - zero means there isn't one
+;[9041]
+;Here to set password failures
+CRDSFC:	MOVE T1,CRDUFL		;Get user flags
+	TXNN T1,CD%SFC		;Setting this?
+	JRST CRDPUC		;No, go on
+	HRRZ T1,CRDUFL		;Get length of arguments
+	CAIGE T1,.CDFPA		;Is it there?
+	ERRJMP (CRDI26,CRDIR7)	;No
+	MOVE T1,CAPENB		;Get privs
+	TXNN T1,SC%WHL!SC%OPR	;Is user prived?
+	ERRJMP (CRDIX1,CRDIR7)	;No, don't let him change this
+	UMOVE T1,.CDFPA(Q2)	;Yes, get it
+	STOR T1,DRFPA,(Q1)	;Store it - zero means no failures
+	;..
+	;..
+;Set password use count
 CRDPUC:	MOVE T1,CRDUFL		;Get user's flags
 	TXNN T1,CD%PMU		;Setting Password use data?
 	JRST CRDPED		;
 	HRRZ T1,CRDUFL		;Get length of arguments
 	CAIGE T1,.CDPMU		;Is it there?
-	 RETBAD(CRDI26,<ULKDIR>) ;No
+	ERRJMP (CRDI26,CRDIR7)	;[8856] No
 	MOVE T1,CAPENB		;[7.1020] Get privs
 	TXNN T1,SC%WHL!SC%OPR	;[7.1020] Is user prived?
-	RETBAD (CRDIX1,<ULKDIR>);[7.1020] No, don't let him change this
+	ERRJMP (CRDIX1,CRDIR7)	;[8856] No, don't let him change this
 	UMOVE T1,.CDPMU(Q2)	;Yes, get it
 	STOR T1,DRPUD,(Q1)	;Store it - zero means no use limit
 
@@ -2729,22 +3587,32 @@ CRDPED:	MOVE T1,CRDUFL		;Get user's flags
 	JRST CDDIRQ		;No
 	HRRZ T1,CRDUFL		;Get length of arguments
 	CAIGE T1,.CDPED		;Is it there?
-	 RETBAD(CRDI26,<ULKDIR>) ;No
+	ERRJMP (CRDI26,CRDIR7)	;[8856] No
 	MOVE T1,CAPENB		;[7.1020] Get privs
 	TXNN T1,SC%WHL!SC%OPR	;[7.1020] Is user prived?
-	RETBAD (CRDIX1,<ULKDIR>);[7.1020] No, don't let him change this
-	UMOVE T1,.CDPED(Q2)	;Yes, get it
-	STOR T1,DRPED,(Q1)	;Store it - zero means no date
-
-
+	ERRJMP (CRDIX1,CRDIR7)	;[8856] No, don't let him change this
+	UMOVE T2,.CDPED(Q2)	;[9050] Get projected expiration date and time
+	SKIPN PASEXP		;[9050] Password expiration turned on?
+	IFSKP.			;[9050] If so,
+	  IFGE. T2		;[9060] If not expiring...
+	    PUSH P,T2		;[9050] Save user argument
+	    CALL LGTAD		;[9050] (/T1) Get current date and time
+	    POP P,T2		;[9050] And get user argument back
+	    HLRZS T1		;[9050] But we only want days
+	    HLRZ T3,T2		;[9050] Get days only
+	    SUB T3,T1		;[9050] See how many days into the future
+	    CAMLE T3,PASEXP	;[9050] Is it too far?
+	    ERRJMP (CRDI31,CRDIR7) ;[9050] Yes, don't let him do it
+	  ENDIF.		;[9060]
+	ENDIF.			;[9050]
+	STOR T2,DRPED,(Q1)	;[9050] Store it - zero means no date
 
 	;SKIP EVERYTHING FROM CRDR1S TO HERE IF USER SET CD%NCE
 CRDR3A:	CALL UPDDIR		;UPDATE DISK WITH RESULTS SO FAR
-
+
 ;COMPUTE CHANGES IN LOGGED-IN QUOTA, LOGGED-OUT QUOTA, AND SUBDIRECTORY
 ;QUOTA. IF DIRECTORY IS NEW, IT CURRENTLY IS SET UP FOR THE DEFAULT
 ;VALUES
-
 
 CDDIRQ:	LOAD A,DRLIQ,(Q1)	;GET CURRENT LIQ
 	UMOVE B,.CDLIQ(Q2)	;GET USERS VALUE
@@ -2764,7 +3632,9 @@ CDDIRQ:	LOAD A,DRLIQ,(Q1)	;GET CURRENT LIQ
 		OPSTR <SUB A,>,DRDCA,(Q1) ; ...
 		JRST .+1]
 	SUB A,CRDDIQ		;ADJUST BY AMOUNT OF CHANGE FROM OLD VALUE
-	JUMPL A,[ RETBAD (CRDI21,<CALL USTDIR>)] ;NOT ENOUGH QUOTA FOR EXISTING FILES
+	JUMPGE A,CRD3AC		;[8856] Enough quota today
+	MOVEI A,CRDI21		;[8856] Not enough quota for existing files
+	JRST CRDIR7		;[8856] Give error, unlock, return
 CRD3AC:	LOAD A,DRLOQ,(Q1)	;GET CURRENT LOQ
 	UMOVE B,.CDLOQ(Q2)	;GET USERS VALUE
 	TXNN Q3,CD%LOQ		;SETTING LOQ?
@@ -2776,10 +3646,10 @@ CRD3AC:	LOAD A,DRLOQ,(Q1)	;GET CURRENT LOQ
 	JRST CRD3AE		;NO. DON'T CHECK IT
 	UMOVE B,.CDSDQ(Q2)	;GET USERS VALUE
 	TLNE B,-1		;RIGHT HALF ONLY?
-	RETBAD (CRDI24,<CALL USTDIR>) ;NO. WON'T FIT IN ALLOTTED SPACE
+	ERRJMP (CRDI24,CRDIR7)	;[8856] No. Won't fit in allotted space
 	LOAD C,DRSDC,(Q1)	;GET NUMBER OF SUBDIRECTORIES EXISTING
 	CAMLE C,B		;IS NEW VALUE LESS THAN THIS?
-	RETBAD (CRDI22,<CALL USTDIR>) ;CAN'T REDUCE QUOTA THIS MUCH
+	ERRJMP (CRDI22,CRDIR7)	;[8856] Can't reduce quota this much
 	LOAD A,DRSDM,(Q1)	;GET CURRENT SUBDIR QUOTA
 	SUB A,B			;GET DELTA
 	MOVEM A,CRDDSQ		;SAVE IT
@@ -2799,18 +3669,18 @@ CRD3AE:	CALL USTDIR		;RELEASE DIR
 	JRST [	UMOVE A,.CDCUG(Q2)	;GET USER CREATABLE GROUPS LIST
 		LOAD B,DRCUG,(Q1) ;GET CREATABLE GROUPS LIST
 		CALL CDCKCU	;VALIDATE LIST
-		 RETBAD(CRDI16,<CALL USTDIR>) ;FAILED
+		 ERRJMP (CRDI16,CRDIR7) ;[8856] Failed
 		JRST .+1]	;SUCCESS - GO ON
 	TXNE Q3,CD%UGP		;SETTING USER GROUPS?
 	JRST [	UMOVE A,.CDUGP(Q2) ;YES - GET USERS LIST
 		LOAD B,DRCUG,(Q1) ;GET CREATABLE USER GROUPS LIST
 		CALL CDCKCU	;VALIDATE LIST
-		 RETBAD(CRDI16,<CALL USTDIR>) ;FAILED
+		 ERRJMP (CRDI16,CRDIR7) ;[8856] Failed
 		JRST .+1]
 	MOVE A,CRDUFL		;SHOULD THE SUPERIOR BE DECREMENTED?
 	TXNE A,CD%NSQ		;...
 	JRST CRD3AA		;NO
-
+
 ;ADJUST SUPERIOR'S QUOTAS FOR LOGGED-IN QUOTA, LOGGED-OUT QUOTA, AND
 ;MAXIMUM SUBDIRECTORIES
 
@@ -2828,19 +3698,23 @@ CRD3AE:	CALL USTDIR		;RELEASE DIR
 		OPSTR <SUB A,>,DRDCA,(Q1) ; ...
 		JRST .+1]
 	ADD A,CRDDIQ		;ADJUST BY CHANGE IN SUBDIR
-	JUMPL A,[ RETBAD (CRDI13,<CALL USTDIR>)] ;CAN'T CHANGE SUPERIOR
+	JUMPGE A,CRD3AD		;[8856] Jump if it is OK
+	MOVEI A,CRDI13		;[8856] Can't change superior
+	JRST CRDIR7		;[8856] Give error, unlock, return
 CRD3AD:	LOAD A,DRLIQ,(Q1)	;GET LIQ
 	ADD A,CRDDIQ		;ADD DELTA
 CRD3AB:	LOAD B,DRLOQ,(Q1)	;GET LOQ
 	ADD B,CRDDOQ		;ADD DELTA
 	CALL CKLOQ		;SEE IF SUPERIOR HAS INFINITE QUOTA
 	 SKIPA			;YES. DON'T CHECK
-	JUMPL B,[ RETBAD(CRDI14,<CALL USTDIR>)] ;LOQ EXHAUSTED
+	JUMPL B,[MOVEI A,CRDI14 ;[8856] LOQ exhausted
+		JRST CRDIR7]	;[8856] Return error and unlock dir
 	LOAD C,DRSDM,(Q1)	;GET SDQ
 	ADD C,CRDDSQ		;ADD DELTA
 	MOVE D,C		;COPY IT
 	OPSTR <SUB D,>,DRSDC,(Q1) ;SUBTRACT NUMBER OF SUBDIRS EXISTING
-	JUMPL D,[ RETBAD(CRDI15,<CALL USTDIR>)] ;SDQ EXHAUSTED
+	JUMPL D,[MOVEI A,CRDI15 ;[8856] SDQ exhausted
+		JRST CRDIR7]	;[8856] Unlock and return error
 	CALL CKLIQ		;SEE IF SUPERIOR HAS INFINITE QUOTA
 	 SKIPA			;YES. DON'T ADJUST LOGGED-IN QUOTA
 	JRST [	STOR A,DRLIQ,(Q1) ;NO. ADJUST LOGGED-IN QUOTA
@@ -2858,36 +3732,37 @@ CRD3AB:	LOAD B,DRLOQ,(Q1)	;GET LOQ
 	CALL ADJALC		;ADJUST SUPERIOR'S ALLOCATION ENTRY
 CRD3AA:	CALL UPDDIR		;UPDATE DISK IMAGE
 	CALL USTDIR		;NEW VALUES PASS LIMIT CHECKS
-
+
 ;SET USER GROUPS FOR SUBDIRECTORIES AND THIS DIRECTORY'S USER GROUPS
 
 CRDR3B:	MOVE A,CRDIRD		;MAP OBJECT DIR AGAIN
 	HLL A,CRDSUP		; ...
 	CALL SETDIR		; ...
-	 RETBAD(MONX03)		;SHOULD BE IMPOSSIBLE
+	 ERRJMP (MONX03,CRDIR4)	;[8856] Should be impossible
 	CALL CHKCHG		;SHOULD PARAMETERS BE CHANGED
 	 JRST CRDR3D		;NO
 	UMOVE A,.CDCUG(Q2)	;GET CREATABLE USER GROUPS
 	TXNN Q3,CD%CUG		;[7475] SETTING THEM?
 	IFSKP.
           CALL CRDCUP		;YES - COPY TO DIR
-          RETBAD ()             ;[7461] Failed - pass error along
+	   JRST CRDIR7		;[8856] Failed, return 
 	ENDIF.
 	UMOVE A,.CDUGP(Q2)	;GET USER GROUPS
 	TXNE Q3,CD%UGP		;WANT TO SET USER GROUPS?
 	CALL CRDUGP		;YES, GO SET UP USER GROUPS
 
 ;Set remote node aliases
+
 	MOVE T1,CRDUFL		;is remote node alias list
 	TXNE T1,CD%RNA		; to be changed ?
 	CALL CHKCHG		;yes. but SHOULD it be changed ?
 	IFSKP.
 	  CALL CRDRNA		;yes. do it
-	   RETBAD ()		;failure. pass error up.
+	   JRST CRDIR7		;[8856] Failed, unlock and return
 	ENDIF.
 	;..
-;DO ALLOCATION, DEFAULT PROTECTION, DIRECTORY PROTECTION
-; Online & offline expiration defaults
+
+;DO ALLOCATION, DEFAULT PROTECTION, DIRECTORY PROTECTION
 
 	UMOVE A,.CDLOQ(Q2)	;GET LOGGED OUT QUOTA
 	TXNE Q3,CD%LOQ		;SET IT?
@@ -2913,6 +3788,9 @@ CRDR3B:	MOVE A,CRDIRD		;MAP OBJECT DIR AGAIN
 	TLO A,500000
 	TXNE Q3,CD%DPT		;SET IT?
 	STOR A,DRPRT,(Q1)	;YES
+
+; Online & offline expiration defaults
+
 	MOVE B,CRDUFL		; Get flags
 	UMOVE A,.CDDNE(Q2)	; Get user's online exp choice
 	TXNE B,CD%NED		; Want to change that?
@@ -2932,13 +3810,16 @@ CRDR3B:	MOVE A,CRDIRD		;MAP OBJECT DIR AGAIN
 	  UMOVE A,.CDDFE(Q2)
 	  HLRZ B,A		;GET USER SPECIFIED END DAY
 	  CAMLE B,D		;LEGAL?
-	  RETBAD(ARGX27,<ULKDIR>) ;  Out of reasonable range
+	  ERRJMP (ARGX27,CRDIR7) ;[8856] Out of reasonable range
 	ELSE.
 	  CAMLE A,TPRCYC	; Within range?
-	  RETBAD(ARGX27,<ULKDIR>) ; No
+	  ERRJMP (ARGX27,CRDIR7) ;[8856] No
 	ENDIF.
       ENDIF.
 	STOR A,DRDFE,(Q1)	;Store user value
+
+;SET PPN
+
 CRD3BB:	UMOVE A,.CDPPN(Q2)	;GET PROJECT-PROGRAMMER NUMBER
 	TXNN Q3,CD%PPN		;WANT TO SET IT?
 	JRST CRD3BD		;NO
@@ -2947,24 +3828,23 @@ CRD3BB:	UMOVE A,.CDPPN(Q2)	;GET PROJECT-PROGRAMMER NUMBER
 	HLRZS A			;ELSE ISOLATE PROJECT NUMBER
 	TRNN A,400000		;SIGN BIT ON IS AN ILLEGAL TOPS-10 PROJECT NUMBER
 	CAIN A,PPNLH		;PREVENT CONFUSION BY NOT ALLOWING OLD STYLE
-	RETBAD (PPNX1,<ULKDIR>)	;ILLEGAL PROJECT NUMBER
+	ERRJMP (PPNX1,CRDIR7)	;[8856] Illegal project number
 	UMOVE A,.CDPPN(Q2)	;GET PPN BACK AGAIN
 	TRNN A,-1		;PROGRAMMER NUMBER OF ZERO IS ILLEGAL
-	RETBAD (PPNX1,<ULKDIR>)	;SO FLUNK THAT OUT
+	ERRJMP (PPNX1,CRDIR7)	;[8856] So flunk that out
 ;HERE TO CHECK PPN FOR UNIQUENESS
 	LOAD C,DRPPN,(Q1)	;GET CURRENT PPN FOR THIS DIRECTORY
 	CAMN A,C		;SAME AS SPECIFIED PPN?
 	JRST CRD3BD		;YES, SO SKIP FURTHER PPN PROCESSING
 	CALL FNDPPN		;MUST NOT MATCH AN EXISTING PPN
 	 CAIA			;NO FOUND SO OK
-	RETBAD (PPNX1,<ULKDIR>)	;SO FLUNK THAT OUT
+	ERRJMP (PPNX1,CRDIR7)	;[8856] So flunk that out
 CRD3BC:	UMOVE B,.CDPPN(Q2)	;GET BACK PPN NUMBER
 	STOR B,DRPPN,(Q1)	;STORE IT IN THE DIRECTORY
 	HRRZ A,CRDIRD		;GET DIRECTORY NUMBER
 	CALL SETPPN		;ALSO, STORE IT IN IDXTAB EXTENSION
 CRD3BD:
-
-
+
 ;DO RETENTION SPEC, DIRECTORY GROUPS
 
 	UMOVE A,.CDRET(Q2)	;GET # OF GENERATIONS TO KEEP
@@ -2976,7 +3856,10 @@ CRD3BD:
 	TXNE Q3,CD%DGP		;SET DIR GROUPS?
 	CALL CRDDGP		;YES, GO SET UP DIR GROUP LIST
 CRDR3D:	CALL UPDDIR		;FIX DIR ON DISK
-	ULKDIR
+	CALL USTDIR		;[8856] (/) Unlock directory, go OKINT
+
+;If creation of a top level directory, we need to call CPYBAK.
+
 	SKIPN CRDCPY		;WANT TO CALL CPYBAK?
 	JRST CRDR3C		;NO
 	HRRZ A,CRDSTX		;GET STRUCTURE NUMBER
@@ -3050,46 +3933,16 @@ CRDIR5:
 	UMOVEM A,1		;RETURN IT IN USER AC 1
 	RETSKP			;GIVE SUCCESSFUL RETURN
 
-;[7.1231]
-;CHPLEN - Routine to check and see if a minimum password length
-;is required. If so, then the supplied password must be long enough.
-;
-; Called with:
-;	password string in JSB free space
-;	CALL CHPLEN
-;
-; Returns:
-;	+1 - Password not long enough
-;	+2 - Password long enough or no minimum length required
-;
-;Preserves things
+;Error Routines
+;	Enter at CRDIR4 (directory not mapped)
+;[8856] Enter at CRDIR7 (directory mapped by SETDIR)
+;	with A/ error code to return to user
 
-CHPLEN:	SAVET			;Don't mangle
-	SKIPN MINPAS		;Do we want a minimum password length?
-	RETSKP			;No, so this is done
-
-;Note - Because this is a lookup pointer, the string actually starts
-;at the (CRDIRN)+1 and not (CRDIRN)+0
-
-	MOVE T1,CRDIRN		;Get pointer to password string block
-	AOS T1			;Go past length word
-	HRLI T1,(POINT 7,)	;Make a nice byte pointer
-	SETZ T4,		;This is our counter
-	DO.			;Now count the number of characters
-	  ILDB T2,T1		;Get a character
-	  JUMPE T2,ENDLP.	;If it is a null, then we are done
-	  AOJA T4,TOP.		;Bump the count and get next character
-	OD.			;No more characters, count is in T4
-	CAMGE T4,MINPAS		;Is it big enough?
-	RET			;No, return failure
-	RETSKP			;Yes it is, this is a good one to use
-
-; ERROR ROUTINES
-
+CRDIR7:	CALL USTDIR		;[8856] (/) Unlock directory, go OKINT
 CRDIR4:	MOVEM A,CRDIRE		;SAVE ERROR CODE
 	CALL CRDIR6		;RELEASE JSB SPACE
 	HRRZ A,CRDIRJ		;GET JFN OF DIR FILE
-	JUMPE A,CRDR00		;DON'T RELEASE IT IF ALREADY RELEASED
+	JUMPE A,CRDR02		;[8856] No JFN there, check if new dir failure
 	MOVX B,CDNWF		;IS THIS A NEW FILE?
 	TDNN B,CRDFLG		;??
 	JRST CRDR01		;NO. DON'T EXPUNGE IT OR CLEAR IDXTAB
@@ -3103,6 +3956,24 @@ CRDR01:	HRRZ A,CRDIRJ		;GET BACK THE JFN
 	JFCL
 CRDR00:	MOVE A,CRDIRE		;GET BACK ERROR CODE
 	RETBAD ()		;AND EXIT
+
+CRDR02:	MOVX B,CDNWF		;[8856] Load new directory bit
+	TDNN B,CRDFLG		;[8856] Is this a new directory build failure?
+	JRST CRDR00		;[8856] Nope, just return now
+	MOVEI A,CRDGJB		;[8856] Have to delete directory
+	HRROI B,CRDIRS		;[8856] Get pointer to "NAME.DIRECTORY" string
+	GTJFN			;[8856] Get JFN on the new directory
+	 ERJMP CRDR00		;[8856] If an error here I give up
+	HRRZM A,CRDIRJ		;[8856] Save JFN for DELDIR code
+	MOVE A,CRDIRE		;[8856] Load error code that we bombed on
+	HRRM A,CRDFLG		;[8856] Save it in place not known to DELDIR
+	CALL DELDIR		;[8856] Delete this directory
+	 JFCL			;[8856] Error?  Well I tried anyway
+	HRRZ A,CRDFLG		;[8856] Reload the error
+	RETBAD ()		;[8856] Pass error back up
+
+;Small routine to releaser any JSB free space we are currently using.
+;Returns +1 always.
 
 CRDIR6:	MOVEI A,JSBFRE		;RELEASE NAME STRING SPACE
 	HRRZ B,CRDIRN		;B/ ADDRESS OF JSB FREE SPACE
@@ -3363,7 +4234,7 @@ CUCKD3: SOJLE T4,R		;[7461] Group not found in user list - fail
 	RETSKP			;[7461] Yes, success
 	JRST CUCKD3		;[7461] Keep looking
 	ENDTV.
-
+
 
 ;ROUTINE TO CHECK A LIST IN USER ADDRESS SPACE AGAINS A LIST IN
 ;A DIRECTORY
@@ -3462,7 +4333,7 @@ RDFIX:	MOVE B,STRTAB(B)	;GET ADDRESS OF SDB FOR THIS STRUCTURE
 	STOR B,DRSDM,(Q1)	; ...
 	RET			;AND RETURN
 
-
+
 ;ROUTINE TO SET UP THE INDEX TABLE OF NEW DIRECTORIES
 ;ACCEPTS IN A/	ADR OF INDEX BLOCK IF ANY (0 IF NONE)
 ;	CALL CRDIDX
@@ -3509,14 +4380,16 @@ CRDIDE:	MOVE B,CRDTMP		;GET ADDRESS OF FDB
 	SETZRO FBDRN,(B)
 	ULKDIR			;NOW UNLOCK THE DIR
 	RETBAD ()
-
-
+
 ;COMMON FAILURE CASE FOR ABOVE
 
 CRBUG1:	BUG.(CHK,CRDNOM,JSYSF,HARD,<CRDIR - Failed to make MAIL.TXT file>,,<
 
 Cause:	While creating a new directory that is not FILES-ONLY, CRDIR% could
 	not create the MAIL.TXT.1 file.
+
+Action:	Find out why the MAIL.TXT.1 file could not be created. It is
+	most likely a problem with the disk.
 >)
 	RET
 
@@ -3545,6 +4418,7 @@ CRDRNA:	TRVAR <UBLOCK,MBLOCK,JSBTMP,UFLAGS>
 	MOVEM T2,UBLOCK		;save address
 
 ;loop detect on user arguments
+
 	MOVEI T1,CRDMAX   	;maximum # of aliases allowed
 	DO.
        	  UMOVE T2,.CDNXT(T2)	;get next block
@@ -3552,6 +4426,7 @@ CRDRNA:	TRVAR <UBLOCK,MBLOCK,JSBTMP,UFLAGS>
 	  SOJGE T1,TOP.  	;not end of list, continue
 	  RETBAD (CRDI25,<ULKDIR>) ;failed.
 	ENDDO.
+
 	DO.			;for each block ...
 	  MOVE T1,UBLOCK	;get &
 	  UMOVE T2,.CDSIZ(T1)	; save
@@ -3562,7 +4437,7 @@ CRDRNA:	TRVAR <UBLOCK,MBLOCK,JSBTMP,UFLAGS>
 	    IFSKP.
        	      MOVEI T2,RN.SIZ   ;yes. allocate an
 	      CALL ASGDFR	;(T2/T1) alias block for directory [absolute]
-	       RETBAD (NSPX01,<ULKDIR>) ;failed
+	       RETBAD (NSPX01)	;Failed
 	      MOVEM T1,MBLOCK	;save addr of new block
 	    ELSE.
 	      SETZM MBLOCK	;no. deleting, so no new block.
@@ -3581,7 +4456,7 @@ CRDRNA:	TRVAR <UBLOCK,MBLOCK,JSBTMP,UFLAGS>
 	      SUB T2,DIRORA	;make address relative.
 	      STOR T2,DRRNA,(Q1) ;the new "current list"
 	    ENDIF.
-	  ELSE.
+	  ELSE.
 	    UMOVE T1,.CDNOD(T1) ;no. altering existing entry. find alias
 	    CALL CRDFND		;(T1/T1,T2) block in directory with that node
 	     RETBAD ()		;allocation failure
@@ -3871,6 +4746,7 @@ DELDIR:	SETZM CRDIRF		;INITIALIZE ERROR FLAG
 	  JRST DELDI3		;[7.1055] And get out of here
 	ENDIF.			;[7.1055]
 	CALL INVIDX		; INVALIDATE THE INDEX WHILE WE LOOK AROUND
+
 	MOVSI STS,-NJOBS	; SET UP AOBJN POINTER
 	HLL DEV,CRDSUP		; GET THE UNIQUE CODE
 	HRR DEV,CRDIRD		; UNIQUE CODE,,DIRECTORY
@@ -3890,11 +4766,11 @@ DDLOOP:	HRRZ T1,STS		; GET JOB NUMBER
 	HRRZ T2,CRDIRD		; AND THE DIR # OF THE ONE TO DELETE
 	CAMN T1,T2		; SAME?
 	 JRST DDBMB		; YES, RETURN THE ERROR
-DDNXT:	AOBJN STS,DDLOOP		; CHECK FOR MORE
+DDNXT:	AOBJN STS,DDLOOP	; CHECK FOR MORE
 	POP P,T3		; RETRIEVE THE IDXTAB STUFF
 	POP P,T2
 	CALL CRDONE		; RESET IT
-
+
 ;DON'T LET USER DELETE THIS DIRECTORY IF CONNECTED TO IT
 
 	CALL GTCSCD		;GET CONNECTED STRUCTURE,,DIRECTORY
@@ -3940,7 +4816,7 @@ CRDONE:	HRRZ T1,CRDIRD		;
 	CALL SETIDX		; SET IT
 	 RET			; SHOULDN'T HAPPEN
 	RET			; OK
-
+
 ;SAVE THE QUOTAS (DISK AND SUBDIRECTORY) FOR THIS DIRECTORY SO THEY
 ;CAN BE GIVEN BACK TO ITS SUPERIOR
 
@@ -3952,7 +4828,7 @@ DELDI6:	LOAD A,DRLIQ,(Q1)	;GET LIQ
 	MOVEM A,CRDDSQ		;SAVE
 	CALL USTDIR		;RELEASE DIR
 
-;SEE IF DIRECTORY FILE IS MAPPED. IF SO, THE DIRECTORY CAN'T BE DELETED
+;SEE IF DIRECTORY FILE IS MAPPED. IF SO, THE DIRECTORY CAN'T BE DELETED
 ;IN THIS MANNER
 
 	MOVE A,CRDIRJ		;1/JFN
@@ -3982,7 +4858,8 @@ DELDI6:	LOAD A,DRLIQ,(Q1)	;GET LIQ
 	CALL DELDEL
 	 JRST [	MOVEM T1,CRDIRE ;FAILED. SAVE ERROR CODE
 		JRST DELDI1]	;GO SEE WHY FAILED
-;FILES MAY OR MAY NOT HAVE BEEN DELETED AT THIS POINT.  NOW CLEAR DIRECTORY
+
+;FILES MAY OR MAY NOT HAVE BEEN DELETED AT THIS POINT.  NOW CLEAR DIRECTORY
 ;AND PERMANENT BITS SO THAT DIRECTORY FILE CAN BE DELETED
 
 DELDI2:	HRRZ JFN,CRDIRJ		;GET JFN
@@ -4030,7 +4907,7 @@ DELDI5:	LOAD A,DRSDC,(Q1)	;GET CURRENT SUBDIR COUNT
 
 	MOVE A,CRDIRD		;GET DIR NUMBER AGAIN
 	CALL DELIDX		;DELETE THIS ENTRY FROM INDEX TABLE
-
+
 ;IF DELETING THE LAST SUBDIRECTORY FROM ITS SUPERIOR, INDICATE THAT
 ;SUPERIOR NO LONGER HAS SUBDIRECTORIES
 
@@ -4049,11 +4926,10 @@ DELDI5:	LOAD A,DRSDC,(Q1)	;GET CURRENT SUBDIR COUNT
 	SETZRO FB%SDR,.FBCTL(A) ;CLEAR SUBDIR FLAG
 	CALL UPDDIR		;UPDATE DISK IMAGE
 	CALL USTDIR		;RELEASE
-
+
 ;DELETE THE DIRECTORY FILE AND EXPUNGE ITS CONTENTS
 
-DELDI4:	
-	MOVE C,CRDIRD		;C/ DIRECTORY NUMBER
+DELDI4:	MOVE C,CRDIRD		;C/ DIRECTORY NUMBER
 	MOVE D,CRDSTX		;D/ STRUCTURE NUMBER
 	CALL REMSDR		;REMOVE FROM CACHE IF NECC.
 	CALL CRDSWH		;SET WHEEL FOR DURATION OF DELETE
@@ -4098,7 +4974,7 @@ Action:	The backup copy of the root directory is now corrupt and must be
 >,,<DB%NND>)			;[7.1210] 
 		RETSKP]
 	RETSKP
-
+
 ;A FAILURE HAS OCCURRED. IF IT IS DUE TO A BAD DIRECTORY, FORCE IT TO
 ;BE DELETED ANYWAY.  IF NOT, ERROR IS PROBABLY OPEN FILE IN DIRECTORY, WHICH
 ;SHOULD FAIL
@@ -4258,6 +5134,8 @@ DIRINI::SETO T4,		;[7.1257] All other entries
 		CALL UNMAPD	;UNMAP THE DIRECTORY
 		MOVE T1,LSTERR	;GET PAGE FAULT HANDLER'S COMPLAINT
 		RETBAD()]	;AND FAIL
+	;..
+	;..
 	SKIPN ENTPNT		;[7.1257] Do this if CRDIR% code
 	CALL CRDCWH		;[7440] (/T1) Reset privs and go OKINT
 	MOVEI T1,777		;DO XBLT OF 1 PAGE
@@ -4302,7 +5180,8 @@ DIRINI::SETO T4,		;[7.1257] All other entries
 	STOR T1,DRDFE,(T4)	; Into directory
 	ULKDIR			;UNLOCK THE DIRECTORY
 	RETSKP			;EXIT
-
+	SUBTTL DELF JSYS
+
 ; Delete file
 ; Call:	1	; Jfn
 ;	DELF
@@ -4315,26 +5194,37 @@ DIRINI::SETO T4,		;[7.1257] All other entries
 ; DF%FGT (B2) - FORGET FILE
 
 .DELF::	MCENT			; Become slow
-	HRRZ JFN,1
+	HRRZ JFN,T1
 	CALL CHKJFN		; Check it out
 	 JRST GBGJFN
 	 JFCL
 	 ERUNLK DESX4		; Tty or byte illegal
 	TQNE <ASTF>
-	 ERUNLK(DESX7)		; Output stars not allowed
+	ERUNLK(DESX7)		; Output stars not allowed
+	LOAD T2,FLDTB,(JFN)	;[9041] Get dispatch table
+	CAIE T2,DSKDTB		;[9041] Is we on disk?
+	IFSKP.			;[9041] If so,
+	  MOVEI T1,.GODLF	;[9041] Say deleting file
+	  SETZ T2,		;[9041] And not setting it secure
+	  CALL ACJOFL		;[9041] (T1,T2,JFN/) And see if we can
+	   ERUNLK()		;[9041] Can't
+	ENDIF.			;[9041]
 	CALL @DELD(P3)		; Call device dependent routine
 	 ERUNLK()		; Couldn't delete
-	UMOVE A,1
-	TLNE A,(DF%NRJ)		;IF B0, DON'T RELEASE JFN
+	UMOVE T1,T1
+	TLNE T1,(DF%NRJ)	;IF B0, DON'T RELEASE JFN
 	JRST DELF1
-	TQNN <OPNF>
-	JRST [	MOVEI A,0(JFN)	;GET THE JFN
-		CALL LUNLK0	;FREE THE STR LOCK
-		CALL RELJFN	;RELEASE THE JFN
-		SMRETN]
+	TQNE <OPNF>
+	IFSKP.
+	  MOVEI A,0(JFN)	;GET THE JFN
+	  CALL LUNLK0		;FREE THE STR LOCK
+	  CALL RELJFN		;RELEASE THE JFN
+	  SMRETN
+	ENDIF.
 DELF1:	CALL UNLCKF
 	SMRETN
-
+	SUBTTL DELNF JSYS
+
 ;DELETE ALL BUT N VERSIONS OF FILE
 
 ; 1/	FLAG BITS+JFN
@@ -4352,8 +5242,15 @@ DELF1:	CALL UNLCKF
 	TQNE <ASTF>		;PARSE-ONLY?
 	ERUNLK(DESX7)		;YES, LOSE
 	BLCAL. DSKOK,<P3>	;DISK?
-	 ERUNLK GFDBX1		;NO, CAN'T DO
-	LOAD A,STR,(JFN)	;[7.1063]Get structure number
+	IFSKP.			;[9041] If so,
+	  MOVEI T1,.GODLF	;[9041] Do we need ACJ's blessing?
+	  SETZ T2,		;[9041] Say not setting secure
+	  CALL ACJOFL		;[9041] (T1,T2,JFN/) Let's find out
+	   ERUNLK ()		;[9041] ACJ said no
+	ELSE.			;[9041] Not disk!
+	  ERUNLK GFDBX1		;[9041] So no can do
+	ENDIF.			;[9041]
+	LOAD T1,STR,(JFN)	;[7.1063]Get structure number
 	CALL CKSTOF		;[7.1063](T1/T1)Is structure offline?
 	 ERUNLK	()		;[7.1063]Return "Structure is offline"
 	CALL GETFDB
@@ -4370,6 +5267,7 @@ DELNF2:	JN <FBNXF,FBDEL,FBNDL>,(A),DELNF1 ;[7253] Skip DELETED, NON-EX or NEVER-
 		JRST DELNF1]
 	POP P,A
 DELNF5:	JN <FBTMP>,(A),DELNF3	;TEMPORARY FILES ARE SPECIAL
+
 DELNF4:	SOJGE Q1,DELNF1		;SKIP IT IF STILL WITHIN KEEP COUNT
 	PUSH P,A		;SAVE FDB ADR
 	MOVX B,FC%WR		;MUST HAVE WRITE ACCESS TO DELETE
@@ -4402,7 +5300,7 @@ DELNFE:	SKIPLE Q1		;ANY FILES DELETED?
 	ULKDIR
 	CALL UNLCKF
 	SMRETN
-
+	SUBTTL DSMNT JSYS
 ; Dismount device
 ; Call:	1	; Device designator
 ;	DSMNT
@@ -4446,7 +5344,8 @@ DSMNT0::SAVEP
 	 SOS -1(P)		;FAILED, PREVENT SKIP RETURN
 DSMNT1:	POP P,1
 	RETSKP
-
+	SUBTTL DVCHR JSYS
+
 ; Get device characteristics
 ; Call:	1	; Device designator
 ;	DVCHR
@@ -4473,6 +5372,7 @@ DSMNT1:	POP P,1
 		UMOVEM JFN,1
 		JRST DVCHR1]
 	CALL LCKDVL		;LOCK DEVICE TABLE TO AVOID 'SECNX'
+
 	CAIE P3,NFTDTB		;NFT device ?
 	IFSKP.
 	  CALL UNLCKF		;yes. unlock file.
@@ -4511,6 +5411,7 @@ DVCHR4:	UMOVEM C,2
 	  SKIPA			;Not a real job number, so don't save it
 	 HRLM A,DEVJOB		;Stuff job number where index was
 	ENDIF.			;Resume main code
+
 	MOVE A,DEVJOB		;Get the Job number,,unit number
 	UMOVEM A,3
 	HLRZ A,DEVUNT(B)	;YES, GET THE ASSIGNER
@@ -4527,11 +5428,14 @@ DVCHR4:	UMOVEM C,2
 	CALL TTYPTY		;ASSUME IT'S A PTY. GET PTY NUMBER
 	HRLI A,<.DVDES+.DVPTY>	;MAKE IT A DEVICE DESIGNATOR
 DVCHR3:	CALL CHKDES		;UNAVAILABLE.  GET INDEX FOR PTY
-	BUG.(CHK,DVCHRX,JSYSF,HARD,<DVCHR1 - Unexpected CHKDES failure within .DVCHR>,,<
+	 BUG.(CHK,DVCHRX,JSYSF,HARD,<DVCHR1 - Unexpected CHKDES failure within .DVCHR>,,<
 
 Cause:	CHKDES failed to get the device code for a TTY or PTY after using
 	either TTYPTY to convert a TTY number to a PTY number or PTYTTY to
 	convert a PTY number to a TTY.
+
+Action:	If this persists, use the DOB% facility to obtain a dump of this
+	BUGCHK and submit an SPR.
 >)
 	MOVX A,DV%ASN		;COPY THIS BIT TO USER
 	AND C,A			;ONLY THIS BIT
@@ -4549,7 +5453,7 @@ Cause:	CHKDES failed to get the device code for a TTY or PTY after using
 	MOVE A,DEVJOB		;Get back the job number to return
 	XCTU [HRLM A,C]		;RETURN IT TO USER.
 	MRETNG
-
+
 DVCHR2:	CAIE A,PTYDTB		;IS UNAVAILABLE DEVICE A PTY?
 	JRST DVCHR5		;NO
 	PUSH P,B		;YES. SAVE AC
@@ -4566,7 +5470,8 @@ DVCHR5:	CAIE A,MTADTB		;IS THIS A MAGTAPE?
 	 MRETNG			;No
 	XCTU [HRRZS 3]		;YES, MAKE IT ASSIGNED TO JOB 0
 	MRETNG
-
+	SUBTTL ERSTR JSYS support
+
 ;ROUTINE TO OUTPUT A BYTE FROM ERSTR - COMPLETES QUIETLY IF
 ;ANY PROBLEMS
 
@@ -4608,7 +5513,8 @@ ERBOUW:	TQNE <ERRF>		;WAS IT AN ERROR?
 	CALL UNLDIS		;UNLOCK AND BLOCK
 	MOVE B,SAVBYT		;GET BACK BYTE
 	JRST ERBOU1		;TRY AGAIN
-
+	SUBTTL FFFFP JSYS
+
 ;FIND FIRST FREE FILE PAGE
 ; CALL:	A/PAGE #,, JFN
 ;	FFFFP
@@ -4732,7 +5638,8 @@ FFFFF2:	MOVEM A,TEMPA		;SAVE
 	MOVE A,TEMPA		;RESTORE A
 	ANDI A,777		;KEEP ONLY THE PAGE NUMBER
 	RETSKP
-
+	SUBTTL FFUFP JSYS
+
 ; Find first used file page
 ; Call:	LH(1)	; Jfn
 ;	RH(1)	; Page number to start with
@@ -4805,7 +5712,7 @@ FFUFP2:	PUSH P,A
 	ANDI B,777000
 	ADD A,B
 	JRST FFUFPX		; Success
-
+
 ;ROUTINE TO MAP AND SCAN PT FOR NON-0 PAGE
 
 FFUFF:	PUSH P,A
@@ -4833,7 +5740,8 @@ FFUFF1:	ANDI A,777		; Get pn part
 	MOVEM A,(P)
 	AOS -1(P)		; Skip return
 	JRST FFUFF2
-
+	SUBTTL GACTF JSYS
+
 ; Get account of file
 ; Call:	1	; Jfn
 ;	2	; Core location to put string if any
@@ -4880,7 +5788,8 @@ CPYXL2:	UMOVEM T4,2		;UPDATE USER POINTER
 	XCTBU [IDPB T1,T4]	;DEPOSIT NULL
 	ULKDIR			;UNLOCK DIRECTORY
 	CALLRET UNLCKF		; AND JFN THEN RETURN
-
+	SUBTTL GDSTS JSYS
+
 ; Get device status
 ; Call:	1	; Jfn
 ;	GDSTS
@@ -4916,7 +5825,8 @@ Action:	The bit is being cleared. If this problem persists, change the
 
 GDSTSW:	CALL UNLDIS		;GO UNLOCK AND DISMIS
 	JRST GDSTS1		;TRY AGAIN
-
+	SUBTTL GFUST JSYS
+
 ; GET FILE USER STRING
 ;
 ; CALL:	1/ FUNCTION ,, JFN
@@ -4959,7 +5869,8 @@ GDSTSW:	CALL UNLDIS		;GO UNLOCK AND DISMIS
 			CALL UNLCKF>) ;SOMETHING WRONG
 GFUS05:	CALL CPYXL		;COPY STRING TO USER SPACE
 	JRST MRETN		;RETURN
-GFUS10:	MOVEI T2,MAXLW+1	;GET LENGTH OF BLOCK REQUIRED
+
+GFUS10:	MOVEI T2,MAXLW+1	;GET LENGTH OF BLOCK REQUIRED
 	CALL ASGJFR		;ASSIGN JSB FREE SPACE FOR STRING
 	 ITERR (GFUSX2,<CALL UNLCKF
 			CALL USTDIR>)	;NO ROOM IN JSB
@@ -4998,7 +5909,8 @@ GFUS20:	UMOVE T1,2		;GET DESTINATION POINTER
 	CALL RELFRE		;RELEASE SPACE USED TO HOLD STRING
 	OKINT			;PERMIT INTERRUPTS AGAIN
 	JRST MRETN		;GIVE USER SUCCESS RETURN
-
+	SUBTTL GTFDB JSYS
+
 ;GTFDB - RETURNS WORDS FROM A FILE'S FDB
 ;CALL:	1/	JFN
 ;	2/	LH: NUMBER OF WORDS TO READ, RH: OFFSET OF FIRST WORD
@@ -5007,7 +5919,6 @@ GFUS20:	UMOVE T1,2		;GET DESTINATION POINTER
 ;RETURNS +1 IF SUCCESSFUL, ITRAPS ON ERRORS.
 ;IF THE FDB IS SHORTER THAN THE MAXIMUM SIZE OF AN FDB, ZERO WORDS
 ;ARE RETURNED FOR THE WORDS OFF THE END OF THE FDB.
-
 
 .GTFDB::MCENT			;JSYS ENTRY
 	STKVAR <GTFADR,GTFBEG,GTFEND,GTFZER>	;ALLOCATE VARIABLES
@@ -5038,6 +5949,7 @@ GFUS20:	UMOVE T1,2		;GET DESTINATION POINTER
 	 ITERR(,<CALL UNLCKF>)	;[7.1063]Return "Structure is offline"
 	CALL GETFDB		;GET POINTER TO THE FDB
 	 ITERR(DESX3,<CALL UNLCKF>)	;FAILED
+
 	MOVE T2,T1		;PUT FDB ADDRESS IN RIGHT AC
 	LOAD T1,FBLEN,(T1)	;GET FIRST ILLEGAL OFFSET FOR THIS FDB
 	MOVEM T1,GTFZER		;REMEMBER WHERE WE HAVE TO ZERO LATER
@@ -5052,9 +5964,8 @@ GFUS20:	UMOVE T1,2		;GET DESTINATION POINTER
 GTFD2:	CALL USTDIR		;UNLOCK THE DIRECTORY
 	CALL UNLCKF		;AND THE JFN
 				; ..
-
-;NOW ZERO WORDS WHICH THIS FDB WAS NOT LONG ENOUGH TO CONTAIN.
 
+;NOW ZERO WORDS WHICH THIS FDB WAS NOT LONG ENOUGH TO CONTAIN.
 
 GTFDB3:	AOS T1,GTFZER		;ADVANCE TO NEXT WORD
 	CAMLE T1,GTFEND		;WANTS ANOTHER WORD OFF END OF FDB?
@@ -5064,7 +5975,8 @@ GTFDB3:	AOS T1,GTFZER		;ADVANCE TO NEXT WORD
 	ADD T1,GTFADR		;ADD ADDRESS OF BLOCK
 	XCTU [SETZM 0(T1)]	;CLEAR THE WORD
 	JRST GTFDB3		;CONTINUE
-
+	SUBTTL GTSTS JSYS
+
 ; Get open file status
 ; Call:	1	; Jfn
 ;	GTSTS
@@ -5085,7 +5997,8 @@ GTSTS1:	SETZM STS		; NO, BE SURE ALL OTHER BITS CLEAR TOO
 	UMOVEM STS,2		;RETURN THEM TO THE USER
 	MRETNG			;AND DONE
 
-
+	SUBTTL INIDR JSYS
+
 ; Initialize directory
 ; Call:	1	; Device designator
 ;	INIDR
@@ -5106,451 +6019,617 @@ GTSTS1:	SETZM STS		; NO, BE SURE ALL OTHER BITS CLEAR TOO
 	CALL @INDD(P3)
 	 RETERR()		;FAILED
 	SMRETN
-
-; Convert jfn to string
-; Call:	1	; Jfn
-;	2	; String pointer
-;	3	; Format specification (see jsys manual)
+	SUBTTL JFNS JSYS
 
-MSKSTR JS%T1,Q1,1B0		;LOCAL FLAG - PUNCTUATE NULL EXTENSION
-MSKSTR JS%T2,Q1,1B1		;LOCAL FLAG - MULTIPLE DIR DEV
-MSKSTR JS%T3,Q1,1B2		;LOCAL FLAG - SUPPRESSING LEADING TAB
+; Convert JFN to string
+; Call:	1	; Destination designator for ASCIZ filespec string
+;	2	; Indexable file handle or pointer to string to return
+;	3	; Format specification (see JSYS manual), default format if 0
+;	4	; Pointer to attribute string (see JSYS manual)
+
+;[9077] This edit makes a number of changes in the JFNS% JSYS.  Work was done
+;in earlier edits (including [8820], [8829], and [9073]) to prevent various
+;monitor crashes when multiple forks are diddling JFNs; in addition to that
+;this edit continues to repair ugly bugs in code not used often, reduce
+;maintenance worries (those strange PUSHes, POPs, and gark like ADD P,[5,,5] to
+;get a STKVARish place to write a string), reduce the number of unlocks and
+;relocks done by the old code, minimize the runtime when we have the locks and
+;reduce JFNS% JSYS runtime for users.  All of these goals have been
+;accomplished with this edit.  Here is the new JFNS flow:
+
+;If JS%PTR is not set in user AC2, then T2 is a JFN.  JFNS goes NOINT, gets
+;freespace, gets the FILLCK and checks the JFN, getting JFNLCK.  Getting all of
+;these locks in this order prevents problems with other forks playing GNJFN or
+;CLOSF games.  JFNS extracts all information about the JFN with these locks and
+;copies a string to JSB free space.  If the JFN it turns out to be a disk JFN,
+;JFNS calls GETFDB (which locks the directory and goes CSKED).  This is all
+;done with local routines to copy strings and ASCIIfy numbers so that no deadly
+;embrace can occur from BOUTA's use of BOUT (or anything which would require
+;the JFNLCK and/or FILLCK).  After information is retrieved from the FDB, we
+;unlock the directory and go ECSKED.  After all of the information is extracted
+;from the JFN we release the JFNLCK and FILLCK.
+
+;Then and only then the information is returned to the user with BOUTA (who may
+;get FILLCK for a JFN with BOUT%).  This scheme prevents deadly embraces or
+;page faults when holding the locks, insures complete and ungarbled data, and
+;minimizes execution time with the locks on.
+
+;After the string is sent to the user, we release the freespace and go OKINT.
+;The file size and dates associated with a disk JFN are remembered in the TRVAR
+;and returned after we go OKINT so that in the rare case that any of the JS%SIZ
+;or JS%CDR or JS%LWR or JS%LRD bits are set ODTIM can be used OKINT at the end
+;of the call (since it calls NOUTXX and BOUTA which we can't use with the locks
+;on).
+
+;If JS%PTR is set then T2 is a byte pointer and no locking of any type is done.
+;No freespace is purchased either since we won't need it, and we want to run
+;fast since the task is so simple.  Since only user supplied (in T2 and T4)
+;strings are returned back to the user's destination pointer in T1, the monitor
+;provides only punctuation along with a BOUT string copy loop.
+
+;JFNS uses Q1 as a local flag register
+
+MSKSTR JS%T1,Q1,1B0		;JFNS Local flag - punctuate null extension
+MSKSTR JS%T2,Q1,1B1		;JFNS Local flag - multiple dir dev
+MSKSTR JS%T3,Q1,1B2		;JFNS Local flag - suppressing leading tab
+
+;The following is the default bits used it AC3/0 on a JFNS call.
+
+JFSDEF==JS%NOD!FLD(.JSSSD,JS%DVN)!FLD(.JSSSD,JS%DIR)!FLD(.JSAOF,JS%NAM)!
+FLD(.JSAOF,JS%TYP)!FLD(.JSSSD,JS%GEN)!JS%ATR!JS%PSD!JS%PAF ;[9077]
 
 .JFNS::	MCENT
-	UMOVE A,3		;GET BITS
-	TRNE A,1B26		;IS AC2 JFN OR STRING POINTER?
-	JRST JFNX0		;STRING
-	HRRZ JFN,2
-	CALL CHKJFD
-	 ITERR()
-	 JFCL
-	 ITERR(DESX4)
-	CALL UNLCKF
-	UMOVE A,1
-	TLNN A,777777
-	 JRST JFNSZ		; Not byte pointer
-	TLC A,777777
-	TLCN A,777777
-	 HRLI A,440700		; -1 in lh, fill in
-	SETZ B,
-	UMOVEM A,1		; Return to user
-	XCTBU [IDPB B,A]	; Deposit initial null in case
-JFNSZ:	XCTU [HLLZ F1,2]
-	XCTU [SKIPN Q3,3]
-	MOVE Q3,[6B2!2B5!1B8!1B11!2B14!JS%ATR!JS%PSD!JS%PAF]
-	SETZ Q1,		; Initialize tab flag
-	LOAD A,FLNOD,(JFN)	;SEE IF A NODE SPECIFIED IN THIS JFN
-        IFN. A
+	TRVAR <JFSADR,JFSPTR,JFSCNT,JFSREF,JFSWRT,JFSCRV,JFSSIZ> ;[9081][9077]
+	SETZM JFSADR		;[9077] We have no freespace yet
+	SETZ Q1,		;[9077] Initialize tab flag
 
-;DO NODE AND DEVICE FIELD WHEN NODE IS PRESENT IN FILE SPEC
+	XCTU [SKIPN Q3,3]	;[9077] Load format bits, skip if some are set
+	MOVX Q3,JFSDEF		;[9077] Load default bits
 
-          LDB D,[POINT 1,Q3,0]	;YES, USE BIT FROM DEVICE FIELD CONTROL
-	  CAIN D,0		;print node name ?
-	  IFSKP.
-            CALL TAB4		;Yes. begin node field
-            CALL JFNSS		;PRINT NODE NAME
-            MOVEI B,PNCNOD	;PRINT NODE PUNCTUATION
-            CALL PUNCT
-	    CALL PUNCT
-	  ENDIF.
-	  TQO <JS%T1,JS%T2>	;punc. null ext. & mult. dir device
-          LDB D,[POINT 2,Q3,2]	;now do the device field (2 bits)
-	  CALL TAB4		;BEGIN DEVICE FIELD
-	  CAIN D,0		;print device name ?
-	  IFSKP.
-            HLRZ A,FILDDN(JFN)	;YES.  GET THE DEVICE NAME STRING TO PRINT
-            CALL JFNSS		; Output the string in a
-            MOVEI B,":"
-            CALL PUNCT
-	  ENDIF.
-        ELSE.
+	TXNE Q3,JS%PTR		;[9077] Is AC2 JFN or string pointer?
+	JRST JFNX0		;[9077] String pointer, handle it
+
+;Fall through if AC2 is supposed to have a real JFN and not a string pointer.
+	SUBTTL JFNS JSYS -- JFN Supplied
+
+;[9077] Here if a "real" JFNS, Check the JFN furnished in AC2.
+
+	NOINT			;[9077] No interruptions please
+	LOCK JFNLCK		;[9077] Get JFN lock
+
+	XCTU [HRRZ JFN,2]	;[9077] Load user's JFN (leaving flags)
+	CALL CHKJFD		;[9077] (JFN/DEV,P3,JFN,STS) Check the JFN
+	 ITERR (,<CALL JFNSRJ>) ;[9077] (/) Unlock JFNLCK, OKINT, so forth
+	 JFCL			;[9077] TTY furnished, this is illegal
+	 ITERR (DESX4,<CALL JFNSRJ>) ;[9077] (/) String is illegal 
+	DMOVE T1,FILSTS(JFN)	;[9077] Real JFN, get file status words
+	TXNE T1,ASGF		;[9077] JFN being assigned?
+	TXNN T2,ASGF2		;[9077] Make sure ASGF and not BLKF
+	CAIA			;[9077] Must be BLKF or not assigning
+	ITERR (DESX3,<CALL JFNSRF>) ;[9077] (/) Act like JFN not assigned
+	XCTU [HLLZ F1,2]	;[9077] Load flags from user's JFN
+
+;[9077] The following code (creation of copy on write) is no longer needed
+;since we don't have the locks and we are OKINT when we send the string to the
+;user.
+
+REPEAT 0,<			;[9077] No longer needed 
+	UMOVE A,1		;Retrieve user's destination designator
+	TLNN A,777777		;See if in -1,,xxx form
+	JRST JFNSZX		;Not byte pointer
+	TLC A,777777		;It is a byte pointer,
+	TLCN A,777777		;So make 7-bit byte pointer
+	HRLI A,440700		;-1 in lh, fill in
+	SETZ B,			;Load a null for later
+	UMOVEM A,1		;Return byte pointer to user
+	CSKED			;[8820] Be critical
+	UNLOCK JFNLCK		;[8820] Give up JFNLCK briefly
+	UNLOCK FILLCK(JFN)	;[8829] And file lock
+	XCTBU [IDPB B,A]	;Deposit initial null in case
+	ECSKED			;[8820] Not critical anymore
+	LOCK JFNLCK		;[8820] Hopefully get this back without changes
+	LOCK FILLCK(JFN)	;[8829] Get back the file lock
+JFNSZX:>			;[9077] End of repeat 0
+
+;[9077] Get some free space.
+;	2+39:2+<39*2>2+39*2.2+39*2.2+6+2;T+2;A39+2;P6+2;OFFLINE+2+6;attr:value
+
+JFNSF:	MOVEI T2,1+<MAXLW*9>	;[9077] Try and get this much, one for header
+	CALL ASGJFR		;[9077] (T2/T1) Get space for our use
+	 ITERR (MONX02,<CALL JFNSRF>) ;[9077] (/) Owie, return JSB full error
+
+	MOVEM T1,JFSADR		;[9077] Save the address of the free space
+	CALL JFNSNB		;[9077] (/) New buffer available now
+	;..
+	SUBTTL JFNS JSYS -- JFN Supplied -- Copy Filename
+
+JFNSZ:	LOAD T1,FLNOD,(JFN)	;See if a node specified in this JFN
+        IFN. T1			;If a node specified
+
+;Do node and device field when node is present in file spec.
+
+	  TQO <JS%T1,JS%T2>	;[9077] Puncuate null ext and multiple dir dev
+
+	  LOAD T4,JS%NOD,Q3	;[9077] Load device control bit
+	  IFN. T4		;[9077] If output desired
+            CALL TAB4		;(T4,Q3/) Begin node field
+            CALL JFNSSS		;[9077] (T1/) Print node name
+            MOVEI T2,PNCNOD	;Load node punctuation
+            CALL PUNCT		;(T2,Q3/) Print first one
+	    CALL PUNCT		;(T2,Q3/)  and second one
+	  ENDIF.		;End of node output code
+
+	  LOAD T4,JS%DVN,Q3	;[9077] Load format bits for device (2 bits)
+	  IFN. T4		;[9077] If nonzero print device name
+	    CALL TAB4		;[9077] (T4,Q3/) Output tab if needed
+            HLRZ T1,FILDDN(JFN)	;Get the device name string to print
+            CALL JFNSSS		;(T1/) Output device name
+            MOVEI T2,":"	;Load device punctuation
+            CALL PUNCT		;(T2,Q3/) Send punctuation if needed
+	  ENDIF.		;End of device output code
+        ELSE.			;End of "this JFN had a node spec" code
 	;...
 
-;DO DEVICE FIELD WHEN NO NODE IS PRESENT IN FILE SPEC
-	  TXZ Q3,JS%NOD		; null out node bit
-          HLRZ A,FILDDN(JFN)	; Get pointer to device block
-          MOVN B,(A)
-          HRLI A,-2(B)
-          CALL DEVLUX
-           SETZ A,
-          MOVE C,DEVUNT(B)	;GET PSEUDO-DEVICE FLAG
-          CAME C,[-1]		;NO UNITS?
-          TXNN C,DV%PSD		;PSEUDO-DEVICE?
-          TLNE A,(DV%DIR)
-          TQOA JS%T1
-          TQZ JS%T1
-          TQNE <ASTF>		;PARSE-ONLY?
-          TQO JS%T1		;YES, ALWAYS PUNCTUATE EXTENSION
-	  CAME C,[-1]		;NO UNITS?
-	  TXNN C,DV%PSD		;PSEUDO-DEVICE?
-	  TLNE A,(DV%MDD)
-	  TQOA JS%T2
-	  TQZ JS%T2
-          CALL GTCSCD		; GET THE STRUCTURE UNIQUE CODE
-          HLRZ C,A		; OF THE CURRENT CONNECTED STR
-          LDB D,[POINT 3,Q3,2]	; Get format control byte for device
-          CALL TAB4
-          JUMPE D,JFNS0		;GO ON IF NO PRINT WANTED
-          TQNE <STRSF>		;WILD DEVICE?
-          IFSKP.
-            LOAD A,FLUC,(JFN)	; GET THE UNIQUE CODE OF THE DEV
-            CAIN D,2		; If it is suppress system default
-            CAME A,C		; AND IS THE DEVICE THE CONNECTED STR?
-            IFSKP. <JRST JFNS0>	;YES, DON'T PRINT
-            HLRZ A,FILDDN(JFN)	; GET THE DEVICE NAME STRING TO PRINT
-            CALL JFNSS		; Output the string in a
-          ELSE.
-            MOVEI B,[ASCIZ/DSK*/]-1 ;YES, POINT AT WILD STRING
-            CALL JFSTA1		;OUTPUT IT
-          ENDIF.
-            MOVEI B,":"
-            CALL PUNCT
-        ENDIF.
+;Do device field when no node is present in file spec.
+
+          HLRZ T1,FILDDN(JFN)	;Get the
+          MOVN T2,(T1)		; address-1 of the
+          HRLI T1,-2(T2)	;  device name
+          CALL DEVLUX		;(T1/T1,T2,T3) Lookup the device
+           SETZ T1,		;Device not found
+          MOVE T3,DEVUNT(T2)	;Get pseudo-device flag
+          CAME T3,[-1]		;No units?
+          TXNN T3,DV%PSD	;Pseudo-device always punctuates
+          TXNE T1,DV%DIR	;[9086] Directory device?
+          TQOA JS%T1		;Punctuate null extension
+          TQZ JS%T1		;Do not punctuate null extension
+          TQNE <ASTF>		;Parse-only?
+          TQO JS%T1		;Yes, always punctuate extension
+	  CAME T3,[-1]		;No units?
+	  TXNN T3,DV%PSD	;Pseudo-device?
+	  TXNE T1,DV%MDD	;Multiple directory device?
+	  TQOA JS%T2		;Yes, multiple directory device
+	  TQZ JS%T2		;No, not a multiple directory device
+          CALL GTCSCD		;(/T1) Get the structure unique code
+          HLRZ T3,T1		; of the current connected structure
+
+	  LOAD T4,JS%DVN,Q3	;[9077] Get format control byte for device
+          JUMPE T4,JFNS0	;[9077] Go on if no print wanted
+          CALL TAB4		;[9077] (T4,Q3/) Tab if needed
+          TQNE <STRSF>		;Wild device (file structure)?
+          IFSKP.		;No
+            LOAD T1,FLUC,(JFN)	;[9077] Get the unique code of the device
+            CAIN T4,.JSSSD	;[9077] If it is suppress system default
+            CAME T1,T3		;[9077]  and is the device the connected str?
+            IFSKP. <JRST JFNS0>	;[9077] Yes, don't print it
+            HLRZ T1,FILDDN(JFN)	;[9077] Get the device name string to print
+            CALL JFNSSS		;[9077] (T1/) Output device name
+          ELSE.			;It was a wild device
+            MOVEI T1,[ASCIZ/DSK*/]-1 ;[9077] Point to wild name
+            CALL JFNSST		;[9077] (T1/) Output wild device
+          ENDIF.		;Device has been output
+	  MOVEI T2,":"		;Load punctuation for device
+	  CALL PUNCT		;(T2,Q3/) Print device punctuation if needed
+        ENDIF.			;End of device output code
 	; ..
 
-;DO DIRECTORY FIELD
+;Do directory field
 
-JFNS0:	LOAD A,FLDNO,(JFN)	;GET DIRECTORY NUMBER
-	LDB D,[POINT 3,Q3,5]	; And format control
-	CALL TAB4		; Tab before field if desired
-	TQNE <DIRSF>
-	JRST JFNS0A
-	CAIN D,2		; If suppressing default,
-	JRST [	LOAD T1,JSCDF	;CONNECTED DIRECTORY STRING VALID FLAG
-		SKIPN T1	; SKIP IF STRING EXISTS IN JSB
-		CALL JFNSCD	; ELSE TRY TO SET ONE UP
-		JE JSCDF,,JFNS0A ;IF NO VALID NAME STRING IN JSB, PRINT DIR
-		LOAD A,JSCDS	;GET ADR OF CONNECTED DIR STRING
-		HRLI A,(POINT 7,0,35)
-		LOAD B,FLDIR,(JFN) ;GET ADR OF DIR NAME STRING
-		JUMPE B,JFNS1	;IF NO DIR NAME, DONT OUTPUT IT
-		HRLI B,(POINT 7,0,35)
-		CALL STRCMP	;COMPARE THE STRINGS
-		 JRST JFNS0A	;THE STRINGS DONT MATCH, GO OUTPUT DIR
-		JRST JFNS1]	;THEY MATCH, DO NOT OUTPUT THE DIR NAME
-JFNS0A:	LDB D,[POINT 3,Q3,5]	; GET format control
-	CAIN D,0		; if no print is wanted
-	JRST JFNS1		; Then don't print
-	LOAD B,FLDIR,(JFN)	; GET POINTER TO DIRECTORY STRING
-	TQNN <DIRSF>		; IF STARS, GO RETURN THE WILD STRING
-	JUMPE B,JFNS1		; IF NONE, DONT TRY TO OUTPUT IT
-	MOVEI B,"<"
-	CALL PUNCT		; Print punctuation if desired
-	TQNE <DIRSF>
-	JRST [	LOAD B,FLDMS,(JFN) ;GET WILD MASK
-		CALL JFSTA1	; GO DO IT OR A STAR
-		JRST JFNS0B]
-	LOAD A,FLDIR,(JFN)	; GET POINTER TO DIRECTORY STRING
-	JUMPE A,JFNS0B		; IF NONE, DONT TRY TO OUTPUT IT
-	CALL JFNSSD		; Copy string to output
-JFNS0B:	MOVEI B,">"
-	CALL PUNCT		; And output terminating punct
+JFNS0:	LOAD T4,JS%DIR,Q3	;[9077] Load directory format control
+	JUMPE T4,JFNS1		;[9077] Jump if no desired output
+	TQNN <DIRSF>		;[9077] Wild directory?
+	CAIE T4,.JSSSD		;[9077] Suppressing if default?
+	JRST JFNS0A		;[9077] Wild or output always, do it
+	LOAD T1,JSCDF		;Connected directory string valid flag
+	SKIPN T1		;Skip if string exists in JSB
+	CALL JFNSCD		;No, try to set one up
+	JE JSCDF,,JFNS0A	;If no valid name string in JSB, print always
+	LOAD T1,JSCDS		;Get adr of connected dir string
+	HRLI T1,(POINT 7,0,35)	;Point to it
+	LOAD T2,FLDIR,(JFN) 	;Get adr of dir name string
+	JUMPE T2,JFNS1		;If no directory name, don't output anything
+	HRLI T2,(POINT 7,0,35)	;Point to directory name
+	CALL STRCMP		;(T1,T1/T1) Compare the strings
+	 SKIPA			;The strings dont match, go output dir
+	JRST JFNS1		;They match, do not output the directory name
+	LOAD T4,JS%DIR,Q3	;[9077] Reload format bits smashed by STRCMP
 
-;DO NAME FIELD
+;Here when it has been decided that a directory name has to be revealed.
 
-JFNS1:	HLRZ A,FILNEN(JFN)	; Get location of file name block
-	LDB D,[POINT 3,Q3,8]	; And output control
-	JUMPE D,JFNS2		;[7276] No print wanted
-	CALL TAB4		; Tab before field if required
-	TQNE <NAMSF>
-	JRST [	LOAD B,FLNMS,(JFN) ;GET NAME WILD MASK
-		CALL JFSTA1	; PRINT IT OR A STAR
-		JRST JFNS2]
-	CALL JFNSS		; Copy string to output
+JFNS0A:	CALL TAB4		;(T4,Q3/) Tab before field if desired
+	LOAD T2,FLDIR,(JFN)	;Get pointer to directory string
+	TQNN <DIRSF>		;If stars, return the wild string
+	JUMPE T2,JFNS1		;If none, don't try to output it
+	MOVEI T2,"<"		;Load left bracket
+	CALL PUNCT		;(T2,Q3/) Print punctuation if desired
+	TQNN <DIRSF>		;Directory wild?
+	IFSKP.			;If so,
+	  LOAD T1,FLDMS,(JFN)	;[9077] Get wild mask
+	  CALL JFNSST		;[9077] (T1/) Go send it or a star
+	ELSE.			;[9077] Not wild directory
+	  LOAD T1,FLDIR,(JFN)	;Get pointer to directory string
+	  CALL JFNSDS		;[9077] (T1/) Copy directory string
+	ENDIF.			;[9077] Directory output done
+	MOVEI T2,">"		;Load closing punctuation
+	CALL PUNCT		;(T2,Q3/) and output it if desired
+
+;Do file name field next, note that file name is output if JS%NAM non-zero.
+
+JFNS1:	LOAD T4,JS%NAM,Q3	;[9077] Load output control for name
+	JUMPE T4,JFNS2		;[9077] Jump if no print wanted
+	CALL TAB4		;(T4,Q3/) Tab before field if required
+	TQNN <NAMSF>		;Star in name field?
+	IFSKP.			;Wild file name
+	  LOAD T1,FLNMS,(JFN) 	;[9077] Get name wild mask
+	  CALL JFNSST		;[9077] (T1/) Print it or a star
+	ELSE.			;[9077] Name is not wild
+	  HLRZ T1,FILNEN(JFN)	;[9077] Get location of file name block
+	  CALL JFNSSS		;[9077] (T1/) Copy filename string
+	ENDIF.			;[9077] End of name output
+
+;Do extension field, dot is printed only if ext string exists or JS%T1 set.
+
+JFNS2:	LOAD T4,JS%TYP,Q3	;[9077] Load output control
+	JUMPE T4,JFNS3		;[7276] No print wanted
+	CALL TAB4		;(T4,Q3/) Tab before field if required
+	MOVEI T2,"."		;Load punctuation between file and type
+	HRRZ T1,FILNEN(JFN)	;[9077] Get location of extension block
+	MOVE T3,1(T1)		;See if there is an extension string
+	TLNN T3,774000		;If non-null string, type out punctuation
+	TQNE JS%T1		;If punctuation always desired, output it too
+	CALL PUNCT		;(T2,Q3/) Output punctuation if desired
+	TQNN <EXTSF>		;Extension wild?
+	IFSKP.			;If so,
+	  LOAD T1,FLEMS,(JFN) 	;[9077] Get extension wild mask
+	  CALL JFNSST		;[9077] (T1/) Print it or a star
+	ELSE.			;[9077] Not wild
+	  HRRZ T1,FILNEN(JFN)	;[9077] Get location of extension block
+	  CALL JFNSSS		;[9077] (T1/) Output extension
+	ENDIF.			;[9077] End of extension output
+
+;Do version, note special cases of 0, -1, -2, and *.
+
+JFNS3:	LOAD T4,JS%GEN,Q3	;[9077] Load version number output control
+	JUMPE T4,JFNS4		;[9077] Jump if no print wanted
+	CALL TAB4		;(T4,Q3/) Tab before field if required
+	HRRE T1,FILVER(JFN)	;[9081] Get version number
+	TQNN <ASTF>		;Parse only?
+	IFSKP.			;Yes
+	  JUMPN T1,DOJF3	;Do version only if non-zero
+	  TXNE F1,VERSF!RVERF!HVERF!LVERF ;Any special version flags?
+	  JRST DOJF3		;Yes, do them
+	ENDIF.			;Not parse only
+	TQNN JS%T2		;Multiple directory device?
+	JRST JFNS4		;Nope, no version output
+
+DOJF3:	MOVEI T2,PNCVER		;Load punctuation for version
+	CALL PUNCT		;(T2,Q3/) Output it
+	MOVE T2,T1		;[9077] Copy version
+	TQNN <VERSF>		;Is version wild?
+	IFSKP.			;Yes
+	  CALL JFNSTR		;(/) Output asterisk
+	  CALL JFNSRS		;[9077] (/) Return the string we built
+	  MRETNG		;All done, nothing more can be returned
+	ENDIF.			;Version not wild
+	TQNE <RVERF>		;Is version zero?
+	MOVNI B,0		;Yes, load zero
+	TQNE <HVERF>		;Is version -1 (highest)?
+	MOVNI B,1		;Yes, load -1
+	TQNE <LVERF>		;Is version -2 (lowest)?
+	MOVNI B,2		;Yes, load -2
+	CALL JFNSND		;[9077] (T2/) Output decimal generation number
 	; ..
+	SUBTTL JFNS JSYS -- JFN Supplied -- FDB Items of Disk JFN
+
+;[9077] Filespec done, go to special routine if JFN is parse only.
+
+JFNS4:	TQNE <ASTF>		;[9077] Parse only?
+	JRST JFNSPO		;[9077] Yes, handle special
+
+;[9081] Go off to handle non-disk JFNs too.
+
+	BLCAL. DSKOK,<P3>	;[9081] Is this a disk JFN?
+	 JRST JFNSNJ		;[9081] Not a disk JFN
+
+;[9081] Try to get the FDB for this disk JFN, if none handle like non-disk JFN.
+;If no further output is desired, we also handle this like a non-disk JFN.
+
+	TXNE Q3,JS%PRO!JS%ACT!JS%TMP!JS%OFL!JS%SIZ!JS%CDR!JS%LWR!JS%LRD	;[9081]
+	CALL GETFDB		;(/T2) Get a pointer to the FDB
+	 JRST JFNSEJ		;[9081] No FDB, or simple case, get out now
+	MOVE Q2,T1		;[9077] Copy pointer to FDB
+
+;[9077] Do protection next (still with directory mapped and CSKED).
+
+JFNS4P:	LOAD T4,JS%PRO,Q3	;[9077] Load format bits for protection
+	JUMPE T4,JFNS5		;[9077] Jump if no output to do
+	CALL TAB4		;[9077] (T4,Q3/) Perhaps a tab needed
+	MOVE T1,.FBPRT(Q2)	;[9077] Load protection from the FDB
+	CAIE T4,.JSSSD		;[9077] Output only if not default?
+	IFSKP.			;[9077] Yes output only if not default
+	  MOVE T3,DIRORA	;[9077] Load location of mapped directory
+	  LOAD T3,DRDPW,(T3)	;[9077] Get default protection word
+	  CAMN T1,T3		;[9077] Protection same as default one?
+	  JRST JFNS5		;[9077] Do not output the protection
+	ENDIF.			;[9077] End of protection output checks
+	TXNE Q3,JS%PRO		;[9077] Output protection?
+	CALL JFNSP		;[9077] (T1/) Yes, output protection
 
-;DO EXTENSION FIELD
+;[9077] Do ;Aaccount (still with directory mapped and CSKED).
 
-JFNS2:	HRRZ A,FILNEN(JFN)	; Get location of extension block
-	LDB D,[POINT 3,Q3,11]	; And output control
-	JUMPE D,JFNS3		;[7276] No print wanted
-	CALL TAB4		; Tab before field if required
-	MOVEI B,"."
-	MOVE C,1(A)		; SEE IF THERE IS AN EXTENSION STRING
-	TLNN C,774000		; IF NON-NUL STRING, TYPE OUT PUNCT.
-	TQNE JS%T1
-	CALL PUNCT		; Output punctuation if desired
-	TQNE <EXTSF>
-	JRST [	LOAD B,FLEMS,(JFN) ;GET EXTENSION WILD MASK
-		CALL JFSTA1	; PRINT IT OR A STAR
-		JRST JFNS3]
-	CALL JFNSS		; Copy to output
-
-;DO VERSION
-
-JFNS3:	HRRE A,FILVER(JFN)	; Get version number
-	LDB D,[POINT 3,Q3,14]	; And output control
-	JUMPE D,JFNS4		;[7276] No print wanted
-	CALL TAB4		; Tab before field if required
-	TQNE <ASTF>		;HAD OUTPUT STARS?
-	JRST [	JUMPN A,DOJF3	;YES. DO NON-ZERO VERSION
-		TXNE F1,VERSF!RVERF!HVERF!LVERF ;ANY SPECIALS?
-		JRST DOJF3	;YES. DO THEM
-		JRST .+1]	;NO. DO LAST TEST
-	TQNN JS%T2
-	JRST JFNS4
-DOJF3:	MOVEI B,PNCVER
-	CALL PUNCT
-	MOVE B,A
-	MOVEI C,12
-	TQNE <VERSF>
-	JRST [	CALL JFSTAR
-		JRST MRETN]
-	TQNE <RVERF>
-	MOVNI B,0
-	TQNE <HVERF>
-	MOVNI B,1
-	TQNE <LVERF>
-	MOVNI B,2
-	CALL NOUTXX
-	; ..
+JFNS5:	LOAD T4,JS%ACT,Q3	;[9077] Load output bits for account
+	JUMPE T4,JFNS6		;[9077] Jump if no field to output
+	CALL TAB4		;[9077] (T4,Q3/) Output tab if needed
+	SKIPE T2,.FBACT(Q2)	;[9077] Load account
+	CAIE T4,.JSSSD		;[9077] Suppress if default?
+	IFSKP.			;[9077] Check account string for output
+	  TXNE T2,7B2		;[9077] Is this a numeric account?
+	  IFSKP.		;[9077] Nope
+	    ADD T2,DIRORA	;[9077] Get address of string
+	    XMOVEI T2,.ACVAL(T2) ;[9077] Get address of ASCIZ string
+	    TXO T2,<OWGP. 7>	;[9077] Make it a one word gloal pointer
+	    MOVE T1,[POINT 7,ACCTSR] ;[9077] Point to account string
+	    CALL STRCMP		;[9077] (T1,T2/T1) See if strings equal
+	     CAIA		;[9077] Nope, print it
+	    JRST JFNS6		;[9077] Yes, do not print it
+	  ENDIF.		;[9077] End of account string match check
+	ENDIF.			;[9077] End of account string output check
+	MOVEI T2,PNCATT		;[9077] Load punctuation for account
+	CALL PUNCT		;[9077] (T2,Q3/) Send it
+	MOVEI T2,"A"		;[9077] Load next character
+	CALL PUNCT		;[9077] (T2,Q3/) Send it too
+	SKIPN T2,.FBACT(Q2)	;[9077] Load account word
+	IFSKP.			;[9077] Account set on this file
+	  TXZN T2,7B2		;[9077] Is this a numeric account?
+	  IFSKP.		;[9077] Yes, numeric!
+	    CALL JFNSND		;[9077] (T2/) Output number
+	  ELSE.			;[9077] Alphanumeric account
+	    ADD T2,DIRORA	;[9077] Get address of string
+	    XMOVEI T1,.ACVAL(T2) ;[9077] Get address of ASCIZ string
+	    TXO T1,<OWGP. 7>	;[9077] Make it a one word gloal pointer
+	    CALL JFNSGS		;[9077] (T1/) Output account string
+	  ENDIF.		;[9077] End of 
+	ENDIF.			;[9077]  account string output
 
-;SAVE INFORMATION FOR ;A, ;P, ;T
+;Do ";T" if needed (still with directory mapped and CSKED).
 
-JFNS4:	TQNE <ASTF>		;STARS?
-	JRST JFNS44		;YES. SKIP ALL DIRECTORY STUFF
-	BLCAL. DSKOK,<P3>	;DISK?
-	IFNSK.
-	  CAIE P3,MTDTB	;AN MT?
-	  IFSKP.
-	    LDB D,[POINT 3,Q3,17] ;GET CTL BITS FOR PROTECTION
-	    SKIPE D		;[7276]PRINT TAB?
-	    CALL TAB4		;DO TAB CONTROL
-	    CALL MTGPRO		;GET PROTECTION
-	    ANDN. A		;IF NONE, DONE
-	    ANDN. D		;IF NO TYPEOUT, DONE
-	    TXO A,5B2		;MAKE SURE IT IS A NUMBER
-	    CALL JFNSP		;AND DO IT
-	  ENDIF.
-	  CALL JFNSAT		;TYPE OUT ATTRIBUTES (IF ANY)
-	  MRETNG		;DONE
-	ENDIF.
-	CALL GETFDB		; Get a pointer to the fdb
-	 JRST [	CALL JFNSAT	;TYPE OUT ATTRIBUTES (IF ANY)
-		MRETNG]		;DONE
-	PUSH P,.FBREF(A)
-	PUSH P,.FBWRT(A)
-	PUSH P,.FBCRV(A)
-	LOAD B,FBNPG,(A)
-	PUSH P,B
-	PUSH P,.FBCTL(A)
-	MOVE B,.FBACT(A)	; Get account
-	SETZ C,			; 0 words of string
-	TLNN B,700000		; String account?
-	 JRST [	ADD B,DIRORA	;GET ABSOLUTE ADR OF STRING
-		EXCH A,D	;SAVE A
-		LOAD A,ACLEN,(B) ;GET LENGTH OF STRING BLOCK
-		SUBI A,.ACVAL	;SKIP HEADER AND SHARE COUNT
-		HRL A,A		;TO BOTH HALVES
-		XMOVEI C,1(P)	;WHERE TO PUT STRING ON STACK
-		XMOVEI B,.ACVAL(B)	;WHERE TO GET STRING FOM
-		ADD P,A
-		PUSH P,A	;SAVE TO BEYOND STRING
-		PUSH P,C	;SAVE STACK POINTER (POINTER TO STRING
-		SOS 0(P)
-		CALL XBLTA	;DO BLT
-		EXCH D,A	;RESTORE
-		JRST JFNS43]
-	PUSH P,C		; Save size of string
-	PUSH P,B		; And account or pointer
-JFNS43:	MOVE D,DIRORA		; GET BASE ADR OF MAPPED DIR
-	LOAD D,DRDPW,(D)	; GET DEFAULT PROTECTION WORD
-	PUSH P,D		; PUT IT ON THE STACK
-	PUSH P,.FBPRT(A)
-	CALL USTDIR		; Unlock directory (done with it)
-JFNS44:	LDB D,[POINT 3,Q3,17]
-	SKIPE D			;[7276]PRINT TAB?
-	CALL TAB4
-	TQNE <ASTF>		;PARSE ONLY?
-	JRST [	SKIPE D		;YES. WANT OUTPUT OF PROTECTION?
-		SKIPN FILPRT(JFN) ;YES. HAVE ONE?
-		JRST JFNS5	;NO. GIVE IT UP
-		JRST JFNS45]	;GO DO IT
-	MOVE B,0(P)
-	CAIN D,2
-	CAME B,-1(P)
-	CAIN D,0
-	JRST JFNS5
-	; ..
+JFNS6:	TXNN Q3,JS%TMP		;[9077] Output this stuff?
+	IFSKP.			;[9077] Maybe we should
+	  MOVE T1,.FBCTL(Q2)	;[9077] Load the control word
+	  TXNN T1,FB%TMP	;[9077] Is file a semiT?
+	  IFSKP.		;[9077] Yes
+	    MOVEI T2,PNCATT	;[9077] Load punctuation for it
+	    CALL PUNCT		;[9077] (T2,Q3/) Do punctuation as needed
+	    MOVEI T2,"T"	;[9077] Load flag for this file
+	    CALL JFNSBO		;[9077] (T2,Q3/) Send that byte too
+	  ENDIF.		;[9077] End of this is a temp file 
+	ENDIF.			;[9077] End of output temp file if needed
+
+;[9077] Do ;OFFLINE if needed (still with directory mapped and CSKED).
+
+	TXNN Q3,JS%OFL		;[9077] Return offline stuff?
+	IFSKP.			;[9077] Yes
+	  MOVE T1,.FBCTL(Q2)	;[9077] Load the control word
+	  TXNN T1,FB%OFF	;[9077] Is file offline?
+	  IFSKP.		;[9077] Yes file is offline
+	    MOVEI T2,PNCATT	;[9077] Load punctuation
+	    CALL PUNCT		;[9077] (T2,Q3/) Send that if needed
+	    MOVEI T1,[ASCIZ/OFFLINE/]-1	;[9077] Point to offline string
+	    CALL JFNSSS		;[9077] (T1/) and send it
+	  ENDIF.		;[9077] End of file is offline code
+	ENDIF.			;[9077] End of offline desired code
+
+;[9081] Before unlocking directory, get size and dates for possible output.
+
+	MOVE T2,.FBREF(Q2)	;[9081] Get .FBREF
+	MOVEM T2,JFSREF		;[9081] Save it
+	MOVE T2,.FBWRT(Q2)	;[9081] Get .FBWRT
+	MOVEM T2,JFSWRT		;[9081] Save it
+	MOVE T2,.FBCRV(Q2)	;[9081] Get .FBCRV
+	MOVEM T2,JFSCRV		;[9081] Save it
+	LOAD T2,FBNPG,(Q2)	;[9081] Get number of pages in file
+	MOVEM T2,JFSSIZ		;[9081] Save it
+	CALL USTDIR		;[9081] Unlock directory and go ECSKED
 
-;DO ;P
+;[9081] Now that directory is unlocked and we are ECSKED, output attributes.
 
-JFNS45:	MOVE A,0(P)		;GET PROTECTION
-	TQNE <ASTF>		;PARSE ONLY?
-	MOVE A,FILPRT(JFN)	;YES. GET IT FROM JFN THEN
-	TXNE Q3,JS%PRO		;[7276]JS%PRO SET?
-	CALL JFNSP		;AND DO IT
+	CALL JFNSAT		;[9077] (/) Output the attributes
 
-;DO ;A
+;[9077] Do size in pages if desired.
 
-JFNS5:	TQNN <ASTF>		; PARSE ONLY
-	SUB P,[XWD 2,2]		; Flush protection and def prot
-	LDB D,[POINT 3,Q3,20]
-	JUMPE D,JFNS6		;[7276]PRINT FIELD?
-	CALL TAB4
-	CAIN D,2		; WANT DEFAULT?
-	TQNE <ASTF>		; YES, AND NOT OUTPUT STARS?
-	JRST JFNS5A		; NO, PRINT OUT THE ACCOUNT STRING
-	MOVE A,[POINT 7,ACCTSR]	; GET A POINTER TO THE CURRENT ACCOUNT
-	MOVE B,0(P)		; GET POINTER TO THIS ACCOUNT STRING
-	JUMPL B,JFNS5A		; IF OLD STYLE NUMERIC ACCOUNT, GO PRINT IT
-	HRLI B,(POINT 7,0,35)	; OTHERWISE SET UP A BYTE POINTER
-	CALL STRCMP		; SEE IF THE STRINGS ARE EQUAL
-	 SKIPA			; NO, GO OUTPUT IT
-	JRST JFNS6		; THE ACCOUNT IS THE DEFAULT, DONT OUTPUT
-JFNS5A:	MOVEI B,PNCATT
-	CALL PUNCT
-	MOVEI B,"A"
-	CALL PUNCT
-	TQNE <ASTF>		; PARSE ONLY?
-	SKIPA A,FILACT(JFN)	; YES. GET IT FROM JFN THEN
-	MOVE A,(P)		; Get account or pointer
-	MOVEI C,^D10
-	SKIPE A			;IF ZERO, FORGET IT .
-	CALL JFNSN
+	LOAD T4,JS%SIZ,Q3	;[9077] Load size bit
+	IFN. T4			;[9077] If output size is desired
+	  MOVEI T2,","		;[9077] Load a comma
+	  TXNE Q3,JS%PSD	;[9077] Punctuate this?
+	  CALL JFNSBO		;[9077] (T2/) Yes
+	  CALL TAB4		;[9077] (T4,Q3/) Tab if needed
+	  MOVE T2,JFSSIZ	;[9081] Load size in pages of file
+	  CALL JFNSND		;[9077] (T2/) Copy size in decimal pages
+	ENDIF.			;[9077] End of size output
 
-;DO ;T
+;[9081] Release locks, return the string we built, release freespace, go OKINT.
 
-JFNS6:	TQNN <ASTF>		;PARSE ONLY?
-	 IFSKP.			;If JFN is parse only then
-	  CALL JFNSAT		;  output any linked attributes
-	  MRETNG		;  and exit since finished
-	 ENDIF.
-	ADJSP P,-1		; Flush account or pointer
-	POP P,C			; Get size of saved string
-	SUB P,C			; Flush string from stack
-	LDB D,[POINT 1,Q3,21]
-	POP P,B
-	TXNE B,FB%TMP
-	CAIN D,0
-	JRST JFNS6A
-	MOVEI B,PNCATT
-	CALL PUNCT
-	MOVEI B,"T"
-	CALL BOUTA
+	CALL JFNSRS		;[9077] (/) Return the string we built
 
-JFNS6A:	LDB D,[POINT 1,Q3,29]	; Offline output bit
-	TXNE B,FB%OFF		; File offline?
-	CAIN D,0		; And ;OFFLINE output requested?
-	JRST JFNS7		; No
-	MOVEI B,PNCATT		; Yes
-	CALL PUNCT
-	MOVEI A,[ASCIZ /OFFLINE/]-1  ; String for output by JFNSS
-	CALL JFNSS
-	; ..
-
-;DO SIZE IN PAGES
+;[9077] At this point all locks are off, the string has been returned to the
+;user, the JSB freespace has been returned, and we are OKINT.
 
-JFNS7:	CALL JFNSAT		;OUTPUT THE ATTRIBUTES
-	LDB D,[POINT 1,Q3,22]
-	JUMPE D,JFNS8		;[7276]PRINT FIELD?
-	CALL JFNCOM
-	CALL TAB4
-	MOVE B,0(P)		;GET SIZE
-	MOVEI C,^D10
-	CALL NOUTXX
+	SUBTTL JFNS JSYS -- JFN Supplied -- Dates for Disk JFN
 
-;DO DATES
+;Now that the locks are off, we can do dates that we have saved.
 
-JFNS8:	ADJSP P,-1
-	CALL TAB4		;[7276]TAB OVER TO NEXT STOP
-	POP P,B			;GET .FBCRV
-	TRNE Q3,JS%CDR		;[7276]PRINT CREATION DATE?
-	CALL JFNDAT
-	TXNE Q3,JS%CDR		;[7276]PRINT TAB FOR NEXT FIELD?
-	CALL TAB4
-	POP P,B			;GET .FBWRT
-	TRNE Q3,JS%LWR		;[7276]PRINT LAST-WRITE DATE?
-	CALL JFNDAT
-	TXNE Q3,JS%LWR		;[7276]PRINT TAB FOR NEXT FIELD?
-	CALL TAB4
-	POP P,B			;GET .FBREF
-	TRNE Q3,JS%LRD		;[7276]PRINT LAST-READ DATE?
-	CALL JFNDAT
-	 JFCL
-	JRST MRETN
+JFNS8:	LOAD T4,JS%CDR,Q3	;[9077] Load bit to output creation date
+	MOVE T2,JFSCRV		;[9077] Load .FBCRV of file
+	CALL JFNSDA		;[9077] (T2,T4,Q3/) Output date if needed
 
-;LOCAL ROUTINE TO OUTPUT PROTECTION
-;	A/ PROTECTION
+	LOAD T4,JS%LWR,Q3	;[9077] Load last write date bit
+	MOVE T2,JFSWRT		;[9077] Get .FBWRT of the file
+	CALL JFNSDA		;[9077] (T2,T4,Q3/) Do that date if needed
 
-JFNSP:	PUSH P,A		;SAVE PROTECTION
-	MOVEI B,PNCATT
-	CALL PUNCT		;DO PUNCT CHAR
-	MOVEI B,"P"		;GET PREFIX
-	CALL PUNCT		;DO IT AS WELL
-	POP P,A			;GET BACK PROTECTION WORD
-	MOVEI C,10		;IN OCTAL
-	CALLRET JFNSN		;AND DO IT
-
-;DO ATTRIBUTES
+	LOAD T4,JS%LRD,Q3	;[9077] Load last read bit
+	MOVE T2,JFSREF		;[9077] Load last read date
+	CALL JFNSDA		;[9077] (T2,T4,Q3/) Do that date if needed
+
+	MRETNG			;[9077] Return good from JFNS%
+
+;[9077] Local date printer for JFNS.
+;Called only after JFNLCK and FILLCK unlocked.
+;Call with T2/ date, T4/ 1 if output this field, Q3/ usual user bits
+;Returns +1 always with string sent to user via BOUTA.
+
+JFNSDA:	JUMPE T4,R		;[9077] Return now if no output
+	STKVAR <JFNDAY,<JFNDAX,MAXLW>> ;[9077] Make place for ODTIM
+	MOVEM T2,JFNDAY		;[9077] Save the date number
+	MOVEI T2,.CHTAB		;[9077] Load a tab character
+	TRNE Q3,JS%TBP		;[9077] Tab before fields with 1 or 2 value?
+	CAIG T4,0		;[9077] Yes, skip if field should be output
+	TRNE Q3,JS%TBR		;[9077] Tab just before returned fields?
+	TQON JS%T3		;[9077] Skip if not first tab output
+	CAIA			;[9077] No tab 
+	CALL BOUTA		;[9077] (T2/) Send the tab if required
+	MOVEI T2,","		;[9077] Next load a comma
+	TRNE Q3,JS%PSD		;[9077] Punctuate size and date?
+	CALL BOUTA		;[9077] (T2/) Send the comma then
+
+	HRROI T1,JFNDAX		;[9077] Point to stack for ODTIM
+	MOVE T2,JFNDAY		;[9077] Load the time we want to print
+	SETZ T3,		;[9077] Default format please
+	ODTIM			;[9077] Output Date and TIMe
+	 ERJMP .+1		;[9077] Should never fail
+	MOVEI T1,JFNDAX		;[9077] Point to the place where we wrote
+	HRLI T1,(POINT 7)	;[9077] Make a byte pointer to it
+	DO.			;[9077] Loop to transmit the string to user
+	  ILDB T2,T1		;[9077] Load a byte
+	  JUMPE T2,R		;[9077] Return if zero
+	  CALL BOUTA		;[9077] (T2/) Send the byte
+	  LOOP.			;[9077] Loop for all character
+	OD.			;[9077] End of character transmission loop
+	ENDSV.			;[9077] End of that STKVAR
+	SUBTTL JFNS JSYS -- JFN Supplied -- Parse Only JFN
+
+;[9077] Here if parse only JFN after filename has been output.
+
+JFNSPO:	LOAD T4,JS%PRO,Q3	;[9077] Load output bits for protection
+	IFN. T4			;[9077] If output is desired
+	  CALL TAB4		;[9077] Output tab if needed
+	  SKIPE T1,FILPRT(JFN)	;[9077] Any protection set?
+	  CALL JFNSP		;[9077] (T1/) Output protection
+	ENDIF.			;[9077] End of protection output code
+
+	LOAD T4,JS%ACT,Q3	;[9077] Get format bits for account
+	IFN. T4			;[9077] If output is desired
+	  CALL TAB4		;[9077] Output tab if desired
+	  MOVEI T2,PNCATT	;[9077] Load punctuation for account
+	  CALL PUNCT		;[9077] (T2/) Send it
+	  MOVEI T2,"A"		;[9077] Load next character
+	  CALL PUNCT		;[9077] (T2/) Send it too
+	  MOVE T1,FILACT(JFN)	;[9077] Point to string
+	  CALL JFNSSS		;[9077] (T1/) Send account string
+	ENDIF.			;[9077]  account string output
+
+	CALLRET JFNSEJ		;[9081] That's all we need to output today
+	SUBTTL JFNS JSYS -- JFN Supplied -- Non-Disk non-Parse Only JFN
+
+;[9081] Here for real JFNs that aren't disk JFNs or for disk JFNs without FDBs.
+;For magtape we output the protection.
+
+JFNSNJ:	CAIE P3,MTDTB		;[9081] Is this a MT (labeled tape)?
+	IFSKP.			;[9081] Yes it is a MT
+	  LOAD T4,JS%PRO,Q3	;[9081] Load control bits for protection
+	  IFN. T4		;[9081] If output desired
+	    CALL TAB4		;[9081] (T4,Q3/) Do tab control
+	    CALL MTGPRO		;[9081] (JFN/T1) Get protection
+	    SKIPE T1		;[9081] Any protection to output?
+	    CALL JFNSP		;[9081] (T1/) Output protection
+	    ENDIF.		;[9081] End of protection output
+	  ENDIF.		;[9081] End of magtape special case
+
+;[9081] Here at end of device/JFN specific output.  Output any attributes,
+;release locks, return string to user, release freespace, go OKINT and return.
+
+JFNSEJ:	CALL JFNSAT		;[9081] (/) Type out attributes (if any)
+	CALL JFNSRS		;[9081] (/) Return the string we built
+	MRETNG			;[9081] Done
+	SUBTTL JFNS JSYS -- JFN Supplied -- Attributes
+
+;Local routine to do attributes, called with Q1, Q3, JFN, and so on.
+;Returns +1 always.
 
 JFNSAT:	STKVAR <JFNSAC,JFNSAA,JFNSAV>
-	TXNE Q3,JS%ATR		;WANT ALL ATTRIBUTES?
-	JRST JFNAT1		;YES
-	TXNN Q3,JS%AT1		;WANT ONE ATTRIBUTE?
-	RET			;NO, DO NOTHING
-	UMOVE A,4		;YES, GET THE POINTER TO PREFIX
-	CALL CPYFUS		;COPY STRING TO MONITOR SPACE
-	 ITERR()		;FAILED
-	MOVEM A,JFNSAA		;SAVE ADR OF STRING BLOCK
-	HRLI A,(POINT 7,0,35)	;SET UP A BYTE POINTER TO STRING
-	MOVEI B,PRFXTB		;SET UP TO LOOK FOR PREFIX
-	EXCH A,B
-	TBLUK			;LOOK UP PREFIX
-	 ERJMP JFN1AE		;FAILED
-	TXNN B,TL%ABR!TL%EXM	;FOUND A MATCH?
-	JRST JFN1AE		;NO, ERROR
-	HRRZ B,0(A)		;GET THE PREFIX VALUE
-	ANDI B,PFXMSK		;GET JUST THE VALUE
-	LOAD A,FLATL,(JFN)	;GET POINTER TO START OF ATTRIBUTE LIST
-JFN1A1:	JUMPE A,JFN1AE		;IF NONE, GIVE ERROR RETURN
-	LOAD C,PRFXV,(A)	;GET PREFIX VALUE OF THIS ENTRY
-	CAMN C,B		;FOUND A MATCH YET?
-	JRST JFN1A2		;YES, GO RETURN THE VALUE
-	LOAD A,PRFXL,(A)	;STEP TO NEXT ENTRY ON LIST
-	JRST JFN1A1		;LOOP BACK TIL DESIRED ENTRY FOUND
+	TXNE Q3,JS%ATR		;Want all attributes?
+	JRST JFNAT1		;Yes
+	TXNN Q3,JS%AT1		;Want one attribute?
+	RET			;No, do nothing
 
-JFN1A2:	CALL JFNSS		;GO RETURN THE STRING TO THE USER
-	HRRZ B,JFNSAA		;GET ADDRESS OF TEMP STRING
-	MOVEI A,JSBFRE		;RETURN TEMP STRING
-	CALLRET RELFRE		;AND EXIT
+;Now we need to output a single attribute, copy string to monitor space, then
+;look for prefix in the prefix table.
 
-JFN1AE:	HRRZ B,JFNSAA		;RETURN THE TEMP STRING
-	MOVEI A,JSBFRE		;TO THE FREE POOL
-	CALL RELFRE
-	ITERR (GJFX40)		;NO SUCH ATTRIBUTE ERROR
+	UMOVE T1,4		;Get the pointer to prefix
+	CALL CPYFUS		;(T1-T3/T1-T3) Copy string to monitor space
+	 ITERR (,<CALL JFNSRF>)	;[9077] (/) Failed, release things we own
+	MOVEM T1,JFNSAA		;Save address of string block
+	HRLI T1,(POINT 7,0,35)	;Set up a byte pointer to string
+	MOVEI T2,PRFXTB		;Set up to look for prefix
+	EXCH T1,T2		;Swap ACs for TBLUK
+	TBLUK%			;Look up prefix
+	 ERJMP JFN1AE		;Failed!
+	TXNN T2,TL%ABR!TL%EXM	;Found a match?
+	JRST JFN1AE		;No, error
+	HRRZ T2,(T1)		;Get the prefix value
+	ANDI T2,PFXMSK		;Get just the value
+	LOAD T1,FLATL,(JFN)	;Get pointer to start of attribute list
 
+;Look for desired prefix value in chain of attributes.
 
-;RETURN ALL ATTRIBUTES TO THE CALLER
+JFN1A1:	JUMPE T1,JFN1AE		;If none, give error return
+	LOAD T3,PRFXV,(T1)	;Get prefix value of this entry
+	CAMN T3,T2		;Found a match yet?
+	JRST JFN1A2		;Yes, go return the value
+	LOAD T1,PRFXL,(T1)	;Step to next entry on list
+	JRST JFN1A1		;Loop back til desired entry found
 
-JFNAT1:	SETZB A,JFNSAC		;INITIALIZE THE COUNT OF ATTRIBUTES
-JFNAT2:	CALL GTNPFX		;GET THE NEXT PREFIX
-	 RET			;NO MORE, RETURN
-	MOVEM A,JFNSAA		;SAVE THE ADDRESS OF THE BLOCK
-	LOAD B,PRFXV,(A)	;GET THE ATTRIBUTE PREFIX
-	CAIN B,.PFPWD		;IS THIS THE PASSWORD ONE?
-	TQNE <ASTF>		;YES. IS THIS PARSE-ONLY ?
-	TRNA			;NOT PASSWORD OR PARSE-ONLY - PRINT IT
-	JRST JFNAT3		;PASSWORD AND NOT PARSE ONLY - DO NOT PRINT IT
-	MOVEI B,PNCATT		;GET THE STARTING PUNCTUATION
-	CALL PUNCT		;PUT ";" INTO CALLER'S STRING
-	MOVE A,JFNSAA		;GET BACK ADDRESS OF THE ATTRIBUTE
-	LOAD A,PRFXV,(A)	;GET THE PREFIX VALUE FROM BLOCK
-	CALL GTPFXS		;GET ADDRESS OF PREFIX STRING
-	 RET			;COULD NOT FIND IT, JUST RETURN
-	MOVEM B,JFNSAV		;SAVE THE VALUE
-	CALL JFNSS		;OUTPUT THE PREFIX STRING
-	MOVE C,JFNSAV		;GET BACK THE VALUE OF THE PREFIX
-	TRNE C,NOATRF		;IS THIS A NO VALUE ATTRIBUTE?
-	JRST JFNAT3		;YES, DO NOT ADD ON A NULL VALUE
-	MOVEI B,PNCPFX		;GET PUNCTUATION OF PREFIX
-	CALL PUNCT		;OUTPUT THE ":"
-	HRRZ A,JFNSAA		;GET THE ADDRESS OF THE ATTRIBUTE BLOCK
-	CALL JFNSS		;OUTPUT THE ATTRIBUTE VALUE
-JFNAT3:	AOS A,JFNSAC		;STEP TO THE NEXT ATTRIBUTE
-	JRST JFNAT2		;LOOP BACK TILL ALL ATTRIBUTES SEEN
+;Copy desired attribute to user.
 
+JFN1A2:	CALL JFNSSS		;[9077] (T1/) Go return the string to the user
+	HRRZ T2,JFNSAA		;Get address of temp string
+	CALLRET RELJFR		;[9077] (T2/) Free up storage and return
 
+;Here if not found, return freespace and give appropriate error code.
+
+JFN1AE:	HRRZ T2,JFNSAA		;Get address of temp string
+	CALL RELJFR		;[9077] (T1,T2/) Free up storage
+	ITERR (GJFX40,<CALL JFNSRF>) ;[9077] (/) Return error
+;More JFNSAT
+
+;Here when we want to return all attributes to the user.
+
+JFNAT1:	SETZB T1,JFNSAC		;Initialize the count of attributes
+JFNAT2:	CALL GTNPFX		;(T1/T1) Get the next prefix
+	 RET			;No more, return
+	MOVEM T1,JFNSAA		;Save the address of the block
+	LOAD T2,PRFXV,(T1)	;Get the attribute prefix
+	CAIN T2,.PFPWD		;Is this the password one?
+	TQNE <ASTF>		;Yes, is this parse-only?
+	TRNA			;Not password or parse-only - print it
+	JRST JFNAT3		;Password and not parse only - do not print it
+	MOVEI T2,PNCATT		;Get the starting punctuation
+	CALL PUNCT		;(T2,Q3/) Put into caller's string if needed
+	MOVE T1,JFNSAA		;Get back address of the attribute
+	LOAD T1,PRFXV,(T1)	;Get the prefix value from block
+	CALL GTPFXS		;(T1/T1,T2) Get address of prefix string
+	 JRST JFNAT3		;[9077] Skip this one if we don't know it
+	MOVEM T2,JFNSAV		;Save the attribute value
+	CALL JFNSSS		;[9077] (T1/) Output attribute name
+	MOVE T3,JFNSAV		;Get back the value of the prefix
+	TRNE T3,NOATRF		;Is this a no value attribute?
+	JRST JFNAT3		;Yes, do not add on a null value
+	MOVEI T2,PNCPFX		;Get punctuation of prefix
+	CALL PUNCT		;(T2,Q3/) Output the colon if needed
+	HRRZ T1,JFNSAA		;Get the address of the attribute block
+	CALL JFNSSS		;[9077] (T1/) Copy out the attribute string
+JFNAT3:	AOS T1,JFNSAC		;Step to the next attribute
+	JRST JFNAT2		;Loop back till all attributes seen
+;More JFNSAT
 ;ROUTINE TO GET NEXT ATTRIBUTE ON CHAIN
 ;ACCEPTS IN A/	COUNT OF THE DESIRED BLOCK
 ;	CALL GTNPFX
@@ -5564,7 +6643,6 @@ GTNPF1:	JUMPE A,R		;IF NO MORE, RETURN
 	RETSKP			;YES, RETURN WITH ADRRESS IN A
 	LOAD A,PRFXL,(A)	;STEP TO NEXT ITEM ON THE CHAIN
 	JRST GTNPF1		;LOOP BACK TILL DESIRED ENTRY IS FOUND
-
 
 ;ROUTINE TO GET ADDRESS OF PREFIX STRING (FOR JFNSS)
 ;ACCEPTS IN A/	VALUE OF THE DESIRED PREFIX
@@ -5586,171 +6664,11 @@ GTPFX1:	HRRZ B,0(D)		;GET THE PREFIX VALUE
 GTPFX2:	HLRZ A,0(D)		;GET ADDRESS OF STRING
 	HRRZ B,0(D)		;GET PREFIX VALUE AND FLAGS
 	SOJA A,RSKP		;RETURN ADDRESS-1 FOR JFNSS
-
-;JFNX
-;SPECIAL STRING INPUT HANDLER TO PUT CORRECT PUNCTUATION AROUND
-;THE STRING. PUNCTUATION USED IS THAT FOR THE FIRST NON-ZERO FIELD
-;FOUND SCANNING FROM LEFT TO RIGHT
-JFNX0:	MOVE JFN,2
-	CALL CHKJFN
-	 ITERR()
-	 ITERR(DESX4)
-	 JRST JFNX0A
-	CALL UNLCKF
-	ITERR(DESX1)
 
-JFNX0A:	UMOVE A,1
-	TLNN A,777777
-	 JRST JFNX1		; Not byte pointer
-	TLC A,777777
-	TLCN A,777777
-	 HRLI A,440700		; -1 in lh, fill in
-	SETZ B,
-	XCTBU [IDPB B,A]	; Deposit initial null in case
-JFNX1:	XCTU [HLLZ F1,2]
-	XCTU [MOVE Q3,3]
-	MOVEI B,11
-	TRNE Q3,3B34		;EITHER TAB REQUEST?
-	CALL BOUTA		;YES, OUTPUT TAB
-	TXNE Q3,7B2		;DEVICE?
-	JRST JFNXDA		;YES
-	TXNE Q3,7B5		;DIRECTORY?
-	JRST JFNXDB		;YES
-	TXNE Q3,7B8		;NAME?
-	JRST JFNXN		;YES
-	TXNE Q3,7B11		;EXTENSION?
-	JRST JFNXE		;YES
-	TXNE Q3,7B14		;VERSION?
-	JRST JFNXV		;YES
-	TXNE Q3,7B17		;PROTECTION?
-	JRST JFNXP		;YES
-	TXNE Q3,7B20		;ACCOUNT?
-	JRST JFNXA		;YES
-	TXNE Q3,1B21		; ";T" ?
-	JRST JFNXT		;YES
-	TXNE Q3,JS%ATR!JS%AT1	;ATTRIBUTES?
-	JRST JFNXAT		;YES
-	TXNE Q3,17B25		;SIZE OR ANY DATE?
-	JRST JFNXSD		;YES
-	TXNE Q3,JS%OFL		;OFFLINE?
-	JRST JFNXOF
-;DEVICE
-JFNXDA:	CALL JFNXDO		;COPY USER STRING
-	MOVEI B,":"
-	JRST JFNXX1		; STORE PUNCTUATION AND EXIT
-
-;DIRECTORY
-JFNXDB:	MOVEI B,"<"
-	CALL PUNCT
-	CALL JFNXDO
-	MOVEI B,">"
-	JRST JFNXX1
-
-;SIZE OR DATE
-JFNXSD:	MOVEI B,","
-	TRNE Q3,1B32
-	CALL BOUTA
-;NAME
-JFNXN:	CALL JFNXDO
-	JRST JFNXX2
-
-;EXTENSION
-JFNXE:	MOVEI B,"."
-JFNXE1:	CALL PUNCT
-	JRST JFNXN
-
-;VERSION
-JFNXV:	MOVEI B,PNCVER
-	JRST JFNXE1
-
-;ACCOUNT
-JFNXA:	MOVEI B,PNCATT
-	CALL PUNCT
-	MOVEI B,"A"
-	JRST JFNXE1
-
-;PROTECTION
-JFNXP:	MOVEI B,PNCATT
-	CALL PUNCT
-	MOVEI B,"P"
-	JRST JFNXE1
-
-;OFFLINE
-JFNXOF:	MOVEI B,PNCATT
-	CALL PUNCT
-	MOVEI A,[ASCIZ /OFFLINE/]-1
-	CALL JFNSS
-	JRST JFNXX2
-
-;TEMPORARY
-JFNXT:	MOVEI B,PNCATT
-	CALL PUNCT
-	MOVEI B,"T"
-;END ROUTINE
-JFNXX1:	CALL PUNCT
-JFNXX2:	JRST MRETN
-
-JFNXDO:	CAIN JFN,377777		;NIL?
-	RET			;YES, DONE
-JFNXD1:	XCTBU [ILDB B,JFN]	;GET BYTE FROM USER
-	JUMPE B,R		;END ON NULL
-	UMOVEM JFN,2		;UPDATE BYTE POINTER
-	CALL BOUTA		;OUTPUT BYTE
-	JRST JFNXD1
-
-;ROUTINE TO PUNCTUATE ATTRIBUTES
-
-JFNXAT:	MOVEI B,PNCATT		;ATTRIBUTE STARTING PUNCTUATION
-	CALL PUNCT		;OUTPUT THE ";"
-	CALL JFNXDO		;FOLLOWED BY THE PREFIX STRING
-	TXNN Q3,JS%AT1		;DOES THIS HAVE A VALUE
-	JRST JFNXX2		;NO, ALL DONE
-	MOVEI B,PNCPFX		;YES, OUTPUT THE PUNCTUATION
-	CALL PUNCT		;  BETWEEN FIELDS
-	UMOVE JFN,4		;SET UP POINTER TO VALUE STRING
-	TLC JFN,-1		;SEE IF -1 IN LH
-	TLCN JFN,-1		;...
-	HRLI JFN,(POINT 7,0)	;YES, SET UP BYTE POINTER
-	CALL JFNXDO		;OUTPUT THE STRING
-	JRST JFNXX2		;ALL DONE
-
-;LOCAL NUMBER OUTPUT ROUTINE FOR JFNS
-;NOUTXX ALWAYS PRINTS NUMBER
-;JFNSN TAKES A AS STRING POINTER IF POSITIVE, NUMBER (AFTER FLUSHING
-; BITS 0-2) IF NEGATIVE
-
-JFNSN:	JUMPG A,JFNSS		; Copy to output
-	MOVE B,A
-	TLZ B,700000
-NOUTXX::PUSH P,JFN
-	PUSH P,DEV
-	PUSH P,STS
-	PUSH P,F1
-	PUSH P,Q3
-	PUSH P,D
-	PUSH P,F
-	PUSH P,C
-	PUSH P,B
-	CALL NOUTX
-	 JFCL
-	POP P,B
-	POP P,C
-	POP P,F
-	POP P,D
-	POP P,Q3
-	POP P,F1
-	POP P,STS
-	POP P,DEV
-	POP P,JFN
-	RET
-
-
-
-;LOCAL ROUTINE FOR JFNS TO TRY TO SET UP CONNECTED DIRECTORY STRING
-;IN JSB WHEN ABSENT.  USES ACCES JSYS TO CONNECT TO CURRENTLY CONNECTED
-;DIRECTORY.... (PRESENT BECAUSE ACCES JSYS FOR ANOTHER JOB CAN'T WRITE
-;THE STRING INTO ANOTHER JOB'S JSB FREE SPACE)
-
+;LOCAL ROUTINE FOR JFNS TO TRY TO SET UP CONNECTED DIRECTORY STRING IN JSB WHEN
+;ABSENT.  USES ACCES JSYS TO CONNECT TO CURRENTLY CONNECTED DIRECTORY....
+;(PRESENT BECAUSE ACCES JSYS FOR ANOTHER JOB CAN'T WRITE THE STRING INTO
+;ANOTHER JOB'S JSB FREE SPACE)
 
 JFNSCD:	SAVEQ			;PRESERVE Q REGS
 	MOVX T1,AC%CON+3	;CONNECT FUNCTION
@@ -5761,73 +6679,444 @@ JFNSCD:	SAVEQ			;PRESERVE Q REGS
 	ACCES			;AND DO IT
 	 ERJMP .+1		;IGNORE ERRORS
 	RET			;AND DONE
+	SUBTTL JFNS JSYS -- JFN Supplied -- Display Routines
+
+;Local routine to output protection for JFNS.
+;Call with T1/ Protection
+;Returns +1 always.
+
+JFNSP:	MOVE T4,T1		;[9077] Save protection
+	MOVEI T2,PNCATT		;Load punctuation
+	CALL PUNCT		;(T2,Q3/) Do punctuation character
+	MOVEI T2,"P"		;Get prefix for protection
+	CALL PUNCT		;(T2,Q3/) Do it as well
+	MOVE T2,T4		;[9077] Restore protection
+	TXZ T2,5B2		;[9077] Clear obnoxious bits
+	CALLRET JFNSNO		;[9077] (T1,T3/) Output protection in octal
+
+;Local routine for JFNS to print punctuation if JS%PAF specified.
+;Call with T2/ punctuation character, Q3/ JFNS format flags
+;Returns +1 always
+
+PUNCT:	TRNE Q3,JS%PAF		;Punctuate?
+	CALLRET JFNSBO		;[9077] (T2/) Send character and return
+	RET			;[9077] Do nothing and return
+
+;Local routine for JFNS to print tab if needed.
+;Call with T4/ format output control for field, Q3/ JFNS format flags
+;Does not output tab on first call.
+;Returns +1 always
+
+TAB4:	MOVEI T2,.CHTAB		;Load a tab character
+	TRNE Q3,JS%TBP		;Tab before all fields?
+	CAIG T4,0		;Skip if field should be output
+	TRNE Q3,JS%TBR		;Tab just before returned fields?
+	TQON JS%T3		;Skip if not first tab output
+	RET			;Do not output tab
+	CALLRET JFNSBO		;[9077] (T2/) Send that and return
+	SUBTTL JFNS JSYS -- JFN Supplied -- Store String
+
+;[9077] Local routines to append ASCIZ string to the string returned by JFNS.
+; CALL JFNSSS to precede all special characters with ctrl/V
+;	with T1/ Address-1 of ASCIZ string
+; CALL JFNSDS to precede all special characters but period with ctrl/V
+;	with T1/ Address-1 of ASCIZ string
+; CALL JFNSGS to precede all special characters with ctrl/V
+;	with T1/ one word global byte pointer to the string to copy
+;Returns +1: always
+
+JFNSGS:	SETO T4,		;[9077] Indicate that dot gets ^V
+	JRST JFNS1S		;[9077]  and then get cranking on that string
+JFNSDS::TDZA T4,T4		;[9077] Indicate dot should not get ^V
+JFNSSS::SETO T4,		;[9077] Indicate dot should get ^V
+	JUMPE T1,R		;[9077] Return now if no string
+	HRLI T1,(<POINT 7,0,35>) ;[9077] Construct pointer to source
+
+;Loop through the characters in the string, if the character is not an upper
+;case, digit, dollar sign, underscore, or hyphen it should be quoted.
+
+JFNS1S:	DO.			;[9077] Top of loop to get characters
+	  ILDB T2,T1		;[9077] Get next character
+	  JUMPE T2,R		;[9077] Done when we see a null
+	  CAIN T2,"."		;[9077] Is it a dot?
+	  SKIPE T4		;[9077] Yes, skip if dot is exempt from check
+	  CALL JFNSCC		;[9077] (T2/) Skip if a special character
+	  IFSKP.		;[9077] If a special character
+	    MOVEI T2,"V"-100	;[9077] Load a control-V
+	    CALL JFNSBO		;[9077] (T2/) Send that control-V
+	    LDB T2,T1		;[9077] Reload character
+	  ENDIF.		;[9077] End of 
+	  CALL JFNSBO		;[9077] (T2/) Output that character
+	  LOOP.			;[9077] Loop until a null seen
+	OD.			;[9077] End of loop
 
-;LOCAL DATE PRINTER FOR JFNS
+;[9077] Local routine called from above to skip is character in T2 is 
+;a special character which must be quoted with control-V.
+;Returns +1 if T2/ uppercase, digit, underscore, hyphen, or dollarsign.
+;Returns +2 otherwise
+;Coded this way since most characters presented to it will be uppercase.
+	
+JFNSCC:	CAIL T2,"A"		;[9077] Is it 
+	CAILE T2,"Z"		;[9077]  upper case?
+	CAIN T2,"$"		;[9077] No, is it a dollarsign?
+	RET			;[9077] Uppercase or dollarsign, not special
+	CAIL T2,"0"		;[9077] Is it zero
+	CAILE T2,"9"		;[9077]  through nine?
+	CAIN T2,"-"		;[9077] Nope, is it a hyphen?
+	RET			;[9077] Digit or hyphen, not special character
+	CAIN T2,"_"		;[9077] Underscore?
+	RET			;[9077] Underscore not a special character
+	RETSKP			;[9077] Special character, return +2
 
-JFNDAT:	PUSH P,B
-	MOVEI D,1
-	CALL JFNCOM
-	POP P,B
-	PUSH P,A
-	SETZ C,
-	HRROI A,1(P)
-	ADD P,[XWD 5,5]		;[7355]
-	ODTIM
-	MOVEI C,-4(P)		;[7355]
-	HRLI C,(<POINT 7,0>)
-JFNDA1:	ILDB B,C
-	JUMPE B,[SUB P,[XWD 5,5] ;[7355]
-		 POP P,A
-		 RET]
-	CALL BOUTA
-	JRST JFNDA1
+repeat 0,<			;[9077] An alternate expression of above
+	  IDIVI T2,CCBPW	;Get the word number
+	  LDB T3,CPTAB(T3)	;Get the code for the character
+	  CAIE T3,UPPER		;Is it upper case, dollarsign, or underscore?
+	  CAIN T3,MINUSC	; or minus sign?
+	  IFSKP.		;If not one of those
+	    CAIL T3,DIGITC	;Is it a 
+	    CAILE T3,UPPERA	; digit, T, P, or A?
+	    IFNSK.		;Not a digit, T, P, A, upper case, or minus
+	      MOVEI T2,"V"-100	;Load a control V
+	      CAIN T2,$DOT	;Is it a dot?
+	      SKIPE T4		;Should we control-V it?
+	      CALL JFNSBO	;(T2/) Send a control-V to the string
+	    ENDIF.		;End of
+	  ENDIF.		; character checks
+>
 
-;PRINT COMMA IF D=TRUE AND Q3/B32=1
+;[9077] Local routine for JFNS to handle output of wildcard strings.
+;Call JFNSTR to output an asterisk.
+;Call JFNSST to output asterisk if T1 zero or string it T1 not zero.
+;Returns +1 always.
 
-JFNCOM:	MOVEI B,","
-	CAIE D,0
-	TRNN Q3,1B32
-	RET
-	CALLRET BOUTA
+JFNSST:	SKIPN T1		;[9077] Skip if string pointer in T1
+JFNSTR:	MOVEI T1,[ASCIZ /*/]-1	;[9077] Use a star
+	HRLI T1,(<POINT 7,0,35>) ;[9077] Make a pointer to address 
+	DO.			;[9077] Loop through entire string
+	  ILDB T2,T1		;[9077] Load a character from string
+	  JUMPE T2,R		;[9077] Return if null seen
+	  CALL JFNSBO		;[9077] (T2/) Send that character
+	  LOOP.			;[9077]  and loop for more
+	OD.			;[9077] End of per-character loop
+	SUBTTL JFNS JSYS -- JFN Supplied -- Store Number
 
-;PRINT MASK ADDRESSED BY B OR A STAR IF B IS ZERO
+;[9077] Local routine to append a number to output string for JFNS.
+;Call with T2/ number and T3/ radix
+;Returns +1 always
 
-JFSTAR:	SKIPA			; ALWAYS DO A STAR IF ENTERED HERE
-JFSTA1:	SKIPN B			; HAVE A MASK INSTEAD?
-	MOVEI B,[ASCIZ /*/]-1	; NO. USE A STAR
-	HRLI B,(<POINT 7,0,35>)	; MAKE A STRING POINTER
-	STKVAR (MSKSAV)		; SAVE STRING PTR IN TEMP STORAGE
-	MOVEM B,MSKSAV		; SAVE B FOR NOW
-JFLOP:	ILDB B,MSKSAV		; TOP OF PRINT LOOP
-	JUMPE B,R		; IF AT THE END, RETURN
-	CALL BOUTA		; OUTPUT THE BYTE
-	JRST JFLOP		; DO ALL OF STRING
+JFNSND:	IFL. T2			;[9077] If negative number
+	  MOVE T1,T2		;[9077] Save the number
+	  MOVEI T2,"-"		;[9077] Load hyphen
+	  CALL JFNSBO		;[9077] (T2/) Send minus sign along
+	  MOVM T2,T1		;[9077] Get magnatude of number
+	ENDIF.			;[9077] End of negative number check	
+	SKIPA T1,[^D10]		;[9077] Load decimal radix and skip
+JFNSNO:	MOVEI T1,10		;[9077] Load octal radix
+JFNSN1:	IDIVI T2,(T1)		;[9077] Get a digit from the number
+	ADDI T3,"0"		;[9077] Convert to ASCII
+	PUSH P,T3		;[9077] Save it on the stack
+	SKIPE T2		;[9077] End of number?
+	CALL JFNSN1		;[9077] (T2/) No get next digit
+	POP P,T2		;[9077] Restore digit to T2
+;	CALLRET JFNSBO		;[9077] (T2/) Send a digit and return
+				;Fall through to next page's JFNSBO
 
-;PRINT PUNCTUATION IF Q3/B35=1
+	SUBTTL JFNS JSYS -- JFN Supplied -- Store Character
 
-PUNCT:	TRNE Q3,1B35
-	CALLRET BOUTA
-	RET
+;[9077] Local routine stores a character in the free space for JFNS.
+;Call with T2/ character
+;Returns +1 always, all ACs preserved
 
-;PRINT TAB PER Q3/B33-34 IF D=TRUE
+JFNSBO:	SOSGE JFSCNT		;[9077] Space to store?
+	IFSKP.			;[9077] Yes
+	  IDPB T2,JFSPTR	;[9077] Yes, store character
+	  RET			;[9077] and return always
+	ENDIF.			;[9077] Buffer full, this is VERY unusual
+	CALL JFNSB1		;[9077] (/) What a pain in the BOUT
+	JRST JFNSBO		;[9077] Try output again
 
-TAB4:	MOVEI B,11		;TAB
-	TRNE Q3,JS%TBP
-	CAIG D,0
-	TRNE Q3,JS%TBR
-	TQON JS%T3		; Tab usage flag in Q1
-	RET
-	CALLRET BOUTA
-;JFNSS AND JFNSSD - WRITE ASCII STRING
+;Here if the buffer is full, this is not expected to happen, but recover from
+;it anyway by unlocking, emptying the buffer, and relocking.  Yeeccchh.
 
+JFNSB1:	SAVET			;[9077] Save temps for now
+	UNLOCK JFNLCK		;[9077] Unlock the JFN lock 
+	UNLOCK FILLCK(JFN)	;[9077]  and unlock the file lock
+	CALL JFNSCS		;[9077] (/T1) Copy the string
+	 ITERR (,<CALL JFNSFR>)	;[9077] Error, return it
+	LOCK FILLCK(JFN)	;[9077] No, make sure it is unlocked
+	LOCK JFNLCK		;[9077] Release JFN lock
+	RET			;[9077] Return from horrible routine
+
+;[9077] Local routine called when new buffer for JFNS is available.
+;Resets buffer pointer and count for JFNS.
+;Returns +1 always.
+
+JFNSNB:	SETZM 1(T1)		;[9077] Insure first word is zero
+	HRLI T1,(POINT 7,0,35)	;[9077] Make pointer to the space
+	MOVEM T1,JFSPTR		;[9077] Save pointer to that string
+	MOVEI T2,<5*<MAXLW*9>>-1 ;[9077] Load characters we can store
+	MOVEM T2,JFSCNT		;[9077] Save as count
+	RET			;[9077] And return
+
+	SUBTTL JFNS JSYS -- JFN Supplied -- Return User String
+
+;[9077] Local routine to return the string to the user for JFNS.
+;Unlocks everything, sends string, returns freespace, and goes OKINT.
+;Returns +1 always.
+
+JFNSRS:	CALL JFNSUL		;[9077] (/) Unlock file lock and JFN lock
+	CALL JFNSCS		;[9077] (/T1) Copy the string
+	 ITERR (,<CALL JFNSFR>)	;[9077] Error, return it
+	CALLRET JFNSFR		;[9077] (/) Free space and unlock and return
+
+;[9077] Local routine to return the string created by JFNS to the user.
+;Returns +1 if error
+;Returns +2 if OK
+
+JFNSCS:	SETZ T3,		;[9077] Load a null
+	IDPB T3,JFSPTR		;[9077]  and bind off the string to return
+	MOVE T3,JFSADR		;[9077] Load the address of the free space
+	HRLI T3,(POINT 7,0,35)	;[9077] Make pointer to the space
+
+;[9077] Use a BOUT loop if the user's designator is not a string.
+
+	UMOVE T1,1		;[9077] Load user's destination designator
+	TLNE T1,-1		;[9077] Is it a string pointer or JFN?
+	IFSKP.			;[9077] Its a real JFN
+	  DO.			;[9077] Loop to read from
+	    ILDB T2,T3		;[9077] Load a byte from space
+	    JUMPE T2,RSKP	;[9077] (/) If a null get out we are done
+	    BOUT		;[9077] Send byte to user
+	     ERJMPR R		;[9077] If error return it in T1
+	    LOOP.		;[9077] Loop for all of them
+	  OD.			;[9077] End of character transmission loop
+	ENDIF.			;[9077] Otherwise its a string pointer
+
+;[9077] Copy characters to user if destination is a byte pointer
+
+	TLC T1,777777		;[9077] Seems to be a byte pointer
+	TLCN T1,777777		;[9077] Is it -1,,address?
+	HRLI T1,(POINT 7)	;[9077] Yes, make it <POINT 7,address>
+	DO.			;[9077] Loop for all characters
+	  ILDB T2,T3		;[9077] Get a source character
+	  JUMPE T2,ENDLP.	;[9077] Get out if null seen
+	  XCTBU [IDPB T2,T1]	;[9077] Store character please
+	  LOOP.			;[9077] Loop for all characters
+	OD.			;[9077] Null seen
+	UMOVEM T1,1		;[9077] Restore user's pointer
+	XCTBU [IDPB T2,T1]	;[9077] Store null character next
+	RETSKP			;[9077]  and return
+	SUBTTL JFNS JSYS -- JFN Supplied -- Unlock and Free Space Return
+
+;[9077] Local routine for JFNS to unlock locks.
+;Call JFNSUL to perform the following functions:
+;	Unlocks the file lock.
+;	Unlocks the JFN lock.
+;Returns +1 Always.
+
+JFNSUL:	CALL UNLCKF		;[9077] (/) Unlock the FILLCK first
+	UNLOCK JFNLCK		;[9077] Release JFN lock
+	RET			;[9077] Return
+
+;[9077] Local routine for JFNS to unlock and return nothing.
+;Call JFNSRJ to perform the following functions:
+;	Just JFNLCK lock is unlocked
+;	Free space returned
+;	Go OKINT
+
+JFNSRJ:	UNLOCK JFNLCK		;[9077] Unlock just JFNLCK
+	CALLRET JFNSFR		;[9077] (/) Return freespace and return
+
+;[9077] Local routine for JFNS to unlock and return nothing.
+;Call JFNSRF to perform the following functions:
+;	All locks are unlocked
+;	Free space returned
+;	Go OKINT
+
+JFNSRF:	CALL JFNSUL		;[9077] Unlock all locks
+;	CALLRET JFNSFR		;[9077] (/) Return freespace and return
+
+;[9077] Local routine to return freespace for JFNS.
+;Call JFNSFR for the following functions:
+;	Free space is returned.
+;	Goes OKINT.
+;Returns +1 always
+
+JFNSFR:	SAVET			;[9077] Save temps
+
+	HRRZ T2,JFSADR		;[9077] Get address of temp string
+	SKIPE T2		;[9077] Don't ever release twice 
+	CALL RELJFR		;[9077] (T2/) Free up storage
+	SETZM JFSADR		;[9077] Insurance
+
+	OKINT			;[9077] Interruptions are OK again
+	RET			;[9077] Return now
+
+	ENDTV.			;[9077] End of TRVAR for JFNS
+	SUBTTL JFNS JSYS -- String Supplied
+
+;[9077] Here if JS%PTR is set for JFNS (JFNX).  This code is a special string
+;input handler to put correct punctuation around the string.  Punctuation used
+;is that for the first non-zero field found scanning from left to right.
+;Doesn't need JFNLCK or FILLCK to work, since AC2 contains string pointer.  As
+;DML says, "this is just another case of user code in the monitor".
+
+JFNX0:	UMOVE JFN,2		;[9077] Load user's JFN
+	CALL CHKJFN		;(JFN/DEV,P3,JFN,STS) Check the JFN
+	 ITERR ()		;Some kind of error
+	 ITERR (DESX4)		;TTY is illegal
+	 JRST JFNX0A		;String pointer is OK
+	CALL UNLCKF		;(JFN/) A real JFN, release lock
+	ITERR (DESX1)		; and return illegal designator error
+
+;Check user's supplied pointer, fix up from -1,,addr, and insure a null stored.
+
+JFNX0A:	UMOVE T1,1		;Load user's output pointer
+	TLNN T1,777777		;Is it a byte pointer?
+	JRST JFNX1		;No, not byte pointer
+	TLC T1,777777		;Is it 
+	TLCN T1,777777		; -1,,address?
+	HRLI T1,440700		;Yes, make it POINT 7,address
+	SETZ T2,		;Load a null up
+	XCTBU [IDPB T2,T1]	;Deposit initial null in case
+
+;Check for null JFN source, output tab if needed.
+
+JFNX1:	CAIN JFN,.NULIO		;[9077] Null?
+	MRETNG			;[9077] Return good now
+	MOVEI T2,.CHTAB		;Load a tab
+	TRNE Q3,JS%TBR!JS%TBP	;Either tab request?
+	CALL BOUTA		;(T2/) Yes, output tab
+	;..
+
+;Dispatch to code based on first field to output.
+
+	TXNE Q3,JS%DEV		;Device?  (Really should use JS%DVN?)
+	JRST JFNXDA		;Yes
+	TXNE Q3,JS%DIR		;Directory?
+	JRST JFNXDB		;Yes
+	TXNE Q3,JS%NAM		;Name?
+	JRST JFNXN		;Yes
+	TXNE Q3,JS%TYP		;Extension?
+	JRST JFNXE		;Yes
+	TXNE Q3,JS%GEN		;Version?
+	JRST JFNXV		;Yes
+	TXNE Q3,JS%PRO		;Protection?
+	JRST JFNXP		;Yes
+	TXNE Q3,JS%ACT		;Account?
+	JRST JFNXA		;Yes
+	TXNE Q3,JS%TMP		; ";T" ?
+	JRST JFNXT		;Yes
+	TXNE Q3,JS%ATR!JS%AT1	;Attributes?
+	JRST JFNXAT		;Yes
+	TXNE Q3,JS%SIZ!JS%CDR!JS%LWR!JS%LRD ;Size or any date?
+	JRST JFNXSD		;Yes
+	TXNE Q3,JS%OFL		;Offline?
+	JRST JFNXOF		;Yes
+	JRST JFNXN		;Uh, I guess we return the device then
+
+;[9077] Local routine called from JFNX to do punctuation.
+;Call with T2/ character and Q3/ user format bits.
+;Returns +1 always.
+
+JFNXPA:	MOVEI T2,PNCATT		;[9077] Load attirbute punctuation
+JFNXPU:	TXNE Q3,JS%PAF		;[9077] Punctuate all fields?
+	CALL BOUTA		;[9077] (T2/) Yes send punctuation
+	RET			;[9077] Return to caller
+
+;[9077] Local routine called from JFNX to copy string to user.
+;Call with JFN/ string pointer in user space
+;Returns +1 always
+
+JFNXDO:	XCTBU [ILDB T2,JFN]	;Get byte from user
+	JUMPE T2,R		;End on null
+	UMOVEM JFN,2		;Update byte pointer
+	CALL BOUTA		;(T2/) Copy that byte around and around
+	JRST JFNXDO		;Loop for all bytes in supplied string
+
+;Device
+
+JFNXDA:	CALL JFNXDO		;(JFN/) Copy user string
+	MOVEI T2,":"		;Load device punctuation
+	JRST JFNXX1		;Store punctuation and exit
+
+;Directory
+
+JFNXDB:	MOVEI T2,"<"		;Load beginning of directory string
+	CALL JFNXPU		;[9077] (T2/) Do punctuation if needed
+	CALL JFNXDO		;(JFN/) Copy string to user
+	MOVEI T2,">"		;Load closing punctuation
+JFNXX1:	CALL JFNXPU		;[9077] (T2/) Do punctuation if needed
+	MRETNG			;[9077]  and return
+
+;Size or date
+
+JFNXSD:	MOVEI T2,","		;Load usual punctuation for this field
+	TRNE Q3,JS%PSD		;Punctuate size or date fields?
+	CALL BOUTA		;(T2/) Yes do it then 
+	JRST JFNXN		;Return user string and return
+
+;Extension and version
+
+JFNXV:	SKIPA T2,[PNCVER]	;Load punctuation for version
+JFNXE:	MOVEI T2,"."		;Load punctuation for extension
+JFNXE1:	CALL JFNXPU		;[9077] (T2/) Do punctuation if needed
+
+;Name
+
+JFNXN:	CALL JFNXDO		;(JFN/) Copy string to user
+	MRETNG			;[9077] Return
+
+;Account
+
+JFNXA:	CALL JFNXPA		;[9077] (/) Do attribute punctuation
+	MOVEI T2,"A"		;Load up account string specifier
+	JRST JFNXE1		;Do punctuation and return string
+
+;Protection
+
+JFNXP:	CALL JFNXPA		;[9077] (/) Do attribute punctuation
+	MOVEI T2,"P"		;Load next character for punctuation
+	JRST JFNXE1		;Send punctuation and user string and return
+
+;Offline
+
+JFNXOF:	CALL JFNXPA		;[9077] (/) Do attribute punctuation
+	MOVEI T1,[ASCIZ /OFFLINE/]-1 ;[9077] Point to string to return
+	CALL JFNSS		;[9077] (T1/) Send that string to user
+	MRETNG			;[9077] Return good
+
+;Temporary
+
+JFNXT:	CALL JFNXPA		;[9077] (/) Do attribute punctuation
+	MOVEI T2,"T"		;[9077] Load temporary flag
+	CALL BOUTA		;[9077] (T2/) Send the T always
+	MRETNG			;[9077]  and return
+
+;Attributes
+
+JFNXAT:	CALL JFNXPA		;[9077] (/) Do attribute punctuation
+	CALL JFNXDO		;(JFN/) Followed by the prefix string
+	TXNN Q3,JS%AT1		;Does this have a value to return?
+	MRETNG			;[9077] No, all done
+	MOVEI T2,PNCPFX		;Yes, output the punctuation
+	CALL JFNXPU		;[9077] (T2/) between fields
+	UMOVE JFN,4		;Set up pointer to value string
+	TLC JFN,-1		;See if -1 
+	TLCN JFN,-1		; in left half
+	HRLI JFN,(POINT 7,0)	;Yes, set up byte pointer
+	CALL JFNXDO		;(JFN/) Output the string to the user
+	MRETNG			;[9077] All done
+	SUBTTL JFNS JSYS -- Global Subroutines
+
+;JFNSS AND JFNSSD - WRITE ASCII STRING
 ;ACCEPTS:
 ;	A/ ADDRESS OF ASCII STRING, WHICH STARTS IN BYTE 0 OF THE WORD
 ;		AND ENDS WITH A NULL
-
 ;	CALL JFNSS TO PRECEDE ALL SPECIAL CHARACTERS WITH CTRL/V
 ;		OR
 ;	CALL JFNSSD TO PRECEDE ALL SPECIAL CHARACTERS BUT PERIOD WITH CTRL/V
-
 ;RETURNS +1: ALWAYS
 
 ;CALL BOUTA, WHICH USES USER MODE AC 1 TO DETERMINE DESTINATION OF
@@ -5844,7 +7133,7 @@ JFNSS::	SETOM D			;INDICATE DOT SHOULD GET CTRL/V
 ;TO ITS CHARACTER CLASS. CONTINUE UNTIL NULL IS FOUND.
 
 JFNSS1:	ILDB B,C		;GET NEXT CHARACTER
-	JUMPE B,CPOPJ		;NULL INDICATES END OF STRING
+	JUMPE B,R		;[8820] Done when we see a null
 	PUSH P,C		;GET A WORK AC
 	PUSH P,B		;SAVE THE CHARACTER
 
@@ -5874,7 +7163,36 @@ NTSPC:	POP P,B			;GET THE CHARACTER
 	JRST JFNSS1		;GO GET THE NEXT CHARACTER
 
 	ENDAV.			;END ACVAR
+
 
+;LOCAL NUMBER OUTPUT ROUTINE 
+;[9077] No longer used by JFNS itself.
+;Call with T2/ number, T3/ NOUT options
+;Returns +1 always
+
+NOUTXX::PUSH P,JFN
+	PUSH P,DEV
+	PUSH P,STS
+	PUSH P,F1
+	PUSH P,Q3
+	PUSH P,D
+	PUSH P,F
+	PUSH P,C
+	PUSH P,B
+	CALL NOUTX
+	 JFCL
+	POP P,B
+	POP P,C
+	POP P,F
+	POP P,D
+	POP P,Q3
+	POP P,F1
+	POP P,STS
+	POP P,DEV
+	POP P,JFN
+	RET
+	SUBTTL MOUNT JSYS
+
 ; Mount device
 ; Call:	1	; Device designator
 ;	MOUNT
@@ -5904,7 +7222,8 @@ NTSPC:	POP P,B			;GET THE CHARACTER
 	MOVSI C,(DV%MNT)
 	IORM C,DEVCHR(B)	; Mark device as mounted
 	SMRETN			;NO, DONE NOW
-
+	SUBTTL MTOPR JSYS
+
 ; Special file operation
 ; Call:	1	; Jfn
 ;	2	; Operation desired
@@ -5941,7 +7260,7 @@ Cause:	The bit indicating that a device routine wishes to block has been
 Action:	The bit is being cleared. If this problem persists, change the
 	BUGCHK to a BUGHLT and find out where BLKF is being set.
 >)
-	XMOVEI C,MTOPRB	;PASS DOWN BLOCKAGE ROUTINE
+	XMOVEI C,MTOPRB		;PASS DOWN BLOCKAGE ROUTINE
 	CALL @MTPD(P3)
 	 JRST [	TQZE <BLKF>	;ROUTINE WANT TO BLOCK?
 		JRST MTOPRW	;YES, GO BLOCK
@@ -5952,7 +7271,7 @@ Action:	The bit is being cleared. If this problem persists, change the
 
 MTOPRW:	CALL UNLDIS		;UNLOCK JFN AND DISMIS
 	JRST MTOPR1		;LOOP BACK AND START AGAIN
-
+
 ;CO-ROUTINE USED TO PERFORM LOWER LEVEL BLOCK
 
 MTOPRB:	STKVAR <DEVSAV>		;SAVE DEV OF THIS DEVICE
@@ -5992,7 +7311,8 @@ GETWRD::SETOM D			;INDICATE FETCH REQUESTED
 PUTWD1:	UMOVEM B,(C)		;STORE VALUE IN ARGUMENT BLOCK
 	 ERJMP R		;FAILED, NON-EXISTENT
 	RETSKP			;RETURN
-
+	SUBTTL OPENF JSYS
+
 ; Open a file
 ; Call:	1	; Job file number
 ;	2(0-5)	; Byte size
@@ -6004,6 +7324,7 @@ PUTWD1:	UMOVEM B,(C)		;STORE VALUE IN ARGUMENT BLOCK
 ;	+2	; Successful
 
 .OPENF::MCENT			; Become slow, save ac's
+	EA.ENT			;[9041] Be sure of section 1
 	TRVAR <UNTIDX>		;SAVE UNIT INDEX HERE
 OPENF0:	UMOVE JFN,1		; Get jfn
 	CALL CHKJFN		; What kind of designator is this?
@@ -6025,31 +7346,34 @@ OPENF0:	UMOVE JFN,1		; Get jfn
 	CAILE A,^D36
 	ERUNLK SFBSX2
 	DPB A,PBYTSZ		; Store as byte size of pointer
-	CALL FNDUNT		;GET DEV INDEX FOR UNIT
-	MOVE C,DEVCHR(A)	;GET DEVICE BITS
-	TXNE C,DV%AS		;ASSIGNABLE DEVICE?
-	JRST [	HLRZ B,DEVUNT(A) ;GET CURRENT ASSIGNMENT
-		CAMN B,JOBNO	;ASSIGNED BY THIS JOB?
-		JRST .+1	;YES. PROCEED
-		HRRZM A,UNTIDX	;SAVE UNIT INDEX HERE
-		HRR C,DEVUNT(A) ;GET UNIT
-		TLZ C,777000 ;REMOVE JUNK BITS
-		TLO C,.DVDES ;ADD BITS FOR DESIGNATOR
-		GTOKM (.GOOAD,<C>,[ERUNLK ()],OPENB)
-		MOVE B,UNTIDX	;RECOVER UNIT INDEX
-		MOVE C,DEVCHR(B) ;RESTORE MODE BITS AS WELL
-		UMOVE F1,2	;RECOVER ACCESS BITS AS WELL
-		CALL DEVAV	;DEVICE AVAILABLE?
-		ERUNLK(OPNX7)	;NO
-		JRST .+1]	;YES
+
+	CALL FNDUNT		;(JFN/T1) Get dev index for unit
+	HRRZM T1,UNTIDX		;[9122] Save unit index here for later
+	MOVE T3,DEVCHR(T1)	;[9122] Get device bits for this device
+	TXNN T3,DV%AS		;[9122] Assignable device?
+	IFSKP.			;[9122] Yes
+	  HLRZ T2,DEVUNT(T1)	;[9122] Get current assignment
+	  CAMN T2,JOBNO		;[9122] Assigned by this job?
+	  IFSKP.		;[9122] Nope
+	    HRR T3,DEVUNT(T1)	;[9122] Get UNIT
+	    TLZ T3,777000	;[9122] Remove junk bits
+	    TLO T3,.DVDES	;[9122] Add bits for designator
+	    GTOKM (.GOOAD,<T3>,[ERUNLK ()],OPENB) ;[9122] Ask the ACJ
+	    MOVE T2,UNTIDX	;[9122] Recover unit index
+	    MOVE T3,DEVCHR(T2)	;[9122] Restore mode bits as well
+	    UMOVE F1,2		;[9122] Recover access bits as well
+	    CALL DEVAV		;[9122] (DEV,T2/) Device available?
+	     ERUNLK(OPNX7)	;[9122] Device already assigned to another job
+	  ENDIF.		;[9122] End of "not assigned to this job" code
+	ENDIF.			;[9122] End of "assignable device" code
+
 	LDB A,[POINTR F1,OF%MOD];GET MODE
 	MOVN D,A
 	ROT C,-1(D)
 	JUMPGE C,[ERUNLK(OPNX14)] ; Illegal mode
 	STOR (A,IOMODE)		;SAVE IO MODE
 	;..
-
-	;..
+	;..
 	ANDX STS,<NAMEF+NONXF+ASTF+FRKF+.RTJST(OF%MOD,OF%MOD)> ;KEEP ONLY THESE BITS
 	TXNE F1,OF%HER		;MOVE CALLER BITS TO INTERNAL PLACE
 	TXO STS,HLTF
@@ -6067,22 +7391,34 @@ OPENF0:	UMOVE JFN,1		; Get jfn
 	LDB A,[POINTR F1,OF%BSZ]
 	CAIE A,7		;IF THE FILE ISN'T ASCII,
 	TQO <PASLSN>		;THEN IT CAN'T HAVE LINE NUMBERS TO REMOVE
-	BLCAL. DSKOK,<DEV>
-	IFNSK.
+	BLCAL. DSKOK,<DEV>	;[9041] Disk file?
+	IFSKP.			;[9041] If file is on disk
+	  MOVEI A,.GOOPN	;[9041] Do this ACJ function
+	  SETZ B,		;[9041] Say not setting FB%SEC
+	  CALL ACJOFL		;[9041] (T1,T2,JFN/) Then go through the ACJ
+	   ERUNLK ()		;[9041] ACJ said no
+	ELSE.
 	  CAIE A,MTADTB		;NO, MAGTAPE?
 	  CAIN A,DTADTB		;  AND DECTAPE
-	ANSKP.
-	  TQO <PASLSN>		;ALL OTHERS DON'T NEED EXAMINING
+	  ANSKP.
+	    TQO <PASLSN>	;ALL OTHERS DON'T NEED EXAMINING
 	ENDIF.
+
+	MOVE T1,UNTIDX		;[9122] Recover unit index
+	CALL CFSMTA		;[9122] (T1/) Get MTA token for device
+	 ERUNLK (OPNX32)	;[9122] Device is in use by another system
+
 	SETZM FILCNT(JFN)
 	XMOVEI C,OPENB		;OPEN BLOCK ROUTINE
 	CALL @OPEND(P3)		; Call the DEVIce dependent routine
 				;N.B. BITS IN F1 USED BY DSK!!!
 	 JRST OPENR		; Cannot open
+
 	TQO <OPNF>		; Success
 	MOVSI B,1
 	HLLM B,FILLFW(JFN)
-	CALL FNDUNT		;GET DEV INDEX
+
+	MOVE T1,UNTIDX		;[9122] Load unit index for the JFN
 	MOVE B,DEVCHR(A)	;GET DEVICE BITS
 	TXNN B,DV%AS		;ASSIGNABLE DEVICE?
 	JRST OPENFZ		;NO
@@ -6098,9 +7434,122 @@ OPENF0:	UMOVE JFN,1		; Get jfn
 OPENFZ:	CALL UNLCKF
 	SMRETN
 
-;HERE IF GTOKM INDICATED BLOCK
+;[9041]
+;ACJOFL - Routine called by file operation to see if the file being used
+;is secure and if so, have the ACJ bless the request. Lots of assumptions
+;here. For one, assumes CHKJFN has been called. Also assumes DEV, STS, and
+;JFN are setup (done by CHKJFN) so that the call to GETFDB won't rollover.
+;Big watch it: make sure AC 2 is 0 unless you are coming from CHFDB%!!!
 ;
-OPENR:	TQZE <BLKF>		;WANT TO BLOCK?
+;To avoid deadly embraces with various locks, make sure that only CHKJFN
+;is called when you being to tread through here. If the calling routine
+;does bad things like lock the directory, then the ACJ may hang with a
+;competing lock.
+;
+; Call with:
+;	T1/ ACJ function
+;	T2/ Used only for .GOCFD and must be 0 for all else!
+;	JFN/ Index in JFN block
+;	CALL ACJOFL
+;
+; Returns:
+;	+1 - ACJ said no
+;	+2 - ACJ said yes, file not secure, or ACJ not running
+
+ACJOFL:	SKIPE JOBNO		;[9063] Job 0?
+	SKIPN ACJFN		;Have an ACJ?
+	RETSKP			;[9063] Job 0 or no ACJ, return success
+	STKVAR <OPNNAM,ERR,FUNC,SET,NXF> ;[9049] Address for file name string
+	;..
+	;..
+
+	SETZM NXF		;[9049] Say file exists for now
+	MOVEM T1,FUNC		;Save ACJ function
+	MOVEM T2,SET		;Used for .GOCFD
+	CALL GETFDB		;(JFN/) Make sure FDB is there
+	 RETSKP			;Directory is probably messed up
+	MOVE T1,.FBCTL(T1)	;Get flags from FDB
+	CALL USTDIR		;(/) Unlock directory to avoid deadly embrace
+	TXNE T1,FB%NXF		;[9049] Does this file exist?
+	SETOM NXF		;[9049] No, say it does not exist
+	MOVE T2,FUNC		;[9063] Get function code back
+	CAIN T2,.GOCFD		;[9063] Setting or clearing secure bit?
+	IFSKP.			;[9063] Nope, we have to check for secure file
+	  TXNN T1,FB%SEC	;[9063] Is this a secure file?
+	  RETSKP		;[9063] No, don't ask ACJ and allow access
+	ENDIF.			;[9063] End of secure file check
+	SKIPN SET		;[9063] Setting secure?
+	TXZA T1,FB%SEC		;[9063] No, clearing secure
+	TXO T1,FB%SEC		;[9063] Yes, setting
+	MOVEM T1,SET		;[9049] Now save .FBCTL word
+ACJOFS:	NOINT			;No interrupts please
+	HRRZI T1,GEFLSZ+1	;Get this many words
+	HRLI T1,.RESP3		;Priority (grow if none available)
+	MOVEI T2,.RESGP		;From this pool
+	CALL ASGRES		;(T1,T2/T1) Gimme some space
+	 RETBAD (MONX05,OKINT)	;If can't get none, then tell user
+	MOVEM T1,OPNNAM		;Save block address here
+	MOVEI T2,GEFLSZ+1	;Get freespace block size
+	MOVEM T2,.GOSIZ(T1)	;And save it here
+	XMOVEI T1,<.GEFIL+1>(T1) ;File string will start here
+	TXO T1,<OWGP. 7>	;Make nice byte pointer
+	CALL FILACJ		;(T1/) Slam file name into freespace block
+	MOVE T1,OPNNAM		;Get freespace block
+	MOVE T2,FUNC		;Get ACJ function back
+	;..
+	;..
+	CAIE T2,.GOOPN		;Doing an OPEN?
+	IFSKP.			;If so,
+	  UMOVE T2,T2		;Get user's access bits
+	  TXZ T2,OF%NXS		;[9049] Assume files exists
+	  SKIPE NXF		;[9049] Now check to see if it really does
+	  TXO T2,OF%NXS		;[9049] No, say it doesn't for the ACJ
+	  MOVEM T2,<.GEOAC+1>(T1) ;Save in freespace block
+	  GTOKM (.GOOPN,<T1>,ACJOF1) ;Ask ACJ if he can open secure file
+	  JRST ACJOF0		;And return our library books
+	ENDIF.
+	CAIE T2,.GORNF		;How about a rename?
+	IFSKP.			;If doing rename
+	  GTOKM (.GORNF,<T1>,ACJOF1) ;Can we do it?
+	  JRST ACJOF0		;Balance our freespace check book
+	ENDIF.
+	CAIE T2,.GOCFD		;Trying a CHFDB%?
+	IFSKP.			;If so,
+	  MOVE T2,SET		;[9049] Get .FBCTL word
+	  MOVEM T2,<.GESFS+1>(T1) ;Save in freespace block
+	  GTOKM (.GOCFD,<T1>,ACJOF1) ;Allowed?
+	  JRST ACJOF0		;Yes, get rid of freespace
+	ENDIF.
+;At this point, the function has to be .GODLF as it is the only one
+;left.
+	UMOVE T2,T1		;Get user's selected bits
+	MOVEM T2,<.GEDAC1>(T1)	;And stash in the freespace block
+	GTOKM (.GODLF,<T1>,ACJOF1) ;What's the verdict?
+	;..
+	;..
+
+ACJOF0:	CALL RELRES		;(T1/) Get rid of the freespace block
+	OKINT			;Interrupts are OK now
+	RETSKP			;And we are done
+
+ACJOF1:	MOVEM T1,ERR		;Save error code for now
+	MOVE T1,OPNNAM		;Get freespace block back
+	CALL RELRES		;(T1/) And return it
+	OKINT			;Interrupts are cool now
+	MOVE T1,ERR		;Get error code back
+	RETBAD ()		;And see ya
+
+	ENDSV.
+
+;Here if device dependant routine failed to open the device.
+
+OPENR:	CAIN T1,OPNX9		;[9125] Invalid simultaneous access?
+	IFSKP.			;[9125] Nope, some other error
+	  EXCH T1,UNTIDX	;[9124] Save error code, recover unit index
+	  CALL CFSMTR		;[9122] (T1/) Lose MTA token for device
+	  EXCH T1,UNTIDX	;[9124] Restore error code
+	ENDIF.			;[9125] 
+	TQZE <BLKF>		;WANT TO BLOCK?
 	JRST OPENFW		;YES - WAIT
 	CAIN A,OPNX31		; Offline?
 	 JRST RETFIL		; Yes, handle that case
@@ -6133,7 +7582,7 @@ OPENR1:	MOVEI A,^D3000		;WAIT SHORT TIME THEN TRY AGAIN
 /]
 	PSOUT
 	SMRETN
-
+
 RETFIL:	UMOVE B,2		; Get user bits again
 	SKIPN ARDFRT		; Job want to wait?
 	TXNE B,OF%RAR		; Or this call?
@@ -6261,7 +7710,8 @@ OPENB1:	CAME DEV,SAVDEV		;CHECK FOR SAME DEVICE
 	CAIE T1,-1		;CONTROLLING TERMINAL?
 	RETERR (DESX1)		;NO. INVALID DESIGNATOR
 	SMRETN			;YES. ALLOW SUCCESS
-
+	SUBTTL RCDIR JSYS
+
 ;RCDIR - RECOGNIZE DIRECTORY NAME
 ;
 ; CALL:		1/ FLAGS
@@ -6307,7 +7757,7 @@ OPENB1:	CAME DEV,SAVDEV		;CHECK FOR SAME DEVICE
 ; RCDLND - LOOKUP POINTER TO DIRECTORY NAME IF FOUND IN LOGICAL NAME
 ; RCDUPT - USER'S BYTE POINTER TO STRUCTURE/DIRECTORY STRING
 ; RCDBPR - UPDATED BYTE POINTER TO STRUCTURE FIELD STRING
-
+
 .RCDIR::MCENT			;MONITOR CONTEXT ENTRY
 	CALL RCDIR0		;CALL INNER ROUTINE
 	 ITERR ()		;ERROR RETURN
@@ -6376,7 +7826,8 @@ RCDIR1:	SETZM RCDBLK		;INITIALIZE POINTERS TO FREE SPACE
 	CAIE T2,.CHDI1		;DOES THE STRING BEGIN WITH VALID
 	CAIN T2,.CHDI2		;  DIRECTORY PUNCTUATION ?
 	JRST RCD050		;YES, GO PROCESS DIRECTORY
-
+	;..
+	;..
 ; A DEVICE FIELD WAS SUPPLIED - COPY IT TO THE STACK
 ;STOP AT A NULL OR COLON OR WHEN THE MAXIMUM ALLOWED NUMBER OF
 ;CHARACTERS ARE DETECTED
@@ -6471,26 +7922,26 @@ RCD060:	SKIPN T1,RCDLND		;NO. WAS ANYTHING FOUND?
 
 ;A LOGICAL NAME DEFINITION WAS FOUND.  CONVERT TO DIRECTORY NUMBER
 
-	TQO <NREC>		;DIRECTORY WAS FOUND IN LOGICAL NAME. INDICATE
-				; RECOGNITION NOT ALLOWED FOR DIRLUK
-	HRRZ	T3,RCDLND	;get address of logical name string block
-	AOS	T3		;make it start at beginning of text
-	HRLI	T3,440700	;make it a byte pointer
-	HRRZ	T4,RCDDPT	;get address of directory name block
-	HRLI	T4,440700	;make it a byte pointer
-	MOVEM	T4,RCDDPT	;save it
-	MOVEI	T1,.CHDI1	;get opening bracket
-	IDPB	T1,T4		;write it to first byte
-RCD062:	ILDB	T1,T3		;get byte from logical name
-	JUMPE	T1,RCD064	;if end, clean up
-	IDPB	T1,T4		;copy it to directory name
-	JRST	RCD062		;go do next byte
-RCD064:	MOVEI	T1,.CHDT1	;end of logical name, get closing bracket
-	IDPB	T1,T4		;append it to end
-	MOVEI	T1,.CHNUL	;get a nul
-	IDPB	T1,T4		;make sure we have an ASCIZ string
-	JRST	RCD050		;go try again.
-
+	TQO <NREC>		;Directory was found in logical name. Indicate
+				; recognition not allowed for DIRLUK
+	HRRZ T3,RCDLND		;Get address of logical name string block
+	AOS T3			;Make it start at beginning of text
+	HRLI T3,440700		;Make it a byte pointer
+	HRRZ T4,RCDDPT		;Get address of directory name block
+	HRLI T4,440700		;Make it a byte pointer
+	MOVEM T4,RCDDPT		;Save it
+	MOVEI T1,.CHDI1		;Get opening bracket
+	IDPB T1,T4		;Write it to first byte
+RCD062:	ILDB T1,T3		;Get byte from logical name
+	JUMPE T1,RCD064		;If end, clean up
+	IDPB T1,T4		;Copy it to directory name
+	JRST RCD062		;Go do next byte
+RCD064:	MOVEI T1,.CHDT1		;End of logical name, get closing bracket
+	IDPB T1,T4		;Append it to end
+	MOVEI T1,.CHNUL		;Get a nul
+	IDPB T1,T4		;Make sure we have an ASCIZ string
+	JRST RCD050		;Go try again.
+
 ;NO DIRECTORY WAS SPECIFIED.  FIND OUT WHAT DIRECTORY THE USER IS
 ;CONNECTED TO AND USE ITS NAME
 
@@ -6607,7 +8058,8 @@ GETDIR:	CAIE T1,.CHDI1		;DOES THE DIRECTORY STRING BEGIN WITH
 	HRLI T1,(POINT 7,0,35)	;POINT BEYOND HEADER
 	MOVE T2,RCDDPT		;GET POINTER TO DIRECTORY WITHIN USER STRING
 	MOVEI T3,MAXLC+1	;MAX # OF CHARS IN DIRECTORY NAME + TERMINATOR
-
+	;..
+	;..
 ;COPY EACH CHARACTER STARTING WITH THE LEFT BRACKET UP TO INCLUDING
 ;EITHER A NULL OR MATCHING RIGHT BRACKET OR UNTIL THE MAXIMUM NUMBER
 ;OF CHARACTERS IS READ
@@ -6631,6 +8083,8 @@ GETD05:	ILDB T4,T2		;GET NEXT CHARACTER
 	JRST GETD07		;BRACKET OR NULL. STOP COPYING
 	MOVE T3,GETDT3		;RESTORE COUNTER
 	SOJGE T3,GETD05		;END OF SPACE?
+	;..
+	;..
 
 ;END OF STRING. IF LAST CHARACTER WAS BRACKET, IT MUST BE FOLLOWED
 ;BY NULL. IF NOT, MUST BE DOING RECOGNITION. OTHERWISE ERROR.
@@ -6804,7 +8258,9 @@ RCJFN:
 	HRR T1,FILDDN(JFN)	;GET DIRECTORY NUMBER
 	CALL UNLCKF		;UNLOCK THE JFN AND STRUCTURE
 	RETSKP
-;RCUSR - RECOGNIZE USER NAME
+	SUBTTL RCUSR JSYS
+
+;RCUSR - RECOGNIZE USER NAME
 
 ;ACCEPTS:
 ;	T1/ FLAGS
@@ -6888,7 +8344,7 @@ RCU050:	TXNN Q1,RC%WLD		;WILD CARD FOUND?
 	TXO Q2,RC%EMO		;YES. FORCE EXACT MATCH
 	TXNN Q2,RC%AWL		;ARE WILD CARDS ALLOWED?
 	RETBAD (STRX08)		;RETURN ERROR
-
+
 ;USER NAME IS A DIRECTORY ON PS.  GET DIRECTORY NUMBER ON THAT STRUCTURE
 
 RCU070:	MOVE T1,LGSIDX		;[7.1112]Get STRTAB offset for Login Structure
@@ -6928,7 +8384,7 @@ RCU090:	TXNE Q2,RC%EMO		;EXACT MATCH ONLY?
 	CALL CPYTUS		;COPY BACK THE STRING AS UPDATED BY DIRLUK
 				; AND UPDATE USER'S BYTE POINTER
 	JRST RCU170		;GO FINISH
-
+
 ;A WILD CARD WAS FOUND OR STEPPING USER NAME.
 ;GET STARTING DIRECTORY NUMBER FROM USER.
 ;CALL MDDDIR TO GET NEXT DIRECTORY, CHKWLD TO SEE IF USER'S STRING
@@ -6971,7 +8427,7 @@ RCU130:	MOVEI F1,0		;INITIALIZE FLAGS FOR MDDDIR
 	CALL USTDIR		;UNMAP THIS DIRECTORY
 	MOVE T1,RCUNUM		;RESTORE DIRECTORY NUMBER FOR MDDDIR
 	JRST RCU130
-
+
 ;HERE WHEN MDDDIR FAILS. IF NO MORE DIRECTORIES, RETURN SUCCESS
 ;SETTING RC%NMD.  IF NOT, RETURN FAILURE.
 
@@ -7009,7 +8465,7 @@ RCU210:	UMOVEM Q1,1		;RETURN FLAGS
 	TXNN Q1,RC%NOM!RC%AMB!RC%NMD  ;Error?
 	UMOVEM T1,3		;NO. RETURN DIRECTORY NUMBER
 	RETSKP			;TAKE SUCCESS RETURN
-
+
 ;RCUCLN - CLEAN UP FROM RCUSR
 
 ;	CALL RCUCLN
@@ -7027,7 +8483,8 @@ RCUCLN:	SKIPN T2,RCUBLK		;GET ADDRESS OF BLOCK OBTAINED BY CPYFUS
 	OKINT			;INTERRUPTS ALLOWED AGAIN
 	RET			;DONE
 
-
+	SUBTTL RDDIR JSYS
+
 ; Read directory
 
 .RDDIR::MCENT
@@ -7046,7 +8503,8 @@ RCUCLN:	SKIPN T2,RCUBLK		;GET ADDRESS OF BLOCK OBTAINED BY CPYFUS
 	UMOVE C,B		;GET USER ADDRESS
 	CALL BLTMU1		;DO BLT
 	SMRETN			;RETURN
-
+	SUBTTL RFBSZ JSYS
+
 ; Read file byte size
 ; Call:	1	; Jfn
 ;	RFBSZ
@@ -7063,7 +8521,8 @@ RCUCLN:	SKIPN T2,RCUBLK		;GET ADDRESS OF BLOCK OBTAINED BY CPYFUS
 	UMOVEM A,2
 	CALL UNLCKF
 	SMRETN
-
+	SUBTTL RFPTR JSYS
+
 ; Read file byte number
 ; Call:	1	; Jfn
 ;	RFPTR
@@ -7084,7 +8543,8 @@ RCUCLN:	SKIPN T2,RCUBLK		;GET ADDRESS OF BLOCK OBTAINED BY CPYFUS
 	UMOVEM A,2
 	CALL UNLCKF
 	SMRETN
-
+	SUBTTL RFTAD JSYS
+
 ; READ FILE TIME AND DATE
 ; CALL:	1	;JFN
 ;	2	;ADDR
@@ -7128,7 +8588,8 @@ RFTAD1:	CALL UNLCKF
 
 ;GLOBAL ROUTINE FOR NO DATES AVAILABLE
 RFTADN::RETSKP
-
+	SUBTTL RLJFN JSYS
+
 ; Release jfn
 ; Call:	1	; Jfn
 ;	RLJFN
@@ -7168,7 +8629,7 @@ RLJF5:	CALL RELJFN		; Finally we can release it
 RLJF4:	CALL UNLCKF
 RLJF3:	POP P,JFN
 	RET
-
+
 RLJF1:	CAMG JFN,MAXJFN		;IS IT A CURRENTLY ASSIGNED JFN?
 	CAIE A,DESX3		;YES,  Is no name attached to this jfn?
 	JRST RLJF3		; Some other error
@@ -7180,7 +8641,8 @@ RLJF1:	CAMG JFN,MAXJFN		;IS IT A CURRENTLY ASSIGNED JFN?
 	SKIPE PSIBIP		; Test if pi in progress
 	JRST RLJF3		; Yes
 	JRST RLJF5		; No pi in progress, ok to release
-
+	SUBTTL RNAMF JSYS
+
 ; Rename file
 ; Call:	1	; Jfn 1
 ;	2	; Jfn 2
@@ -7190,25 +8652,25 @@ RLJF1:	CAMG JFN,MAXJFN		;IS IT A CURRENTLY ASSIGNED JFN?
 ;	+2	; Ok
 
 .RNAMF::MCENT
-	CAMN 1,2		;BE SURE NOT SAME JFN
+	CAMN T1,T2		;BE SURE NOT SAME JFN
 	SMRETN
-	MOVE JFN,1
+	MOVE JFN,T1
 	CALL CHKJFN
 	 RETERR()
 	 JFCL
 	 RETERR(DESX4)		; Cannot rename tty or byte
 	TQNE <ASTF>
-	 ERUNLK(DESX7)
+	ERUNLK(DESX7)
 	TQNE <OPNF>
 	ERUNLK(OPNX1)		; File must not be open
 	PUSH P,JFN
 	PUSH P,DEV
-	UMOVE JFN,2
+	UMOVE JFN,T2
 	CALL CHKJFN		; Check the second jfn
 	 ERUNLK(,<POP P,DEV
 		POP P,JFN
 		MOVE STS,FILSTS(JFN)>)
-	JFCL
+	 JFCL
 	 ERUNLK(DESX4,<POP P,DEV
 		POP P,JFN
 		MOVE STS,FILSTS(JFN)>)
@@ -7222,6 +8684,9 @@ RLJF1:	CAMG JFN,MAXJFN		;IS IT A CURRENTLY ASSIGNED JFN?
 		POP P,DEV
 		POP P,JFN
 		MOVE STS,FILSTS(JFN)>)
+	;..
+	;..
+
 	POP P,A
 	CAME A,DEV		; Can only rename on the same device
 	ERUNLK(RNAMX1,<PUSH P,A
@@ -7231,6 +8696,40 @@ RLJF1:	CAMG JFN,MAXJFN		;IS IT A CURRENTLY ASSIGNED JFN?
 		MOVE STS,FILSTS(JFN)>)
 	MOVE A,(P)
 	PUSH P,JFN
+	LOAD B,FLDTB,(JFN)	;[9041] Get device type of new file name
+	CAIE B,DSKDTB		;[9041] File on disk?
+	IFSKP.			;[9041] If so, both of them must be
+	  PUSH P,A		;[9041] Save old JFN
+	  MOVEI A,.GORNF	;[9041] Say doing a rename
+	  SETZ B,		;[9041] And not doing FB%SEC change
+	  CALL ACJOFL		;[9041] (T1,T2,JFN/) Can we do the rename?
+	   ERUNLK (,<MOVEM A,LSTERR ;[9041] Save error code for a bit
+		     POP P,A	;[9041] No, begin painful cleanup
+		     POP P,JFN	;[9041] Retrieve appropriate JFN
+		     MOVE STS,FILSTS(JFN) ;[9041] Get FILSTS
+		     CALL UNLCKF ;[9041] (JFN/) Unlock file lock
+		     POP P,JFN	;[9041] Get back other JFN
+		     MOVE A,LSTERR ;[9041] Retrieve error code
+		     MOVE STS,FILSTS(JFN)>) ;[9041] Get status then do unlock
+	  EXCH JFN,-2(P)	;[9041] Now check other JFN
+	  MOVEI A,.GORNF	;[9041] Say which function
+	  SETZ B,		;[9041] And not doing FB%SEC change
+	  CALL ACJOFL		;[9041] (T1,T2,JFN/) Is old JFN secure?
+	   ERUNLK (,<MOVEM A,LSTERR ;[9041] Hang to this for a bit
+		     EXCH JFN,-2(P) ;[9041] No, begin painful cleanup
+	 	     POP P,A	;[9041] Restore original JFN
+		     POP P,JFN	;[9041] Retrieve appropriate JFN
+		     MOVE STS,FILSTS(JFN) ;[9041] Get FILSTS
+		     CALL UNLCKF ;[9041] (JFN/) Unlock file lock
+		     POP P,JFN	;[9041] Get back other JFN
+		     MOVE A,LSTERR ;[9041] And get back error code
+		     MOVE STS,FILSTS(JFN)>) ;[9041] Get status then do unlock
+	  EXCH JFN,-2(P)	;[9041] Set this back to what it should be
+	  POP P,A		;[9041] And retrieve source JFN
+	ENDIF.			;[9041] Now do the rename!
+	;..
+	;..
+
 	CALL @REND(P3)
 	 ERUNLK(,<POP P,JFN
 		MOVE STS,FILSTS(JFN)
@@ -7246,7 +8745,8 @@ RLJF1:	CAMG JFN,MAXJFN		;IS IT A CURRENTLY ASSIGNED JFN?
 	CALL LUNLK0		;FREE UP THE STR LOCK
 	CALL RELJFN
 	SMRETN
-
+	SUBTTL SACTF JSYS
+
 ; Set account for file
 ; Call:	1	; JFN
 ;	2	; String pointer or 5B2+account number
@@ -7277,7 +8777,7 @@ RLJF1:	CAMG JFN,MAXJFN		;IS IT A CURRENTLY ASSIGNED JFN?
 	CAMG T1,[6B2-1]		;SEE IF BYTEPOINTER OR NUMERIC ACCOUNT
 	CAMGE T1,[5B2]		;[1817]
 	 JRST SACTFS		;BYTE POINTER, GO DO STRING ACCOUNT
-
+
 ;HERE FOR A NUMERIC ACCOUNT - CONVERT TO STRING
 
 	MOVEM T1,SACNUM		;SAVE NEW NUMERIC ACCOUNT IN SACNUM
@@ -7334,7 +8834,8 @@ SACTER:	MOVEM T1,LSTERR 	;FAILED, SAVE ERROR CODE
 	MOVE T1,LSTERR		;GET OLD ERROR CODE BACK
 	ERUNLK()		;RETURN
 
-
+	SUBTTL SDSTS JSYS
+
 ; Set device status
 ; Call:	1	; Jfn
 ;	SDSTS
@@ -7365,6 +8866,7 @@ Action:	The bit is being cleared. If this problem persists, change the
 	JRST UNL		;NO, JUST EXIT
 	CALL UNLDIS		;YES, GO DISMIS
 	JRST SDSTS1		;LOOP BACK AND TRY AGAIN
+	SUBTTL SFBSZ JSYS
 
 ; Set file byte size jsys
 ; Call:	1	; Job file number
@@ -7387,10 +8889,21 @@ Action:	The bit is being cleared. If this problem persists, change the
 	RETERR(SFBSX1,<CALL UNLCKF>) ; Illegal to change byte size
 	LDB A,PBYTSZ		; Get previous byte size
 	CALL NFBSZ
+	TQNE <NONXF>		;[9123] Is this a new file?
+	TQNN <WRTF>		;[9123] And do we have it open for write?
+	IFSKP.			;[9123] Yes, we may have to adjust byte size
+	  SKIPE FILLEN(JFN)	;[9123] Is the file empty?
+	  IFSKP.		;[9123] Yes, adjust OFNBSZ in OFNLEN
+	    LOAD D,FLPTN,(JFN)	;[9123] Get OFN for this JFN
+	    LDB C,PBYTSZ	;[9123] Get the byte size
+	    STOR C,OFNBSZ,(D)	;[9123] Store as new byte size for OFN
+	  ENDIF.		;[9123] 
+        ENDIF.			;[9123] 
 	SETZM FILCNT(JFN)	;FORCE NEW WINDOW NEXT OPERATION
 	CALL UNLCKF		; Unlock file
 	SMRETN
-
+	SUBTTL SFPTR JSYS
+
 ; Set file byte number
 ; Call:	1	; LSN flag,,Job file number
 ;	2	; Byte number
@@ -7432,7 +8945,6 @@ SFPT1:	CALL SFBNR		;[7321](A/)Set the byte number
 	ENDSV.			;[7321]End STKVR for this region
 	ENDTV.			;[7321]End TRVAR for this region
 
-
 ;TSTLSN - accepts a byte count in AC1 and returns the correct byte count based
 ; on whether the file has LSNs.  Called only if SF%LSN is on.
 ;
@@ -7458,7 +8970,7 @@ TSTL1:	CALL BYTINX		;[7321](/B)Get a byte
 	SOJE A,TSTNLS		;[7321]Yes, file can't have line numbers
 	AOS BYTACC		;[7321]Add the null to the total count
 	JRST TSTL1		;[7321]Get the next byte
-
+
 TSTL2:	LDB A,[POINT 12,FILBYT(JFN),11];[7321]Get byte position and size fields
 	MOVE C,FILCNT(JFN)	;[7321]Get remaining bytes in buffer
 	CAIE A,<POINT 7,0,6>_-^D24;[7321]First byte of a word?
@@ -7506,7 +9018,8 @@ TSTEND:	CAIE A,IOX4		;[7321]EOF?
 	MOVE A,BYTACC		;[7321]Yes, return byte count as the last byte 
 	RETSKP			;[7321]Good return
 	ENDSV.			;[7321]End STKVR for this region
-
+	SUBTTL SFTAD JSYS
+
 ; SET FILE TIME AND DATE
 ; CALL:	1	;JFN
 ;	2	;ADDR
@@ -7559,7 +9072,8 @@ SFTAD1:	CALL UNLCKF
 
 ;GLOBAL ROUTINE FOR NO DATES AVAILABLE
 SFTADN::RETSKP
-
+	SUBTTL SFUST JSYS
+
 ; SET FILE USER STRING
 ;
 ; CALL: (ARGUMENTS IN USER SPACE)
@@ -7603,6 +9117,8 @@ SFTADN::RETSKP
 	MOVX T2,DC%CN		;ELSE OWNER PRIVS FOR AUTHOR
 	CALL DIRCHK		; STRING SETTING
 	 ITERR (SFUSX5,<CALL SFUXIT>)
+	;..
+	;..
 SFUSOK:	MOVE T1,SFUFDA		;GET FDB ADDRS AGAIN
 	LOAD T2,FBVER,(T1)	;LOOK AT FDB VERSION #
 	CAIGE T2,1		;VERSION 1 OR LATER?
@@ -7652,13 +9168,12 @@ SFUS20:	CALL SFUXIT		;UNLOCK EVERYTHING
 	MOVE T2,SFSPTR		;RESTORE UPDATED BYTE PTR
 	UMOVEM T2,2
 	JRST MRETN		;AND RETURN
-;SIBE - Skip if input buffer empty
+	SUBTTL SIBE JSYS
 
+;SIBE - Skip if input buffer empty
 ;ACCEPTS:
 ;	T1/ DEVICE DESIGNATOR
-
 ;	SIBE
-
 ;RETURNS +1: INPUT BUFFER NOT EMPTY
 ;		T2/ NUMBER OF BYTES IN BUFFER
 ;	 +2: INPUT BUFFER EMPTY OR ERROR
@@ -7703,7 +9218,8 @@ SIBE1:	CAIE A,DESX6		;LEGAL, NON-TTY DESIGNATOR?
 		JRST EMRET1]
 SIBE2:	UMOVEM A,B		;RETURN ERROR CODE OR 0
 	SMRETN			;+2 RETURN
-
+	SUBTTL SIZEF JSYS
+
 ; Get size of file
 ; Call:	1	; Jfn
 ;	SIZEF
@@ -7748,6 +9264,9 @@ SIBE2:	UMOVEM A,B		;RETURN ERROR CODE OR 0
 	CAMN A,[-1]		;[7.1059] Is it code for 34359738367(36)?
 	SKIPA A,[.INFIN]	;[7.1059] Make 34359738367 byte count
 	LOAD A,OFNBC,(D)	;[7.1059] Get true file length
+	;..
+	;..
+
 SIZEF1:	UMOVEM A,2
 	UMOVEM B,3
 	CALL USTDIR
@@ -7757,7 +9276,8 @@ SIZEF1:	UMOVEM A,2
 GBGJFN:	RETERR ()
 	ENDSV.			;End of CHFDB STKVAR region
 
-
+	SUBTTL SMAP JSYS support
+
 ;FILE PORTION OF SMAP JSYS. GOTTEN HERE IF MAPPING TO A FILE.
 
 ;ACCEPTS:
@@ -7785,6 +9305,8 @@ SMFILE::MOVEI T2,-1(Q3)		;GET COUNT
 	TQNN <WRTF>		;OPEN FOR WRITE?
 	TXZ Q3,PM%WT		;NO. CAN'T HAVE WRITE ACCESS THEN
 	LSH Q1,PGSFT		;CONVERT SECTION # TO PAGE
+	;..
+	;..
 
 ;MAP A SECTION AT A TIME. GET THE OFN FOR EACH 1000-PAGE SECTION
 ;OF THE FILE AND MAP IT TO THE NEXT SECTION IN THE DESTINATION
@@ -7816,7 +9338,8 @@ SMFIL1:	MOVE T1,Q1		;GET PAGE NUMBER OF SECTION
 	JRST SMFIL1		;YES
 	CALL UNLCKF		;NO. UNLOCK JFN
 	RETSKP			;SUCCESS
-
+	SUBTTL STDIR JSYS
+
 ; String to directory
 ; Call:	1	; Positive for no recognition
 ;	2	; Source designatoR
@@ -7828,7 +9351,9 @@ SMFIL1:	MOVE T1,Q1		;GET PAGE NUMBER OF SECTION
 
 .STDIR::MCENT
 	ITERR(STDIX1)		;STDIR WAS REPLACED BY RCUSR AND RCDIR
-;JSYS TO CONVERT A STRING TO A PPN (TOPS10 STYLE)
+	SUBTTL STPPN JSYS
+
+;JSYS TO CONVERT A STRING TO A PPN (TOPS10 STYLE)
 ;ACCEPTS IN T1/ 36-BIT DIRECTORY #
 ;		JFN
 ;		STRING-PNTR TO STR/DIRECTORY NAME
@@ -7859,7 +9384,8 @@ STPPJ:	MOVE JFN,T1		;PUT JFN IN AC(JFN)
 	HRR T1,FILDDN(JFN)	;GET DIR #
 	CALL UNLCKF		;UNLOCK JFN
 	JRST STPPNX		;COMMON EXIT
-
+	SUBTTL STSTS JSYS
+
 ; Set status
 ; Call:	1	; Jfn
 ;	2	; New status
@@ -7879,7 +9405,8 @@ STPPJ:	MOVE JFN,T1		;PUT JFN IN AC(JFN)
 	TDZ STS,A
 	CALL UNLCKF
 	SMRETN
-
+	SUBTTL SWJFN JSYS
+
 ; Swap jfn's
 ; Call:	1	; Jfn 1
 ;	2	; Jfn 2
@@ -7925,7 +9452,8 @@ SWJFNL:				;Exchange all JFN cells between the two JFN's
 	CALL LUNLKF		;AND RELEASE THIS ONE ALSO
 	JRST MRETN
 
-
+	SUBTTL UFPGS JSYS
+
 ;UPDATE FILE PAGES
 ; A/ IDENT OF FIRST PAGE (JFN,,PN)
 ; B/ COUNT OF SEQUENTIAL PAGES TO UPDATE
@@ -7947,6 +9475,8 @@ SWJFNL:				;Exchange all JFN cells between the two JFN's
 	JRST UFPG1		;YES
 	CAILE Q2,PGSIZ		;FILE IS SHORT...IS COUNT EXCESSIVE?
 	MOVEI Q2,PGSIZ		;YES...ADJUST IT
+	;..
+	;..
 UFPG1:	HRRZ A,Q1		;GET CURRENT IDENT
 	CALL JFNOF3		;GET OFN.PN
 	 JRST [	CAIE A,LNGFX1	;TRIED TO CREATE A PT?
@@ -7981,12 +9511,11 @@ UFPG2:	JUMPG Q2,UFPG1		;LOOP OF COUNT NON-0
 	CALL USTDIR		;RELEASE DIRECTORY
 UFPG4:	CALL UNLCKF		;UNLOCK JFN
 	SMRETN
-
+	SUBTTL WILD% JSYS
+
 ;WILD% JSYS.  USED TO COMPARE TWO STRINGS TO SEE IF THEY MATCH, OR
 ;TWO JFNS TO SEE IF THEY MATCH.  THE FIRST STRING OR JFN CAN CONTAIN
 ;WILDCARD CHARACTERS.
-
-
 
 .WILD::	MCENT			;ENTER JSYS
 	HLLZ F,T1		;PUT FLAGS IN A SAFE PLACE
@@ -8053,9 +9582,7 @@ WLDSTR:	TLNE F,-1-<(WL%LCD)>	;SPECIFYING ILLEGAL BITS?
 	SKIPE T1		;IS IT AN ABBREVIATION?
 	TXO Q2,WL%ABR		;YES, SET THAT
 	RET			;DONE
-
-
-
+
 ;ROUTINES TO READ THE CHARACTERS FROM THE USER'S CORE.
 ;CHARACTERS HAVE TO BE RETURNED IN AC Q1 FOR CHKWLS TO USE.
 
@@ -8076,8 +9603,6 @@ WLDCHC:	CAIL Q1,"A"+40		;IS CHARACTER LOWER CASE?
 
 ;JFN COMPARE FUNCTION.  AC2 CONTAINS A WILD JFN, AND AC3 CONTAINS
 ;A NON-WILD JFN.
-
-
 
 WLDJFN:	TLNE F,-1		;SUPPLYING ANY FLAGS?
 	 ITERR (ARGX22)		;YES, GIVE ERROR
@@ -8155,7 +9680,6 @@ WLJFN2:	MOVE T1,Q1		;GET JFN OF TEST FILE
 ;IF NO POINTER EXISTS, THE STRING WILL BE DEFAULTED TO NULL.  SKIP
 ;RETURN IF STRINGS MATCH.
 
-
 FLDCMP:	SKIPN T1		;ADDRESS OF TEST STRING MISSING?
 	MOVEI T1,[EXP 0,0]	;YES, POINT TO A NULL STRING
 	SKIPN T2		;ADDRESS OF WILD STRING MISSING?
@@ -8173,7 +9697,7 @@ WLERR:	MOVE JFN,Q1		;GET FIRST JFN
 	MOVE DEV,FILDEV(JFN)	;RESTORE STATUS ACS
 	MOVE STS,FILSTS(JFN)	;THAT UNLCKF WANTS SET UP
 	CALLRET UNLCKF		;GO UNLOCK THE JFN
-
+	SUBTTL End of JSYSF
 
 	TNXEND
 	END

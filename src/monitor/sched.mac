@@ -1,3 +1,13 @@
+; Edit= 9012 to SCHED.MAC on 8-Nov-88 by RASPUZZI
+;Add ring buffers for NOSKED/OKSKED/CSKED/ECSKED and put them under the SKEDSW
+;conditional.
+; Edit= 8950 to SCHED.MAC on 26-Aug-88 by GSCOTT
+;Update more BUG. documentation.
+; Edit= 8923 to SCHED.MAC on 18-Aug-88 by GSCOTT
+;DDMP should be checked before CHKR at JB0CHK. HPSCHK BUGCHK should output the
+;global job number not the local job number. Update BUG. documentation. 
+; Edit= 8816 to SCHED.MAC on 31-Mar-88 by RASPUZZI
+;Finally add edit 3080 to prevent ILMNRFs out of terminal PSI handling.
 ; UPD ID= 8614, RIP:<7.MONITOR>SCHED.MAC.6,  11-Feb-88 18:29:49 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8444, RIP:<7.MONITOR>SCHED.MAC.5,   4-Feb-88 16:32:32 by GSCOTT
@@ -764,14 +774,14 @@ DEFINE $CRSF1<
 	    MOVE 0,[PAC+1,,1]	;;Restore AC's
 	    BLT 0,17		;;...
 	    MOVE 0,PAC		;;...
-	    BUG.(HLT,KRSFRK,SCHED,HARD,<Crash-on-fork invoked>,<<FORKX,CRFORK>,<CRSJBN,REQJOB>>,<
+	    BUG.(HLT,KRSFRK,SCHED,SOFT,<Crash-on-fork invoked>,<<FORKX,CRFORK>,<CRSJBN,REQJOB>>,<
 
-Cause:  The crash-on-fork facility was invoked, scheduling the specfied
-	fork and then crashing the system.  Console output includes the
-	crashed fork number and the job number that requested the crash.
+Cause:	The crash-on-fork facility was invoked, scheduling the specfied fork
+	and then crashing the system.  Console output includes the crashed fork
+	number and the job number that requested the crash.
 
 Data:	CRFORK - Crashed fork
-	REQJOB- - Requesting job number
+	REQJOB - Requesting job number
 
 >)
 	  ENDIF.
@@ -824,18 +834,13 @@ SCDIN::	SETZM SYSIFG
 	SETZM FACTSW		;INITIALIZE SYSTEM FLAGS WORD
 	MOVE F,SKFLDF		;SET DEFAULT CONTROL FLAGS
 	MOVEM F,SCHFLG
-	MOVE T1,[BUG.(HLT,SCDUUO,SCHED,HARD,<UUO in scheduler>,,<
+	MOVE T1,[BUG.(HLT,SCDUUO,SCHED,SOFT,<UUO in scheduler>,,<
 
-Cause:	An illegal instruction has been executed while in
-	the scheduler's context. Since the scheduler's PSB
-	is only a prototype PSB and UPT, allowing this MUUO
-	to behave like others results in bizarre errors
-	that mask the original problem. This BUGHLT should
-	be analyzed like an ILLUUO.
-
-Action:	Most likley a software bug. Analyze this like any other
-	ILLUUO.
-
+Cause:	An illegal instruction has been executed while in the scheduler's
+	context. Since the scheduler's PSB is only a prototype PSB and UPT,
+	allowing this MUUO to behave like others results in bizarre errors that
+	mask the original problem.  This probably a software problem.  This
+	BUGHLT should be analyzed like an ILLUUO.
 >)]
 	MOVEM T1,MJRSTF		;INIT SCHEULER'S UUO DISPTACH TO BUGHLT
 	MOVEI T1,SKFLDF-SKFLGV+1 ;GET KNOB VALUE
@@ -1086,6 +1091,15 @@ HALTT::	JRST 0(4)		;IDENTIFIABLE TEST FOR HALTED FORK
 NOSKD0::			;TAG FOR HISTORICAL REASONS
 NOSK11::SKIPE INSKED
 	JRST 0(CX)
+IFN SKEDSW,<			;[9012] If debugging,
+	MOVEM CX,@NSPTR		;[9012] Save where this is happening
+	PUSH P,CX		;[9012] Hang onto this a second
+	AOS CX,NSPTR		;[9012] Increment our index into ring buffer
+	CAIL CX,NSTAB+NSKTB	;[9012] Is ring buffer pointer in range?
+	MOVEI CX,NSTAB		;[9012] No, reset it
+	MOVEM CX,NSPTR		;[9012] And save it
+	POP P,CX		;[9012] And recover our return to address
+>				;[9012] End of SKEDSW
 	AOS INTDF
 	AOS NSKED
 	JRST 0(CX)
@@ -1095,16 +1109,24 @@ NOSK11::SKIPE INSKED
 OKSK11::
 OKSKD0::SKIPE INSKED
 	JRST 0(CX)
+IFN SKEDSW,<			;[9012] If debugging,
+	MOVEM CX,@OKPTR		;[9012] Save where this is happening
+	PUSH P,CX		;[9012] Hang onto this a second
+	AOS CX,OKPTR		;[9012] Increment our index into ring buffer
+	CAIL CX,OKTAB+NSKTB	;[9012] Is ring buffer pointer in range?
+	MOVEI CX,OKTAB		;[9012] No, reset it
+	MOVEM CX,OKPTR		;[9012] And save it
+	POP P,CX		;[9012] And recover our return to address
+>				;[9012] End of SKEDSW
 	SKIPG NSKED		; ARE WE REALLY NOSKED?
 OKSKE1:	 BUG.(HLT,OKSKBG,SCHED,SOFT,<OKSKD0 - OKSKED when not NOSKED>,<<CX,ADR>>,<
 
-Cause:	An OKSKED or OKSKD1 was done when the code was not NOSKED.
-	This is bad as sensitive code may be getting ruined because 
-	of races etc..  A NSKDIS would probably have resulted when a
-	DISMS was done later on.
+Cause:	An OKSKED or OKSKD1 was done when the code was not NOSKED.  Clearly
+	this is a software problem.  This is bad as sensitive code may be
+	getting ruined because of races.  A NSKDIS BUGHLT would probably have
+	resulted when a DISMS was done later on.
 
 Data:	ADR - Address of caller
-
 >)
 	SOSG NSKED
 	XCT RSKED
@@ -1127,18 +1149,36 @@ CKINT0::SAVEAC <FX>
 
 CRSKD0::SKIPE INSKED
 	JRST 0(CX)
+IFN SKEDSW,<			;[9012] If debugging,
+	MOVEM CX,@CKPTR		;[9012] Save where this is happening
+	PUSH P,CX		;[9012] Hang onto this a second
+	AOS CX,CKPTR		;[9012] Increment our index into ring buffer
+	CAIL CX,CKTAB+NSKTB	;[9012] Is ring buffer pointer in range?
+	MOVEI CX,CKTAB		;[9012] No, reset it
+	MOVEM CX,CKPTR		;[9012] And save it
+	POP P,CX		;[9012] And recover our return to address
+>				;[9012] End of SCHED debugging
 	NOINT			;IMPLIES NOINT ALSO
 	AOS CRSKED
 	JRST 0(CX)
 
 ECSKD0::SKIPE INSKED
 	JRST 0(CX)
+IFN SKEDSW,<			;[9012] If debugging,
+	MOVEM CX,@EKPTR		;[9012] Save where this is happening
+	PUSH P,CX		;[9012] Hang onto this a second
+	AOS CX,EKPTR		;[9012] Increment our index into ring buffer
+	CAIL CX,EKTAB+NSKTB	;[9012] Is ring buffer pointer in range?
+	MOVEI CX,EKTAB		;[9012] No, reset it
+	MOVEM CX,EKPTR		;[9012] And save it
+	POP P,CX		;[9012] And recover our return to address
+>				;[9012] End of sched debugging
 	SKIPG CRSKED		;REALLY CSKED?
-	 BUG.(HLT,CSKBUG,SCHED,SOFT,<ECSKED when not CSKED>,,<
+	BUG.(HLT,CSKBUG,SCHED,SOFT,<ECSKED when not CSKED>,,<
 
-Cause:	An ECSKED was done when the code was not really CSKED. This may 
-	cause sensitive code to be ruined because of races.
-
+Cause:	An ECSKED was done when the code was not really CSKED.  This is clearly
+	a software problem.  This may cause sensitive code to be ruined because
+	of races.
 >)
 	SOSG CRSKED		;NOW OUT OF ALL CRITICAL SECTIONS?
 	XCT RSKED		;YES, CHECK FOR DEFERRED RESCHEDULE
@@ -1173,20 +1213,19 @@ DISMSH:	PUSH P,2		;SAVE HOLD TIME
 	HRRZ T2,T1		;GET ADR OF ROUTINE
 	SKIPN NSKED		;CHECK FOR BUGGY DISMISS
 	CAILE T2,RSCODZ		;CHECK FOR A NON-RESIDENT TEST ROUTINE
-	BUG.(HLT,NSKDIS,SCHED,HARD,<Dismiss while nosked or with non-res test address>,,<
+	BUG.(HLT,NSKDIS,SCHED,SOFT,<Dismiss while nosked or with non-res test address>,,<
 
-Cause:	A process has declared its intention to cease running (dismiss) until
-	a particular event occurs. The scheduler will test for the occurrence
-	of the event by calling a routine that the process has provided.  The
-	BUGHLT occurs if one of the following happens:
-		
-	     1. The process has already declared itself to be
-	   	NOSKED, thereby preventing the running of other processes;
-	
-	     2. The test routine is in  part of the monitor's swappable code
-	   	and could therefore cause an illegal page fault in the
-	   	scheduler.
+Cause:	A process has declared its intention to cease running (dismiss) until a
+	particular event occurs.  This is clearly a software problem.  The
+	scheduler will test for the occurrence of the event by calling a
+	routine that the process has provided.  The BUGHLT occurs if one of the
+	following happens:
 
+	1. The process has already declared itself to be NOSKED, thereby
+	preventing the running of other processes;
+
+	2. The test routine is in part of the monitor's swappable code and
+	could therefore cause an illegal page fault in the scheduler.
 >)
 	STOR T1,FKSTX,(FX)	;PUT IN TEST WORD
 	; ..
@@ -1283,12 +1322,12 @@ SCHEDR::TXZ CX,EXFLBT		;CLEAR FLAGS INCASE SECTION 0
 	MOVEM CX,SKDPC
 	ENTSKD
 	SOSGE NSKED
-	BUG.(HLT,ILOKSK,SCHED,,<OKSKED executed when not NOSKED>,,<
+	BUG.(HLT,ILOKSK,SCHED,SOFT,<OKSKED executed when not NOSKED>,,<
 
 Cause:	A process has declared itself to be OKSKED and ready to cease running
-	(dismiss) until some event occurs.  This BUGHLT occurs because the
-	process is OKSKED, indicating a mismatch of NOSKED and OKSKED states.
-
+	(dismiss) until some event occurs.  This is clearly a software problem.
+	This BUGHLT occurs because the process is OKSKED, indicating a mismatch
+	of NOSKED and OKSKED states.
 >)
 	SOS INTDF		;FIX UP NOINT AS WELL
 	JRST SCHP1
@@ -1325,15 +1364,16 @@ KITRP1::MOVEM 1,KIMUEF		;SAVE CHANNEL NUMBER
 
 ;Several cases come here via CALL - like Charlie on the MTA, it never returns...
 
-REEBUG:	BUG.(HLT,SKDCL1,SCHED,HARD,<Call to scheduler when already in scheduler>,,<
+REEBUG:	BUG.(HLT,SKDCL1,SCHED,SOFT,<Call to scheduler when already in scheduler>,,<
 
-Cause:	Code running in scheduler context has attempted to dismiss, block
-	or page fault thereby trying to enter scheduler context again.
-	This might result from an unexpected page fault or faulty logic,
-	i.e. the code doing the dismiss was not expected to be run
-	in scheduler context.
-
->)		;SOME SORT OF DISMISS IN SCHED
+Cause:	Code running in scheduler context has attempted to dismiss, block or
+	page fault thereby trying to enter scheduler context again.  This might
+	result from an unexpected page fault or faulty logic, for example the
+	code doing the dismiss was not expected to be run in scheduler context.
+	This BUGHLT is CALLed from several places, examination of the stack
+	will indicate find out where the problem was discovered.  This is
+	clearly a software problem.
+>)				;SOME SORT OF DISMISS IN SCHED
 
 
 IFN SKEDSW,<
@@ -1358,6 +1398,15 @@ NBNS3:	AOS NSBTAB(T4)		;COUNT OCCURRANCES
 NNSBT==^D100			;SIZE OF PC TABLE
 RS NSBTAB,NNSBT			; PC,,COUNT
 RS NNSBE,1			;NUMBER OF ENTRIES IN USE
+NSKTB==^D20			;[9012] Size of NOSKED ring buffer table
+RSI NSPTR,<NSTAB>		;[9012] NOSKED ring buffer pointer
+RS NSTAB,NSKTB			;[9012] NOSKED ring buffer
+RSI OKPTR,<OKTAB>		;[9012] OKSKED ring buffer pointer
+RS OKTAB,NSKTB			;[9012] OKSKED ring buffer
+RSI CKPTR,<CKTAB>		;[9012] CSKED ring buffer pointer
+RS CKTAB,NSKTB			;[9012] CSKED ring buffer
+RSI EKPTR,<EKTAB>		;[9012] ECSKED ring buffer pointer
+RS EKTAB,NSKTB			;[9012] ECSKED ring buffer
 	>			;END IFN SKEDSW
 
 	SUBTTL Instruction trapping (ITRAP)
@@ -1372,31 +1421,36 @@ ITRAP::	MOVEM T2,LSTIPC		;SAVE LAST ITRAP PC
 ;Check for illegal conditions
 
 	SKIPE INSKED
-	BUG.(HLT,SKDTRP,SCHED,HARD,<Instruction trap while in scheduler>,<<KIMUPC,PC>,<LSTERR,LSTERR>,<LSTIPC,ERRPC>>,<
+	BUG.(HLT,SKDTRP,SCHED,SOFT,<Instruction trap while in scheduler>,<<KIMUPC,PC>,<LSTERR,LSTERR>,<LSTIPC,ERRPC>>,<
 
-Cause:	An error occurred, resulting in an illegal instruction
-	trap. If a JSYS is being executed by the monitor, the
-	process normally receives an error return when this happens.
-	However, in this case the error occurred in the scheduler,
-	and there is no recovery.
+Cause:	An error occurred, resulting in an illegal instruction trap.  If a JSYS
+	is being executed by the monitor, the process normally receives an
+	error return when this happens.  However, in this case the error
+	occurred in the scheduler, and there is no recovery.
 
-Data:	PC - PC of last MUUO.  This may or may not be relevant
-	LSTERR - Last error code.  This may indicate where error was
-		 generated
+Action:	Although it is possible for bad hardware to cause this BUGHLT, it is
+	usually bad software.  If the hardware checks out OK, send in an SPR
+	along with a dump and indicate how this problem can be reproduced.
+
+Data:	PC - PC of last MUUO, this may or may not be relevant
+	LSTERR - Last error code, this may indicate where error was generated
 	ERRPC -  PC where ITRAP was called
 >)
 	SKIPL FORKX		;NO FORK RUNNING, OR
 	CONSZ PI,177B27		;PI IN PROGRESS?
 	BUG.(HLT,PIITRP,SCHED,HARD,<Instruction trap while PI in progress or in scheduler>,<<LSTERR,LSTERR>,<LSTIPC,ERRPC>>,<
 
-Cause:	An error occurred, resulting in an illegal instruction trap. If a JSYS
-	was being executed by the monitor, the process would receive an
-	error return.  However, in this case the error occurred  while a
-	hardware interrupt (PI) was being processed, or while the monitor was
-	executing code that starts the scheduler cycle.
+Cause:	An error occurred, resulting in an illegal instruction trap.  If a JSYS
+	was being executed by the monitor, the process would receive an error
+	return.  However, in this case the error occurred while a hardware
+	interrupt (PI) was being processed, or while the monitor was executing
+	code that starts the scheduler cycle.
 
-Data:	LSTERR - Last error code.  This may indicate where error was
-		 generated.
+Action:	Although it is possible for bad hardware to cause this BUGHLT, it is
+	usually bad software.  If the hardware checks out OK, send in an SPR
+	along with a dump and indicate how this problem can be reproduced.
+
+Data:	LSTERR - Last error code, this may indicate where error was generated.
 	ERRPC - PC at which error was generated.
 >)
 
@@ -1404,8 +1458,12 @@ Data:	LSTERR - Last error code.  This may indicate where error was
 	IFSKP.
 	  BUG.(HLT,ITNOJC,SCHED,HARD,<Instruction trap not in JSYS context>,<<LSTERR,LSTERR>,<LSTIPC,ERRPC>,<KIMUPC,MUUOPC>>,<
 
-Cause:	The illegal instruction trap handler has been entered, but the
-	process is not in JSYS context.
+Cause:	The illegal instruction trap handler has been entered, but the process
+	is not in JSYS context.
+
+Action:	This BUGHLT is normally seen with bad hardware.  If the hardware checks
+	out OK, send in an SPR along with a dump and indicate how this problem
+	can be reproduced.
 
 Data:	LSTERR - Last error code
 	ERRPC - PC at which error was generated
@@ -1428,7 +1486,7 @@ Data:	LSTERR - Last error code
 	  MOVEM T3,-1(P)	;ERJMP BACK TO MONITOR, OK.
 	  JRST MRETN		;DO IT
 	ENDIF.
-
+
 ;Here if the previous level was user or monitor without ERJMP.
 
 ;We should not be NOSKED or CSKED.  I.e., the JSYS code at this level should
@@ -1439,12 +1497,12 @@ Data:	LSTERR - Last error code
 	SKIPE NSKED		;CHECK FOR PROPER STATE
 	  BUG.(HLT,NOSKTR,SCHED,SOFT,<ITRAP from NOSKED or CSKED context>,<<KIMUPC,MUUOPC>,<LSTERR,LSTERR>,<LSTIPC,LSTIPC>>,<
 
-Cause:	An illegal instruction trap has occurred while the process
-	was NOSKED or CSKED.  This suggests that important
-	resources may be left locked.
+Cause:	An illegal instruction trap has occurred while the process was NOSKED
+	or CSKED.  This suggests that important resources may be left locked.
 
-Action:	See if this is reproducible, and if so, report the
-	sequence to Software Engineering.
+Action:	This BUGHLT is normally seen with bad hardware.  If the hardware checks
+	out OK, send in an SPR along with a dump and indicate how this problem
+	can be reproduced.
 
 Data:	MUUOPC - PC of last MUUO
 	LSTERR - Last error code
@@ -1465,13 +1523,13 @@ Data:	MUUOPC - PC of last MUUO
 
 	BUG.(CHK,MONNEJ,SCHED,SOFT,<Nested JSYS without ERJMP>,<<T1,FLAGS>,<T2,PC>>,<
 
-Cause:	An illegal instruction trap has occurred and the previous context
-	is the monitor but no ERJMP is present following the nested
-	JSYS call.  This violates required coding practice because
-	the previous context may have locks that need to be released.
+Cause:	An illegal instruction trap has occurred and the previous context is
+	the monitor but no ERJMP is present following the nested JSYS call.
+	This violates required coding practice because the previous context may
+	have locks that need to be released.
 
-Action:	If this is reproducible, report the circumstances to
-	Software Engineering.
+Action:	If this problem can be reproduced, set this bug dumpable and submit 
+	an SPR along with the dump and instructions on reproducing the problem.
 
 Data:	FLAGS - Processor flags
 	PC - PC at which faulty nested JSYS was done
@@ -1755,6 +1813,10 @@ Cause:	The monitor started to execute the main scheduler routine.  The
 	hardware indicates that a hardware interrupt is being held. Since
 	hardware interrupts operate at a higher priority than the scheduler,
 	this should not happen.
+
+Action:	Field Service should check out the system carefully.  This BUGHLT is
+	seen with bad hardware.  If the hardware checks out OK, send in an SPR
+	along with a dump and indicate how this problem can be reproduced.
 >)
 
 ;ENTER SECTION 1, BECAUSE CODE IN PAGEM THAT IS CALLED FROM HERE
@@ -1898,77 +1960,124 @@ CLK21:	ADDM P5,CLK2TM(P4)	;UPDATE CLOCK
 
 PI7P::	IOWD NSKDP,SKDPDL
 
-;CHECK DDMP AND CHKR 
+;Check DDMP and CHKR 
+
+;[8923] DDMP is now checked first since it is usually the one that blocks
+;trying to write on a disk, and the DDMPNR BUGHLT will therefore come out
+;rather than blaming an innocent CHKR (which can be blocked by DDMP).
 
 JB0CHK::
-	MOVEI	T1,^D10000	;WANT TO RUN AGAIN IN 10 SECONDS
-	MOVEM	T1,JB0TIM	;SAVE FOR POSTERITY
-	MOVE T1,TODCLK		;GET THE CURRENT TIME
-	CAMGE T1,CHKTIM		;CHKR OVERDUE?
-	 JRST JB0C.0		;NOT OVERDUE
-	AOS T1,CHKDUE		;BUMP THE COUNT OF OVERDUES
-	CAIL T1,CHKMAX		;HAS IT BEEN OVERDUE TOO LONG?
-	BUG.(HLT,CHKRNR,SCHED,SOFT,<CHKR fork not run for too long>,,<
+	MOVEI T1,^D10000	;WANT TO RUN AGAIN IN 10 SECONDS
+	MOVEM T1,JB0TIM		;SAVE FOR POSTERITY
+	CALL CKDDMP		;[8923] Check on DDMP
+;	CALLRET CKCHKR		;[8923] Check on CHKR and return
+
+;[8923] Here to check on CHKR
 
-Cause:	The  monitor  creates  a fork in job zero that exists for the life of
-	the  system.  This  fork  runs  periodically  to  perform   essential
-	functions.  The  BUGHLT  occurs  when the scheduler detects that the
-	CHKR fork has not run for too long a time.
+CKCHKR:	MOVE T1,TODCLK		;[8923] Get the current time
+	CAMGE T1,CHKTIM		;[8923] CHKR overdue?
+	RET			;[8923] Not overdue, return now
+	AOS T1,CHKDUE		;Bump the count of overdues
+	CAIL T1,CHKMAX		;Has it been overdue too long?
+	BUG.(HLT,CHKRNR,SCHED,HARD,<CHKR fork not run for too long>,,<
+
+Cause:	The monitor creates a fork in job zero that exists for the life of the
+	system.  This fork runs periodically to perform essential system
+	functions.  The BUGHLT occurs when the scheduler detects that the CHKR
+	fork has not run for too long a time.
+
+	Possible causes for CHKR not running include: 
+		1. A disk failure that prevents job 0 from updating the disk
+		2. Removal of a disk that is mounted
+		3. An HSC or MSCP server disk is hung
+		4. Logic errors in the monitor.
+
+Action:	Check the console output from this system.  Try to find out if any disk
+	problems are blocking DDMP.  It is unlikely that this is a software
+	problem.  Examination of the dump will probably show that some fork is
+	at the top of the go list and is blocked and NOSKED.  If this fork is
+	DDMP then it is a disk problem.  If CHKR is at the top of the go list
+	there is probably a software problem.
+>)				;[8923]
+	CAIE T1,1		;[8923] Is this the first time?
+	BUG.(CHK,NOCHKR,SCHED,HARD,<CHKR fork blocked>,<<T1,CHKDUE>>,<
+
+Cause:	The CHKR fork has not run in a while.  The monitor is getting nervous.
+	If the CHKR fork continues to not run for a long time the a CHKRNR
+	BUGHLT will result.
 
 	Possible causes for CHKR not running include: 
 		1. A disk failure that prevents fork 0 from updating the disk
-		2. Removal of a  mounted structure
-		3. Logic errors in the monitor.
-		4. An HSC or MSCP server disk is hung.
+		2. Removal of a disk that is mounted
+		3. An HSC or MSCP server disk is hung
+		4. Logic errors in the monitor.
 
->)
-	CAIE T1,1		;IS THIS THE FIRST TIME?
-	BUG.(CHK,NOCHKR,SCHED,SOFT,<CHKR fork blocked>,<<T1,CHKDUE>>,<
-
-Cause:	The CHKR fork has not run in a while.  The monitor is getting
-	nervous.  If the CHKR fork continues to not run for a long time
-	the a CHKRNR BUGHLT will result.
+Action:	Check the console output from this system.  Try to find out if any disk
+	problems are blocking job 0.  It is unlikely that this is a software
+	problem.
 
 Data:	CHKDUE - Count of times CHKR was found overdue
 >,,<DB%NND>)			;[7.1210] 
-	AOS JB0FLG		;MAKE SURE CHKR WILL RUN
-	MOVE T1,TODCLK		;GET THE CURRENT TIME
-	ADD T1,CHKPER		;GET THE ALARM TIME
-	MOVEM T1,CHKTIM		;SET THE ALARM TIME
+	AOS JB0FLG		;[8923] Make sure CHKR will run soon
+	MOVE T1,TODCLK		;[8923] Get the current time
+	ADD T1,CHKPER		;[8923] Get the alarm time
+	MOVEM T1,CHKTIM		;[8923] Set the alarm time
+	RET			;[8923]  and return
 
-JB0C.0:				;HERE AFTER CHECKING UP ON CHKR
-	CAMGE T1,DDPTIM		;DDMP OVERDUE?
-	 JRST JB0C.1		;NOT OVERDUE
-        AOS T1,DDPDUE		;BUMP THE OVERDUE COUNT
-	CAIL T1,DDPMAX		;OVERDUE TOO LONG?
-	BUG.(HLT,DDMPNR,SCHED,SOFT,<DDMP fork not run for too long>,,<
+;[8923] Here to check on DDMP.
 
-Cause:	The  monitor  creates  a fork in job zero that exists for the life of
-	the  system.  This  fork  runs  periodically  to  perform   essential
-	functions.  The  BUGHLT  occurs  when the scheduler detects that the
-	DDMP fork has not run in too long a time.
+CKDDMP:	MOVE T1,TODCLK		;[8923] Get the current time
+	CAMGE T1,DDPTIM		;[8923] Is DDMP overdue?
+	RET			;[8923] Not overdue, return now
+        AOS T1,DDPDUE		;Bump the overdue count
+	CAIL T1,DDPMAX		;Overdue too long?
+	BUG.(HLT,DDMPNR,SCHED,HARD,<DDMP fork not run for too long>,,<
 
-	Possible causes for DDMP not running include the following:
-		1. A disk failure that prevents fork 0 from updating the
-		   disk
-		2. Removal of a  mounted structure
-		3. Logic errors in the monitor.
+Cause:	The monitor creates a fork in job zero that exists for the life of the
+	system.  This fork runs periodically to move pages from the swapping
+	space to files on disk.  This is an essential system function.  The
+	BUGHLT occurs when the scheduler detects that the DDMP fork has not run
+	in too long a time.
 
->)
-	CAIE T1,1		;IS THIS THE FIRST TIME?
-	BUG.(CHK,NODDMP,SCHED,SOFT,<DDMP fork blocked>,<<T1,DDPDUE>>,<
+	Possible causes for DDMP not running include: 
+		1. A disk failure that prevents DDMP from updating the disk
+		2. Removal of a disk that is mounted causing DDMP to block
+		3. An HSC or MSCP server disk is hung causing DDMP to block
+		4. Logic errors in the monitor.
 
-Cause:	The DDMP fork has not run in a while.  The monitor is getting
-	nervous.  If the DDMP fork continues to not run for a long time
-	the a DDMPNR BUGHLT will result.
+Action:	Check the console output from this system.  Try to find out if any disk
+	problems are blocking DDMP.  It is unlikely that this is a software
+	problem.  Examination of the dump will probably show that some fork is
+	at the top of the go list and is blocked and NOSKED.  If this fork is
+	DDMP then it is a disk problem.  If CHKR is at the top of the go list
+	there is probably a software problem.
+>)				;[8923]
+	CAIE T1,1		;Is this the first time?
+	BUG.(CHK,NODDMP,SCHED,HARD,<DDMP fork blocked>,<<T1,DDPDUE>>,<
+
+Cause:	The monitor creates a fork in job zero that exists for the life of the
+	system.  This fork runs periodically to move pages from the swapping
+	space to files on disk.  This is an essential system function. 	The
+	DDMP fork has not run in a while.  The monitor is getting nervous.  If
+	the DDMP fork continues to not run for a long time the a DDMPNR BUGHLT
+	will result.
+
+	Possible causes for DDMP not running include: 
+		1. A disk failure that prevents DDMP from updating the disk
+		2. Removal of a disk that is mounted causing DDMP to block
+		3. An HSC or MSCP server disk is hung causing DDMP to block
+		4. Logic errors in the monitor.
+
+Action:	Check the console output from this system.  Try to find out if any disk
+	problems are blocking DDMP.  It is unlikely that this is a software
+	problem.
 
 Data:	DDPDUE - Count of times DDMP was found overdue
->,,<DB%NND>)			;[7.1210] 
-	MOVE T1,TODCLK		;GET THE CURRENT TIME
-	ADD T1,DDPPER		;GET THE NEXT ALARM TIME
-	MOVEM T1,DDPTIM		;SETTHE NEXT ALARM
-				;HERE AFTER CHECKING UP ON DDMP
-JB0C.1:	RET
+>,,<DB%NND>)			;[8923][7.1210] 
+	MOVE T1,TODCLK		;Get the current time
+	ADD T1,DDPPER		;Get the next alarm time
+	MOVEM T1,DDPTIM		;Set the next alarm time
+	RET			;[8923] Return
 
 ;CHECK LOAD AVS AND LITES
 
@@ -2253,12 +2362,13 @@ SCDRQ7::SAVET
 	NOSKD1
 	HRRZ T2,T1		;GET ROUTINE ADDRESS
 	CAIE T2,JOBSRT		;THE ONE LEGAL CASE?
-	BUG.(CHK,SRQBAD,SCHED,HARD,<SCDRQ - Bad call to SCDRQ7>,,<
+	BUG.(CHK,SRQBAD,SCHED,SOFT,<SCDRQ - Bad call to SCDRQ7>,,<
 
-Cause:	SCDRQ7 was called with a function it does not know about.
+Cause:	SCDRQ7 was called with a function it does not know about.  Fix the
+	caller or fix SCDRQ7 to know about this function.
 
-Action:	Fix the call or fix SCDRQ7 to know about this function.
-
+Action:	If this bug can be reproduced, set it dumpable and submit an SPR along
+	with a dump and how to reproduce the problem.
 >)
 	HLRZ T1,T1		;GET DATA
 	CALL 0(T2)		;DO IT
@@ -2450,15 +2560,18 @@ SKDJ2:	AOS NCSWCH		;COUNT CONTEXT SWITCHES
 ; CHECK WAITING BALANCE SET FORKS
 
 BSBCK:	SKIPL FORKX		;FORK CONTEXT SETUP
-	BUG.(HLT,SKDFKS,SCHED,HARD,<Illegal scheduler action while fork context setup>,,<
+	BUG.(HLT,SKDFKS,SCHED,SOFT,<Illegal scheduler action while fork context setup>,,<
 
 Cause:  The scheduler was about to perform an action that requires that no fork
-	context is setup. The monitor found that FORKX was non-negative which
+	context is setup.  The monitor found that FORKX was non-negative which
 	indicates that fork context was setup.
 
-Action:	Change the monitor to call DISMSJ before calling the routine or 
-	move the call to a more appropriate place. CLK2 always forces 
-	DISMSJ and is usually a good place for periodic actions.
+Action:	Submit an SPR along with the dump and any information on reproducing
+	the problem.
+
+	To fix the problem, change the monitor to call DISMSJ before calling
+	the routine or move the call to a more appropriate place. CLK2 always
+	forces DISMSJ and is usually a good place for periodic actions.
 >)
 	SETOM SKDFST		;NOT RUNNING FAST
 	SKIPN SKEDFC		;FORCED CLEAR REQUESTED?
@@ -2870,11 +2983,14 @@ WSMG1:	AOBJN FX,WSMG2
 	CAMN T4,T3
 	IFSKP.
 	 MOVE T3,SUMNR
-	  BUG.(CHK,SUMNR2,SCHED,HARD,<WSMGR - SUMNR incorrect>,<<T3,SUMNR>,<T4,CHECK>>,<
+	  BUG.(CHK,SUMNR2,SCHED,SOFT,<WSMGR - SUMNR incorrect>,<<T3,SUMNR>,<T4,CHECK>>,<
 
-Cause:	The sum of reserve pages as stored in SUMNR was found to be
-	incorrect by routine WSMGR. The correct value has been computed and
-	stored in SUMNR.
+Cause:	The sum of reserve pages as stored in SUMNR was found to be incorrect
+	by routine WSMGR. The correct value has been computed and stored in
+	SUMNR.  This problem is difficult to diagnose.
+
+Action:	If this BUGCHK can be reproduced, change it to a BUGHLT and submit an
+	SPR along with a dump and how to reproduce the problem.
 
 Data:	SUMNR - Current SUMNR value
 	CHECK - Correct computed SUMNR value
@@ -3212,10 +3328,14 @@ AJBALX:	SUB T4,AJBBSC		;REMOVE PAD AND ORIG BALSHC
 	CAMN T4,T3		;CHECK SUM
 	IFSKP.
 	  MOVE T3,SUMBNR
-	  BUG.(CHK,SUMNR1,SCHED,HARD,<AJBALX - SUMBNR incorrect>,<<T3,SUMBNR>,<T4,CHECK>>,<
+	  BUG.(CHK,SUMNR1,SCHED,SOFT,<AJBALX - SUMBNR incorrect>,<<T3,SUMBNR>,<T4,CHECK>>,<
 
-Cause:	The value of SUMBNR has been found to be incorrect by AJBALX. The
-	correct value of SUMBNR has been computed and stored in SUMBNR.
+Cause:	The value of SUMBNR has been found to be incorrect by AJBALX.  The
+	correct value of SUMBNR has been computed and stored in SUMBNR.  This
+	problem is difficult to diagnose.
+
+Action:	If this BUGCHK can be reproduced, change it to a BUGHLT and submit an
+	SPR along with a dump and how to reproduce the problem.
 
 Data:	SUMBNR - Sum of working sets in balance set
 	CHECK - Correct computed value of SUMBNR
@@ -3480,12 +3600,15 @@ FIXWS1:	LOAD T1,CSTOFK,+T4	;GET FORK ASSIGNMENT
 	AOJA T4,FIXWS1		;NO
 	LOAD T1,FKWSS		;GET EXISTING VALUES
 	LOAD T3,FKCSIZ
-	BUG.(CHK,FKWSP1,SCHED,HARD,<LOADBS - Unreasonable FKWSP>,<<T1,FKWSS>,<T2,COUNT>,<T3,FKCSIZ>,<FX,FORK>>,<
+	BUG.(CHK,FKWSP1,SCHED,SOFT,<LOADBS - Unreasonable FKWSP>,<<T1,FKWSS>,<T2,COUNT>,<T3,FKCSIZ>,<FX,FORK>>,<
 
 Cause:	The value of FKCSIZ for this fork was found to be incorrect.
-	Specifically, the value of FKWSS was found to be less than the
-	value of FKCSIZ for this work. The correct value is being computed
-	and saved in FKCSIZ.
+	Specifically, the value of FKWSS was found to be less than the value of
+	FKCSIZ for this work.  The correct value is being computed and saved in
+	FKCSIZ.  This problem is difficult to diagnose.
+
+Action:	If this BUGCHK can be reproduced, change it to a BUGHLT and submit an
+	SPR along with a dump and how to reproduce the problem.
 
 Data:	FKWSS - Fork's reserve working set size
 	COUNT - Actual count of pages belonging to this fork
@@ -3541,28 +3664,29 @@ SAVRT:	EA.ENT			;RUN IN SECTION 1 BECAUSE OF TIMERS
 	  CAMGE T2,HPSWRN	;TIME UP?
 	  IFSKP.
 	    ANDXE. T1,BSOVRD	;YES, NOT ALREADY NOTED?
-	    MOVE T2,JOBNO	;YES, JOB PROBABLY STUCK
+	    MOVE T2,GBLJNO	;[8923] Yes, job probably stuck
 
-;This bugchk is intended to detect forks which are running with priority
-;(e.g. JP%SYS, NOSKED, CRKSED, or even PIBUMP) and using too much time.
-;This is useful to know because such cases impact response for all
-;ordinary users.  The bugchk reports
-;the job and fork number of the offending fork.   DLM  10/28/81
+;This bugchk is intended to detect forks which are running with priority (e.g.
+;JP%SYS, NOSKED, CRKSED, or even PIBUMP) and using too much time.  This is
+;useful to know because such cases impact response for all ordinary users.  The
+;bugchk reports the job and fork number of the offending fork.  DLM 10/28/81
 
-	    SKIPA
-	    BUG.(CHK,HPSCHK,SCHED,SOFT,<SCHEDULER - Excessive time in high priority>,<<T2,JOBNO>,<FX,FRKNO>>,<
+HPSHOG:	    SKIPA		;[8923] JFCL here if you want this BUG output
+	    BUG.(CHK,HPSCHK,SCHED,SOFT,<Excessive time in high priority>,<<T2,JOBNO>,<FX,FRKNO>>,<
 
-Cause:	A fork has entered a high priority scheduling condition, i.e.
-	PIBMP, CSKED, or JP%SYS, and has remained compute-bound for more than
-	5 seconds.  The fork has probably malfunctioned in some way, and
-	the high scheduling priority is affecting overall system response.
+Cause:	A fork has entered a high priority scheduling condition (PIBMP, CSKED,
+	or JP%SYS), and has remained compute-bound for more than 5 seconds.
+	The fork has probably malfunctioned in some way, and the high
+	scheduling priority is affecting overall system response.  The high
+	priority status is disabled until the fork itself clears the condition.
 
-Action:	The high priority status is disabled until the fork itself
-	clears the condition.
+Action:	The additional data contains the job number and system fork number.
+	The program should be changed to either not be so compute bound or not
+	set itself as high priority.
 
-Data:	JOBNO - Job number
+Data:	GBLJNO - Job number
 	FRKNO - Fork number
->)
+>)				;[8923]
 	    SETONE BSOVRD	;OVERRIDE PRIORITY
 	    CALL GLREM		;FIND NEW POSITION ON GOLST
 	    CALL GOCONC
@@ -3724,15 +3848,16 @@ UCLOC3:	SKIPN FKTOFF		;CLOCK NOW OFF?
 
 	MOVE 2,JOBNO
 	SKIPGE JOBRT(T2)	;RUNTIME OK?
-	CALL [	BUG.(CHK,NEGJRT,SCHED,SOFT,<UCLOCK: Negative JOBRT detected>,<<T2,JOBNO>>,<
+	CALL [	BUG.(CHK,NEGJRT,SCHED,SOFT,<UCLOCK - Negative JOBRT detected>,<<T2,JOBNO>>,<
 
-Cause:	The job runtime (JOBRT) is negative for an existing job.  This
-	would cause the job to appear non-existent to most JSYSes.
+Cause:	The job runtime (JOBRT) is negative for an existing job.  This would
+	cause the job to appear non-existent to most JSYSes.  The monitor will
+	use a reasonable value for JOBRT (0) and logout the job.
 
-Action:	Use a reasonable value for JOBRT (0) and logout the job.
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 
 Data:	JOBNO - Job number
-
 >)
 		SETZM JOBRT(T2)	;QUICK FIX
 		SAVET
@@ -3943,7 +4068,7 @@ UNBLK2:	HRRZ Q2,0(1)		;GET NEXT FORK ON LIST
 	CALL SCHEDJ		;ADJUST QUEUE AND PUT ON GOLST
 UNBLK3:	RET
 
-UBBAD:	BUG.(CHK,UNBFNF,SCHED,HARD,<Fork not found>,,<
+UBBAD:	BUG.(CHK,UNBFNF,SCHED,SOFT,<Fork not found>,,<
 
 Cause:	This BUG can be caused in one of three ways:
 
@@ -3955,6 +4080,9 @@ Cause:	This BUG can be caused in one of three ways:
 
 	3. RECONC was called to transfer a fork from one wait list to
 	   another, but the fork was not on the list it claimed to be on.
+
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 >)
 	JRST UNBLK3
 
@@ -4190,7 +4318,7 @@ GLREM0:	LOAD Q1,FKQN		;UPDATE QUEUE COUNTS
 	SETZRO FKOGL		;NO LONGER ON GOLST
 	RET
 
-GLREM2:	BUG.(HLT,GLFNF,SCHED,HARD,<GLREM - Fork not found>,,<
+GLREM2:	BUG.(HLT,GLFNF,SCHED,SOFT,<GLREM - Fork not found>,,<
 
 Cause:	The scheduler is trying to remove a process from its linked list of
 	runnable processes (the GOLIST).  The BUGHLT occurs because the
@@ -4972,10 +5100,11 @@ HLTJB1:	MOVE 5,JOBNO
 MSETP1:	CALL MSETPT		;CLEAR ALL PAGES OF JOB MAP
 	 BUG.(CHK,MAPCLF,SCHED,SOFT,<Failed to clear maps when killing job>,,<
 
-Cause:	A call to MSETPT to clear the job map or process map for
-	the top fork of a job being killed has failed.
+Cause:	A call to MSETPT to clear the job map or process map for the top fork
+	of a job being killed has failed.
 
-Action:	Continue.
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 >)
 	RET
 
@@ -4983,13 +5112,12 @@ Action:	Continue.
 ;DEASSIGN OF JOB CONTROLLING FAILED
 
 HLTJB3:	TXZN T1,1B0		;FAILED. NEED TO WAIT?
-	BUG.(HLT,TTDAS1,SCHED,HARD,<HLTJB - Unable to deassign controlling terminal>,,<
+	BUG.(HLT,TTDAS1,SCHED,SOFT,<HLTJB - Unable to deassign controlling terminal>,,<
 
 Cause:	The monitor is killing the last (top) fork in a job and is trying to
 	deassign the job's controlling terminal.  The attempt has failed for an
 	unexpected reason (one that will not be corrected if the fork waits a
 	while).  This indicates inconsistency in the monitor's data base.
-
 >)
 	UNLOKK DEVLKK		;YES. UNLOCK THE DEVICE LOCK
 	OKINT			;LCKDVL WENT NOINT
@@ -5043,15 +5171,15 @@ HLTFK2:	CALL REMBSJ		;REMOVE FORK FROM BAL SET
 	SETZM FKPGS(FX)		;ZERO FKPGS AS A FLAG OF NON ASSIGNED FORK
 	LOAD 1,FKCSIZ		;MAKE SURE FORK CLEANED UP
 	CAIE 1,0
-	BUG.(CHK,FRKNDL,SCHED,HARD,<HLTFRK - Fork not properly deleted>,,<
+	BUG.(CHK,FRKNDL,SCHED,SOFT,<HLTFRK - Fork not properly deleted>,,<
 
-Cause:	HLTFRK was called to complete the deletion process for a fork but
-	a check of FKCSIZ showed that not all pages belonging to this fork
-	have been deleted. This indicates an inconsistency in the monitor's
-	data base.
+Cause:	HLTFRK was called to complete the deletion process for a fork but a
+	check of FKCSIZ showed that not all pages belonging to this fork have
+	been deleted.  This indicates an inconsistency in the monitor's data
+	base.
 
-Action:	Contine deletion process
-
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 >)
 	CALL RDSIVL		;GET TIME SINCE ENTSKD
 	IDIVI T1,NTMS		;CONVERT TO MS
@@ -5355,13 +5483,12 @@ UNPIR:	MOVEI T1,1		;CONDITIONAL REQUEUE IF BUMPED
 	MOVEM 1,PPC
 	MOVE FX,FORKX
 	TMNN FKPS1,(FX)		;INTERRUPT IN PROGRESS?
-	BUG.(CHK,UNPIRX,SCHED,HARD,<UNPIR - No PSI in progress>,,<
+	BUG.(CHK,UNPIRX,SCHED,SOFT,<UNPIR - No PSI in progress>,,<
 
-Cause:	UNPIR was called to leave PSI context but there was no PSI in
-	progress.
+Cause:	UNPIR was called to leave PSI context but there was no PSI in progress.
 
-Action:	Continue.
-
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 >)
 	SETZRO FKPS1,(FX)	;YES. CLEAR IT
 	JE PIBMP,,[POP P,0(P)	;CLEAN UP THE STACK
@@ -5499,7 +5626,7 @@ PSIT11:	CAIN T4,-1		;SOURCE OF PSI = JOB CTTY?
 	CAMN T4,CTRLTT		;CTTY OF JOB?
 	JRST PSIT12		;YES
 	CAIGE T4,NLINES		;VALID TTY NUMBER?
-	CAIGE T4,0
+	SKIPGE T2,T4		;[8816] Really valid (and set up T2)?
 	JRST PSITR1
 	JRST PSIT13		;YES
 
@@ -5800,10 +5927,12 @@ PSII:	MOVE 1,MJRST0		;NORMALIZE ALL DEFER TRAPS
    IFN SKEDSW,<
 	  BUG.(CHK,PSIIBE,SCHED,SOFT,<PSII - Flags not set properly>,<<T1,FLAGS>>,<
 
-Cause:	At PSII, the PC flags were not set properly.  All paths
-	to PSII should ensure that PCU is 1 and PCS is non-0.  This
-	is under a debug conditional and so should not be seen in the
-	field.
+Cause:	At PSII, the PC flags were not set properly.  All paths to PSII should
+	ensure that PCU is 1 and PCS is non-0.  This is under a debug
+	conditional and so should not be seen in the field.
+
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 
 Data:	FLAGS - Flags from XSFM.
 >)
@@ -6113,13 +6242,13 @@ PSISM1:	PUSH FX,1		;SAVE COUNT FOR DEBRK
 
 ;T1 and T4 will be stored into the user's LEVTAB
 
-PIOVFW:	BUG.(HLT,PSISTK,SCHED,HARD,<PSI Storage stack overflow>,,<
+PIOVFW:	BUG.(HLT,PSISTK,SCHED,SOFT,<PSI Storage stack overflow>,,<
 
-Cause:	A software interrupt occurred while a process was running
-	in the monitor. The monitor is saving information regarding
-	the state of the process so that in can restore that state
-	when the process dismisses the interrupt. The BUGHLT indicates
-	that the storage area has overflowed.
+Cause:	A software interrupt occurred while a process was running in the
+	monitor.  The monitor is saving information regarding the state of the
+	process so that in can restore that state when the process dismisses
+	the interrupt.  The BUGHLT indicates that the storage area has
+	overflowed.
 >)
 
 ;THIS FORK WON'T TAKE INTERRUPT, DISMISS IT AND RECORD WHY
@@ -6291,10 +6420,13 @@ PITEST::TLNE 1,(UMODF)		;USER MODE?
 	RET			;NO, DEFER
 	SKIPN CRSKED
 	SKIPE NSKED		;IN CASE NOSKED W/O NOINT
-	BUG.(CHK,PSINSK,SCHED,HARD,<PSI From NOSKED or CRSKED context>,,<
+	BUG.(CHK,PSINSK,SCHED,SOFT,<PSI From NOSKED or CRSKED context>,,<
 
-Cause:	This process is NOSKED or CSKED, but is not NOINT.
+Cause:	A process is NOSKED or CSKED, but is not NOINT.  This indicates a
+	monitor software error.
 
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 >)
 	JRST RSKP		;IMMEDIATE
 
@@ -6519,13 +6651,13 @@ TRPSI5::JRST TRPSI2		;LOOK FOR MORE MONITORS (OF MONITORS)
 ;RETURN TO THE NORMAL JSYS CODE
 
 TRPSI6:	SKIPL P5		;HAS TRAP BEEN HANDLED AT ALL?
-	 BUG.(CHK,TRPSIE,SCHED,HARD,<TRAPSI - No monitor for trapped fork>,,<
+	 BUG.(CHK,TRPSIE,SCHED,SOFT,<TRAPSI - No monitor for trapped fork>,,<
 
-Cause:	A fork executed a JSYS that was marked as trapped, but there is no
-	fork monitoring this JSYS trap.
+Cause:	A fork executed a JSYS that was marked as trapped, but there is no fork
+	monitoring this JSYS trap.  The JSYS trap will be ignored.
 
-Action:	Ignore the JSYS trap.
-
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 >)
 	LDB T1,[POINT 9,KIMUU1,26] ; Pick up opcode of trapped guy
 	CAIE T1,<JSYS>B62	; Was a JSYS?
@@ -6644,12 +6776,12 @@ JTENQ:	HRL T1,SYSFK(P4)	;1=FORK WAITING ON
 	SOSE NSKED		;MATCHED NOSKED IN JTLOCK
 	BUG.(HLT,JTENQE,SCHED,SOFT,<JTENQ with bad NSKED>,,<
 
-Cause:	A process has attempted to lock the JSYS trap lock and found
-	it already locked. The process will enter a queue and dismiss until
-	the lock becomes available. The BUGHLT occurs because when the process
-	decrements its NOSKED counter, the value does not go to 0. This
-	means that the process is still NOSKED or it was OKSKED when it
-	should have been NOSKED.
+Cause:	A process has attempted to lock the JSYS trap lock and found it already
+	locked.  The process will enter a queue and dismiss until the lock
+	becomes available.  The BUGHLT occurs because when the process
+	decrements its NOSKED counter, the value does not go to 0.  This means
+	that the process is still NOSKED or it was OKSKED when it should have
+	been NOSKED.
 >)
 	MOVEI T2,FKJTQ(FX)	;FX=FORKX, SET BY ENSKED
 	HRRM T2,@JTLSTL		;ADD THIS FORK TO END OF QUEUE
@@ -6836,19 +6968,24 @@ MENTM::	LOAD CX,EXPCBT,JSTAB(CX) ;GET ROUTINE ADDRESS WITHOUT FLAGS
 	TXNN CX,EXSCBT		;CALLED FROM NON-0 SECTION?
 	BUG.(CHK,JSSEC0,SCHED,SOFT,<Nested JSYS call from section 0>,<<CX,PC>>,<
 
-Cause:	At entry to a JSYS called within the monitor, the return PC is
-	in section 0.  This is a coding error which should be corrected.
-	This is under a debug conditional, so it should never occur in
-	the field.
+Cause:	At entry to a JSYS called within the monitor, the return PC is in
+	section 0.  This is a coding error which should be corrected.  This is
+	under a debug conditional, so it should never occur in the field.
+
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 
 Data:	PC - PC of offending JSYS
 >)
 	AOSGE INTDF		;CHECK STATE OF INTDF
 	BUG.(CHK,IDFOD1,SCHED,SOFT,<MENTR - INTDF overly decremented>,<<CX,PC>>,<
 
-Cause:	At the time of a nested JSYS call, INTDF was less than -1.  Some
-	code in the calling context must have fouled it up.  This is
-	under a debug conditional and so should not appear in the field.
+Cause:	At the time of a nested JSYS call, INTDF was less than -1.  Some code
+	in the calling context must have fouled it up.  This is under a debug
+	conditional and so should not appear in the field.
+
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 
 Data:	PC - PC at which last JSYS was executed.
 >)
@@ -6862,14 +6999,13 @@ Data:	PC - PC at which last JSYS was executed.
 	CAIL P,<EUACB>B39	;USED ALL BLOCKS?
 	BUG.(HLT,NOACB,SCHED,SOFT,<MENTR - No more AC blocks>,<<CX,PC>>,<
 
-Cause:	When a JSYS is executed from within the monitor, the
-	AC's of the current process are stored in a special area in the
-	monitor.  This area consists of several 20-word blocks that are used
-	successively as one JSYS invokes another.  The BUGHLT indicates that a
-	JSYS has been called but that no 20-word block is left in which to
-	store the contents of the AC's.  This usually means that the counter
-	that the monitor uses to keep track of these blocks has been
-	clobbered.
+Cause:	When a JSYS is executed from within the monitor, the AC's of the
+	current process are stored in a special area in the monitor.  This area
+	consists of several 20-word blocks that are used successively as one
+	JSYS invokes another.  The BUGHLT indicates that a JSYS has been called
+	but that no 20-word block is left in which to store the contents of the
+	AC's.  This usually means that the counter that the monitor uses to
+	keep track of these blocks has been clobbered.
 
 Data:	PC - PC at which last JSYS was executed
 >)
@@ -6902,8 +7038,8 @@ MENT0::	SETOM SLOWF
    IFN SKEDSW,<
 	  BUG.(HLT,MNTRNU,SCHED,SOFT,<MCENTR Without setup of user old PC>,<<CX,PC>>,<
 
-Cause:	MCENTR has been used without FFL setup to be a user PC.  This is 
-	a coding error.
+Cause:	MCENTR has been used without FFL setup to be a user PC.  This is a
+	coding error.
 
 Data:	PC - PC at which MCENTR was executed
 >) >
@@ -6971,8 +7107,8 @@ MENT2:	MOVEM CX,FPC		;SAVE NEW PC
 	  SKIPN PNSKDC		;YES, SHOULD IT BE?
 	  BUG.(HLT,MCLNSK,SCHED,SOFT,<Process is NOSKED or CSKED at JSYS ENTRY>,,<
 
-Cause:	At entry to a monitor call from a user mode process was found to
-	be NOSKED or CSKED.  This should not happen unless flag PNSKDC is set
+Cause:	At entry to a monitor call from a user mode process was found to be
+	NOSKED or CSKED.  This should not happen unless flag PNSKDC is set
 	indicating that a DIAG% has been done.
 >)
 	ENDIF.
@@ -7019,10 +7155,12 @@ MRETN::	SETOM SLOWF		;RESET FLAG
 	AOSGE INTDF		;CHECK STATE OF INTDF
 	BUG.(CHK,IDFOD2,SCHED,SOFT,<MRETN - INTDF overly decremented>,,<
 
-Cause:	At MRETN, INTDF was found to be less than -1.  This indicates
-	that this JSYS code did an unmatched OKINT and may have
-	allowed interrupts when it didn't intend to.  This is
-	a coding error.
+Cause:	At MRETN, INTDF was found to be less than -1.  This indicates that this
+	JSYS code did an unmatched OKINT and may have allowed interrupts when
+	it didn't intend to.  This is a coding error.
+
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 >)
 >
 	MOVE P,MPP		;GO BACK TO LAST STACK FENCE
@@ -7043,9 +7181,9 @@ JSLKB2::			;TAG FOR JSLOOK (SNOOP PGM)
 	  SKIPN PNSKDC		;DIAG% NOSKED?
 	  BUG.(HLT,RTNNSK,SCHED,SOFT,<Process is NOSKED or CSKED at MRETN>,,<
 
-Cause:	The process is NOSKED or CSKED at return from a monitor call.  
-	Probably this JSYS went NOSKED or CSKED and forget to do the 
-	matching OKSKED or ECSKED.  This is a coding error.
+Cause:	The process is NOSKED or CSKED at return from a monitor call.  Probably
+	this JSYS went NOSKED or CSKED and forget to do the matching OKSKED or
+	ECSKED.  This is a coding error.
 >)
 	ENDIF.
 	SKIPGE FKLOCK		;FORK LOCK FREE?
@@ -7055,12 +7193,13 @@ Cause:	The process is NOSKED or CSKED at return from a monitor call.
 	ANSKP.
 	  BUG.(CHK,INCFLK,SCHED,SOFT,<Fork lock set at return to user>,,<
 
-Cause:	Coding error has neglected to unlock the fork lock.
+Cause:	Coding error has neglected to unlock the fork lock.  The monitor
+	unlocks the fork lock before returning to the user. However, this
+	BUGCHK may be indicative of other failures to properly release
+	resources.
 
-Action:	The monitor unlocks the fork lock before returning
-	to the user. However,  this BUGCHK may be indicative
-	of other failures to properly release resources.
-
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	along with a dump and how to reproduce the problem.
 >)		;YES. COMPLAIN THEN
 	  SETOM FKLOCK		;FREE IT
 	  SETZM FLKCNT		;AND FREE THIS TOO
@@ -7105,18 +7244,17 @@ MRETN1:
 	LDPAC. CX,0(CX)		;LOAD PREVIOUS CONTEXT AC'S FROM STACK
 	SOS CX,ACBAS		;DECREMENT ACBAS PTR
 	CAIGE CX,<UACB>B39-1
-	BUG.(HLT,OPOPAC,SCHED,HARD,<MRETN - Tried to over-pop AC stack>,,<
+	BUG.(HLT,OPOPAC,SCHED,SOFT,<MRETN - Tried to over-pop AC stack>,,<
 
-Cause:	When a JSYS is executed from within the monitor, the
-	AC's of the current process are stored in a special area in the
-	monitor.  This area consists of several 20-word blocks that are used
-	successively as one JSYS calls another.
+Cause:	When a JSYS is executed from within the monitor, the AC's of the
+	current process are stored in a special area in the monitor.  This area
+	consists of several 20-word blocks that are used successively as one
+	JSYS calls another.
 
 	As each nested JSYS returns, the monitor's pointer to this area of
-	memory is decremented.  The BUGHLT indicates that the pointer has
-	been decremented too far.  This indicates either a clobbered pointer,
-	or an attempt to return from a JSYS without having entered one.
-
+	memory is decremented.  The BUGHLT indicates that the pointer has been
+	decremented too far.  This indicates either a clobbered pointer, or an
+	attempt to return from a JSYS without having entered one.
 >)
 
 ;Restore variables stored on UPDL stack at JSYS entry.

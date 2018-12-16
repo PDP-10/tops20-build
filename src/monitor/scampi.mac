@@ -1,3 +1,7 @@
+; Edit= 9002 to SCAMPI.MAC on 2-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8914 to SCAMPI.MAC on 17-Aug-88 by GSCOTT
+;Update BUG. documentation. 
 ; UPD ID= 8612, RIP:<7.MONITOR>SCAMPI.MAC.10,  11-Feb-88 18:27:46 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8443, RIP:<7.MONITOR>SCAMPI.MAC.9,   4-Feb-88 16:30:24 by GSCOTT
@@ -1025,7 +1029,7 @@
 	EXTERN LOCPRT
 	Subttl	Table of Contents
 
-;		     Table of Contents for SCAMPI
+;		     Table of Contents for AM70-SCAMPI
 ;
 ;				  Section		      Page
 ;
@@ -1037,124 +1041,124 @@
 ;    3. State Tables . . . . . . . . . . . . . . . . . . . . .  10
 ;    4. Initialization code  . . . . . . . . . . . . . . . . .  19
 ;    5. Calls from sysap
-;        5.1    SC.SOA (Set ONLINE address)  . . . . . . . . .  20
-;        5.2    Connection management  . . . . . . . . . . . .  21
-;            5.2.1    SC.CON (Connect) . . . . . . . . . . . .  23
-;            5.2.2    SC.LIS (Listen)  . . . . . . . . . . . .  26
-;            5.2.3    SC.ACC (Accept)  . . . . . . . . . . . .  29
-;            5.2.4    SC.REJ (Reject)  . . . . . . . . . . . .  31
-;            5.2.5    SC.DIS (Disconnect)  . . . . . . . . . .  32
+;        5.1    SC.SOA (Set ONLINE address)  . . . . . . . . .  22
+;        5.2    Connection management  . . . . . . . . . . . .  24
+;            5.2.1    SC.CON (Connect) . . . . . . . . . . . .  26
+;            5.2.2    SC.LIS (Listen)  . . . . . . . . . . . .  30
+;            5.2.3    SC.ACC (Accept)  . . . . . . . . . . . .  33
+;            5.2.4    SC.REJ (Reject)  . . . . . . . . . . . .  35
+;            5.2.5    SC.DIS (Disconnect)  . . . . . . . . . .  36
 ;        5.3    Messages and datagrams
-;            5.3.1    SC.SDG (Send a datagram) . . . . . . . .  35
-;            5.3.2    SC.SMG (Send a message)  . . . . . . . .  38
-;            5.3.3    SC.RDG (Receive a datagram)  . . . . . .  42
-;            5.3.4    SC.RMG (Receive a message) . . . . . . .  43
-;            5.3.5    SC.CRD (Cancel Receive datagram) . . . .  45
-;            5.3.6    SC.CMS (Cancel receive message)  . . . .  46
+;            5.3.1    SC.SDG (Send a datagram) . . . . . . . .  40
+;            5.3.2    SC.SMG (Send a message)  . . . . . . . .  43
+;            5.3.3    SC.RDG (Receive a datagram)  . . . . . .  47
+;            5.3.4    SC.RMG (Receive a message) . . . . . . .  48
+;            5.3.5    SC.CRD (Cancel Receive datagram) . . . .  50
+;            5.3.6    SC.CMS (Cancel receive message)  . . . .  52
 ;        5.4    Named buffers
-;            5.4.1    SC.MAP (Map a buffer)  . . . . . . . . .  47
-;            5.4.2    SC.UMP (Unmap a mapped buffer) . . . . .  48
-;            5.4.3    SC.SND (Send DMA data) . . . . . . . . .  49
-;        5.5    State polling  . . . . . . . . . . . . . . . .  51
-;            5.5.1    SC.DCI (Return destination connect ID) .  52
-;            5.5.2    SC.RCD (Return configuration data) . . .  53
-;            5.5.3    SC.NOD (Return node number given CID)  .  54
-;            5.5.4    SC.PRT (Return local port number)  . . .  55
+;            5.4.1    SC.MAP (Map a buffer)  . . . . . . . . .  53
+;            5.4.2    SC.UMP (Unmap a mapped buffer) . . . . .  54
+;            5.4.3    SC.SND (Send DMA data) . . . . . . . . .  55
+;        5.5    State polling  . . . . . . . . . . . . . . . .  57
+;            5.5.1    SC.DCI (Return destination connect ID) .  58
+;            5.5.2    SC.RCD (Return configuration data) . . .  59
+;            5.5.3    SC.NOD (Return node number given CID)  .  60
+;            5.5.4    SC.PRT (Return local port number)  . . .  61
 ;        5.6    Maintenance
-;            5.6.1    SC.RST (Reset remote system) . . . . . .  56
-;            5.6.2    SC.STA (Start remote node) . . . . . . .  57
+;            5.6.1    SC.RST (Reset remote system) . . . . . .  62
+;            5.6.2    SC.STA (Start remote node) . . . . . . .  63
 	Subttl	Table of Contents (page 2)
 
-;		     Table of Contents for SCAMPI
+;		     Table of Contents for AM70-SCAMPI
 ;
 ;				  Section		      Page
 ;
 ;
 ;    6. Call from port driver
-;        6.1    SC.ONL (Node has come online)  . . . . . . . .  58
-;        6.2    SC.ERR (Node(s) have gone away)  . . . . . . .  62
-;        6.3    SC.DMA (DMA operation complete)  . . . . . . .  66
+;        6.1    SC.ONL (Node has come online)  . . . . . . . .  64
+;        6.2    SC.ERR (Node(s) have gone away)  . . . . . . .  69
+;        6.3    SC.DMA (DMA operation complete)  . . . . . . .  77
 ;        6.4    Incoming buffer
-;            6.4.1    SC.INT (Buffer arrival)  . . . . . . . .  67
-;            6.4.2    SC.ORQ (Connect request) . . . . . . . .  70
-;            6.4.3    SC.ORS (Connect response)  . . . . . . .  72
-;            6.4.4    SC.ARQ (Accept request)  . . . . . . . .  73
-;            6.4.5    SC.ARS (Accept response) . . . . . . . .  75
-;            6.4.6    SC.RRQ (Reject request)  . . . . . . . .  76
-;            6.4.7    SC.RRS (Reject response) . . . . . . . .  77
-;            6.4.8    SC.DRQ (Disconnect request)  . . . . . .  78
-;            6.4.9    SC.DRS (Disconnect response) . . . . . .  81
-;            6.4.10   SC.CRQ (Credit request)  . . . . . . . .  82
-;            6.4.11   SC.CRS (Credit response) . . . . . . . .  84
-;            6.4.12   SC.INC (Connection management) . . . . .  86
-;            6.4.13   SC.ADG/SC.AMG (application datagram/mess  90
+;            6.4.1    SC.INT (Buffer arrival)  . . . . . . . .  78
+;            6.4.2    SC.ORQ (Connect request) . . . . . . . .  82
+;            6.4.3    SC.ORS (Connect response)  . . . . . . .  84
+;            6.4.4    SC.ARQ (Accept request)  . . . . . . . .  85
+;            6.4.5    SC.ARS (Accept response) . . . . . . . .  87
+;            6.4.6    SC.RRQ (Reject request)  . . . . . . . .  88
+;            6.4.7    SC.RRS (Reject response) . . . . . . . .  89
+;            6.4.8    SC.DRQ (Disconnect request)  . . . . . .  90
+;            6.4.9    SC.DRS (Disconnect response) . . . . . .  94
+;            6.4.10   SC.CRQ (Credit request)  . . . . . . . .  95
+;            6.4.11   SC.CRS (Credit response) . . . . . . . .  97
+;            6.4.12   SC.INC (Connection management) . . . . . 100
+;            6.4.13   SC.ADG/SC.AMG (application datagram/mess 105
 ;    7. Periodic functions
-;        7.1    SC.CLK (Dispatch)  . . . . . . . . . . . . . .  93
-;        7.2    SC.IDL (Idle chatter)  . . . . . . . . . . . .  94
-;        7.3    SC.RAP (Reap old connections)  . . . . . . . .  96
-;        7.4    SC.MAL (Allocate buffers)  . . . . . . . . . . 102
-;        7.5    SC.ALC (Allocate buffers for pool) . . . . . . 103
-;        7.6    SC.DEF (Allocate deferred buffers for sysap) . 105
+;        7.1    SC.CLK (Dispatch)  . . . . . . . . . . . . . . 108
+;        7.2    SC.IDL (Idle chatter)  . . . . . . . . . . . . 109
+;        7.3    SC.RAP (Reap old connections)  . . . . . . . . 112
+;        7.4    SC.MAL (Allocate buffers)  . . . . . . . . . . 124
+;        7.5    SC.ALC (Allocate buffers for pool) . . . . . . 125
+;        7.6    SC.DEF (Allocate deferred buffers for sysap) . 127
 ;    8. Connection management utility routines
-;        8.1    SC.SCA (Send connection management message)  . 108
-;        8.2    SC.SNM (Send next connection management messag 109
-;        8.3    SC.AWQ (Add entry to work queue) . . . . . . . 112
-;        8.4    SC.RWQ (Remove entry from work queue)  . . . . 113
-;        8.5    SC.AIB (Allocate and initialize a connection b 114
-;        8.6    SC.LCB (Link a new CB) . . . . . . . . . . . . 117
-;        8.7    SC.SCM (Search for connection match) . . . . . 120
-;        8.8    SC.CSC (CID sanity check)  . . . . . . . . . . 124
-;        8.9    SC.CDT (Send credit_request) . . . . . . . . . 125
-;        8.10   SC.CVC (Close a virtual connection)  . . . . . 128
-;        8.11   SC.SDM (String and data move to CB)  . . . . . 129
-;        8.12   SC.OUT (Check sysap call)  . . . . . . . . . . 130
-;        8.13   SC.RSP (Send a response) . . . . . . . . . . . 131
-;        8.14   SC.RQS (Send a request)  . . . . . . . . . . . 132
-;        8.15   SC.PAK (Send a packet) . . . . . . . . . . . . 135
+;        8.1    SC.SCA (Send connection management message)  . 131
+;        8.2    SC.SNM (Send next connection management messag 132
+;        8.3    SC.AWQ (Add entry to work queue) . . . . . . . 137
+;        8.4    SC.RWQ (Remove entry from work queue)  . . . . 138
+;        8.5    SC.AIB (Allocate and initialize a connection b 139
+;        8.6    SC.LCB (Link a new CB) . . . . . . . . . . . . 142
+;        8.7    SC.SCM (Search for connection match) . . . . . 146
+;        8.8    SC.CSC (CID sanity check)  . . . . . . . . . . 150
+;        8.9    SC.CDT (Send credit_request) . . . . . . . . . 151
+;        8.10   SC.CVC (Close a virtual connection)  . . . . . 155
+;        8.11   SC.SDM (String and data move to CB)  . . . . . 156
+;        8.12   SC.OUT (Check sysap call)  . . . . . . . . . . 157
+;        8.13   SC.RSP (Send a response) . . . . . . . . . . . 158
+;        8.14   SC.RQS (Send a request)  . . . . . . . . . . . 159
+;        8.15   SC.PAK (Send a packet) . . . . . . . . . . . . 162
 	Subttl	Table of Contents (page 3)
 
-;		     Table of Contents for SCAMPI
+;		     Table of Contents for AM70-SCAMPI
 ;
 ;				  Section		      Page
 ;
 ;
 ;    9. Buffer management routines
-;        9.1    SC.SBT (Set buffer thresholds) . . . . . . . . 137
-;        9.2    SC.BUF . . . . . . . . . . . . . . . . . . . . 142
-;        9.3    SC.ALD (Allocate long datagram buffers)  . . . 144
-;        9.4    SC.ABF (Allocate a buffer/buffers) . . . . . . 145
-;        9.5    SC.CMG/SC.CDG (Create MSG/DG buffers)  . . . . 146
-;        9.6    SC.BBF (Break memory into buffers) . . . . . . 147
-;        9.7    SC.RBF (Return a message buffer) . . . . . . . 148
-;        9.8    SC.RLD (Return a datagram buffer)  . . . . . . 149
-;        9.9    SC.TMQ/SC.TDQ (Trace free queue) . . . . . . . 150
+;        9.1    SC.SBT (Set buffer thresholds) . . . . . . . . 164
+;        9.2    SC.BUF . . . . . . . . . . . . . . . . . . . . 169
+;        9.3    SC.ALD (Allocate long datagram buffers)  . . . 171
+;        9.4    SC.ABF (Allocate a buffer/buffers) . . . . . . 172
+;        9.5    SC.CMG/SC.CDG (Create MSG/DG buffers)  . . . . 177
+;        9.6    SC.BBF (Break memory into buffers) . . . . . . 180
+;        9.7    SC.RBF (Return a message buffer) . . . . . . . 181
+;        9.8    SC.RLD (Return a datagram buffer)  . . . . . . 182
+;        9.9    SC.TMQ/SC.TDQ (Trace free queue) . . . . . . . 183
 ;   10. Byte-swapping routines
-;       10.1    SC.RIN (Byte swap incoming packet) . . . . . . 151
-;       10.2    SC.ISW (Swap bytes from 11 to 10 format) . . . 152
-;       10.3    SC.ROU (Byte swap outgoing packet) . . . . . . 153
-;       10.4    SC.OSW (Swap word from 10 to 11 format)  . . . 154
+;       10.1    SC.RIN (Byte swap incoming packet) . . . . . . 184
+;       10.2    SC.ISW (Swap bytes from 11 to 10 format) . . . 185
+;       10.3    SC.ROU (Byte swap outgoing packet) . . . . . . 186
+;       10.4    SC.OSW (Swap word from 10 to 11 format)  . . . 187
 ;   11. Locking/unlocking routines
-;       11.1    SC.PFF (Turn KLIPA channel off)  . . . . . . . 155
-;       11.2    SC.PON (Turn KLIPA channel on) . . . . . . . . 156
-;       11.3    SC.LOK (Lock connection block) . . . . . . . . 157
-;       11.4    SC.ULK (Unlock connection block) . . . . . . . 158
+;       11.1    SC.PFF (Turn KLIPA channel off)  . . . . . . . 188
+;       11.2    SC.PON (Turn KLIPA channel on) . . . . . . . . 189
+;       11.3    SC.LOK (Lock connection block) . . . . . . . . 191
+;       11.4    SC.ULK (Unlock connection block) . . . . . . . 192
 ;   12. Ring Buffer routines
-;       12.1    SC.RGI (Initialize ring buffer variables)  . . 159
-;       12.2    SC.RHD (Write ring buffer entry header)  . . . 160
-;       12.3    SC.RTE (Write ring buffer entry tail)  . . . . 161
-;       12.4    SC.RWR (Write ring buffer entry) . . . . . . . 162
-;       12.5    RG.SSC (SYSAP to SCA calls)  . . . . . . . . . 163
-;       12.6    RG.SCS (SCA to SYSAP calls)  . . . . . . . . . 164
-;       12.7    RG.BFM (Buffer manipulation) . . . . . . . . . 165
-;       12.8    RG.PKT (Packet movement) . . . . . . . . . . . 166
-;       12.9    RG.PIT (PI transitions)  . . . . . . . . . . . 167
-;       12.10   RG.PQM (Port queue manipulation) . . . . . . . 168
-;       12.11   RG.ITL (Interlocks)  . . . . . . . . . . . . . 169
+;       12.1    SC.RGI (Initialize ring buffer variables)  . . 195
+;       12.2    SC.RHD (Write ring buffer entry header)  . . . 196
+;       12.3    SC.RTE (Write ring buffer entry tail)  . . . . 199
+;       12.4    SC.RWR (Write ring buffer entry) . . . . . . . 200
+;       12.5    RG.SSC (SYSAP to SCA calls)  . . . . . . . . . 201
+;       12.6    RG.SCS (SCA to SYSAP calls)  . . . . . . . . . 202
+;       12.7    RG.BFM (Buffer manipulation) . . . . . . . . . 203
+;       12.8    RG.PKT (Packet movement) . . . . . . . . . . . 204
+;       12.9    RG.PIT (PI transitions)  . . . . . . . . . . . 205
+;       12.10   RG.PQM (Port queue manipulation) . . . . . . . 206
+;       12.11   RG.ITL (Interlocks)  . . . . . . . . . . . . . 207
 ;   13. General Routines
-;       13.1    SC.BRK (Break data into SCA buffers) . . . . . 171
-;       13.2    MXCIND (Return max CI nodes seen)  . . . . . . 172
-;   14. Dummy routines until the port driver supports them . . 173
-;   15. End of SCAMPI  . . . . . . . . . . . . . . . . . . . . 174
+;       13.1    SC.BRK (Break data into SCA buffers) . . . . . 209
+;       13.2    MXCIND (Return max CI nodes seen)  . . . . . . 212
+;   14. Dummy routines until the port driver supports them . . 213
+;   15. End of SCAMPI  . . . . . . . . . . . . . . . . . . . . 214
 	SUBTTL Comments 
 
 ;SCAMPI - Systems Communications Architecture for Multi Processor Interconnects
@@ -1789,13 +1793,13 @@ XRENT	(SCA,G)			;[7.1037]SCA::,XSCA::
 	SETZM TOPDC		;Zero the dont care queue FLINK
 	XMOVEI T1,TOPDC		;Get the address of top of dont care queue
 	MOVEM T1,BOTDC		;Save as the bottom of the queue
-
+
 	MOVX T1,1		;We desire only one page
 	CALLX (MSEC1,PGRSKD)	;[7.1037]Get a page of resident memory for us pls..
-	 BUG. (HLT,SCANPT,SCAMPI,SOFT,<SCA - No page for CID table>,,<
+	 BUG.(HLT,SCANPT,SCAMPI,SOFT,<SCA - No page for CID table>,,<
 
-Cause:	SCA called PGRSKD for a page to put its data tables in.
-	The call failed. Nothing can be done without these tables.
+Cause:	SCA called PGRSKD for a page to put its data tables in.  The call
+	failed.  Nothing can be done without these tables.
 >)
 	PUSH P,T1		;Save this page addr for a short while
 	MOVEM T1,T2		;Set up source addr for BLT
@@ -1842,7 +1846,7 @@ SSC.NX:	MOVE T1,MINMSG		;Get the number of messages to start with
    IFN SCADBG,<
 	CALL SC.TMQ		;Trace the message free queue
 >				;End of IFN SCADBG
-
+
 	MOVE T1,MINDG		;Get the number of datagrams to have onhand
 	CALLX (MSEC1,PGRSKD)	;[7.1037]Get buffer space from the monitor
 	 CALL SCADIE		;If we cannot init, die here pls...
@@ -1861,11 +1865,11 @@ SSC.NX:	MOVE T1,MINMSG		;Get the number of messages to start with
 ;
 SSC.NN:	MOVEI T1,1		;We only wish one buffer
 	CALL <XENT SC.ABF>	;[7.1037]Get a single buffer
-	 BUG. (HLT,SCANBL,SCAMPI,SOFT,<SCA - No buffer for online list>,,<
+	 BUG.(HLT,SCANBL,SCAMPI,SOFT,<SCA - No buffer for online list>,,<
 
-Cause:	SC.ABF was called to get a buffer for the address list to be used
-	to call SYSAPs when a node comes online. Without this list no one will
-	ever be told when a node comes online and hence we cannot run.
+Cause:	SC.ABF was called to get a buffer for the address list to be used to
+	call SYSAPs when a node comes online.  Without this list no user is
+	ever told when a node comes online and hence cannot run.
 >)
 	MOVEM T1,NOTTAB		;Save the address of the list
 	ADDI T1,C%MGSZ		;Add the size of the table
@@ -1882,14 +1886,12 @@ SSC.SI:	SKIPE INITAB(P5)	;Is there an entry for this index???
 
 ; Here when we find an unrecoverable error in SCA init.
 ;
-SCADIE:	BUG. (HLT,SCACCI,SCAMPI,SOFT,<SCA - Cannot complete initialization>,,<
+SCADIE:	BUG.(HLT,SCACCI,SCAMPI,SOFT,<SCA - Cannot complete initialization>,,<
 
-Cause:	During the init SCA detected an error it could not recover from. 
-	SCADIE is called by the location and the stack points out the 
-	faultly phase of init.
+Cause:	During the init SCA detected an error it could not recover from.
+	SCADIE is called by the location and the stack points out the faultly
+	phase of init.
 >)
-	JRST SCADIE		;Just in case we try something silly, like
-				;  continue...
 	SUBTTL Calls from sysap -- SC.SOA (Set ONLINE address)
 
 ; This routine sets the online address. A SYSAP calls
@@ -1918,13 +1920,16 @@ SSO.EL:	SKIPN (T1)		;Is there an entry here?
 	JRST SSO.CO		;No.Go store this address
 	AOS T1			;Yes. Try for the next entry.
 	SOJGE T2,SSO.EL
-	BUG. (CHK,SCANLF,SCAMPI,SOFT,<SCA - Notice table full>,,<
+	BUG.(CHK,SCANLF,SCAMPI,SOFT,<SCA - Notice table full>,,<
 
-Cause:	So many SYSAPs have requested notification of nodes that come on
-	and go off line that the table of notification addresses overflowed.
+Cause:	So many SYSAPs have requested notification of nodes that come on and go
+	off line that the table of notification addresses overflowed.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 >)
 	RETBAD (SCSNRT)		;Return error code
-
+
 ;Store the address. 
 
 SSO.CO:	CIOFF			;DOn't let 2 callbacks happen for one online
@@ -2044,7 +2049,7 @@ SC.DIS	disc_sent	disc_req
 ;	Return (+2)
 ;	T1/	Connect ID
 ;
-
+
 XRENT	(SC.CON,G)		;[7.1037]SC.CON::XSC.CON::
 	BLSUB. (<SS.SPN,SS.DPN,SS.NOD,SS.MSC,SS.MRC,SS.ADR,SS.SID,SS.DTA,SS.BFR,SS.DGB>)
 	SAVEP			;Save the preserved ACs
@@ -2066,10 +2071,10 @@ XRENT	(SC.CON,G)		;[7.1037]SC.CON::XSC.CON::
 
 	MOVEI T1,EV.CON		;Event is connect call
 	CALL SC.OUT		;(T1,P1/T1,T2)
-	 BUG. (HLT,SCACFO,SCAMPI,SOFT,<SCA - SC.CON received failure from SC.OUT>,,<
+	 BUG.(HLT,SCACFO,SCAMPI,SOFT,<SCA - SC.CON received failure from SC.OUT>,,<
 
-Cause:	SC.CON created a new connection block and then called SC.OUT to
-	check its state. The call should never fail.
+Cause:	SC.CON created a new connection block and then called SC.OUT to check
+	its state. The call should never fail.
 >)
 	DMOVEM T1,P2		;Save new states
 	;..
@@ -2211,8 +2216,8 @@ XRENT	(SC.LIS,G)		;[7.1037]SC.LIS::,XSC.LI::
 	CALL SC.OUT		;(T1,P1/T1,T2)
 	 BUG. (HLT,SCALFO,SCAMPI,SOFT,<SCA - SC.LIS received failure from SC.OUT>,,<
 
-Cause:	SC.LIS created a new connection block and then called SC.OUT to
-	check its state. The call should never fail.
+Cause:	SC.LIS created a new connection block and then called SC.OUT to check
+	its state.  The call should never fail.
 >)
 	DMOVEM T1,P2		;Save new states
 
@@ -2563,23 +2568,23 @@ SC.FN2:
 
 	MOVEI T1,EV.DIS		;Event is disconnect call
 	CALL SC.OUT		;(T1,P1/T1,T2) Get new states
-	 BUG. (HLT,SCAFN2,SCAMPI,SOFT,<SCA - Can't complete deferred call to SC.DIS>,,<
+	 BUG.(HLT,SCAFN2,SCAMPI,SOFT,<SCA - Can't complete deferred call to SC.DIS>,,<
 
-Cause:	A sysap called SCAMPI at SC.DIS when the connection block was locked.
-	The connection block is being unlocked, and the	request is being 
-	processed. SC.OUT has returned failure, indicating that this
-	function can't be performed for the current state. There is no way
-	to return that failure to the sysap, which believes that the
-	disconnect has proceeded normally. The system will crash to determine 
-	the cause.
+Cause:	A SYSAP called SCAMPI at SC.DIS when the connection block was locked.
+	The connection block is being unlocked, and the	request is being
+	processed.  SC.OUT has returned failure, indicating that this function
+	can't be performed for the current state.  There is no way to return
+	that failure to the SYSAP, which believes that the disconnect has
+	proceeded normally.  A system crash determines the cause.
 
-Action:	It may be impossible to analyze this from the current data.
-	If the ring buffer was enabled, try to determine the sequence of
-	events. Look at the current state of the connection block, and try
-	to see why SC.OUT failed.
+Action:	Submit an SPR with the dump and instructions for reproducing it.
 
+	It may be impossible to analyze this from the current data.  If the SCA
+	ring buffer was enabled, try to determine the sequence of events.  Look
+	at the current state of the connection block, and try to see why SC.OUT
+	failed.
 >)
-
+
 ;Store connection and block states. If new block state is non-zero,
 ;we want to send a disconnect_request. Queue the block, and flag the
 ;unlock code to call SC.SNM
@@ -2703,10 +2708,10 @@ SSD.ER:	MOVX T2,F.RTB		;The packet return status flag again
    IFN SCADBG,<
 	  LOAD T2,CBNPO,(P1)	;Get outstanding packet count
 	  SKIPG T2		;Is it greater than zero?
-	  BUG. (HLT,SCANP1,SCAMPI,SOFT,<SCA - CBNPO about to go negative>,,<
+	  BUG.(HLT,SCANP1,SCAMPI,SOFT,<SCA - CBNPO about to go negative>,,<
 
-Cause:	The count is already zero or less when the count of queued buffers 
-	for a connection block is to be decremented. 
+Cause:	The count is already zero or less when the count of queued buffers for
+	a connection block is to be decremented.
 >)
    >				;END OF IFN SCADBG
 	  DECR CBNPO,(P1)	;Yes, packet send failed, fix count
@@ -2888,10 +2893,10 @@ SSM.ER:
    IFN SCADBG,<
 	  LOAD T2,CBNPO,(P1)	;Get outstanding packet count
 	  SKIPG T2		;Is it greater than zero?
-	  BUG. (HLT,SCANP2,SCAMPI,SOFT,<SCA - CBNPO about to go negative>,,<
+	  BUG.(HLT,SCANP2,SCAMPI,SOFT,<SCA - CBNPO about to go negative>,,<
 
-Cause:	We are about to decrement the count of queued buffers for a
-	particular connection block, but the count is already zero or less.
+Cause:	We are about to decrement the count of queued buffers for a particular
+	connection block, but the count is already zero or less.
 >)
    >				;END OF IFN SCADBG
 	  DECR CBNPO,(P1)	;Yes, packet didn't go, correct count
@@ -3102,17 +3107,21 @@ SCR.BL:	SOSL .CBDGR(P1)		;Reduce number of queued buffers
 	  AOS .CBDGR(P1)	;Didn't have that many. Restore count
 	  RETBAD (SCSNEB,<CALL SC.ULK>) ;Return failure
 	ENDIF.
+
 	BLCAL. (<@[MSEC1,,ULNKDG]>,<P4>) ;[7.1037](/T1) Unlink a datagram buffer
 	IFNSK.
 	  EXCH T1,P4		;Save error code, get system block address
 	  LOAD T1,SBDPA,(T1)	;Get node number
 	  LOAD T2,CBSCID,(P1)	;Get connect ID
 	  MOVE T3,SS.NUM	;Number we still need
-	  BUG. (CHK,SCACCD,SCAMPI,SOFT,<SCA - Can't cancel datagram buffer>,<<T1,NODE>,<T2,CID>,<T3,COUNT>>,<
+	  BUG.(CHK,SCACCD,SCAMPI,SOFT,<SCA - Can't cancel datagram buffer>,<<T1,NODE>,<T2,CID>,<T3,COUNT>>,<
 
-Cause:	A sysap has done the "cancel receive datagram" function of SCA, and
-	the port's queue did not contain as many buffers as the system believes
-	it should contain.
+Cause:	A SYSAP has done the "cancel receive datagram" function of SCA, and the
+	port's queue did not contain as many buffers as the system believes it
+	should contain.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE  - Node number
 	CID   - Connect ID
@@ -3637,6 +3646,9 @@ XRENT	(SC.ONL,G)		;[7.1037]SC.ONL::, XSC.ON::
 	  BUG.(CHK,SCAOBI,SCAMPI,SOFT,<SCA - Online before initialization done>,,<
 
 Cause:	A node came online before the initialization of SCA was completed.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 >)
 	  CALL SCA		;It has now...
 	ENDIF.
@@ -3652,26 +3664,31 @@ Cause:	A node came online before the initialization of SCA was completed.
 	IFSKP.
 	  BUG.(CHK,SCAONS,SCAMPI,SOFT,<SCA - Online when stuck on buffers>,<<T3,NODE>>,<
 
-Cause:	A node came online while stuck on buffers. This should have been cleared
-	when the node went offline.
+Cause:	A node came online while stuck on buffers.  This should have been
+	cleared when the node went offline.
 
-Action:	Determine whether PHYKLP is calling twice with the same node.
-	If not, something has probably clobbered the flags word for this
-	system block.
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
+
+	Determine whether PHYKLP is calling twice with the same node.  If not,
+	something has probably clobbered the flags word for this system block.
 
 Data:	NODE - Node number
 >)
 	  ANDCAM T1,SBSTUK
 	ENDIF.
-
+
 ;The system block's work queue should have been cleared before.
 
 	SKIPN .SBTWQ(P4)	;Does work queue still exist?
 	IFSKP.
 	  BUG.(CHK,SCAOWJ,SCAMPI,SOFT,<SCA - Online when work queue exists>,<<T3,NODE>>,<
 
-Cause:	A node came online while its work queue still contained entries. 
-	The work queue should have been cleaned up when the node went offline.
+Cause:	A node came online while its work queue still contained entries.  The
+	work queue should have been cleaned up when the node went offline.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE - Node number
 >)
@@ -3679,18 +3696,19 @@ Data:	NODE - Node number
 	  MOVEM T1,.SBBWQ(P4)
 	  SETZM .SBTWQ(P4)
 	ENDIF.
-	;..
 
 ;No connection blocks should be locked now. We get here only after the
 ;v.c. has been closed, at which point the c.b.'s should have been unlocked.
 
-	;..
 	SKIPN T1,.SBCLC(P4)	;Is a connection block still locked?
 	IFSKP.
 	  BUG.(CHK,SCAOWL,SCAMPI,SOFT,<SCA - Online when connection block still locked>,<<T3,NODE>,<T1,COUNT>>,<
 
-Cause:	A node came online while a connection block was still locked.  The 
-	v.c. should not have been closed until this count was zero.
+Cause:	A node came online while a connection block was still locked.  The
+	virtual circuit should not have been closed until this count was zero.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE  - Node number
 	COUNT - Lock count for connection block
@@ -3731,10 +3749,12 @@ SC.ON1:	   SETONE CIBUF		;NO, SAY WE NEED TO CREATE BUFFERS
 	  LOAD T3,SS.NOD	;Get node number
 	  BUG.(CHK,SCAOBB,SCAMPI,SOFT,<SCA - Buffer already exists>,<<T3,NODE>,<T2,BUFFER>>,<
 
-Cause:	A node that already had an outbound buffer came online.  This field 
-	should have been zeroed when the node went offline. SCAMPI may have 
-	been called twice for node online. The buffer will be lost after
-	this.
+Cause:	A node that already had an outbound buffer came online.  This field
+	should have been zeroed when the node went offline.  SCAMPI may have
+	been called twice for node online.  The buffer will be lost after this.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE   - Node number
 	BUFFER - Address of connection management buffer
@@ -3786,20 +3806,18 @@ SON.SL:	SKIPN (Q1)		;Is there an entry
 ;wait until job 0 creates more buffers. If we start to see this problem,
 ;it seems reasonable to try to do that. For now, we'll crash.
 
-SON.ME:	BUG. (HLT,SCASCQ,SCAMPI,SOFT,<SCA - Can't get connection management buffers>,<<T1,ERROR>>,<
+SON.ME:	BUG.(HLT,SCASCQ,SCAMPI,SOFT,<SCA - Can't get connection management buffers>,<<T1,ERROR>>,<
 
-Cause:	SCA has been notified of a new system coming online. It tried
-	to allocate two buffers to be used for connection management, and
-	failed. This indicates that a large number of buffers have been
-	allocated at interrupt level, and the process that creates more 
-	hasn't run recently.
+Cause:	SCA has been notified of a new system coming online.  It tried to
+	allocate two buffers to be used for connection management, and failed.
+	This indicates that a large number of buffers have been allocated at
+	interrupt level, and the process that creates more hasn't run recently.
 
 Action:	It is possible to recover from this by deferring buffer allocation 
-	to process context. Meanwhile, try to find out why buffers are being 
+	to process context.  Meanwhile, try to find out why buffers are being 
 	used so rapidly, or why job 0 is not running.
 
 Data:	ERROR - error code from allocation routine
-
 >)
 	ENDBS.
 	SUBTTL Call from port driver -- SC.ERR (Node(s) have gone away)
@@ -3830,37 +3848,43 @@ XRENT	(SC.ERR,G)		;[7.1037]SC.ERR::, XSC.ER::
 	TMNN SBFOFL,(P4)	;Have we seen this as offline already?
 	IFSKP.
 	  LOAD T1,SBDPA,(P4)	;Yes. get node number
-	  BUG. (CHK,SCAOF2,SCAMPI,SOFT,<SCA - Offline twice for a node>,<<T1,NODE>>,<
+	  BUG.(CHK,SCAOF2,SCAMPI,SOFT,<SCA - Offline twice for a node>,<<T1,NODE>>,<
 
 Cause:	SC.ERR was called when a system block was already flagged as offline.
-	While this won't cause an immediate problem, it does indicate 
-	internal confusion and should be investigated.
+	While this won't cause an immediate problem, it does indicate internal
+	confusion and should be investigated.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE - Node number
 >)
 	  CION
 	  JRST SOF.NT
 	ENDIF.
+
 	SETONE SBFOFL,(P4)	;No. Mark it
 	SOSL SBCNT		;Decrement the system count
 	IFSKP.
-	  BUG. (CHK,SCANSC,SCAMPI,SOFT,<SCA - Negative system count>,,<
+	  BUG.(CHK,SCANSC,SCAMPI,SOFT,<SCA - Negative system count>,,<
 
-Cause:	SCA was notified of a system going offline and decremented the count
-	of systems currently online. In doing so, the count went negative. 
+Cause:	SCA was notified of a system going offline and decremented the count of
+	systems currently online.  In doing so, the count went negative.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 >)
 
 	  SETZM SBCNT		;Make the count zero, rather than -1
 	 ENDIF.			;  and continue normally
-	;..
 
-;Loop over all connections on the SB and mark them as closed. If they were
-;already closed, the sysap isn't interested in them any more. If not, tell
-;the sysap that the connection has been closed.
-;If not CIOFF, need NOSKED to keep reaper from changing the list
-;Sysaps expect this callback not to be interrupted
+
+;Loop over all connections on the SB and mark them as closed. If they were
+;already closed, the sysap isn't interested in them any more. If not, tell the
+;sysap that the connection has been closed.  If not CIOFF, need NOSKED to keep
+;reaper from changing the list Sysaps expect this callback not to be
+;interrupted.
 
-	;..
 	SKIPN P1,.SBFCB(P4)	;Get the addr of the first connection block
 	JRST SOF.NT		;No connects to mark, go on
 SOF.CL:	
@@ -3894,7 +3918,7 @@ SOF.CL:
 
 SOF.NX:	SKIPE P1,.CBANB(P1)	;Is there a next connect block???
 	JRST SOF.CL		;Yes, loop for its new state
-
+
 SOF.NT:
 	CALL SC.SBT		;Set new buffer thresholds based on SBCNT
 
@@ -3956,17 +3980,20 @@ SOF.NT:
 >				;End of IFN SCARNG
 	CALL <XENT SC.RBF>	;[7.1037](T1/) Give it to SCA
 	JRST SOF.NZ		;Skip past the error code
-
+
 ;The port ran out of buffers. In theory, we put two buffers on the queue when
 ;this node came online, so we ought to be able to take two off.
 
 SOF.NG:	LOAD T1,SBDPA,(P4)
-	BUG. (CHK,SCANMB,SCAMPI,SOFT,<SCA - Can't return SCS control message buffer>,<<T1,NODE>>,<
+	BUG.(CHK,SCANMB,SCAMPI,SOFT,<SCA - Can't return SCS control message buffer>,<<T1,NODE>>,<
 
-Cause:	A node went offline, The local node tried to retrieve two message 
+Cause:	A node went offline. The local node tried to retrieve two message
 	buffers from the port's queue but found the queue empty.
 
-Action:	Depending on timing this may happen legitimately. If it persists, 
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
+
+	Depending on timing this may happen legitimately.  If it persists, 
 	stock the port's message free queue more generously at system startup.
 
 Data:	NODE - Node number
@@ -3981,7 +4008,7 @@ Data:	NODE - Node number
 	  CALL RG.PQM		;(T1,T2,T3,T4,P4) Record port manipulation
 >	         		;End of IFN SCARNG
 
-
+
 ; Here to notify ALL sysaps that a node has gone offline. Note that this means
 ;any sysap with connections open to the node that went offline will get one
 ;extranious notification.
@@ -4171,10 +4198,10 @@ SIN.MS:	LOAD T3,MH$SCI,(P2)	;Get the source connect ID from the packet
    IFN SCADBG,<
 	LOAD T1,CBNPO,(P1)	;Get outstanding packet count
 	SKIPG T1		;Is it greater than zero?
-	  BUG. (HLT,SCANP3,SCAMPI,SOFT,<SCA - CBNPO about to go negative>,,<
+	  BUG.(HLT,SCANP3,SCAMPI,SOFT,<SCA - CBNPO about to go negative>,,<
 
-Cause:	When the count of queued buffers is about to be decremented, the
-	count is found to be already zero or less.
+Cause:	When the count of queued buffers is about to be decremented, the count
+	is found to be already zero or less.
 >)
    >				;END OF IFN SCADBG
 	DECR CBNPO,(P1)		;Decrement the count of outstanding packets
@@ -4202,19 +4229,18 @@ SIN.RP:	MOVE T1,TODCLK		;Get current time of day
 	JRST SIN.ER		;NO!! Handle remote SCA brain damage
 	AOS RECTAB(T3)		;Count the message we just received
 	JRST @DSPTAB(T3)	;Yes it is, goto the handling routine
-
-; Here when we have a bad message type from the remote SCA. Since this could
-;very well have been a message we must close the VC.
-;Note that we don't know what kind of buffer we have, so we just throw
-;it away.
+
+;Here when we have a bad message type from the remote SCA. Since this could
+;very well have been a message we must close the VC.  Note that we don't know
+;what kind of buffer we have, so we just throw it away.
 
 SIN.ER:	LOAD T1,SBDPA,(P4)	;Get node number
 	LOAD T2,CBSCID,(P1)	;Get connect ID
-	BUG. (CHK,SCABMT,SCAMPI,SOFT,<SCA - Bad message type from remote node>,<<T1,NODE>,<T2,CID>,<T3,OPCODE>>,<
+	BUG.(CHK,SCABMT,SCAMPI,SOFT,<SCA - Bad message type from remote node>,<<T1,NODE>,<T2,CID>,<T3,OPCODE>>,<
 
-Cause:	A bad message type was found on range checking. This shouldn't
-	happen if the port and port driver are working correctly. The 
-	message is thrown away.
+Cause:	A bad message type was found on range checking.  This shouldn't happen
+	if the port and port driver are working correctly.  The message is
+	thrown away.
 
 Data:	NODE   - node number
 	CID    - Connect ID
@@ -4695,21 +4721,20 @@ SDR.CO:	MOVEI T1,.CSDMC		;New connection state is disconnect_match
 ;interfere with incoming disc_req because both are at interrupt level.
 ;We must be CIOFF for the callback anyway.
 
-SC.FN3:
-	CIOFF
+SC.FN3:	CIOFF
 	SETZRO CBFDRQ,(P1)	;Clear indication that this was deferred
 	MOVEI T1,.STDRQ		;Op code is disconnect_request
 	IMULI T1,MXCNST		;Compute offset in the table based
 	OPSTR <ADD T1,>,CBCNST,(P1) ; on op code and current state
 	SOS T1			;States start at 1
 	TMNE K.ERR,(T1)		;We can't handle protocol violation here
-	BUG. (HLT,SCAFN3,SCAMPI,SOFT,<SCA - Can't complete deferred call to SC.DRQ>,,<
+	BUG.(HLT,SCAFN3,SCAMPI,SOFT,<SCA - Can't complete deferred call to SC.DRQ>,,<
 
 Cause:	PHYKLP called SCAMPI at SC.DRQ when the connection block was locked.
-	At the time, the incoming packet was legal for the current state of
-	the connection. Now it is not legal. This shouldn't happen, and it 
-	is uncertain how to proceed. It is possible to close the v.c. and 
-	continue, but there is a halt in order to analyze the protocol 
+	At the time, the incoming packet was legal for the current state of the
+	connection.  Now it is not legal.  This shouldn't happen, and it is
+	uncertain how to proceed.  It is possible to close the virtual circuit
+	and continue, but there is a halt in order to analyze the protocol
 	confusion and fix the bug.
 >)
 	LOAD T1,K.STAT,(T1)	;Get new state
@@ -4729,12 +4754,11 @@ Cause:	PHYKLP called SCAMPI at SC.DRQ when the connection block was locked.
 	CALL SC.PTC		;(P1/) Yes. Indicate protocol is complete
 	CION
 	RET
-
-;Here when new state is disconnect_received.
-;Corporate spec says the sysap should be required to do a disconnect.
-;We fake it by setting the state and sending the message.
-;Set the state before calling the sysap. If it does an SC.DIS before returning
-;we won't send two disconnect_requests.
+
+;Here when new state is disconnect_received.  Corporate spec says the sysap
+;should be required to do a disconnect.  We fake it by setting the state and
+;sending the message.  Set the state before calling the sysap. If it does an
+;SC.DIS before returning we won't send two disconnect_requests.
 
 FN3.CO:	MOVEI T1,.CSDMC		;New connection state is disconnect_match
 	STOR T1,CBCNST,(P1)
@@ -4891,17 +4915,15 @@ SCR.RS:	ADDM T1,.CBSCD(P1)	;Add this back into send credit
 ;	Return +1:	Always
 ;
 
-;NOTE:
-;If credit field is negative, we can take buffers back from the port. If
-;that fails, we have a problem. There will be disagreement among 1) our
-;receive credit, 2) the other side's send credit, and 3) the number of
-;buffers actually queued for this connection. This code attempts to
-;keep 1 and 2 in agreement.
+;NOTE: If credit field is negative, we can take buffers back from the port. If
+;that fails, we have a problem. There will be disagreement among 1) our receive
+;credit, 2) the other side's send credit, and 3) the number of buffers actually
+;queued for this connection. This code attempts to keep 1 and 2 in agreement.
 
 SC.CRS:	AOS SCAORC		;[7211] COUNT THE MESSAGE
 	CALL SC.INC		;[7211] (P2/T1,T2,P1) Check validity, get state & op code
 	 JRST SC.RIB		;Return the buffer and quit
-
+
 ;Get credit from message, and figure out what is required
 
 	LOADE P3,MH$CDT,(P2)	;Get the credit field from the message header
@@ -4915,10 +4937,13 @@ SC.CRS:	AOS SCAORC		;[7211] COUNT THE MESSAGE
 	  JRST SCC.YY		;Yes. Proceed
 	  LOAD T1,SBDPA,(P4)	;Get node number
 	  LOAD T2,CBSCID,(P1)	;Get connect ID
-	  BUG. (CHK,SCAUCF,SCAMPI,SOFT,<SCA - Unexpected credit field in credit_request>,<<T1,NODE>,<T2,CID>>,<
+	  BUG.(CHK,SCAUCF,SCAMPI,SOFT,<SCA - Unexpected credit field in credit_request>,<<T1,NODE>,<T2,CID>>,<
 
 Cause:	The response to a positive credit_request contains a credit value that
 	is different from what is believed to have been sent.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE - Node number
 	CID  - Connect ID
@@ -4933,9 +4958,7 @@ SCC.XX:	SETZM .CBRQC(P1)	;[7.1037]If negative, don't let SC.DAB dequeue
 	 NOP			;Don't care whether queued or not
 	CALL SC.GCB		;(P1/) Get canceled buffers, if any
 	JRST SC.SAR		;Go send the next message
-
 
-
 ;Common exit for incoming SCS control messages.
 
 ;Here when response arrived. This is the packet that is reserved for outgoing
@@ -5033,15 +5056,18 @@ SC.INC:	SAVEAC <P3>
 	  LOAD T1,SBDPA,(P4)	;Get node number
 	  LOAD T2,CBSCID,(P1)	;Get out connect id
 	  LOAD T4,CBEXPR,(P1)	;Get what we expected
-	  BUG. (CHK,SCAUXR,SCAMPI,SOFT,<SCA - Unexpected response>,<<T1,NODE>,<T2,CID>,<T3,OPCODE>,<T4,EXPECT>>,<
+	  BUG.(CHK,SCAUXR,SCAMPI,SOFT,<SCA - Unexpected response>,<<T1,NODE>,<T2,CID>,<T3,OPCODE>,<T4,EXPECT>>,<
 
-Cause:	A connection management response arrived for a particular
-	connection, but the op code is not the expected one.
+Cause:	A connection management response arrived for a particular connection,
+	but the op code is not the expected one.
 
-Action:	The v.c. will be closed, on the assumption that the other node
-	violated protocol. This may correct the confusion. If this error
-	persists, try to determine the events that led to it. Use the
-	ring buffer if necessary.
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
+
+	The virtual circuit is closed on the assumption that the other
+	node violated protocol.  This may correct the confusion.  If this error
+	persists, try to determine the events that led to it.  If necessary, 
+	use the SCA ring buffer.
 
 Data:	NODE   - Node number
 	CID    - Connect ID
@@ -5066,11 +5092,15 @@ SC.IN4:
 	LOAD T4,CBCNST,(P1)	;get state of connection
 	BUG. (CHK,SCAPER,SCAMPI,SOFT,<SCA - Protocol error>,<<T1,NODE>,<T2,CID>,<T3,OPCODE>,<T4,STATE>>,<
 
-Cause:	An incoming message violated the SCS protocol. This message is 
-	illegal. Closing the v.c. will eliminate any confusion.
+Cause:	An incoming message violated the SCS protocol.  This message is
+	illegal.  The virtual circuit is closed to eliminate any
+	confusion.
 
-Action:	If this persists, change it to a BUGHLT, and determine the sequence of
-	events that led to it. Use the ring buffer, if necessary.
+Action:	If this persists, change it to a BUGHLT, and submit an SPR along with
+	the dump and instruction on reproducing it.
+
+	Look at the dump and determine the sequence of events that led to it.
+	If necessary, use the SCA ring buffer.
 
 Data:	NODE   - Node number
 	CID    - Connect ID at this node
@@ -5078,7 +5108,7 @@ Data:	NODE   - Node number
 	STATE  - state of connection
 >)
 	JRST SC.IN7		;Go close the v.c.
-
+
 ;Here when destination CID doesn't exist. Complain. Note: Can't use common
 ;BUGCHK because there's no connection block.
 
@@ -5086,15 +5116,18 @@ SC.IN6:
 	LOAD T1,SBDPA,(P4)	;Get node number
 	LOAD T2,MH$DCI,(P2)	;Get destination CID
 	LOAD T3,MH$MSG,(P2)	;Get op code
-	BUG. (CHK,SCANOC,SCAMPI,SOFT,<SCA - Received packet and connection block doesn't exist>,<<T1,NODE>,<T2,CID>,<T3,OPCODE>>,<
+	BUG.(CHK,SCANOC,SCAMPI,SOFT,<SCA - Received packet and connection block doesn't exist>,<<T1,NODE>,<T2,CID>,<T3,OPCODE>>,<
 
-Cause:	An incoming packet's destination CID doesn't match any connection block.
-	This may reflect disagreement with another node about the state of
-	a previously-existing connection.
+Cause:	An incoming packet's destination CID doesn't match any connection
+	block.  This may reflect disagreement with another node about the state
+	of a previously existing connection.  	The virtual circuit is
+	closed which corrects the problem.
 
-Action:	The v.c. will be closed, which will correct the problem.
-	If this bug persists, try to determine the events that led to it.
-	Use the ring buffer if necessary.
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
+
+	From looking at the dump, try to determine the events that led to it.
+	Use the SCA ring buffer if necessary.
 
 Data:	NODE   - Node number
 	CID    - Connect ID
@@ -5338,7 +5371,7 @@ SC.IDL:	SKIPE CITIMR		;TIMERS OFF FOR DEBUGGING?
 	SUB T1,TODCLK		;Yes, build long ago that was
 	CAMLE T1,TMGTIM		;Has it been too long???
 	RET			;No, return
-
+
 ;It's been a while since we heard from this node. If we already sent a
 ;timed message the last time we came through here, give up on it and close
 ;the v.c. Otherwise, go send a timed message.
@@ -5347,14 +5380,16 @@ SC.IDL:	SKIPE CITIMR		;TIMERS OFF FOR DEBUGGING?
 	JRST SCL.LP		;No.
 	AOS TMGCNT		;Yes, count another system biting the dust
 	LOAD T2,SBDPA,(P4)	;Get remote node number
-	BUG. (INF,SCATMO,SCAMPI,SOFT,<SCA - SCA timed out remote node>,<<T2,NODE>,<T1,TIME>>,<
+	BUG.(INF,SCATMO,SCAMPI,SOFT,<SCA - SCA timed out remote node>,<<T2,NODE>,<T1,TIME>>,<
 
 Cause:	SCA sent a message to another node, and did not receive a response
 	within a timeout period.
 
-Action:	This happens legitimately if a node crashes. If this timeout
-	is occurring for nodes that appear to be running, try to determine
-	why they are not communicating.
+Action:	This happens legitimately if a node crashes.  If this timeout is
+	occurring for nodes that appear to be running, try to determine why
+	they are not communicating.  If this bug is reproducible when the node
+	is running normally, change it to a BUGHLT and submit an SPR with the
+	dump and instructions for reproducing it.
 
 Data:	NODE - Node number
 	TIME - time since we sent timed message
@@ -5471,7 +5506,7 @@ SRA.CC:	MOVE P5,.CBANB(P1)	;Save the address of the next CB
 
 	CALL <XENT SC.DAB>	;[7.1037](P1/) Reap the connect data
 	JRST SRA.CL		;  and go on
-
+
 ;Postpone reaping because something hasn't been cleaned up. But if we do
 ;this several times, give up and reap anyway.
 
@@ -5489,15 +5524,18 @@ SRA.PO:	INCR CBRCNT,(P1)	;Count another postponement
 	LOAD T2,SBDPA,(T2)	;Get node number
 	LOAD T3,CBBKST,(P1)	;BLock state
 	LOAD T4,CBNPO,(P1)	;Number of queued commands
-	BUG. (CHK,SCARTO,SCAMPI,SOFT,<SCA - Reap timed out>,<<T2,NODE>,<T1,CID>,<T3,STATE>,<T4,COUNT>>,<
+	BUG.(CHK,SCARTO,SCAMPI,SOFT,<SCA - Reap timed out>,<<T2,NODE>,<T1,CID>,<T3,STATE>,<T4,COUNT>>,<
 
 Cause:	A block that is reapable cannot be reaped because either the count of
-	outstanding packets is non-zero or a debugging check has failed. After
-	several postponements, these were not corrected. The block is now being
-	deleted.
+	outstanding packets is non-zero or a debugging check has failed.  After
+	several postponements, these were not corrected.  The block is now
+	being deleted.
 
-Action:	If COUNT is non-zero, see if the CI-20 was reloaded recently.
-	Buffers can be lost legitimately when this happens.
+Action:	If COUNT is non-zero, see if the CI-20 was reloaded recently.  Buffers
+	can be lost legitimately when this happens.
+
+	If this bug is reproducible with COUNT zero, change it to a BUGHLT and
+	submit an SPR with the dump and instructions for reproducing it.
 
 Data:	NODE  - Node number
 	CID   - Connect ID at this node
@@ -5561,11 +5599,14 @@ SC.RRR:
 	TMNN CBBKST,(P1)	;Not ready if block state isn't zero
 	IFSKP.
 	  LOAD T3,CBBKST,(P1)	;Get block state
-	  BUG. (CHK,SCABSN,SCAMPI,SOFT,<SCA - Block state non-zero when ready to reap>,<<T1,NODE>,<T2,CID>,<T3,STATE>>,<
+	  BUG.(CHK,SCABSN,SCAMPI,SOFT,<SCA - Block state non-zero when ready to reap>,<<T1,NODE>,<T2,CID>,<T3,STATE>>,<
 
-Cause:	SCA is ready to delete a connection block, and its block state
-	is non-zero. The block state should have been cleared when the reap
-	bit was set.
+Cause:	SCA is ready to delete a connection block, and its block state is
+	non-zero.  The block state should have been cleared when the reap bit
+	was set.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE  - Node number
 	CID   - Connect ID
@@ -5573,22 +5614,24 @@ Data:	NODE  - Node number
 >)
 	  RET
 	ENDIF.
-
+
 ;Check requeue credit. If it's non-zero, we must have sent out a credit_request
 ;to which we expect a reply.
 
 	SKIPE T3,.CBRQC(P1)	;Non-zero implies credit_request outstanding
 	TMNN CBFCVC,(P1)	; but it's bad only if v.c. is open
 	IFSKP.
-	  BUG. (CHK,SCANRC,SCAMPI,SOFT,<SCA - Non-zero requeue credit at SC.DAB>,<<T1,NODE>,<T2,CID>,<T3,CREDIT>>,<
+	  BUG.(CHK,SCANRC,SCAMPI,SOFT,<SCA - Non-zero requeue credit at SC.DAB>,<<T1,NODE>,<T2,CID>,<T3,CREDIT>>,<
 
 Cause:	SCA is ready to delete a connection block, and its requeue credit is
-	non-zero. This indicates that a credit_response is still expected.
+	non-zero.  This indicates that a credit_response is still expected.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE   - Node number
 	CID    - Connect ID
 	CREDIT - Requeue credit
-
 >)				;[7.1037]
 	  RET
 	ENDIF.
@@ -5598,10 +5641,13 @@ Data:	NODE   - Node number
 
 	SKIPN T3,.CBLCK(P1)
 	IFSKP.
-	  BUG. (CHK,SCANLC,SCAMPI,SOFT,<SCA - Non-zero lock count at SC.DAB>,<<T1,NODE>,<T2,CID>,<T3,COUNT>>,<
+	  BUG.(CHK,SCANLC,SCAMPI,SOFT,<SCA - Non-zero lock count at SC.DAB>,<<T1,NODE>,<T2,CID>,<T3,COUNT>>,<
 
 Cause:	SCA is ready to delete a connection block, and its lock count is
 	non-zero.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE  - Node number
 	CID   - Connect ID
@@ -5651,15 +5697,19 @@ SRC.NJ:
 	ADD Q1,.CBRQC(P1)	; and number of credits in outstand CDT_REQ
 	ADD Q1,.CBRTC(P1)	;Add canceled buffers not yet dequeued
 	JUMPE Q1,SRC.DG		;If nothing to dequeue, try datagrams
+
 SRC.B1:	BLCAL. (<@[MSEC1,,ULNKMG]>,<P4>) ;[7.1037](/T1) Get a buffer back from the port
 	IFNSK.
 	  LOAD T1,SBDPA,(P4)	;Get node number
 	  LOAD T2,CBSCID,(P1)	;Get connect ID
-	  BUG. (CHK,SCACGM,SCAMPI,SOFT,<SCA - Can't get message buffer when reaping>,<<T1,NODE>,<T2,CID>,<Q1,COUNT>>,<
+	  BUG.(CHK,SCACGM,SCAMPI,SOFT,<SCA - Can't get message buffer when reaping>,<<T1,NODE>,<T2,CID>,<Q1,COUNT>>,<
 
 Cause:	While reaping a connection block, a receive credit indicates that
-	message buffers are queued to the port. However, the port's queue has
+	message buffers are queued to the port.  However, the port's queue has
 	been emptied while these buffers were removed.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE  - node number
 	CID   - Connect ID
@@ -5691,7 +5741,7 @@ Data:	NODE  - node number
 	CALL <XENT SC.RBF>	;[7.1037](T1/) Return the buffer to SCA free pool 
 	SOJG Q1,SRC.B1		;  and loop if there are more buffers left
 	;..
-
+
 ; Here to get datagram buffers back from the free queue.
 
 	;..
@@ -5701,11 +5751,14 @@ SRC.DL:	BLCAL. (<@[MSEC1,,ULNKDG]>,<P4>) ;[7.1037]Unlink a datagram
 	IFNSK.
 	  LOAD T1,SBDPA,(P4)	;Get node number
 	  LOAD T2,CBSCID,(P1)	;Get connect ID
-	  BUG. (CHK,SCACGD,SCAMPI,SOFT,<SCA - Can't get datagram buffer when reaping>,<<T1,NODE>,<T2,CID>,<Q1,COUNT>>,<
+	  BUG.(CHK,SCACGD,SCAMPI,SOFT,<SCA - Can't get datagram buffer when reaping>,<<T1,NODE>,<T2,CID>,<Q1,COUNT>>,<
 
-Cause:	When reaping a connection block, a buffer count indicates that
-	datagram buffers are queued to the port. However, the port's queue has
-	been emptied while these buffers were removed.
+Cause:	When reaping a connection block, a buffer count indicates that datagram
+	buffers are queued to the port.  However, the port's queue has been
+	emptied while these buffers were removed.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE  - node number
 	CID   - Connect ID
@@ -5722,6 +5775,7 @@ Data:	NODE  - node number
 >	         		;End of IFN SCARNG
           JRST SRC.EX		;Can't get any more
 	ENDIF.
+
    IFN SCARNG,<
 	BLOCK.
 	  SAVEAC <T1>		;Save smashed AC
@@ -5740,7 +5794,7 @@ Data:	NODE  - node number
 SRC.EX:
 ;	CALL SC.JSY		;(P1/) Clean up data for JSYS connection
 	JRST SRC.KL		;Go kill the buffer
-
+
 ; Here when we are deleting an entry from the dont care listen queue. We can 
 ;make some nice assumptions about this CB here. It was never in any state other
 ;than listen, hence no checks need be made for buffers, or blocks hanging
@@ -5897,10 +5951,13 @@ SC.ALC:	MOVE T1,MINMSG		;Get current min message threshold
 	CALL SC.CMG		;(T1/T1,T2,T3) Create the message buffers
 	IFNSK.
 	  MOVE T2,FQCNT
-	  BUG. (CHK,SCAMCF,SCAMPI,SOFT,<SCA - Message buffer creation failure>,<<T1,ERROR>,<T2,COUNT>>,<
+	  BUG.(CHK,SCAMCF,SCAMPI,SOFT,<SCA - Message buffer creation failure>,<<T1,ERROR>,<T2,COUNT>>,<
 
 Cause:	SCA detected that the level of buffers maintained was below minimum.
 	The attempt to create more message buffers failed.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	ERROR - error code
 	COUNT - number of message buffers in SCA's pool
@@ -5929,11 +5986,14 @@ SAL.DG:	MOVE T1,MINDG		;Get the current DG threshold
 	CALL SC.CDG		;(T1/T1,T2,T3) Create the datagram buffers
 	IFNSK.
 	  MOVE T2,DFQCNT
-	  BUG. (CHK,SCADCF,SCAMPI,SOFT,<SCA - Datagram buffer creation failure>,<<T1,ERROR>,<T2,COUNT>>,<
+	  BUG.(CHK,SCADCF,SCAMPI,SOFT,<SCA - Datagram buffer creation failure>,<<T1,ERROR>,<T2,COUNT>>,<
 
 Cause:	SCA detected that the level of buffers maintained was below minimum.
 	The attempt to create more datagram buffers failed. The error code is
-	in T1. Output is given as additional data.
+	in T1.  Output is given as additional data.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	ERROR - error code
 	COUNT - number of datagram buffers in SCA's pool
@@ -5968,14 +6028,14 @@ SC.DEF:	SKIPN T1,SBSTUK		;Any system blocks stuck?
 SBD.FB:	JFFO T1,SBD.ST		;Find first system block that's stuck
 	RET			;Could happen if node went offline
 SBD.ST:	SKIPN P4,SBLIST(T2)	;Get system block address
-	BUG. (HLT,SCANSB,SCAMPI,SOFT,<SCA - System block has gone away>,<<T2,NODE>>,<
+	BUG.(HLT,SCANSB,SCAMPI,SOFT,<SCA - System block has gone away>,<<T2,NODE>>,<
 
-Cause:	SC.DEF found a system block marked as stuck for buffers, but the address
-	of the system block is 0.
+Cause:	SC.DEF found a system block marked as stuck for buffers, but the
+	address of the system block is 0.
 
 Data:	NODE - Node number
 >)
-
+
 ;Mark this system block as no longer stuck. If SC.SNM runs while we're
 ;in here, and finds some new c.b. stuck, it'll set the bit and we'll detect
 ;it on the way out.
@@ -6044,9 +6104,9 @@ SBD.XT:
 SBD.ER:
 	LOAD T2,SBDPA,(P4)	;Get node number
 	LOAD T3,CBSCID,(P1)	;Get CID
-	BUG. (HLT,SCAEBD,SCAMPI,SOFT,<SCA - Error handling buffer deferral request>,<<T2,NODE>,<T3,CID>,<T1,ERROR>>,<
+	BUG.(HLT,SCAEBD,SCAMPI,SOFT,<SCA - Error handling buffer deferral request>,<<T2,NODE>,<T3,CID>,<T1,ERROR>>,<
 
-Cause:	SCA was unable to create buffers when running in job 0. This should 
+Cause:	SCA was unable to create buffers when running in job 0.  This should
 	never happen since job 0 can create pages as needed.
 
 Data:	NODE  - Node number
@@ -6084,11 +6144,11 @@ REPEAT 0,<
 
 ;Caller must have locked connection block
 
-;It is possible to find block state non-zero here. This can happen,
-;for example, if we had the c.b. queued waiting to send a credit_request,
-;and a disconnect_request came in. In that case, we will store the new
-;state on top of the old one. The block will already be queued, so we won't
-;try to queue it again. This should happen only rarely.
+;It is possible to find block state non-zero here. This can happen, for
+;example, if we had the c.b. queued waiting to send a credit_request, and a
+;disconnect_request came in. In that case, we will store the new state on top
+;of the old one. The block will already be queued, so we won't try to queue it
+;again. This should happen only rarely.
 
 SC.SCA:
 	TMNN CBBKST,(P1)	;Is state zero?
@@ -6097,13 +6157,16 @@ SC.SCA:
 	  LOAD T3,SBDPA,(T3)	;Get node number
 	  LOAD T4,CBSCID,(P1)	;Get CID
 	  LOAD T2,CBBKST,(P1)	;Get block state
-	  BUG. (INF,SCASBN,SCAMPI,SOFT,<SCA - Block state already non-zero>,<<T3,NODE>,<T4,CID>,<T2,OLDSTA>,<T1,NEWSTA>>,<
+	  BUG.(INF,SCASBN,SCAMPI,SOFT,<SCA - Block state already non-zero>,<<T3,NODE>,<T4,CID>,<T2,OLDSTA>,<T1,NEWSTA>>,<
 
-Cause:	While trying to set a connection's block state, it is found to be 
-	already non-zero. This can happen legitimately under some conditions.
+Cause:	While trying to set a connection's block state, it is found to be
+	already non-zero.  This can happen legitimately under some conditions.
 
-Action:	If the old state is anything except CREDIT_PEND, something is wrong.
-	Try to trace the events that led to this, using the ring buffer, if
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
+
+	If the old state is anything except CREDIT_PEND, something is wrong.
+	Try to trace the events that led to this, using the SCA ring buffer if
 	necessary.
 
 Data:	NODE   - Node number
@@ -6117,7 +6180,6 @@ Data:	NODE   - Node number
 	STOR T1,CBBKST,(P1)	;Set state as requested
 	CALL SC.AWQ		;(P1,P4/) Add this c.b. to the work queue
 	RET
-
 	SUBTTL Connection management utility routines -- SC.SNM (Send next connection management message)
 
 ;SC.SNM - send an SCS control message
@@ -6142,7 +6204,7 @@ SC.SNM:
 	EXCH P2,.SBOBB(P4)	;Grab outbound buffer if it's there
 	JUMPE P2,R		;It was in use. We'll come here later
 	SETZM P3		;Initialize address of first c.b. moved
-
+
 ;Here when buffer is available, and there's something to be done.
 ;Remove first entry from work queue
 
@@ -6157,11 +6219,14 @@ SSN.BA:	CALL SC.RWQ		;(P3,P4/P1,P3) Get and lock next entry
 	  LOAD T1,SBDPA,(P4)	;Get node number
 	  LOAD T2,CBSCID,(P1)	;Get connect ID
 	  LOAD T3,CBCNST,(P1)	;Get connection state
-	  BUG. (CHK,SCABSZ,SCAMI,SOFT,<SCA - Block state is zero when trying to send connection management request>,<<T1,NODE>,<T2,CID>,<T3,STATE>>,<
+	  BUG.(CHK,SCABSZ,SCAMI,SOFT,<SCA - Block state is zero when trying to send connection management request>,<<T1,NODE>,<T2,CID>,<T3,STATE>>,<
 
 Cause:	A connection block is on the system block's work queue, but its block
 	state is zero. This value should be non-zero to indicate the kind of
 	request to be sent.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE  - Node number
 	CID   - Connect ID
@@ -6173,7 +6238,7 @@ Data:	NODE  - Node number
 	  JRST SSN.BA		;Don't try to send.
 	ENDIF.
    >				;end of ifn scadbg
-
+
 ;This probably isn't necessary, but we'll do it just in case.
 ;If the "reap" bit is on, we shouldn't be sending any requests.
 ;If block state is non-zero, reap shouldn't be set.
@@ -6183,15 +6248,15 @@ Data:	NODE  - Node number
 	IFSKP.
 	  LOAD T1,SBDPA,(P4)	;Get node number
 	  LOAD T2,CBSCID,(P1)	;Get CID
-	  BUG. (CHK,SCARBS,SCAMPI,SOFT,<SCA - Reap bit is set when block state is non-zero>,<<T1,NODE>,<T2,CID>>,<
+	  BUG.(CHK,SCARBS,SCAMPI,SOFT,<SCA - Reap bit is set when block state is non-zero>,<<T1,NODE>,<T2,CID>>,<
 
-Cause:	A connection block is marked as both waiting to send a request 
-	message as reapable. The reapable bit should be set only when
-	there is no need to send further requests.
+Cause:	A connection block is marked as both waiting to send a request message
+	as reapable. The reapable bit should be set only when there is no need
+	to send further requests.  The message is not sent and the block is
+	deleted. 
 
-Action:	The message is not sent and the block is deleted. If the
-	problem persists, use the ring buffer to trace the events leading
-	to it.
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE - Node number
 	CID  - Connect ID at this node
@@ -6559,11 +6624,14 @@ XRENT	(SC.LCB,G)		;[7.1037]SC.LCB::, XSC.LC::
 	IFNSK.
 	  LOAD T1,SBDPA,(P4)	;Get node number
 	  LOAD T2,CBSCID,(P1)	;Get connect ID
-	  BUG. (CHK,SCABAL,SCAMPI,SOFT,<SCA - Connection block already linked>,<<T1,NODE>,<T2,CID>,<T3,FLINK>,<T4,BLINK>>,<
+	  BUG.(CHK,SCABAL,SCAMPI,SOFT,<SCA - Connection block already linked>,<<T1,NODE>,<T2,CID>,<T3,FLINK>,<T4,BLINK>>,<
 
-Cause:	SCA is linking a connection block onto a system block. However, the
+Cause:	SCA is linking a connection block onto a system block.  However, the
 	connection block's pointers indicate that it is already linked to some
-	other block
+	other block.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE  - node number
 	CID   - Connect ID
@@ -6572,7 +6640,7 @@ Data:	NODE  - node number
 >)
 	  CALL SC.RSQ		;(P1/) Dequeue CB from current queue
 	ENDIF.
-
+
 ;Add entry to the queue
 
 	MOVE T2,.SBLCB(P4)	;Get the pointer to current last
@@ -6793,12 +6861,12 @@ SSC.LC:	CALL SC.RDQ		;(P1/) remove block from queue
 	CALL <XENT SC.LCB>	;[7.1037](P1,P4/) Link this CB onto the remote's SB
 	IFNSK.
 	  LOAD T2,SBDPA,(P4)	;Get node number
-	  BUG. (HLT,SCACLB,SCAMPI,SOFT,<SCA - Incoming connect_request on closed v.c.>,<<T2,NODE>>,<
+	  BUG.(HLT,SCACLB,SCAMPI,SOFT,<SCA - Incoming connect_request on closed v.c.>,<<T2,NODE>>,<
 
-Cause:	SCAMPI received a connect_request and matched it to a listener.
-	But when SCAMPI tried to queue the connection block to the system 
-	block, it found that the v.c. was closed. Since SCAMPI had checked 
-	for that state earlier, and this is happening at interrupt level, 
+Cause:	SCAMPI received a connect_request and matched it to a listener.  But
+	when SCAMPI tried to queue the connection block to the system block, it
+	found that the virtual circuit was closed.  Since SCAMPI had checked
+	for that state earlier, and this is happening at interrupt level,
 	something unexpected has happened.
 
 Data:	NODE - Node number
@@ -6961,44 +7029,47 @@ SC.CD5:
 SC.CD7:
 	;..
 
-;Here because credit values suggest sending a credit_request. See
-;if the state of the connection will allow it. We don't send if the connection
-;isn't open. If we're still opening it, there's a risk of confusing the
-;other side. If we're closing it, there's no need to send a credit_request.
-;Also, we want to avoid sending anything after the disconnect sequence
-;has started, because we will declare protocol complete and reap the block
-;when the final disconnect_response comes in. We don't want to receive
-;a credit_response after that.
+
+;Here because credit values suggest sending a credit_request. See if the state
+;of the connection will allow it. We don't send if the connection isn't open.
+;If we're still opening it, there's a risk of confusing the other side. If
+;we're closing it, there's no need to send a credit_request.  Also, we want to
+;avoid sending anything after the disconnect sequence has started, because we
+;will declare protocol complete and reap the block when the final
+;disconnect_response comes in. We don't want to receive a credit_response after
+;that.
 
 	;..
 SCC.SM:	LOAD T1,CBCNST,(P1)	;Do this only if we're open
 	CAIE T1,.CSOPN
 	JRST SCC.RT
 
-;Racefree, indicate that we're setting up for a credit_request, and make
-;sure no other context is already doing it. If someone got here ahead of
-;us, we don't need to send a credit_request, because our change is already
-;reflected in .CBPRC. And we don't want to send one, because we might try
-;to queue the same c.b. twice. Also, the second message would contain 0,
-;so why bother? If credit is still pending when the credit_response comes
-;in, we'll send another credit_request.
+;Racefree, indicate that we're setting up for a credit_request, and make sure
+;no other context is already doing it. If someone got here ahead of us, we
+;don't need to send a credit_request, because our change is already reflected
+;in .CBPRC. And we don't want to send one, because we might try to queue the
+;same c.b. twice. Also, the second message would contain 0, so why bother? If
+;credit is still pending when the credit_response comes in, we'll send another
+;credit_request.
 
 	SETOM T1		;Indicate credit_request is pending
 	EXCH T1,.CBPND(P1)	;Get the old value
 	JUMPL T1,SCC.RT		;Already pending. Don't want to do this
 	LOAD T1,CBBKST,(P1)	;Get the block state
-	SKIPN T1
-	IFSKP.
+	IFN. T1			;[8914] Message pending?
 	  MOVE T1,.CBSBA(P1)	;Get address of system block
 	  LOAD T1,SBDPA,(T1)	;Get port number
 	  LOAD T2,CBSCID,(P1)	;Get CID
 	  LOAD T3,CBBKST,(P1)	;Get state
-	  BUG. (CHK,SCACSC,SCAMPI,SOFT,<SCA - Can't send credit request>,<<T1,NODE>,<T2,CID>,<T3,STATE>>,<
+	  BUG.(CHK,SCACSC,SCAMPI,SOFT,<SCA - Can't send credit request>,<<T1,NODE>,<T2,CID>,<T3,STATE>>,<
 
 Cause:	SCA wants to send a credit request, but the connection block already
-	has some other message pending. This reflects some sort of
-	inconsistency, since the state was "open", and the interlock word
-	for credit requests was 0.
+	has some other message pending.  This reflects some sort of
+	inconsistency, since the state was "open", and the interlock word for
+	credit requests was 0.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE  - Node number
 	CID   - Connect ID
@@ -7011,8 +7082,7 @@ Data:	NODE  - Node number
 	CALL SC.SCA		;(T1,P1,P4/) Set block state and queue block
 	RETSKP			;Tell caller to get it sent
 
-SCC.RT:	
-	RET
+SCC.RT:	RET
 ;SC.GCB - Reclaim buffers according to return_credit field of connect block
 
 ;Accepts:
@@ -7043,12 +7113,15 @@ SCG.CL:	BLCAL. (<@[MSEC1,,ULNKMG]>,<P4>) ;[7.1037](/T1) Get a buffer from the po
 >	         		;End of IFN SCARNG
 	  LOAD T1,SBDPA,(P4)	;get node number
 	  LOAD T2,CBSCID,(P1)	;get our connect ID
-	  BUG. (CHK,SCACRB,SCAMPI,SOFT,<SCA - Can't reclaim buffers>,<<T1,NODE>,<T2,CID>,<P3,COUNT>>,<
+	  BUG.(CHK,SCACRB,SCAMPI,SOFT,<SCA - Can't reclaim buffers>,<<T1,NODE>,<T2,CID>,<P3,COUNT>>,<
 
 Cause:	Based on the return_credit field for this connection, SCAMPI is trying
-	to reclaim buffers from the port's queue. The queue is empty. This
-	reflects confusion about credit, since these buffers should have 
-	been queued at some time in the past.
+	to reclaim buffers from the port's queue.  The queue is empty.  This
+	reflects confusion about credit, since these buffers should have been
+	queued at some time in the past.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE  - Node number
 	CID   - Connect ID at this node
@@ -7056,6 +7129,7 @@ Data:	NODE  - Node number
 >)
 	  JRST SCG.EX	  
 	ENDIF.
+
    IFN SCARNG,<
 	BLOCK.
 	  SAVEAC <T1>		;Save smashed AC
@@ -7238,10 +7312,10 @@ SC.RQS:
 	IFNSK.
 	  LOAD T2,SBDPA,(P4)	;Get node number
 	  LOAD T3,CBSCID,(P1)	;Get connect ID
-	  BUG. (HLT,SCAIBS,SCAMPI,SOFT,<SCA - Invalid block state>,<<T2,NODE>,<T3,CID>,<T1,BSTATE>>,<
+	  BUG.(HLT,SCAIBS,SCAMPI,SOFT,<SCA - Invalid block state>,<<T2,NODE>,<T3,CID>,<T1,BSTATE>>,<
 
-Cause:	This caller to SC.RQS provided a block state larger than the table 
-	(or zero).
+Cause:	This caller to SC.RQS provided a block state larger than the table (or
+	zero).  The caller has a problem.
 
 Data:	NODE   - Node number
 	CID    - Connect ID
@@ -7420,10 +7494,13 @@ SC.PTC:
 	  MOVE T4,(P)		;Get address of caller
 	  LOAD T1,CBSCID,(P1)	;Get connect ID
 	  CALL <XENT SC.NOD>	;[7.1037](T1/T1,T2) Get node number
-	  BUG. (CHK,SCAPCC,SCAMPI,SOFT,<SCA - Protocol complete set and connect state not closed>,<<T2,NODE>,<T1,CID>,<T3,CSTATE>,<T4,CALLER>>,<
+	  BUG.(CHK,SCAPCC,SCAMPI,SOFT,<SCA - Protocol complete set and connect state not closed>,<<T2,NODE>,<T1,CID>,<T3,CSTATE>,<T4,CALLER>>,<
 
 Cause:	A call was made to SC.PTC indicating that the protocol was complete.
 	When this happens, the connect state should be closed.  It was not.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	NODE   - Node number
 	CID    - Connect ID
@@ -7881,7 +7958,7 @@ SAB.BL:	SOJLE T4,SAB.CR		;If no more buffers,fix up count and Q pointers
 	SKIPN T2,(T2)		;Now on to the next buffer
 	JRST SAB.ER		;No entry!!! Recover from a bad FQCNT
 	JRST SAB.BL		;Loop for more entries
-
+
 ; Here when we have completed the request.
 ;
 ;	Expects:
@@ -7920,7 +7997,7 @@ SAB.EX:	CION			;Restore the channel
 	MOVE T2,NUMBUF		;Return the number of buffers requested
 	MOVE T3,[MSEC1,,SC.RBF]	;[7.1048] Tell caller where to return buffer
 	RETSKP			;Return all OK
-
+
 ; Here to refuse the request. We have some book keeping to do.
 ;
 ;	T1/	Request size
@@ -7939,7 +8016,7 @@ SAB.RF:	ADD T1,ASRMR		;Add current average size to  new request
 	CALL RG.BFM		;(T1,T2,T3,T4) Record buffer management
 >				;End of IFN SCARNG
 	RETBAD (SCSNBA)		;Return not enough buffers
-
+
 ; Here when we discover that the count was incorrect and that we have fewer
 ;buffers than we thought.
 ;
@@ -7948,9 +8025,12 @@ SAB.ER:	MOVE T1,FQCNT		;Get number of buffers we thought we had
 	MOVE T2,TOPFQ		;Get pointer to top of free queue
 	MOVE T3,BOTFQ		;Get pointer to bottom of free queue
 	MOVE T3,NUMBUF		;Get number of buffers requested
-	BUG. (CHK,SCAMCR,SCAMPI,SOFT,<SCA - Message buffer count was incorrect>,<<T1,COUNT>,<T2,TOPQ>,<T3,BOTQ>,<T4,BUFNUM>>,<
+	BUG.(CHK,SCAMCR,SCAMPI,SOFT,<SCA - Message buffer count was incorrect>,<<T1,COUNT>,<T2,TOPQ>,<T3,BOTQ>,<T4,BUFNUM>>,<
 
 Cause:	There are no message buffers when the count indicated there are enough.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 
 Data:	COUNT  - count of buffers we believed we had
 	TOPQ   - pointer to top of message free queue
@@ -7971,7 +8051,7 @@ Data:	COUNT  - count of buffers we believed we had
 	ADD T1,ASRMR		;Add current average size to  new request
 	IDIVI T1,2		;Take the average of the two
 	MOVEM T1,ASRMR		;Update the average size of refused request
-
+
 ; Now readjust the buffer count
 ;
 	SETZ T2,		;Zero the buffer count
@@ -8040,7 +8120,7 @@ SC.CDG: SETO T2,		;Set the datagram flag
 	MOVEM T1,NUMBUF		;Save for later return
 	SETZ P4,		;Zero the page chain foreward pointer
 	MOVEI P5,P4		;Make the tail pointer point to the head
-
+
 ; Create a chain of pages from which we can make buffers.
 
 SCM.CP:	NOSKED			;Interlock the first free page in EPG pointer
@@ -8073,7 +8153,7 @@ SCM.CP:	NOSKED			;Interlock the first free page in EPG pointer
 	CALL SC.BBF		;Create the buffer chain
 	MOVE T3,NUMBUF		;Return the total buffer count as well
 	RETSKP			;Return all OK
-
+
 ; Here when we run out of pages in EPGSEC. This is only an indication of
 ;a different problem. In any case we should NEVER have so much memory in use
 ;for SCA buffers that we overrun the section. Hence die here... In general
@@ -8081,10 +8161,13 @@ SCM.CP:	NOSKED			;Interlock the first free page in EPG pointer
 ;ending up on the hardware free queue by the dozen...
 ;
 SCM.ER:	OKSKED
-	BUG. (CHK,SCABSF,SCAMPI,SOFT,<SCA - Buffer section full>,<>,<
+	BUG.(CHK,SCABSF,SCAMPI,SOFT,<SCA - Buffer section full>,<>,<
 
-Cause:	SCA went to create more buffers and discovered that the section
-	is full. This is an indication that buffers are not being returned.
+Cause:	SCA went to create more buffers and discovered that the section is
+	full.  This is an indication that buffers are not being returned.
+
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
 >)
 	RETBAD (SCSNEB)
 	ENDSV.
@@ -8281,7 +8364,7 @@ SCT.CC:	MOVEI T3,1		;Set up initial value of buffers on queue
 	CAMN T3,T1		;Are the counts the same?
 	RET			;Yes, return ok
 
-SCT.ER:	BUG. (HLT,SCATQF,SCAMPI,SOFT,<SCA - Trace of free queue detected inconsistency>,,<
+SCT.ER:	BUG.(HLT,SCATQF,SCAMPI,SOFT,<SCA - Trace of free queue detected inconsistency>,,<
 
 Cause:	The trace of the message or datagram free queue resulted in a count
 	which was not equal to the known value which SCA keeps.
@@ -8509,7 +8592,7 @@ XRENT	(SC.PON,G)		;[7.1037]SC.PON::, XSC.PO::
 	CONI PI,T1		;Get current PI state
 	TRNE T1,<1B25>		;Are we in KLIPA interrupt code???
 	RET			;Yes, we have nothing to do here
-
+
 ; Do nothing until we reach the outermost nesting of calls to SC.PFF. This
 ;prevents routine A from going channel off, calling routine B which goes 
 ;channel off and then channel on. The channel on done by routine B does 
@@ -8518,15 +8601,17 @@ XRENT	(SC.PON,G)		;[7.1037]SC.PON::, XSC.PO::
 	SOSLE CHNCTL		;Is this an outermost CION in a nest???
 	 RET			;No, do nothing
 	SKIPE CHNCTL
-	BUG. (HLT,SCAODI,SCAMPI,SOFT,<SCA - Overly decremented CI interlock>,,<
+	BUG.(HLT,SCAODI,SCAMPI,SOFT,<SCA - Overly decremented CI interlock>,,<
 
-Cause:	A CION was done when no previous CIOFF had occurred. This leads to
-	an overly-decremented lock.
+Cause:	A CION was done when no previous CIOFF had occurred. This leads to an
+	overly-decremented lock.
 
-Action:	If you are unable to determine how this happened, turn on the ring
+Action:	Send in an SPR along with instruction on reproducing the problem.
+
+	If you are unable to determine how this happened, turn on the ring
 	buffer tracing of interlocks. (Do this by setting RPITRN in RINGSW.)
-	It should be possible to pair each CION with a preceding CIOFF.
-	Note that these calls are invoked from several CI-related modules.
+	It should be possible to pair each CION with a preceding CIOFF.  Note
+	that these calls are invoked from several CI-related modules.
 >)
 
 ; Here at the outermost nesting level, I.E. the first routine to do the channel
@@ -8660,15 +8745,14 @@ SC.ULK:	SZPI 1B25		;Is interrupt on level 5 in progress?
 	ENDIF.
    IFN SCADBG,<
 	SKIPG T1		;Should never be less than 1
-	BUG. (HLT,SCAILC,SCAMPI,SOFT,<SCA - Illegal lock count in connection block>,,<
+	BUG.(HLT,SCAILC,SCAMPI,SOFT,<SCA - Illegal lock count in connection block>,,<
 
-Cause:	The routine to unlock a connection block found that the count
-	is less than 1. Since the caller must have locked the connection
-	block earlier, something unexpected has happened.
-
+Cause:	The routine to unlock a connection block found that the count is less
+	than 1. Since the caller must have locked the connection block earlier,
+	something unexpected has happened.
 >)
    >
-
+
 ;Current value is 1. We will be the last unlocker. See what sorts of
 ;things have been deferred, and call the appropriate routines.
 
@@ -8705,7 +8789,7 @@ SC.UL3:	TMNN CBFSNM,(P1)	;Wanted to send connect management request?
 	  SETOM P3		;Remember this
 	ENDIF.
 	JRST SC.UL2		;See if anything new has come up
-
+
 ;Nothing left to do. Unlock the block.
 
 SC.UL6:	SOS .CBLCK(P1)		;Unlock the c.b.
@@ -8714,11 +8798,11 @@ SC.UL6:	SOS .CBLCK(P1)		;Unlock the c.b.
 	SKIPE .CBLCK(P1)	;Better be zero now!
 	BUG. (HLT,SCALCC,SCAMPI,SOFT,<SCA - Connection block lock count has changed>,,<
 
-Cause:	The routine to unlock a connection block has found an inconsistency
-	in the lock count. Earlier in the routine, the current count was 1.
-	Now, after decrementing it, the count is not zero. Some other context
-	must have changed it. This should not happen since the locker is
-	NOSKED and interrupt level code doesn't change the lock.
+Cause:	The routine to unlock a connection block has found an inconsistency in
+	the lock count. Earlier in the routine, the current count was 1.  Now,
+	after decrementing it, the count is not zero. Some other context must
+	have changed it. This should not happen since the locker is NOSKED and
+	interrupt level code doesn't change the lock.
 >)
    >
 	OKSKED			;Lock routine went NOSKED
@@ -8807,6 +8891,7 @@ SC.RHD:	ASUBR <FRA,PCC,EVC,JKT>	;Save incoming args
 	MOVEM T1,RNGCUR		;Save as the top of this new entry
 	ADD T1,ENTLTB(T2)	;Determine end of entry
 	SOS T1			;Adjust since already pointing at first word
+
 	CAMG T1,RNGBOT		;Will it overflow?
 	IFSKP.			;Yes
 	  MOVE T1,RNGTOP	;Get pointer to top of buffer
@@ -8820,8 +8905,10 @@ SC.RHD:	ASUBR <FRA,PCC,EVC,JKT>	;Save incoming args
 
 	  BUG.(INF,SCARAP,SCAMPI,SOFT,<SCA - Ring buffer has wrapped>,,<
 
-Cause:	The ring buffer overflowed and wrapped upon itself.
-	The entries at the top are being overwritten and will be lost.
+Cause:	The ring buffer overflowed and wrapped upon itself.  The entries at the
+	top are being overwritten and will be lost.
+
+Action:	No action required, this bug is for information only.
 >)				;Report wraping of ring buffer
 	ENDIF.
 	MOVX T1,RNG%HC		;Get the constant for the ring header
@@ -8839,7 +8926,7 @@ Cause:	The ring buffer overflowed and wrapped upon itself.
 	MOVE T1,TODCLK		;Get time of day
 	CALL SC.RWR		;(T1) Place in entry header
 	RET			;Return success
-
+
 SC.RHE:	MOVE T1,FRA		;Get routine that called jacket routine
 	MOVE T2,PCC		;Get PC of caller to feature routine
 	MOVE T3,EVC		;Get event code
@@ -8850,8 +8937,10 @@ Cause:	A bad event code was passed to SC.RHD to be placed in the ring buffer
 	header.  This could cause problems since the entry length table is
 	indexed by event code.
 
-Action:	Check the caller of SC.RHD to be sure that a valid event code is being  
-	placed in T3 before the call. The caller is indicated by the jacket 
+Action:	Send in an SPR along with instruction on reproducing the problem.
+
+	Check the caller of SC.RHD to be sure that a valid event code is being
+	placed in T3 before the call. The caller is indicated by the jacket
 	routine address in T4.
 
 Data: 	FEATURE - feature routine address
@@ -9254,7 +9343,7 @@ SCG.NL:	MOVX T1," "			;Get a space as padding character
 ;after it has sent them.
 
 	XRESCD			;Called from anywhere, anytime - always home
-
+
 SC.BRK::SAVEQ
 	MOVE Q1,[MSEC1,,XBLTAT]	;Get appropriate routine
 	JRST SC.BR2		;Join common code
@@ -9266,11 +9355,14 @@ SC.BR2:	STKVAR <DATA,NBUFS,WRDS,OFFSET,FIRST,BLTIT,FILWRD,GIVBAC> ;Temp storage
 	SKIPGE INTDF		;Caller NOINT?
 	BUG.(CHK,SCBROK,SCAMPI,SOFT,<SC.BRK called while OKINT>,<<T1,PCC>>,<
 
-Cause:	This is a coding problem. SC.BRK will be attempting to assign
-	SCA buffers to the caller and being OKINT leaves a possible window
-	where SCA buffers could be lost.
+Cause:	This is a coding problem. SC.BRK is attempting to assign SCA
+	buffers to the caller and being OKINT leaves a possible window where
+	SCA buffers could be lost.
 
-Action:	Make the caller NOINT until it has returned the SCA buffers.
+Action:	If this bug is reproducible, change it to a BUGHLT and submit an SPR
+	with the dump and instructions for reproducing it.
+
+	Make the caller NOINT until it has returned the SCA buffers.
 
 Data:	PCC - PC of the calling routine
 >)				;No, BUG!
@@ -9291,7 +9383,7 @@ Data:	PCC - PC of the calling routine
 	MOVEM T1,FIRST		;Save address of first buffer
 	MOVEM T3,GIVBAC		;Save routine to return SCA buffers for caller
 	MOVE T2,DATA		;Get data address back
-
+
 ;From here on, T2 will be updated by XBLTAT or BLTUM. It will contain an
 ;updated address for XBLTs. 
 

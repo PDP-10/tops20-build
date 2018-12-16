@@ -1,5 +1,8 @@
-; UPD ID= 8717, RIP:<7.MONITOR>ENQ.MAC.12,  24-May-88 15:53:49 by LOMARTIRE
-;TCO 7.1286 - Don't let QSKDRC base a reply on a Q-Block which is not locked.
+; Edit= 8965 to ENQ.MAC on 12-Sep-88 by BROOKS, for SPR #21912
+;Add ENQ-DEQ capability to ENQC% .ENQCD function
+; Edit= 8846 to ENQ.MAC on 24-May-88 by LOMARTIRE (TCO 7.1286)
+;Prevent jobs hung in ENQTST and missing notification 
+;  Don't let QSKDRC base a reply on a Q-Block which is not locked.
 ;  In QDEQ, call LOKSKD before QDLBFS so that notification is sent.
 ; UPD ID= 8685, RIP:<7.MONITOR>ENQ.MAC.11,  17-Mar-88 19:22:28 by RASPUZZI
 ;TCO 7.1258 - Take another whack at fixing FSPOUT problems. FSPREM now
@@ -1131,7 +1134,7 @@ ENQGOK:	XCTU [HLRZ T2,0(P1)]	;GET QUOTA
 
 	SWAPCD			;[7.1040]
 
-ENQCD:	XCALL (XCDSEC,CHKWHL)	;[7.1040] MUST BE A WHEEL TO DO THIS FUNCTION
+ENQCD:	XCALL (XCDSEC,CHKENP)	;[7.8965] REQUIRES WHEEL, OPR OR ENQ PRIV
 	 RETERR			;NOT PRIVILEGED!
 	NOINT			;LOCK THE LOCKS
 	LOKK ENQLKK		;[7.1072] Only want local database lock for dump
@@ -1869,19 +1872,19 @@ QDEQ:	STKVAR <QDEQRQ,QDEQLB,QDEQQA>
 
 QDEQ0:	MOVE T1,QDEQLB		;GET ADR OF LOCK-BLOCK
 	CALL LOKSKD		;[7.1072] (T1/T1)Do a scheduling pass on the lock
-   IFN CLEQIN,<			;[7.1286][7.1179] 
-	CALL QDLBFS		;[7.1286][7.1179] (T1/T1)Set Lock-Block flags
-   >				;[7.1286][7.1179]
+   IFN CLEQIN,<			;[8846][7.1179] 
+	CALL QDLBFS		;[8846][7.1179] (T1/T1)Set Lock-Block flags
+   >				;[8846][7.1179]
 
 ;[7.1072] Note:  The scheduling pass is done on locks that may be empty so that
 ;[7.1072] other nodes will be notified of the rescheduling event. This is  done
 ;[7.1072] through  the  call to EQLKSD. Should the Lock-Block have no Q-Blocks,
 ;[7.1072] then LOKSKD will do nothing more than notify the other nodes and return.
-;[7.1286] LOKSKD is called before QDLBFS so that a notification will be sent if
-;[7.1286] the lock was a cluster-wide lock and the last Q-Block was just DEQed.
-;[7.1286] When this happens, the Lock-Block will have EN.CLL cleared because it
-;[7.1286] does not have Q-Blocks with EN.CLL set (so it is not a cluster-wide 
-;[7.1286] lock).
+;[8846]   LOKSKD is called before QDLBFS so that a notification will be sent if
+;[8846]   the lock was a cluster-wide lock and the last Q-Block was just DEQed.
+;[8846]   When this happens, the Lock-Block will have EN.CLL cleared because it
+;[8846]   does not have Q-Blocks with EN.CLL set (so it is not a cluster-wide 
+;[8846]   lock).
 
 	LOAD T2,ENQNLQ,(T1)	;SEE IF LOCK IS EMPTY
 	CAMN T2,T1		;[7.1072] ...
@@ -2057,13 +2060,13 @@ CHKLK1:	LOAD T1,ENQLLQ,(T1)	;GET PREVIOUS BLOCK ON QUEUE
 	JRST CHKLK2		;YES, WE ARE AT TOP OF QUEUE
 	TRNE T4,EN.INV		;NO, IS THIS Q-BLOCK INVISIBLE?
 	JRST CHKLK1		;YES, IGNORE THIS BLOCK ENTIRELY
-   IFN CLEQIN,<			;[7.1286] Only for cluster-wide code
-	SKIPN QSENT		;[7.1286] Did we enter QSKDRC?
-	IFSKP.			;[7.1286] Yes
-	  TXNN T4,EN.LOK	;[7.1286] Does Q-Block have lock locked?
-	  JRST CHKLK1		;[7.1286] No, its waiting so just ignore it
-	ENDIF.			;[7.1286] 
-   >				;[7.1286] End of IFN CLEQIN
+   IFN CLEQIN,<			;[8846] Only for cluster-wide code
+	SKIPN QSENT		;[8846] Did we enter QSKDRC?
+	IFSKP.			;[8846] Yes
+	  TXNN T4,EN.LOK	;[8846] Does Q-Block have lock locked?
+	  JRST CHKLK1		;[8846] No, its waiting so just ignore it
+	ENDIF.			;[8846] 
+   >				;[8846] End of IFN CLEQIN
 	TRNN T4,EN.EXC		;IS THIS AN EXCLUSIVE REQUEST?
 	TRNE T3,EN.EXC		;OR IS ORIGINAL REQUEST EXCLUSIVE?
 	JRST CHKLK3		;YES, GO CHECK MASK BLOCKS

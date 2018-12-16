@@ -1,3 +1,9 @@
+; Edit= 9005 to NRTSRV.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8954 to NRTSRV.MAC on 26-Aug-88 by LOMARTIRE
+;Change module name from TTPHDV to NRTSRV in BUG. descriptions
+; Edit= 8930 to NRTSRV.MAC on 23-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8569, RIP:<7.MONITOR>NRTSRV.MAC.2,  11-Feb-88 11:43:37 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 2138, SNARK:<6.1.MONITOR>NRTSRV.MAC.12,   5-Jun-85 10:08:35 by MCCOLLUM
@@ -530,7 +536,7 @@ REQNS1:	LOAD T3,TINTL,(T2)	;GET LINE NUMBER
 ;
 ; Uses: T1
 
-NRTHBR:	BUG.(CHK,NVTNHB,TTPHDV,SOFT,<NRTHBR should never be called>,,<
+NRTHBR:	BUG.(CHK,NVTNHB,NRTSRV,SOFT,<NRTHBR should never be called>,,<
 
 Cause:	DECnet has called NRT's host service at its "hiber" address.
 	This should never happen, since NRT always uses asynchronous
@@ -539,6 +545,11 @@ Cause:	DECnet has called NRT's host service at its "hiber" address.
 Action:	Find a DECnet call which has the .NSWAIt flag on and turn it
 	off, being sure that the surrounding code can handle asynch
 	I/O.  If none is found, DECnet must be in error.
+
+       	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 
 ;TTSETH - Called from SCJSYS to connect a DECnet link to a TTY line
@@ -665,7 +676,7 @@ MCSRV1:	MOVE T1,NRTSJP		;YES, LOAD PTR TO NRT'S SJB
 	CALL SCTPSQ		;DEQUEUE NEXT LINK REQUESTING SERVICE
 	  JRST MCSRV2		;NO MORE
 	SKIPN NRB,NRTCWN	;GET PTR TO CONNECT-WAITING LINK'S NRB
-	BUG.(CHK,NVTWWN,TTPHDV,SOFT,<No NRTCWN Connect Wait Wake>,,<
+	BUG.(CHK,NVTWWN,NRTSRV,SOFT,<No NRTCWN Connect Wait Wake>,,<
 
 Cause:	NRT's host service has been waked for a circuit which has no TTY
 	line number associated with it, yet there is no NRB for a
@@ -675,11 +686,15 @@ Action:	Either the NRB pointer in NRTCWN has been stepped on or an active
 	logical link has lost its TTY line number which should be in the
 	DECnet PSI mask.
 
+        If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	LOAD T1,NRCHN,(NRB)	;GET ITS DECnet CHANNEL NUMBER
 	HRRZS T2		;ISOLATE CHN OF LINK WE'RE EXAMINING
 	CAME T1,T2		;ARE WE DEALING WITH RIGHT LINK?
-	BUG.(CHK,NVTWWC,TTPHDV,SOFT,<Wrong Channel on Connect Wait Wake>,,<
+	BUG.(CHK,NVTWWC,NRTSRV,SOFT,<Wrong Channel on Connect Wait Wake>,,<
 
 Cause:	NRT's host service has been waked for a circuit which is not
 	the logical link in connect wait state and which has no TTY
@@ -689,6 +704,10 @@ Action:	Either the connect wait link is out of phase and should be corrected
 	or an active link has lost its TTY line number which should be
 	in the DECnet PSI mask.
 
+        If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	SETZ TDB,		;RIGHT CHANNEL, NO TTY YET
 	CALL NRTLKS		;SERVICE THE LINK
@@ -782,7 +801,7 @@ NJFRCW:	RET			;CONNECT WAIT, WAITING FOR A CONNECT
 
 ;Here if the state is illegal
 
-NJFRIL:	BUG.(CHK,NVTILS,TTPHDV,SOFT,<NRT link in unexpected state>,,<
+NJFRIL:	BUG.(CHK,NVTILS,NRTSRV,SOFT,<NRT link in unexpected state>,,<
 
 Cause:	NRT's host service has been called by DECnet for a link in
 	an unexpected state.
@@ -792,6 +811,10 @@ Action:	Determine whether the link indeed is in an unexpected state, or
 	the problem is probably in DECnet, if the latter, code must
 	be added to NRT.
 
+        If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	CALLRET NRTREL
 ;NJFRDR - Service Routine for a link in DISCONNECT RECEIVED state
@@ -982,15 +1005,19 @@ SNDCFG:	MOVEI T1,CFGLEN		;LENGTH OF MESSAGE TO SEND
 	  RET			;ERROR, MAYBE TRY AGAIN LATER
 	TMNN SAAA1,(SAB)	;IS REMAINING SEND COUNT ZERO?
 	IFSKP.			;NO, COMPLAIN AND RETURN ERROR
-	   BUG.(CHK,NVTPCL,TTPHDV,SOFT,<Partial Configuration Msg Loss>,,<
+	   BUG.(CHK,NVTPCL,NRTSRV,SOFT,<Partial Configuration Msg Loss>,,<
 
 Cause:	NRT's host service failed to send the configuration message in
 	a single DECnet message segment.
 
 Action:	If the message segment size for the link is really less than
-	ten bytes, it should probably be enlarged, else the code will
-	have to deal with the possibility of segmented configuration
-	messages.
+	ten bytes, it should probably be enlarged, else the code has
+	deal with the possibility of segmented configuration messages.
+
+        If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	   RET			;ERROR RETURN
 	ENDIF.
@@ -1061,12 +1088,15 @@ NRTOTE:	LOAD T1,SAAST,(SAB)	;GET NEW STATUS
 	LOAD T1,NSSTA,+T1	;GET THE STATE FIELD FROM STATUS
 	CAIE T1,.NSSRN		;IN RUN STATE?
 	IFSKP.			;IF NOT, DON'T COMPLAIN
-	   BUG.(CHK,NVTOUT,TTPHDV,SOFT,<NRT output to DECnet failed>,,<
+	   BUG.(CHK,NVTOUT,NRTSRV,SOFT,<NRT output to DECnet failed>,,<
 
 Cause:	An output call to DECnet's SCTNSF entry point failed unexpectedly.
 
-Action:	Examine the DECnet error code in register T1.
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and examine 
+	the DECnet error code in register T1.
 >)
 	   CALLRET NRTREL
 	ENDIF.
@@ -1188,12 +1218,15 @@ NRTINE:	LOAD T1,SAAST,(SAB)	;GET NEW STATUS
 	LOAD T1,NSSTA,+T1	;GET THE STATE FIELD FROM STATUS
 	CAIE T1,.NSSRN		;IN RUN STATE?
 	RET			;NO, DON'T COMPLAIN NOW, ITS CLOSING
-	BUG.(CHK,NVTINP,TTPHDV,SOFT,<NRT Input to DECnet failed>,,<
+	BUG.(CHK,NVTINP,NRTSRV,SOFT,<NRT Input to DECnet failed>,,<
 
 Cause:	An input call to DECnet's SCTNSF entry point failed unexpectedly.
 
-Action:	Examine the DECnet error code in register T1.
-
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.  Analyze the dump and examine 
+	the DECnet error code in register T1.
 >)
 	CALLRET NRTREL
 ;NRTNEP - Do an Enter Passive to hang out a new DECnet link
@@ -1525,14 +1558,13 @@ NRTINI::                        ;CALLED FROM D36COM (D36INI)
 
 	MOVX T1,SA.LEN		;LENGTH OF AN SAB
 	XCALL (XCDSEC,DNGWDZ)	;GET WORDS FOR OUR SA BLOCK
-	 BUG.(HLT,NVTSAB,TTPHDV,SOFT,<No memory for NRT's SAB>,,<
+	 BUG.(HLT,NVTSAB,NRTSRV,SOFT,<No memory for NRT's SAB>,,<
 
 Cause:	NRT's initialization code was unable to get resident free
 	space to build its control blocks.
 
 Action:	Find out why there is so little resident free space so early
 	in the system's life.
-
 >)
 	MOVE SAB,T1		;USE REGISTER SAB TO POINT TO SAB
 	MOVEM SAB,NRTSAP	;STORE POINTER TO SCLINK ARG BLK
@@ -1542,14 +1574,13 @@ Action:	Find out why there is so little resident free space so early
 	MOVE T1,NRTDFT		;GET DEFAULT GOAL,QUOTAS
 	SETZM NRTSJP		;IN CASE WE FAIL, SIGNAL TO OTHERS
 	CALL MAKSJB		;GO MAKE AN SJB
-	 BUG.(HLT,NVTSJB,TTPHDV,SOFT,<No memory for NRT's SJB>,,<
+	 BUG.(HLT,NVTSJB,NRTSRV,SOFT,<No memory for NRT's SJB>,,<
 
 Cause:	NRT's initialization code was unable to get resident free
 	space to build its control blocks.
 
 Action:	Find out why there is so little resident free space so early
 	in the system's life.
-
 >)
 	STOR SAB,SJSAB,(T1)	;SAVE SAB POINTER IN SJB
 	MOVEM T1,NRTSJP		;SAVE POINTER TO NRT'S SJB

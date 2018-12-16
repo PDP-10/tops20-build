@@ -1,6 +1,16 @@
-; UPD ID= 8712, RIP:<7.MONITOR>IPCF.MAC.11,   6-May-88 11:42:06 by RASPUZZI
-;TCO 7.1283 - Add items for GTDOM% hooks for non-source sites. Also, make
-;	      paged mode IPCF transfers from monitor context work.
+; Edit= 9148 to IPCF.MAC on 21-Feb-90 by GSCOTT
+;Update copyright date. 
+; Edit= 9102 to IPCF.MAC on 8-Jun-89 by GSCOTT
+;Set up INFOPD properly if MUTIL function 21 is used to set PID of
+;[SYSTEM]INFO rather than MUTIL function 23. 
+; Edit= 9064 to IPCF.MAC on 30-Jan-89 by RASPUZZI, for SPR #22048
+;Don't just RET after the call to CHKNOA as this will leave the fork lock set
+;and other nasties. Instead, take the error path through MULKER.
+; Edit= 8895 to IPCF.MAC on 12-Aug-88 by RASPUZZI
+;Update BUG. documentation.
+; Edit= 8841 to IPCF.MAC on 6-May-88 by RASPUZZI (TCO 7.1283)
+;Add hooks for GTDOM% JSYS for non-source sites. Also, make paged mode IPCF
+;transfers work from monitor mode.
 ; UPD ID= 8528, RIP:<7.MONITOR>IPCF.MAC.10,   9-Feb-88 16:15:20 by GSCOTT
 ;TCO 7.1218 - Update copyright date.
 ; UPD ID= 8416, RIP:<7.MONITOR>IPCF.MAC.9,   4-Feb-88 12:12:57 by GSCOTT
@@ -199,7 +209,7 @@
 ;<4.MONITOR>IPCF.MAC.134, 14-Feb-78 15:37:17, EDIT BY HURLEY
 ;TCO 1884 - ADD SENDING OF MESSAGES ON DELETED PIDS
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -458,12 +468,12 @@ XNENT	(.MRECV,G)		;[7.1034] .MRECV:: or X.MREC::
 	  RETERR		;SOMETHING WRONG, ERROR CODE IN T1
 	TRNN P1,IP%CFV		;PAGE MODE?
 	JRST MRECV2		;NO
-	MOVEI T1,(P4)		;[7.1283] Get user page number
-	LSH T1,PGSFT		;[7.1283] Make it an address
-	TXNN P1,IP%INT		;[7.1283] Internal call?
-	TXO T1,TWUSR		;[7.1283] No, say user context
-	CALLX (MSEC1,FPTA)	;[7.1283] (T1,FX/T1) Get ID for this page
-	JUMPE T1,[RETERR (ARGX23)] ;[7.1283] Section table does not exist
+	MOVEI T1,(P4)		;[8841] Get user page number
+	LSH T1,PGSFT		;[8841] Make it an address
+	TXNN P1,IP%INT		;[8841] Internal call?
+	TXO T1,TWUSR		;[8841] No, say user context
+	CALLX (MSEC1,FPTA)	;[8841] (T1,FX/T1) Get ID for this page
+	JUMPE T1,[RETERR (ARGX23)] ;[8841] Section table does not exist
 	MOVE P5,T1		;SAVE IDENTIFIER
 	CALLX (MSEC1,MRPACS)	;[7.1034] GET INFO ABOUT PAGE
 	TXNN T1,PA%PEX		;PAGE EXIST?
@@ -510,7 +520,7 @@ MRECER:	JUMPN T1,MULKER		;IF T1 IS NON-ZERO, THIS IS AN ERROR
 	CAMN T4,FORKX		;THIS US?
 	JRST MRECE1		;YES, WE CAN WAIT
 	CALL CHKNOA		;SEE IF NO ACCESS ON
-	 RET			;YES, GIVE ERROR RETURN
+	 JRST MULKER		;[9064] Yes, give error return
 	CALL CHKPDW		;SEE IF WAITING ALLOWED FOR THIS PID
 	 JRST MULKER		;NO, GIVE ERROR RETURN
 MRECE1:	MOVE T3,FORKX		;SET UP TO WAIT
@@ -613,10 +623,12 @@ FNDMFL:	MOVE T2,FORKX		;GET CURRENT FORK INDEX
 	CALL GETNPF		;GET THE NEXT PID BELONGING TO THIS FORK
 	 JRST FNDMFD		;NO MORE PIDS FOR THIS FORK
 	LOAD T4,PIDRC,(T2)	;DOES THIS PID HAVE ANY MESSAGES?
-	JUMPG T4,[LOAD T4,PIDFLG,(T2) ;YES, GET PID FLAGS
-		TRNE T4,PD%JWP	;IS THIS A JOB-WIDE PID?
-		JRST FNDMFL	;YES, BYPASS IT
-		RETSKP]		;ELIGIBLE PID WITH A MESSAGE WAS FOUND
+	IFG. T4			;[9064] If so,
+	  LOAD T4,PIDFLG,(T2)	;[9064] Get PID flags
+	  TRNE T4,PD%JWP	;[9064] Is this a job-wide PID?
+	  JRST FNDMFL		;[9064] Yes, bypass it
+	  RETSKP		;[9064] Eligible PID with a message was found
+	ENDIF.			;[9064]
 	AOS FNDMFC		;REMEMBER THAT A PID WAS SEEN
 	JRST FNDMFL		;LOOP BACK UNTIL ALL PIDS CHECKED
 
@@ -665,8 +677,7 @@ MESREC:	STKVAR <MESPID,MESRPH,MESADR>
 	MOVEM T1,MESPID		;SAVE PID
 	MOVEM T2,MESRPH		;SAVE PID HEADER ALSO
 	LOAD T3,PIDRC,(T2)	;GET COUNT OF MESSAGES FOR PID
-	JUMPE T3,[SETZ T1,	;IF NONE, RETURN
-		RET]
+	JUMPE T3,RETZ		;[9064] If none, return 0 in T1
 	LOAD T3,PIDOL,(T2)	;GET POINTER TO MESSAGE
 	MOVEM T3,MESADR		;SAVE ADDRESS OF START OF MESSAGE
 	LOAD T1,MESFLG,(T3)	;GET FLAGS OF THAT MESSAGE
@@ -719,8 +730,10 @@ MSRECD:	MOVE T1,MESADR		;GET POINTER TO START OF MESSAGE
 	CALLX (MSEC1,RELIPC)	;[7.1034] GO RELEASE THE MESSAGE SPACE TO POOL
 	MOVE T2,MESRPH		;GET POINTER TO PID HEADER
 	LOAD T2,PIDOL,(T2)	;GET POINTER TO OLDEST MESSAGE
-	JUMPE T2,[SETZ T1,	;IF NO MESSAGE, RETURN 0
-		RETSKP]
+	IFE. T2			;[9064] If no message
+	  SETZ T1,		;[9064] Return 0
+	  RETSKP		;[9064] And done
+	ENDIF.			;[9064]
 	LOAD T1,MESLEN,(T2)	;GET LENGTH OF MESSAGE BLOCK
 	HRLI T1,-MESHDS(T1)	;GET LENGTH OF MESSAGE IN LH OF T1
 	LOAD T3,MESFLG,(T2)	;GET FLAGS OF NEXT MESSAGE IN QUEUE
@@ -736,9 +749,10 @@ MSRECP:	LOAD T1,MSFTI,(T3)	;GET INDEX INTO FORK BIT TABLE
 	MOVE T2,P5		;GET ID FOR PAGE TO RECEIVE INTO
 	LOAD T3,MESPAC,(T3)	;GET ACCESS BITS FOR PAGE
 	HRLZS T3
-	JUMPE Q3,[SETZB T2,T3	;USER WANT THIS PAGE?
-		EXCH T2,T1	;NO, THEN THROW IT AWAY
-		JRST .+1]
+	IFE. Q3			;[9064] User want this page?
+	  SETZB T2,T3		;[9064] Clear these
+	  EXCH T2,T1		;[9064] User doesn't want page mode
+	ENDIF.			;[9064]
 	CALLX (MSEC1,SETPT)	;[7.1034] GO MAP IT INTO USER'S FORK
 	JRST MSRECD		;GO FINISH UP AND RETURN
 
@@ -1493,9 +1507,9 @@ MUTPI1:	MOVEI T4,-1		;SET UP TO CLEAR WAITER
 
 ;MUTIL FUNCTION 23 - DEFINE PID OF [SYSTEM]INFO
 
-MUTDFI:	SKIPE INFOPD		;ALREADY HAVE A PID FOR INFO?
+MUTDFI:	UMOVE T1,1(Q2)		;[9102] Get new PID first
+MUTDF1:	SKIPE INFOPD		;Already have a PID for [SYSTEM]INFO?
 	RETBAD (IPCF23)		;YES, THIS IS AN ERROR
-	UMOVE T1,1(Q2)		;GET NEW PID
 	CALL VALPID		;VALIDATE IT
 	 RET			;NOT A VALID PID
 	MOVEM T1,INFOPD		;SAVE NEW VALUE OF [SYSTEM]INFO PID
@@ -1511,6 +1525,8 @@ MUTSPT:	UMOVE T1,2(Q2)		;GET PID IF SPECIFIED
 	RETBAD (IPCF33)		;NO, GIVE ERROR RETURN
 	CAIE Q3,.MUSSP		;IS THIS A SET REQUEST?
 	JRST MUTSP1		;NO
+	CAIN T2,.SPINF		;[9102] Setting PID of [SYSTEM]INFO?
+	JRST MUTDF1		;[9102] Yes, do it properly
 	MOVEM T1,SPIDTB(T2)	;YES, STORE NEW PID
 	JUMPE T1,RSKP		;IF ARG IS 0, THEN CLEARING LOCATION
 MUTSP1:	SKIPN T1,SPIDTB(T2)	;IS THERE A PID THERE?
@@ -1582,10 +1598,10 @@ VALARG:	XCTU [HRRZ Q1,1]	;GET LENGTH OF DESCRIPTOR BLOCK
 	CAIGE Q1,MINPHL		;LONG ENOUGH?
 	RETBAD (IPCFX1)		;NO
 	UMOVE P1,.IPCFL(Q2)	;GET FLAGS
-	TXZ P1,IP%CFZ		;[7.1283] Clear impossible bit
+	TXZ P1,IP%CFZ		;[8841] Clear impossible bit
 	MOVE P2,KIMUFL		;Get the PC flags of JSYS
 	TXNE P2,PCU		;Was previous context user?
-	TXZ P1,IP%MON!IP%INT	;[7.1283] If so, clear the "by monitor" bits
+	TXZ P1,IP%MON!IP%INT	;[8841] If so, clear the "by monitor" bits
 				;Note: This works for QUEUE% because
 				;the user can't set this bit via QUEUE%
 	UMOVE P2,.IPCFS(Q2)	;GET SENDER'S PID
@@ -1611,10 +1627,10 @@ VALARG:	XCTU [HRRZ Q1,1]	;GET LENGTH OF DESCRIPTOR BLOCK
 VALAR1:	CALL CHKPRV		;SEE IF CALLER IS PRIV'D
 	 SKIPA	
 	RETSKP			;YES
-	JXN P1,IP%CFP,R		;[7.1283] Privileged function was requested
-	TXZ P1,IP%CFE!IP%CFM	;[7.1283] Else turn extra fields off
-	JXE P1,IP%CFC,RSKP	;[7.1283] Anything in IP%CFC?
-	LOAD T1,IP%CFC,P1	;[7.1283] Get the sender code
+	JXN P1,IP%CFP,R		;[8841] Privileged function was requested
+	TXZ P1,IP%CFE!IP%CFM	;[8841] Else turn extra fields off
+	JXE P1,IP%CFC,RSKP	;[8841] Anything in IP%CFC?
+	LOAD T1,IP%CFC,P1	;[8841] Get the sender code
 	CAIE T1,.IPCCG		;QUEUE% JSYS is sender?
 	TXZ P1,IP%CFC		;No, give error return
 	RETSKP			;Yes. then it's OK
@@ -1707,7 +1723,7 @@ ENDWT1:	CALL GETPID		;LOOP THRU ALL PIDS
 	AOJA T1,ENDWT1		;LOOP FOR ALL PIDS
 
 	SUBTTL Routine PDWTCK
-;[7.1283]
+;[8841]
 ;PDWTCK - Accessory routine to allow external routines to dismiss with PDFKTB
 ;bit as (one of) their wakeup conditions.  We can dismiss only if
 ;this PID is valid for this fork and this PID does not have any
@@ -1749,7 +1765,7 @@ PDWTCK::SAVEAC <T2,T3,T4>	;Preserve all ACs except T1
 	RET			;Return, skipping if appropriate
 
 	SUBTTL Routine PWDTCL
-;[7.1283]
+;[8841]
 ;PWDTCL - Companion routine to clean up.  Does the cleanup operations MWAIT
 ;would do for us if we were using the normal IPCF scheduler test.
 ;
@@ -2081,9 +2097,9 @@ CREPD1:	HRRZ T3,JOBPT(T2)	;GET TOP FORK OF JOB IN CASE JOB WIDE PID
 Cause:	An invalid PID number was passed to GETPID by CREPID. This value
 	passed was retrieved from PIDLST.
 
-Action:	If these BUGCHKs persist, look at the PIDLST and try to determine
-	how it was corrupted.
-
+Action:	If these BUGCHKs persist, change the BUGCHK to a BUGHLT and submit
+	an SPR. In the dump, look at the PIDLST and try to determine how it
+	was corrupted.
 >)
 		RET]		;GIVE ERROR RETURN FROM CREATE PID
 	EXCH T2,PIDLST		;STORE NEW LINK WORD
@@ -2139,7 +2155,6 @@ Cause:	CREPID called PUTPID with an illegal PID number.
 
 Action:	If these persist, change the CHK to a HLT and examine the dump to
 	determine why GETPID returned an illegal PID value.
-
 >)
 		RET]		;GIVE ERROR RETURN
 	RETSKP			;RETURN TO CALLER
@@ -2188,7 +2203,6 @@ Cause:	A PID which had previously been blessed by VALPID was found to be
 Action:	If the problem continues, change this CHK to a HLT and try to
 	determine from a dump why the PID was OKed by VALPID and rejected
 	by PUTPID.
-
 >)
 		RET]		;GIVE ERROR RET
 	HRRZM T1,PIDLST		;MAKE THIS PID BE FIRST ON LIST
@@ -2270,7 +2284,6 @@ GETMES:	LOAD T1,PIDRC,(T2)	;GET COUNT OF MESSAGES ON LIST
 
 Cause:	GETMES has discovered that the count of messages from a sender has
 	gone negative.
-
 >)
 		JRST GETMS1]
 	STOR T1,PIDSC,(T4)	;PUT BACK THE UPDATED COUNT
@@ -2430,7 +2443,6 @@ PIDKFL:	MOVE T2,SAVKFK		;GET FORK # AGAIN
 	 BUG.(CHK,NOPID,IPCF,HARD,<PIDKFL - PID disappeared>,,<
 
 Cause:	DELPID rejected a PID that had been returned from GETNPF.
-
 >)
 	MOVE T1,SAVKFP		;GET BACK PID INDEX
 	JUMPE Q3,PIDKFL		;ARE WE BUILDING A MESSAGE FOR INFO?
@@ -2493,18 +2505,18 @@ XNENT	(SPLMES,G)		;[7.1034] SPLMES:: or XSPLME::
 	LOAD T2,FLUC,(Q1)	;GET UNIQUE CODE OF STR
 	HRLS T2			;BUILD A DIR NUMBER
 	HRR T2,FILDDN(Q1)	;ADD IN THE DIRECTORY NUMBER
-	DIRST			;PUT DIRECTORY NAME INTO STRING
-	 ERJMP [BUG.(CHK,NODIR1,IPCF,HARD,<SPLMES - DIRST failed on existing directory name>,<<T2,DIRNUM>>,<
+	DIRST%			;PUT DIRECTORY NAME INTO STRING
+	IFJER.	  		;If failed,
+	  BUG.(CHK,NODIR1,IPCF,HARD,<SPLMES - DIRST failed on existing directory name>,<<T2,DIRNUM>>,<
 
-Cause:	DIRST failed to translate a directory number into a string for the
+Cause:	DIRST% failed to translate a directory number into a string for the
 	currently mapped directory.
 
 Action:	Verify the integrity of the directory.
 
 Data:	DIRNUM - Directory number
-
 >)
-		JRST .+1]
+	ENDIF.
 	;..
 
 	;..
@@ -2526,6 +2538,12 @@ Data:	DIRNUM - Directory number
 
 Cause:	SPLMES attempted to NOUT the generation number of a spooled file
 	and it failed.
+
+Action:	If this problem becomes chronic, then change this BUGCHK to a BUGHLT.
+	Determine why NOUT% failed by looking at the error it has returned.
+	It is possible that the disk we are trying to write to is having
+	hardware problems. If this is the case, have field service look at
+	the disk.
 >)
 IPCMSR:	AOS 0(P)		;SET UP FOR SUCCESSFUL RETURN
 IPCMSE:	S1XCT <UNLOKK PIDLKK>	;[7.1034] FREE UP DATA BASE
@@ -2702,6 +2720,12 @@ ARDIRS:	MOVEI T1,":"
 
 Cause:	ARCMSG attempted to NOUT the generation number of a file and it
 	failed.
+
+Action:	If this problem becomes chronic, then change this BUGCHK to a BUGHLT.
+	Determine why NOUT% failed by looking at the error it has returned.
+	It is possible that the disk we are trying to write to is having
+	hardware problems. If this is the case, have field service look at
+	the disk.
 >)
 	SETZ T2,
 	IDPB T2,T1		; End it
@@ -2721,8 +2745,10 @@ ARCPY:	STKVAR <ARCPOP,ARCPEC>
 	ADD T1,[OWGP. 7,0,42]   ; Use dirora offset & make valid ptr
 	ADD T1,Q2
 ARCPY1:	ILDB T4,T1		; Get a char
-	JUMPE T4,[MOVE T2,ARCPOP ;NULL HIT, RETRIEVE OUTPUT POINTER
-		RET]
+	IFE. T4			;[9064] If null,
+	  MOVE T2,ARCPOP	;[9064] Retrieve output pointer
+	  RET			;[9064] And done
+	ENDIF.			;[9064]
 	MOVE T2,T4		;COPY CHARACTER FOR DIVISION
 	IDIVI T2,^D36/CCSIZE	; CCSIZE and CPTAB and char type
 	S1XCT <LDB T3,CPTAB(T3)>;[7.1045]  are found in GTJFN.MAC
@@ -2743,7 +2769,6 @@ ARCMS1:	BUG.(INF,NOARCS,IPCF,HARD,<ARCMSG - PID for QUASAR is not valid>,,<
 Cause:	ARCMSG could not validate the PID for QUASAR.
 
 Action:	Check QUASAR and be sure it is processing requests.
-
 >)
 	SETZM SPIDTB+.SPQSR
 	MOVX T1,ARCX13		;[7207] INDICATE FAILURE
@@ -2855,7 +2880,10 @@ Cause:	Messages cannot be sent to the device allocator PID.
 
 Action:	Check the state of the allocator and see if it is running properly.
 	Chances are it is not processing the messages queued for it or that
-	the system is out of IPCF free space for some other reason.
+	the system is out of IPCF free space for some other reason. One known
+	cause of these BUGCHKs is when MOUNTR has crashed and has not been
+	restarted. Also, if MOUNTR is flooded with disk or tape requests
+	(maybe via a .CMD file in OPR) then these BUGCHKs may appear.
 
 Data:	PID - PID
 >,,<DB%NND>)			;[7.1210] 
@@ -2940,13 +2968,12 @@ XNENT	(PIDINI,G)		;[7.1034] PIDINI:: or XPIDIN::
 	BUG.(CHK,IPCJB0,IPCF,HARD,<PIDINI - Not in context of job 0>,,<
 
 Cause:	PIDINI was called by a job other than job 0.
-
 >)
 	MOVSI T4,-PIDFTL	;SET UP TO CREATE FORKS
 PIDIN1:	MOVEM T4,PIDINX		;SAVE COUNTER AND INDEX VALUE
 	SETZB T1,T2		;CREATE A FORK
-	CFORK			;UNDER JOB 0
-	 JRST PIDINB		;CANNOT CREATE A FORK, GO BUGCHK
+	CFORK%			;UNDER JOB 0
+	 ERJMP PIDINB		;CANNOT CREATE A FORK, GO BUGCHK
 	HRLZS T1		;NOW GET PTN.PN OF THIS FORK
 	MOVEI T2,0		;...
 	CALLX (MSEC1,FKHPTN)	;[7.1034] ...
@@ -2983,7 +3010,6 @@ PIDINL:	MOVEM T2,PIDTBL(T1)	;SET UP PID FREE LIST
 PIDINB:	BUG.(CHK,IPCFRK,IPCF,HARD,<PIDINB - Cannot create forks for IPCF>,,<
 
 Cause:	PIDINI could not create a fork for pages in transit.
-
 >)
 	JRST PIDIN2		;CONTINUE ON
 

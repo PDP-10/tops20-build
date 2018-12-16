@@ -1,3 +1,13 @@
+; Edit= 9172 to LLMOP.MAC on 22-Jun-90 by GSCOTT
+;Insure the AC save routines in APRSRV are used by always SEARCHing PROLOG
+;before any SEARCH of MACSYM so that the proper USRSAV macro (from PROLOG) is
+;used in the SAVEAC macro.
+; Edit= 9158 to LLMOP.MAC on 8-Mar-90 by GSCOTT
+;Don't try to use a zero MSD in DEQMSD. 
+; Edit= 8937 to LLMOP.MAC on 23-Aug-88 by LOMARTIRE
+;Spell MONITR correctly in ACTION field of BUGs!
+; Edit= 8919 to LLMOP.MAC on 18-Aug-88 by LOMARTIRE
+;Improve BUG. documentation
 ; UPD ID= 8662, RIP:<7.MONITOR>LLMOP.MAC.6,  22-Feb-88 18:48:51 by GSCOTT
 ;TCO 7.1238 - Set LLMRRF and LLMRXF not normally dumpable.
 ; UPD ID= 8543, RIP:<7.MONITOR>LLMOP.MAC.5,   9-Feb-88 17:04:26 by GSCOTT
@@ -321,7 +331,7 @@
 ;Add routines LLMGNQ, LLMUNQ and LLMRSJ/LLMRSF
 
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -338,10 +348,9 @@
 ;	DIGITAL ASSUMES NO  RESPONSIBILITY FOR  THE USE OR  RELIABILITY OF  ITS
 ;	SOFTWARE ON EQUIPMENT THAT IS NOT SUPPLIED BY DIGITAL.
 
-	SEARCH NIPAR,D36PAR,MACSYM,MONSYM
+	SEARCH D36PAR,PROLOG,NIPAR	;[9172]
 	SALL
 
-	SEARCH PROLOG
 	TTITLE (LLMOP,,< - Low Level Maintenance OPeration Layer of Phase IV DECnet>)
 	SUBTTL  By D. C. Gunn 10 January 1983
 
@@ -507,8 +516,6 @@
 ; 3. Fix D36SYM AC purge definition problem.
 ; 4. Add system time field to System Id message.
 ; 5. Move $BUILD macro and friends to MACSYM.
-
-LLMOP==:1+^D1458		;Insert file M61A:UID.TXT here
 
 	ENTRY LLMINI		;The entry point
 				; see procedures for calling sequence
@@ -1054,7 +1061,10 @@ Cause:	The LLMOP Loopback Protocol Server Call Back Routine was called by
 	the Data Link Layer with an invalid callback function code. This is
 	a software bug. 
 
-Action:	Call your DIGITAL Software Specialist.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	FUNCODE - Function code
 >)
@@ -1065,9 +1075,12 @@ Cause:	LLMOP received a loopback message that was too short or was
 	improperly formatted. This is a MOP protocol violation by a
 	remote node.
 
+Action:	Using the high and low order bits of the Ethernet address, attempt 
+	to locate the remote node which is sending the illegal message.
+
 Data:	MSGLEN - The received message length
-	HIORD - The Ethernet address (high order bits)
-	LOORD - The Ethernet address (low order bits)
+	HIORD  - The Ethernet address (high order bits)
+	LOORD  - The Ethernet address (low order bits)
 >,,<DB%NND>)			;[7.1210] 
 
 	BUG. (INF,LLMILF,LLMOP,SOFT,<LLMOP Invalid Loopback Function Code>,<<T1,FUNCOD>,<T2,HIORD>,<T3,LOORD>>,<
@@ -1076,9 +1089,12 @@ Cause:	LLMOP received a loopback message that was neither a loopback
 	reply message or a forward data message. This is a MOP protocol
 	violation by a remote node.
 
+Action:	Using the high and low order bits of the Ethernet address, attempt 
+	to locate the remote node which is sending the illegal message.
+
 Data:	FUNCOD - The function code
-	HIORD - The Ethernet address of the transmitting node (high order)
-	LOORD -  The Ethernet address of the transmitting node (low order)
+	HIORD  - The Ethernet address of the transmitting node (high order)
+	LOORD  - The Ethernet address of the transmitting node (low order)
 >,,<DB%NND>)			;[7.1210] 
 
 	BUG. (HLT,LPRIXC,LLMOP,SOFT,<LLMOP Invalid Xmit Complete>,<<T1,RBSTT>,<T2,UNSTA>>,<
@@ -1086,8 +1102,6 @@ Data:	FUNCOD - The function code
 Cause:	NIDLL called back to LLMOP with a transmit complete event
 	for an RB which is not in Transmit Initiated state. This is
 	a software bug. 
-
-Action:	Call your DIGITAL Software Specialist.
 
 Data:	RBSTT - The current RB state
 	UNSTA - The status in the UN block
@@ -1099,13 +1113,15 @@ Cause:	LLMOP was called by NIDDL on change of state. This message is for
 	information only. No corrective action is required.
 
 Data:	CHANNEL - Channel number
-	PTRLID - Portal ID
-	STATUS - Status bits
+	PTRLID  - Portal ID
+	STATUS  - Status bits
 >,,<DB%NND>)			;[7.1210] 
 
 	BUG. (INF,LLMSCA,LLMOP,SOFT,<LLMOP Ethernet Channel Address Change - CHAN,ADDR1,ADDR2>,<<T1,CHANNEL>,<T2,ADDR1>,<T3,ADDR2>>,<
 
 Cause:	LLMOP was called by NIDDL on change of state.
+
+Action:	No action is required as this is informational only.
 
 Data:	CHANNEL - Channel number
 >,,<DB%NND>)			;[7.1210] 
@@ -1114,8 +1130,13 @@ Data:	CHANNEL - Channel number
 
 Cause:	LLMOP was unable to transmit a forward data message.
 
-Data:	DLLERC - The error code returned from the DLL
-	STATUS - The channel status returned from the DLL
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
+Data:	DLLERC  - The error code returned from the DLL
+	STATUS  - The channel status returned from the DLL
 	CHANNEL - The channel on which the failure occurred
 >,,<DB%NND>)			;[7.1210] 
 
@@ -1125,7 +1146,10 @@ Cause:	The LLMOP Remote Console Protocol Server Call Back Routine was
 	called by the Data Link Layer with an invalid callback function
 	code. This is a software bug. 
 
-Action:	Call your DIGITAL Software Specialist.
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	FUNCODE - Function code
 >)
@@ -1136,6 +1160,11 @@ Cause:	LLMOP received a remote console message that was too short, was too
 	long or was improperly formatted. This is a MOP protocol violation
 	by a remote node.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
 Data:	MSGLEN - Received message length
 >,,<DB%NND>)			;[7.1210] 
 
@@ -1145,6 +1174,11 @@ Cause:	The LLMOP Remote Console Protocol Server received a MOP message
 	with an invalid function code. This is a MOP protocol violation by a
 	remote node.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
 Data:	FUNCODE - Function code
 >,,<DB%NND>)			;[7.1210] 
 
@@ -1152,13 +1186,23 @@ Data:	FUNCODE - Function code
 
 Cause:	LLMOP was unable to transmit a MOP request message.
 
-Data:	DLLERC - The error code returned from the DLL
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
+Data:	DLLERC  - The error code returned from the DLL
 	CHANNEL - The channel on which the failure occurred
 >,,<DB%NND>)			;[7.1238] 
 
 	BUG. (INF,RCS3XF,LLMOP,SOFT,<LLMOP Transmit Failed>,<<T1,DLLERC>,<T2,CHANNEL>>,<
 
 Cause:	LLMOP was unable to transmit a forward data message.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	DLLERC - The error code returned from the DLL
 	CHANNEL - The channel on which the failure occurred
@@ -1175,6 +1219,11 @@ Cause:	This is a temporary debugging BUGINF. It is here to provide an
 
 Cause:	LLMOP was unable to transmit a forward data message.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
 Data:	DLLERC - The error code returned from the DLL
 	CHANNEL - The channel on which the failure occurred
 >,,<DB%NND>)			;[7.1210] 
@@ -1182,6 +1231,11 @@ Data:	DLLERC - The error code returned from the DLL
 	BUG. (CHK,LLMOPF,LLMOP,SOFT,<LLMOP Open Portal Failed>,<<T1,DLLERC>>,<
 
 Cause:	LLMOP failed to open an NI portal with the Data Link Layer.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	DLLERC - The error code returned from the DLL
 >)
@@ -1191,6 +1245,11 @@ Data:	DLLERC - The error code returned from the DLL
 Cause:	A LLMOP attempt to declare the Assistant Multi-Cast Address
 	failed when the Data Link Layer was called.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
 Data:	DLLERC - The error code returned from the DLL
 >,,<DB%NND>)			;[7.1210] 
 
@@ -1199,12 +1258,22 @@ Data:	DLLERC - The error code returned from the DLL
 Cause:	A LLMOP attempt to read the Ethernet channel status
 	failed when the Data Link Layer was called.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
 Data:	DLLERC - The error code returned from the DLL
 >)
 
 	BUG. (CHK,LLMSB2,LLMOP,SOFT,<LLMOP Specify Receive Buffer Failure>,<<T1,DLLERC>>,<
 
 Cause:	LLMOP could not post a receive buffer to the Data Link Layer.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 
 Data:	DLLERC - The error code returned from the DLL
 >)
@@ -1214,12 +1283,22 @@ Data:	DLLERC - The error code returned from the DLL
 Cause:	LLMOP attempted to remove an RB queue entry from an empty queue.  
 	It is also possible that the RB was not on the queue.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
+
 Data:	RBADDRESS - Address of RB queue entry
 >)
 
 	BUG. (CHK,LLMRXF,LLMOP,SOFT,<LLMOP Resource Failure>,,<
 
 Cause:	LLMOP was not able to obtain resources from the memory manager.
+
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >,,<DB%NND>)			;[7.1238] 
 
 	SUBTTL Storage Allocation -- Resident Writeable
@@ -2563,6 +2642,7 @@ DEQMSD:	D36OFF			;Interlock the RB
 	IFSKP.			;No...
 	  D36ON
 	  SETZ MS,		;Clear the MSD address
+	  RET			;[9158] Kevin O'Kelley says to return at once
 	ENDIF.
 	LOAD MS,RBMSI,(RB)	;Get address of input MSD
 	LOAD T1,MDNXT,(MS)	;Get next MSD address
@@ -4483,6 +4563,10 @@ Cause:  ASGRES was called to get some free space from the general pool
 	space in the free pool to assign. This is a free space problem
 	somewhere.
 
+Action:	If this BUG persists, make it dumpable and submit an SPR with the
+	dump and a copy of MONITR.EXE.  If possible, include any known
+	method for reproducing the problem and/or the state of the system
+	at the time the BUG was observed.
 >)
 	RET			;Just return - PSI interrupt will be lost
 

@@ -1,3 +1,22 @@
+; Edit= 9147 to DIRECT.MAC on 9-Feb-90 by GSCOTT
+;Don't propagate FB%NDL through different versions of FDBs. 
+; Edit= 9043 to DIRECT.MAC on 14-Dec-88 by RASPUZZI
+;Make sure the FB%SEC bit gets set in the FDB's .FBCTL word if the directory
+;is set secure (CD%SEC set in the directory mode word) when a new generation
+;of an existing file is created.
+; Edit= 9041 to DIRECT.MAC on 13-Dec-88 by RASPUZZI
+;Finish off some of the security features that were started at one time (like
+;password expiration). Also, add new features to help a system manager secure
+;the system.
+; Edit= 9023 to DIRECT.MAC on 8-Nov-88 by LOMARTIRE
+;Merge Production changes to BUG text
+; Edit= 8946 to DIRECT.MAC on 25-Aug-88 by GSCOTT
+;Update BUG. documentation, change repeat 0ed DIRDNL to DIRDNX.
+; Edit= 8884 to DIRECT.MAC on 12-Aug-88 by RASPUZZI
+;Update BUG. documentation.
+; Edit= 8823 to DIRECT.MAC on 8-Apr-88 by RASPUZZI, for SPR #21883
+;Prevent OFNBDB BUGHLTs when the INDEX-TABLE.BIN is damaged. Have GETIDX be
+;defensive about what it finds.
 ; UPD ID= 8503, RIP:<7.MONITOR>DIRECT.MAC.7,   9-Feb-88 14:52:51 by GSCOTT
 ;TCO 7.1218 - Update copyright notice.
 ; UPD ID= 8456, RIP:<7.MONITOR>DIRECT.MAC.6,   5-Feb-88 09:20:16 by GSCOTT
@@ -147,7 +166,7 @@
 ;TCO 4.1.1028 -- Don't propagate FB%BAT through different versions of FDB's
 ;<OSMAN.MON>DIRECT.MAC.1, 10-Sep-79 15:25:27, EDIT BY OSMAN
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -944,7 +963,6 @@ INSAC0:	STKVAR <INSACF,INSACA>
 
 Cause:	A null account string was given for insertion into the FDB by the
 	monitor during the creation of a file or while executing a SACTF JSYS.
-
 >)
 CPYAC3:	CALL VERACT		;VALID ACCOUNT?
 	 RETBAD ()		;NO, ERROR RETURN
@@ -1158,13 +1176,13 @@ DELDL7:	LOAD P3,FBEXL,(P3)	;STEP TO NEXT EXT
 DELDL8:	MOVE A,DIRORA		;SET UP DIR OFFSET
 	LOAD A,DRNUM,(A)	;GET DIRECTORY NUMBER FOR SYSERR BLK
 	CALL GETSNM		;GET THE SIXBIT STRUCTURE NAME INTO B
-	BUG.(CHK,DIRSY1,DIRECT,SOFT,<DELDL8 - Directory symbol table fouled up for directory>,<<A,DIRNUM>,<B,STRNAM>>,<
+	BUG.(CHK,DIRSY1,DIRECT,HARD,<DELDL8 - Directory symbol table fouled up for directory>,<<A,DIRNUM>,<B,STRNAM>>,<
 
-Cause:	A disordered directory symbol table was found while expunging
-	a directory or rebuilding a symbol table.
+Cause:	A disordered directory symbol table was found while expunging a
+	directory or rebuilding a symbol table.
 
-Action: Rebuild the symbol table.  If that fails, delete directory
-	with DELETE command and DIRECTORY subcommand.
+Action:	Rebuild the symbol table.  If that fails, delete directory with DELETE
+	command using the DIRECTORY subcommand and rebuild the directory.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -1529,6 +1547,12 @@ FDBINI:	LOAD C,FBLEN,(A)	;GET THE LENGTH OF THE FDB
 	MOVE C,DIRORA		;GET BASE ADDRESS OF DIR
 	LOAD B,DRDPW,(C)	;GET DEFAULT FILE PROTECTION
 	STOR B,FBPRT,(A)	;PUT DEF PROT IN DIRECTORY
+	LOAD B,DRMOD,(C)	;[9041] Get directory mode bits
+	TXNN B,CD%SEC		;[9041] Directory set secure?
+	IFSKP.			;[9041] If so,
+	  MOVX B,FB%SEC		;[9041] The file will be set secure too
+	  IORM B,.FBCTL(A)	;[9041] Set it in file's FDB
+	ENDIF.			;[9041]
 	LOAD B,DRDBK,(C)	;GET DEFAULT NUMBER VERSIONS
 	STOR B,FBGNR,(A)	;PUT IN FDB
 	MOVE B,[500000,,.DFACT]	;SET ACCOUNT TO DEFAULT
@@ -1556,8 +1580,10 @@ FDBIN0:	PUSH P,A		;SAVE ADDRESS OF FDB
 	STOR A,FBCRE,(B)	;Set LAST WRITE DATE
 	STOR A,FBCRV,(B)	;CREATION DATE
 	POP P,A			;RESTORE FDB ADR IN A
-	MOVX B,FB%NXF		;MARK FILE NON-EXISTENT
-	MOVEM B,.FBCTL(A)	;AND IMPLCITELY CLEAR ALL OTHER BITS
+	MOVX B,FB%NXF		;[9041] Say file does not exist
+	IORM B,.FBCTL(A)	;[9041] And mark it so
+	MOVX B,FB%NXF!FB%SEC	;[9041] Mark file non-existent, but keep secure bit if necessary
+	ANDM B,.FBCTL(A)	;[9041] And implicitly clear all other bits
 	LOAD B,FBVER,(A)	;GET FDB VERSION #
 	CAIGE B,1		;NEW ?
 	CALLRET FV0FIX		;OLD - SET DEFAULTS
@@ -1629,7 +1655,7 @@ SETDI6:	MOVEM A,SETDIE		;SAVE THE ERROR CODE
 	MOVE A,SETDIE		;GET ERROR CODE AGAIN
 	RET			;AND RETURN NON-SKIP
 
-
+REPEAT 0,<			;[8946] Not used!
 SETDI4:	HRRZ A,SETDIN		;GET DIR NUMBER (RH ONLY)
 	MOVE D,SETDNM		;GET THE SIXBIT STRUCTURE NAME
 	BUG.(CHK,DIRBAD,DIRECT,HARD,<SETDI4 - Smashed directory number>,<<A,DIRNUM>,<D,STRNUM>>,<
@@ -1641,7 +1667,7 @@ Data:	DIRNUM - Directory number
 >,,<DB%NND>)			;[7.1210]
 	OKINT
 	RETBAD (DELFX6)
-
+>				;[8946] End of repeat 0
 
 ;ROUTINE TO INITIALIZE THE FREE BIT TABLE IF NECESSARY
 
@@ -1739,8 +1765,12 @@ ULKMD2:	MOVE T1,DIRORA		;GET DIR NUMBER
 	CALL GETSNM		;GET THE SIXBIT STRUCTURE NAME INTO B
 	BUG.(CHK,DIRULK,DIRECT,HARD,<ULKMD2 - Attempt to unlock illegally formatted directory>,<<T1,DIRNUM>,<T2,STRNAM>>,<
 
-Cause:	Either there was an attempt to unlock a directory that is disordered,  
+Cause:	Either there was an attempt to unlock a directory that is disordered,
 	or a bad argument was given to a subroutine to unlock directory.
+
+Action:	Use the DOB% facility to take a dump of this BUGCHK.  If you have a
+	reliable case for reproducing this problem, please include this
+	procedure when you submit the dump as an SPR.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -1824,8 +1854,8 @@ LCKDI0:	CSKED			;BE SURE WE GET REASONABLE SCHEDULING
 	CAMN Q2,FORKX		;THIS FORK?
 	BUG.(HLT,LCKDIR,DIRECT,SOFT,<Attempt to lock directory twice for same fork>,,<
 
-Cause:	A fork is trying to lock a directory it has already locked.
-
+Cause:	A fork is trying to lock a directory it has already locked.  This
+	BUGHLT does not occur since the code is not in the monitor any more.
 >)
 	MOVX Q2,LKDWTF		;DIRECTORY ALREADY LOCKED
 	IORM Q2,LDTBF(Q1)	;NOTE THIS FORK WAITING FOR IT
@@ -1894,10 +1924,14 @@ ULKDI8:	UNLOCK LDTLCK		;UNLOCK TABLE
 	RET
 
 ULKDI7:	CALL GETSNM		;GET THE SIXBIT STRUCTURE NAME INTO B
-	BUG.(CHK,DIRDNL,DIRECT,SOFT,<ULKDIR - Directory not locked or directory number wrong>,<<T1,DIRNUM>,<T2,STRNAM>>,<
+	BUG.(CHK,DIRDNX,DIRECT,SOFT,<ULKDIR - Directory not locked or directory number wrong>,<<T1,DIRNUM>,<T2,STRNAM>>,<
 
-Cause:	There has been an attempt to unlock a directory that was never
-	locked. Or a directory number is wrong.
+Cause:	There has been an attempt to unlock a directory that was never locked.
+	Or a directory number is wrong.  This BUG will not appear in the field
+	since it is under REPEAT 0 because CFS handles this now.
+
+Action:	Use the DOB% facility to produce a dump.  Also, if you can reproduce
+	this case reliably, indicate the procedure on the SPR.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -2438,11 +2472,13 @@ MDDIE2:	LOAD T1,FBDRN,(Q3)	;GET DIRECTORY NUMBER AGAIN
 MDDDIF:	JUMPN T2,MDDDIC		;NULL ENTRY?
 	MOVX T4,FB%LNG		;IS THIS A LONG FILE?
 	TDNE T4,.FBCTL(Q3)	; ???
-	JRST [	BUG.(CHK,LNGDIR,DIRECT,SOFT,<Long directory file in directory>,<<T3,DIRNUM>>,<
+	JRST [	BUG.(CHK,LNGDIR,DIRECT,HARD,<Long directory file in directory>,<<T3,DIRNUM>>,<
 
 Cause:	The subdirectory has an incorrect superior directory.
 
-Action: Rebuild index table.
+Action:	Use the EXPUNGE command with subcommand REBUILD to rebuild index table
+	of the directory listed in the additional data.  If this doesn't cure
+	the problem, delete the directory and rebuild it.
 
 Data:	DIRNUM - Directory number
 >,,<DB%NND>)			;[7.1210]
@@ -2541,7 +2577,9 @@ MDDNA1:	MOVE A,DIRORA		;GET DIR NUMBER
 
 Cause:	A bad symbol table format was found when looking up a directory.
 
-Action: Rebuild symbol table.
+Action:	Use the EXPUNGE command with subcommand REBUILD to rebuild index table
+	of the directory listed in the additional data.  If this doesn't cure
+	the problem, delete the directory and rebuild it.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -3241,9 +3279,16 @@ VRLK6A:	CALL FDBINI		;Initialize the fdb
 	 JRST MDDVRB		;DIR IS BAD
 	EXCH A,C
 	LOAD D,FBFLG,(C)	; Get previous flag bits
-	TXZ D,FB%DEL!FB%LNG!FB%PRM!FB%SHT!FB%DIR!FB%INV!FB%OFF!FB%ARC!FB%FCF!FB%BAT!FB%TMP!FB%FOR ; Don't propagate these
+	TXZ D,FB%DEL!FB%LNG!FB%PRM!FB%SHT!FB%DIR!FB%INV!FB%OFF!FB%ARC!FB%FCF!FB%BAT!FB%TMP!FB%FOR!FB%NDL ;[9147] Don't propagate these
 	TXO D,FB%NXF		; Mark as non-exstent
 	STOR D,FBFLG,(A)	; Into new FDB
+	MOVE D,DIRORA		;[9043] Get directory base
+	LOAD D,DRMOD,(D)	;[9043] Load up the mode bits
+	TXNN D,CD%SEC		;[9043] See if directory is secure
+	IFSKP.			;[9043] If it is
+	  MOVX D,FB%SEC		;[9043] Get secure file bit
+	  IORM D,.FBCTL(A)	;[9043] And pound it in new FDB
+	ENDIF.			;[9043]
 	LOAD D,FBBK0,(C)	; Get some other bits
 	ANDX D,AR%NAR+AR%EXM	; Propagate resist & exempt
 	STOR D,FBBK0,(A)	; Into new FDB
@@ -3447,10 +3492,12 @@ MOVDN:	JUMPE A,STRFDD
 	  CALL GETSNM		;GET STR NAME
 	  BUG.(CHK,DIRSY3,DIRECT,HARD,<LOOKUP - Symbol search fouled up in directory>,<<C,DIRNUM>,<B,STRNAM>>,<
 
-Cause:	A disordered symbol table was found while looking for string in
-	a directory.
+Cause:	A disordered symbol table was found while looking for string in a
+	directory.
 
-Action: Rebuild symbol table.
+Action:	Use the EXPUNGE command with subcommand REBUILD to rebuild index table
+	of the directory listed in the additional data.  If this doesn't cure
+	the problem, delete the directory and rebuild it.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -3676,7 +3723,9 @@ NAMCM4:	MOVE A,DIRORA		;GET DIR #
 
 Cause:	A disordered symbol table was found while comparing name strings.
 
-Action: Rebuild the symbol table.
+Action:	Use the EXPUNGE command with subcommand REBUILD to rebuild index table
+	of the directory listed in the additional data.  If this doesn't cure
+	the problem, delete the directory and rebuild it.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -3809,8 +3858,11 @@ CHKBAK::EA.ENT
 
 Cause:	An OFN cannot be assigned for the backup Root-Directory of a file.
 
-Data:	LSTERR - Error returned from ASGOFN
+Action:	There may be insufficient OFNs on your system.  If this problem
+	persists, increase NOFN and rebuild your monitor.  If this does not
+	help, then use the DOB% facility to take a dump and submit an SPR.
 
+Data:	LSTERR - Error returned from ASGOFN
 >,R,<DB%NND>)			;[7.1210]
 	STOR A,DIROFN		;SAVE THIS OFN
 	SETONE DRROF		;INDICATE UNMAPD SHOULD RELEASE OFN
@@ -3830,12 +3882,14 @@ CHKBK1:	CALL UNMAPD		;UNMAP THE FILE AND RELEASE THE OFN
 	CALL CPYBAK		;GO MAKE A COPY OF THE FILE
 	BUG.(INF,CCBROT,DIRECT,HARD,<CPYBAK - Can't copy backup root-directory>,<<T1,LSTERR>>,<
 
-Cause:	The monitor has detected a problem with the backup root-directory
-	and is attempting to copy the primary root-directory to the backup.
-	The copy failed.
+Cause:	The monitor has detected a problem with the backup root-directory and
+	is attempting to copy the primary root-directory to the backup.  The
+	copy failed.
+
+Action:	Determine which disk was being used at the time and have Field Service
+	check the device to see if it is working properly.
 
 Data:	LSTERR - Error returned from CPYBAK
-
 >,R,<DB%NND>)			;[7.1210]
 	RETSKP			;OK
 
@@ -3868,8 +3922,11 @@ MPIDX2:	CALL UNMIDX		;NO, GO UNMAP CURRENTLY MAPPED INDEX FILE
 	JE STIDX,(T1),MPIDX5	;GO ON IF OFN OF INDEX TABLE FILE NOT YET SET UP
 	BUG.(CHK,MPIDXO,DIRECT,SOFT,<MAPIDX - No OFN for Index Table File>,,<
 
-Cause:	There is no open file number for the structure index table. The
-	structure index table file cannot be mappped.
+Cause:	There is no open file number for the structure index table.  The
+	structure index table file cannot be mapped.
+
+Action:	If this BUGCHK can be reproduced, set it dumpable and submit an SPR
+	with the dump and instructions on reproducing the problem.
 >)
 	RETBAD(DELFX6)		;GIVE FAILURE RETURN
 
@@ -3976,13 +4033,32 @@ SETIDX::EA.ENT
 GETIDX::EA.ENT
 	CALL CNVIDX		;CONVERT DIR # TO IDXTAB INDEX
 	 RETBAD			;ILLEGAL #
+	LOAD B,IDXMB,(A)	;[8823] Load the non-storage address bits
+	JUMPN B,GETID1		;[8823] If not 0, index table trashed
 	LOAD B,IDXIB,(A)	;GET THE DISK ADR OF INDEX BLOCK
 	JUMPE B,[RETBAD(DIRX1)]	;IF 0, NOT SET UP YET
 	LOAD C,IDXSD,(A)	;GET SUPERIOR DIR NUMBER
 	LOAD D,IDXFG,(A)	;GET FLAGS INTO D
+	CAILE D,IDX%MX		;[8823] Valid flags?
+	JRST GETID1		;[8823] No, the INDEX-TABLE is munged
 	LOAD A,IDXFB,(A)	;GET THE FDB ADR
 	RETSKP			;GOOD RETURN
 
+GETID1:	LOAD A,CURSTR		;[8823] Get current structure
+	MOVE A,STRTAB(A)	;[8823] Now get SDB address
+	MOVE A,SDBNAM(A)	;[8823] Finally, get structure name
+	BUG.(CHK,DIRITD,DIRECT,HARD,<GETIDX - Structure INDEX-TABLE has been damged>,<<A,STRNAM>>,<
+
+Cause:	The non-storage related bits in the INDEX-TABLE are not 0.  The
+	structure's INDEX-TABLE is damaged.
+
+Action:	Determine the structure name (it's in SIXBIT in the additional data)
+	and RECONSTRUCT the INDEX-TABLE of this structure with CHECKD.
+
+Data:	STRNAM - SIXBIT structure name
+
+>,,<DB%NND>)			;[8823] Let everyone know we found a bad one
+	RETBAD (DIRX6)		;[8823] And return to the user
 
 ;ROUTINE TO CONVERT A DIR # TO AN IDXTAB INDEX
 ;ACCEPTS IN T1/	18-BIT DIR #
@@ -4183,7 +4259,7 @@ DR0CH3:	LOAD A,DRRNA,(D)	;GET REMOTE ALIAS POINTER
 DR0CH4:	RETSKP			;EVERYTHING IS IN ORDER
 
 DR0CHB:	CALL GETSNM		;GET THE SIXBIT STRUCTURE NAME INTO B
-	BUG.(CHK,DIRPG0,DIRECT,SOFT,<DR0CHK - Illegal format for directory page 0 in directory>,<<A,DIRNUM>,<B,STRNAM>>,<
+	BUG.(CHK,DIRPG0,DIRECT,HARD,<DR0CHK - Illegal format for directory page 0 in directory>,<<A,DIRNUM>,<B,STRNAM>>,<
 
 Cause:	The directory header contains incorrect information.
 
@@ -4224,7 +4300,7 @@ DRHCH1:	LOAD A,DRNUM,(C)	;GET DIR # OF THIS PAGE
 
 DRHCHB:	MOVE A,C		;MOVE BLOCK ADDRESS TO RIGHT AC
 	CALL GETDSA		;COLLECT INFORMATION
-	BUG.(CHK,DIRPG1,DIRECT,SOFT,<DRHCHK - Directory header block is bad in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
+	BUG.(CHK,DIRPG1,DIRECT,HARD,<DRHCHK - Directory header block is bad in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
 
 Cause:	The directory header contains incorrect information.
 
@@ -4263,7 +4339,9 @@ SYMBAD:	LOAD A,DRNUM,(D)	;GET DIR # FOR SYSERR
 
 Cause:	A symbol table header contains incorrect information.
 
-Action: Rebuild symbol table.
+Action:	Use the EXPUNGE command with subcommand REBUILD to rebuild index table
+	of the directory listed in the additional data.  If this doesn't cure
+	the problem, delete the directory and rebuild it.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -4342,7 +4420,7 @@ FDBCH6:	MOVE A,FDBCHA		;GET ADR OF FDB
 FDBBAD:	MOVE A,FDBCHA		;GET BACK FDB ADDRESS
 	CALL GETDSA		;COLLECT INFORMATION FOR BUGCHK
 	SKIPE FDBCHF		;BUG CHECK MESSAGE WANTED?
-	BUG.(CHK,DIRFDB,DIRECT,SOFT,<Illegal format for FDB in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
+	BUG.(CHK,DIRFDB,DIRECT,HARD,<Illegal format for FDB in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
 
 Cause:	The format for a FDB in a directory is incorrect.
 
@@ -4373,7 +4451,7 @@ NAMCHK:	SAVET			;SAVE ALL ACS
 	RETSKP			;NAME BLOCK OK
 
 NAMBAD:	CALL GETDSA		;COLLECT INFORMATION
-	BUG.(CHK,DIRNAM,DIRECT,SOFT,<NAMBAD - Illegal format for directory name block in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
+	BUG.(CHK,DIRNAM,DIRECT,HARD,<NAMBAD - Illegal format for directory name block in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
 
 Cause:	The file name block is not correct in the symbol table.
 
@@ -4404,12 +4482,11 @@ EXTCHK:	SAVET
 	RETSKP			;OK
 
 EXTBAD:	CALL GETDSA		;COLLECT INFORMATION
-	BUG.(CHK,DIREXT,DIRECT,SOFT,<EXTBAD - Illegal format for directory extension block in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
+	BUG.(CHK,DIREXT,DIRECT,HARD,<EXTBAD - Illegal format for directory extension block in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
 
 Cause:	The file extension block is not correct in symbol table.
 
-Action: Check SYSERR for file.  Delete and expunge it,
-	then restore it.
+Action: Delete and expunge file, then restore it.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -4440,8 +4517,7 @@ ACTBAD:	CALL GETDSA		;COLLECT INFORMATION
 
 Cause:	The file account string block is not correct in the symbol table.
 
-Action: Check SYSERR for file.  Delete and expunge it, then
-	restore the file.
+Action: Delete and expunge file, then restore it.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -4479,7 +4555,8 @@ FREBAD:	CALL GETDSA		;COLLECT INFORMATION
 
 Cause:	The directory free block is not correct.
 
-Action: Rebuild Directory.
+Action:	Use the DELETE command with subcommand DIRECTORY to delete the
+	directory file, then rebuild the directory.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -4512,8 +4589,8 @@ UNSBAD:	MOVE A,DIRORA		;GET DIR #
 
 Cause:	The user name string block is incorrect in the symbol table.
 
-Action: Check SYSERR for file.  Delete and expunge it,
-	then restore the file.
+Action:	Use the DELETE command with subcommand DIRECTORY to delete the
+	directory file, then rebuild the directory.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -4563,6 +4640,9 @@ RNABAD:	MOVE A,Q1		;get address of remote alias block
 	BUG.(CHK,DRXRNA,DIRECT,SOFT,<DIRRNA - Illegal formatted remote alias block in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
 
 Cause:	Illegal formatted remote alias block.
+
+Action:	Use the DELETE command with subcommand DIRECTORY to delete the
+	directory file, then rebuild the directory.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -4719,7 +4799,7 @@ RBLDS9:	MOVE A,DIRORA		;GET DIR #
 Cause:	Symbol table space was exhausted while rebuilding symbol table on a
 	DELDF JSYS.
 
-Action: Split directory into more directories.
+Action: Move some files out of the directory.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -4843,7 +4923,8 @@ BLKSCE:	MOVE A,Q1		;GET ADDRESS OF BLOCK
 
 Cause:	There is an unknown code in a directory block.
 
-Action: Delete directory and rebuild it.
+Action:	Use the DELETE command with subcommand DIRECTORY to delete the
+	directory file, then rebuild the directory.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -5179,10 +5260,10 @@ RELDF5:	MOVE D,RELDFB		;GET ADDRESS OF BLOCK BEING RETURNED
 RLDFB1:	CALL GETDSA		;COLLECT INFORMATION
 	BUG.(CHK,DIRB2S,DIRECT,SOFT,<RLDFB1 - Directory free block too small in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
 
-Cause:	A bad directory block is being returned.  Disk space will be
-	lost until CHECKD is run on the structure.
+Cause:	A bad directory block is being returned.  Disk space is lost until
+	CHECKD is run on the structure.
 
-Action: Run CHECKD to reclaim lost space.
+Action: No immediate action is required.  Run CHECKD to reclaim lost space.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -5195,7 +5276,7 @@ RLDFB2:	CALL GETDSA		;COLLECT INFORMATION
 
 Cause:	A bad directory block is being returned.
 
-Action: Run CHECKD to reclaim lost pages.
+Action: No immediate action is required.  Run CHECKD to reclaim lost pages.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -5208,7 +5289,7 @@ RLDFB3:	CALL GETDSA		;COLLECT INFORMATION
 
 Cause:	A bad directory block is being returned.
 
-Action: Run CHECKD to reclaim lost pages.
+Action: No immediate action is required.  Run CHECKD to reclaim lost pages.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
@@ -5216,6 +5297,7 @@ Data:	DIRNUM - Directory Number
 >,,<DB%NND>)			;[7.1210]
 	RETBAD (DIRX3)
 
+REPEAT 0,<			;[8946]
 RLDFB4:	CALL GETDSA		;COLLECT INFORMATION
 	BUG.(CHK,DIRIFB,DIRECT,SOFT,<RLDFB4 - Illegal block type on directory free list in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
 
@@ -5226,6 +5308,7 @@ Data:	DIRNUM - Directory Number
 	ADDR - Address in Directory
 >,,<DB%NND>)			;[7.1210]
 	RETBAD (DIRX3)
+>				;[8946] End of repeat 0
 
 RLDFB5:	CALL GETDSA		;COLLECT INFORMATION
 	BUG.(CHK,DIRBAF,DIRECT,SOFT,<RLDFB5 - Block already on directory free list in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
@@ -5242,6 +5325,12 @@ RLDFB6:	CALL GETDSA		;COLLECT INFORMATION
 	BUG.(CHK,DIRRHB,DIRECT,SOFT,<RLDFB6 - Attempting to return a header block in directory>,<<A,DIRNUM>,<B,STRNAM>,<C,ADDR>>,<
 
 Cause:	The address of a block being returned is illegal.
+
+Action:	There is an inconsistancy in either the monitor's data structure or on
+	the file structure.  Dismount the structure and run CHECKD on it.  If
+	this does not fix the problem, and this BUGCHK is reproducible on a
+	healthy file structure, set this bug dumpable and submit an SPR along
+	with the dump and instructions on reproducing it.
 
 Data:	DIRNUM - Directory Number
 	STRNAM - Sixbit Structure Name
