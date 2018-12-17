@@ -98,7 +98,7 @@ BEGIN::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! Get all logical names listed
 
@@ -157,7 +157,7 @@ ARPBIG::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! Build STGAN and VERSIO
 
@@ -242,7 +242,7 @@ ARPMAX::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! Build STGAN and VERSIO
 
@@ -333,7 +333,7 @@ MONDEV::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! Assemble the sources
 
@@ -362,7 +362,7 @@ ARPDCN::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! Build STGAN and VERSIO
 
@@ -456,7 +456,7 @@ SINGLE::
 ! Local mods go here
 
 @ENABLE
-@TAKE RIP:<7-WORKING-SOURCES.MONITOR>7-SETSRC.CMD
+@TAKE BATCH.CMD
 
 ! Get all logical names listed
 
