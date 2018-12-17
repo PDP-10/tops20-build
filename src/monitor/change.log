@@ -424,3 +424,5 @@ Edit	SPR	  PCO		  Date	Module	Description
 ; default terminal type is vt300 for everything, and terminal size set to 0
 ; [GH1][9181] Wed Oct 31 12:05:49 EDT 2018 kcr
 ; assemble kddt and mddt
+; [GH2][9182] Wed Dec 19 01:17:31 EST 2018 kcr
+; pull in macsym and monsym
