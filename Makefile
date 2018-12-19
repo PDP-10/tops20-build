@@ -89,7 +89,7 @@ clean-phase0:
 clean:: clean-phase0
 
 phase0/phase0.tap: phase0 pexpect-venv/bin/python3 tapes/dec/install.tap bin/kn10-kl config/config.tap phase0.py
-	(cd phase0; ../pexpect-venv/bin/python3 ../phase0.py)
+	(cd phase0; script -c '../pexpect-venv/bin/python3 ../phase0.py' phase0.out)
 	bzip2 -fk tapes/phase0.tap
 	cp -v tapes/phase0.tap.bz2 tapes/bootstrap.tap.bz2
 
@@ -108,7 +108,7 @@ clean-phase1:
 clean:: clean-phase1
 
 phase1/phase1.tap: phase1 pexpect-venv/bin/python3 tapes/bootstrap.tap bin/kn10-kl phase1.py src/monitor.tap src/exec.tap src/midas.tap src/iddt.tap
-	(cd phase1; ../pexpect-venv/bin/python3 ../phase1.py)
+	(cd phase1; script -c '../pexpect-venv/bin/python3 ../phase1.py' phase1.out)
 
 tools/back10/back10:
 	make -C tools/back10 all
