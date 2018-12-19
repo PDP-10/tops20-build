@@ -137,7 +137,9 @@ class KLH10:
         self.line('')
 
     def termsetup(self):
+        self.cl('terminal type 9', '@')
         self.cl('terminal width 0', '@')
+        self.cl('terminal length 0', '@')
         self.cl('enable', '@')
 
     def login(self):
@@ -250,4 +252,17 @@ class KLH10:
         self.cl('exit', 'DUMPER>')
         self.cl('unload mta0:')
         self.cl('deassign mta0:')
+
+    def assert_exists(self, filename, logfile=''):
+        filename = filename.upper()
+        filere = filename.replace('.', r'\.')
+        self.cl(f'vdir {filename}')
+        index = self.expect(
+            [rf'%File not found - {filere}', rf'{filere}\.[0-9]+;'])
+        if index != 1:
+            print(f'\n\n{filename} not built\n')
+            if logfile:
+                self.cl(f'type {logfile}')
+            self.shutdown()
+            sys.exit(1)
 

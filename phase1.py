@@ -58,16 +58,20 @@ def build():
     kl.cl('del *.*.*')
     kl.restore_interchange('../src/monitor.tap')
     kl.cl('del *.exe')
+
     kl.cl('submit ln2070.ctl/time/notify')
     kl.expect('From SYSTEM: Job LN2070 request #[0-9]* finished executing at', timeout=3600)
     kl.line('')
-    kl.cl('dir 2060-monmax.exe')
-    index = kl.expect(['2060-MONMAX.EXE', 'File not found'])
-    if index != 0:
-        print('monitor not built')
-        kl.shutdown()
-        sys.exit(1)
-    kl.cl('copy 2060-monmax.exe <system>monitr.exe')
+    kl.assert_exists('2060-monmax.exe', 'ln2070.log')
+
+    kl.cl('submit t20-an.ctl/time/notify')
+    kl.expect('From SYSTEM: Job T20-AN request #[0-9]* finished executing at', timeout=3600)
+    kl.line('')
+    kl.assert_exists('an-monmax.exe', 't20-an.log')
+
+    kl.cl('dir *.exe')
+    kl.cl('copy *.exe <system>')
+    kl.cl('copy an-monmax.exe <system>monitr.exe')
 
     kl.build('<src.exec>')
     kl.cl('connect <src.exec>')
@@ -77,12 +81,7 @@ def build():
     kl.cl('submit exec/time/notify')
     kl.expect('From SYSTEM: Job EXEC request #[0-9]* finished executing at', timeout=3600)
     kl.line('')
-    kl.cl('dir exec.exe')
-    index = kl.expect(['EXEC.EXE', 'File not found'])
-    if index != 0:
-        print('exec not built')
-        kl.shutdown()
-        sys.exit(1)
+    kl.assert_exists('exec.exe', 'exec.log')
 
     kl.cl('copy exec.exe <system>exec.exe')
     kl.expect('OK')
