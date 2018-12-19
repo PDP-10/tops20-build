@@ -94,7 +94,7 @@ phase0/phase0.tap: phase0 pexpect-venv/bin/python3 tapes/dec/install.tap bin/kn1
 	cp -v tapes/phase0.tap.bz2 tapes/bootstrap.tap.bz2
 
 tapes/bootstrap.tap: tapes/bootstrap.tap.bz2
-	bunzip2 -k tapes/bootstrap.tap.bz2
+	bunzip2 -fk tapes/bootstrap.tap.bz2
 
 clean::
 	$(RM) tapes/bootstrap.tap
