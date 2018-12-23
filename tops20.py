@@ -97,7 +97,7 @@ class KLH10:
         self.cl('files', 'DUMPER>')
         self.cl('tape mta0:', 'DUMPER>')
         self.cl('restore <*>*.*.*', 'DUMPER>')
-        self.cl('unload', 'DUMPER>')
+        self.cl('unload', 'DUMPER>', timeout=120)
         self.cl('exit', 'DUMPER>')
 
     def install_boot(self, structure='PS', tape=BOOTSTRAP):
@@ -206,7 +206,7 @@ class KLH10:
         self.cl('tape mta0:', 'DUMPER>')
         for ds in dirs:
             self.cl('restore ' + ds, 'DUMPER>')
-        self.cl('exit', 'DUMPER>')
+        self.cl('exit', 'DUMPER>', timeout=120)
 
     def restore_interchange(self, tape):
         self.restore(tape, ['<*>*.*.*'], interchange=True)
@@ -249,7 +249,7 @@ class KLH10:
         self.cl('exact', 'DUMPER>')
         self.cl('files', 'DUMPER>')
         self.cl('save ps:<*>*.*.* ps:<*>*.*.*', 'DUMPER>')
-        self.cl('exit', 'DUMPER>')
+        self.cl('exit', 'DUMPER>', timeout=120)
         self.cl('unload mta0:')
         self.cl('deassign mta0:')
 
