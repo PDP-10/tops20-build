@@ -257,9 +257,12 @@ class KLH10:
         filename = filename.upper()
         filere = filename.replace('.', r'\.')
         self.cl(f'vdir {filename}')
-        index = self.expect(
-            [rf'%File not found - {filere}', rf'{filere}\.[0-9]+;'])
-        if index != 1:
+        errors = [
+            rf'%File not found - {filere}',
+            rf'%No such file type - {filere}',
+            ]
+        index = self.expect(errors + [rf'{filere}\.[0-9]+;'])
+        if index != len(errors):
             print(f'\n\n{filename} not built\n')
             if logfile:
                 self.cl(f'type {logfile}')
