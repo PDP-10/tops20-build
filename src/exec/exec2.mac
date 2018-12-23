@@ -1,3 +1,11 @@
+; Edit= 4439 to EXEC2.MAC on 21-May-90 by GSCOTT
+;Clear control-O bit between TYPE of multiple files. 
+; Edit= 4430 to EXEC2.MAC on 16-Feb-90 by LOMARTIRE
+;Clear BUF0 in COPTTY so that COPY and APPEND don't randomly set bit 35
+; Edit= 4404 to EXEC2.MAC on 7-Apr-88 by RASPUZZI, for SPR #21939
+;Make EXEC echo control characters after one attaches by doing a wild and
+;wolly ETYPE of nothing to the terminal. It works, I don't know why and I am
+;not questioning.
 ; UPD ID= 4108, RIP:<7.EXEC>EXEC2.MAC.2,   7-Mar-88 18:20:51 by GSCOTT
 ;TCO 7.1255 - Update copyright notice.
 ; UPD ID= 218, SNARK:<6.1.EXEC>EXEC2.MAC.12,  10-Jun-85 08:42:29 by DMCDANIEL
@@ -62,7 +70,7 @@
 ; UPD ID= 303, SNARK:<4.1.EXEC>EXEC2.MAC.2,   5-Mar-80 11:24:23 by OSMAN
 ;tco 4.1.1099 - Fix COPY to not go forever on files exactly one section long
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -748,6 +756,9 @@ COPTTY:	MOVEI B,CTTEOF		;WHERE TO GO ON EOF PSI
 	HRLM A,2+TTBLK
 	SETZM 5+TTBLK
 	SETZM 6+TTBLK
+	SETZM BUF0		;[4430] Clear the first word
+	MOVE B,[BUF0,,BUF0+1]	;[4430] Prepare to clear all of BUF0
+	BLT B,BUF0+777		;[4430] Clear the page
 COPTT0:	MOVE B,[POINT 7,BUF0]	;INPUT TO FREE PAGE
 	MOVEM B,3+TTBLK
 	MOVEI B,1000*5		;MAX NUMBER OF CHRS
@@ -1290,10 +1301,19 @@ COPDON:	SETZM EOFDSP		;(REDUNDANT EXCEPT IN ^Z ON TTY CASE)
 	JRST COPFLE		;YES, DON'T DO ANY MORE.
 	CALL GNFIL		;GET NEXT FILE IN INPUT GROUP
 	 JRST COPFLE
-	SKIPE POJFLG		;IF OUTPUT TO COJFN
-	ETYPE<%_>		;THEN SEPARATE FILENAMES
-	JRST COPFLN
 
+	SKIPN POJFLG		;[4439] Skip if output to COJFN
+	JRST COPFLN		;[4439] Nope, get another filename
+	MOVE A,COJFN		;[4439] Load the terminal designator
+	RFMOD%			;[4439] Read JFN mode word 
+	IFNJE.			;[4439] If that worked
+	  TXZE B,TT%OSP		;[4439] Clear control-O bit, skip if off now
+	  SFMOD%		;[4439] Insure that output suppress is off
+	   ERJMP .+1		;[4439] Ignore error
+	ENDIF.			;[4439] End of RFMOD-worked
+	ETYPE <%_>		;[4439] Separate filenames with CRLF 
+	JRST COPFLN		;[4439] Get another filename
+
 MCOERR:	SETOM CERRF		;REMEMBER THAT THIS FILE HAD ERROR
 	JRST COPDON
 
@@ -1579,6 +1599,14 @@ $REDIR:	TABLE
 
 ..DTCH::TLNE Z,DTACHF
 	DTACH
+;
+;Nota Bene - This "bogus" ETYPE was inserted to force the EXEC to
+;do a SOUT% to the .CTTRM. This forces something to happen such that
+;control characters will be echoed after an ATTACH is done. Don't
+;ask me why, but this fixes the problem even though it makes me
+;puke.
+;
+	ETYPE <>		;[4404] "Activate" CCOC words.
 	MOVEI Q1,ETTYMD		;TTY MODES FOR USE WHEN EXEC IS RUNNING
 	CALL LTTYMD		;PUT SAME INTO EFFECT NOW.
 	JRST CMDIN4

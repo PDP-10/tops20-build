@@ -1,3 +1,35 @@
+; Edit= 4453 to EXEC1.MAC on 17-Sep-90 by WONG (TCO none)
+;Don't DELETE invisible files. 
+; Edit= 4450 to EXEC1.MAC on 23-May-90 by GSCOTT
+;Don't consider detached jobs running RMSFAL as good candidates for ATTACH. 
+; Edit= 4447 to EXEC1.MAC on 22-May-90 by GSCOTT
+;Add ARCHIVE subcommands INVISIBLE, VISIBLE, NO RETAIN.
+; Edit= 4438 to EXEC1.MAC on 21-May-90 by GSCOTT
+;KEEPD1 doesn't check for FB%NDL and looks for AR%RAR in wrong FDB word
+;(thanks MRC).
+; Edit= 4431 to EXEC1.MAC on 24-Apr-90 by GSCOTT
+;Allow the EXEC to rescan commands of the form "EXEC command".
+; Edit= 4426 to EXEC1.MAC on 18-Apr-89 by GSCOTT
+;Fix typeo in previous edit.
+; Edit= 4425 to EXEC1.MAC on 14-Mar-89 by GSCOTT
+;Rewrite ATTACH command to allow user to pick a job to attach to if more than
+;one candidate job. Also allow ETYPE's %L to take an AC argument. 
+; Edit= 4420 to EXEC1.MAC on 16-Feb-89 by GSCOTT
+;Make ETYPE's %W say "never" for a zero date, then clean up login message code
+;in EXEC0 and EXEC1.
+; Edit= 4419 to EXEC1.MAC on 9-Feb-89 by GSCOTT
+;INFORMATION JOB command should show network origin. %L now will output this. 
+; Edit= 4415 to EXEC1.MAC on 22-Dec-88 by RASPUZZI
+;Be more forgiving to those poor souls who do not know the minimum password
+;length during the login process.
+; Edit= 4414 to EXEC1.MAC on 20-Dec-88 by RASPUZZI
+;Keep clever users from not changing their expired passwords and make the code
+;in REPWD more fool proof for those morons who can't change passwords when
+;they are told to.
+; Edit= 4412 to EXEC1.MAC on 13-Dec-88 by RASPUZZI
+;Add new commands, features and support for security enhancements.
+; Edit= 4411 to EXEC1.MAC on 25-Aug-88 by RASPUZZI, for SPR #22255
+;Prevent routine MESMES from trashing the first entry in MWATDR.
 ; UPD ID= 4137, RIP:<7.EXEC>EXEC1.MAC.16,   7-Apr-88 15:20:18 by RASPUZZI
 ;TCO 7.1269 - Don't mislead users into believing that '*' is a valid answer
 ;	      when parsing a node name for a (^E)SEND USER when USER is
@@ -251,7 +283,7 @@
 ;<4.1.EXEC>EXEC1.MAC.2,  9-Nov-79 09:22:17, EDIT BY OSMAN
 ;tco 4.1.1011 - Don't allow ^C between LOGIN jsys and setting up CUSRNO
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -280,9 +312,10 @@
 
 ;ARCHIVE <Files>
 ;F2 - DON'T FLUSH FILE CONTENTS
+;[4447] F3 - Don't make file invisible
 
 .ARCHI::NOISE <FILES>
-	TLZ Z,F2		;DEFAULT IS NOT TO RETAIN CONTENTS
+	TLZ Z,F2!F3		;[4447] Default INVISIBLE and NO RETAIN
 	MOVE A,[XWD -1,0]	;NO DEFAULT NAMES
 	HRLI B,-3		;DEFAULT VERSION IS *
 	HRRI B,(GJ%OLD+GJ%IFG+GJ%PHY+GJ%XTN+GJ%FNS)
@@ -315,8 +348,8 @@ ARCHI3:	CALL RLJFNS
 	HRLI A,.FBCTL
 	MOVX B,FB%INV		;MAKE THE FILE INVISIBLE TOO
 	MOVX C,FB%INV
-	TLNN Z,F2		;RETAIN CONTENTS?
-	CHFDB
+	TLNN Z,F3		;[4447] NO INVISIBLE requested?
+	CHFDB			;[4447] Make file invisible as well
 	 ERJMP [ETYPE < %?%%_>
 		JRST .+1]
 	TYPE < [Requested]
@@ -330,8 +363,29 @@ ARCHI9:	SKIPE INIFH1		;DONE THEM ALL?
 ;TABLES ETC. TO ARCHIVE
 
 $ARCHI:	TABLE
+	T INVISIBLE,ONEWRD,.ARIN ;[4447] ARCHIVE subcommand INVISIBLE
+	T NO,,.ARNO		;[4447] ARCHIVE subcommand NO
 	T RETAIN,,.ARFL
+	T VISIBLE,ONEWRD,.ARVI	;[4447] ARCHIVe subcommand VISIBLE
 	TEND
+
+.ARNO:	KEYWD $ARNO		;[4447] Get next keyword after NO
+	 T RETAIN,ONEWRD,.ARNR	;[4447] ARCHIVE subcommand NO RETAIN
+	 JRST CERR		;[4447] If error parsing
+	JRST (P3)		;[4447] Dispatch to routine
+
+$ARNO:	TABLE			;[4447] ARCHIVE subcommand NO keywords
+	T RETAIN,ONEWRD,.ARNR	;[4447] ARCHIVE subcommand NO RETAIN
+	TEND			;[4447]
+
+.ARVI:	TLO Z,F3		;[4447] Here for ARCHIVE subcom VISIBLE
+	RET			;[4447] Just indicate so and return
+
+.ARIN:	TLZ Z,F3		;[4447] Here for ARCHIVE subcom INVISIBLE
+	RET			;[4447] Juse clear the bit and return
+
+.ARNR:	TLZ Z,F2		;[4447] Here for ARCHIVE command NO RETAIN
+	RET			;[4447] Just clear the bit and return
 
 .ARFL:	NOISE <DISK CONTENTS>
 	CONFIRM
@@ -468,189 +522,307 @@ ASSONO:	CAIE A,CRLNX1
 	 CALL CJERR
 	POP P,B
 	RET
-
-;ATTACH (USER) <NAME> (PASSWORD) -- (TSS JOB #) <#>
+;ATTACH command
 
-;LIKE LOGIN, THIS COMMAND ALSO ACCEPTS THE FORM:
-;ATTACH
-;(USER) <NAME>
-;(PASSWORD) ----
-;(TSS JOB #) <#>
+;ATTACH (USER) user (JOB #) job
+;Password:
 
-;PASSWORD IS NOT ECHOED IN FULL DUPLEX, TYPED OVER MASK ON
-;FOLLOWING LINE IN HALF DUPLEX.
-;TSS JOB # CAN BE OMITTED IF THERE IS ONLY ONE JOB FOR GIVEN USER.
-;IF NOT LOGGED IN, CURRENT JOB GOES AWAY (HANDLED BY MONITOR),
-;IF LOGGED IN IT IS DETACHED.
-
-;IN ORDER TO NOT HAVE TO HAVE THE EXEC WAKING UP AFTER EVERY FIELD
-;OF INPUT TO SEE IF WE'RE DOING SOME SORT OF PASSWORD COMMAND, THE
-;FORMAT OF THE "ATTACH" AND "UNATTACH" COMMANDS HAVE BEEN CHANGED TO
-;PROMPT FOR THEIR PASSWORD ON THE SECOND LINE.  SINCE THE CR AT END
-;OF FIRST LINE CAUSES WAKEUP, THIS GUARANTEES THAT ECHOING WILL HAVE
-;A CHANCE TO BE TURNED OFF BEFORE USER TYPES PASSWORD.E.O. JUL-8-77
+;[4425]	AC usage in this command:
+;	Z/ F1 is clear if ATTACH command, set if UNATTACH command.
+;	Q1/ target user number
+;	Q2/ target job number
+;	Q3/ line number of target job
 
 .ATTAC::			;ENTRY FOR COMMAND, NEXT TAG IS FROM UNATTACH
 	IFNBATCH <[ERROR <ATTACH illegal from BATCH job>]>
-ATTAU1:
+ATTAU1:				;UNATTACH command comes here
 
 ;DECODE ARGUMENTS
 
-	TRVAR <ATTNM,<APBUF,20>,AT1,AT2> ;HOLDS ATACH ARGS
+	TRVAR <<APBUF,20>,<AT1,2>> ;[4425] Storage for later use
 	NOISE <USER>
 	CALL USERN		;INPUT USER (DIRECTORY) NAME
 	 CMERRX			;FAILED, PRINT REASON
-	TXNE A,RC%DIR
+	TXNE A,RC%DIR		;Files only?
 	ERROR <That's a FILES-ONLY directory name>
-	PUSH P,C		;SAVE DIR #
-	SETOM ATTNM		;CLEAR ATTACHED TERMINAL # HERE
+	MOVEM C,Q1		;[4425] Save user number attaching to
 	NOISE <JOB #>
-	DECX < Number if more than one job under that name>
+	DECX <Job number if more than one job under that name> ;[4425] 
 	 CAIA			;NON-DECIMAL NUMBER TYPED
 	JRST ATTNUM		;NUMBER TYPED, GO PROCESS IT
 	CONFIRM			;REQUIRE CONFIRMATION OF COMMAND
-	JRST ATTAC5		;GO DEFAULT A VALUE
-ATTNUM:	CONFIRM
-	PUSH P,B		;SAVE JOB # INPUT BY USER
+;	JRST ATTAC5		;[4425] Go default a value
+;ATTACH...
+
+;[4425] No job number given, try to find a job to attach to.  Call a routine to
+;get all of the jobs logged into this username on this system.
+
+ATTAC5:	MOVE B,Q1		;[4425] Load usernumber to find
+	CALL FNDUSR		;[4425] (B/) Fill BUF0 with job,,tty
+
+;[4425] Table is filled with job,,terminal entries.  Loop through the table
+;returned to us to find any or all jobs that could be selected today.
+
+	SOSG A,BUF0		;[4425] Sub header word from count and load it
+	ERROR <No jobs logged in under %5R> ;[4425] No users logged in
+	SETZB B,C		;[4425] Zero candidates
+	DO.			;[4425] Loop to discover how many possible jobs
+	  HLRZ D,BUF0(A)	;[4425] Load job number of the job
+	  SKIPE D		;[4425] Job 0 is never (un)attached
+	  CAMN D,JOBNO		;[4425] Always skip our job
+	  IFSKP.		;[4425] If not our job and not job 0
+	    HRRE D,BUF0(A)	;[4425] Get the terminal number of that job
+	    IFL. D		;[4425] If the job is detached
+	      TLNE Z,F1		;[4425] Unattach command?
+	      IFSKP.		;[4425] Nope, attach command
+	        SKIPN B		;[4425] Any previous candidate?
+	        SKIPA B,BUF0(A)	;[4425] Nope, this is the one
+	        SETO B,		;[4425] Yes, indicate multiple candidate jobs
+	      ENDIF.		;[4425] End of detached job check
+	    ELSE.		;[4425] Otherwise that job is not detached
+	      SKIPN C		;[4425] Any previous attached job candidate?
+	      SKIPA C,BUF0(A)	;[4425] No previous attached job, remember job
+	      SETO C,		;[4425] Indicate multiple jobs seen
+	    ENDIF.		;[4425] End of attached job checks
+	  ENDIF.		;[4425] End of "it's not my job" code
+	  SOJG A,TOP.		;[4425] Loop for all jobs in the table
+	OD.			;[4425] End of loop through all jobs
+				;[4425] Fall through to check results
+;ATTACH...
+
+;[4425] If an UNATTACH command and only one candidate attached job, use it.  If
+;multiple candidate jobs, ask which one.  If no candidate jobs to unattach,
+;give an error message.
+
+	TLNN Z,F1		;[4425] Unattach command?
+	IFSKP.			;[4425] Yes, unattach command
+	  IFG. C		;[4425] Any single attached job candidate?
+	    HLRZ Q2,C		;[4425] Load job number
+	    HRRE Q3,C		;[4425]  and terminal number
+	    JRST ATTAC7		;[4425] Yes, use that one for unattaching
+	  ENDIF.		;[4425] So no single attached job
+	  JUMPL C,ATTAC6	;[4425] If multiple attached jobs jump
+	  CAMN Q1,CUSRNO	;[4425] One of ours?
+	  ERROR <No other attached jobs logged in under %5R> ;[4425] Yes
+	  ERROR <No attached jobs logged in under %5R> ;[4425] No
+	ENDIF.			;[4425] End of unattach command code
+
+;[4425] Now for the case of the ATTACH command.  If there is one detached
+;candidate job, use it.  If there is one candidate attached job, use it.  If
+;there is more than one target job, list them amd prompt for the job number to
+;attach to.  If there are no candidate give an error message.
+
+	IFG. B			;[4425] Any detached job to use?
+	  HLRZ Q2,B		;[4425] Load job number
+	  HRRE Q3,B		;[4425]  and terminal number (-1 for detached)
+	  MOVE D,Q2		;[4450] Load single detached job's number
+	  GTB .JOBPN		;[4450] (D/A) Get program name of that job
+	  CAMN A,[SIXBIT/RMSFAL/] ;[4450] Yes, is it detached RMSFAL?
+	  JRST ATTAC6		;[4450] Don't consider detached RMSFAL jobs
+	  JRST ATTAC7		;[4425] Yes, use that one
+	ENDIF.			;[4425] No detached job to use
+	IFG. C			;[4425] Any single attached job candidate?
+	  HLRZ Q2,C		;[4425] Load job number
+	  HRRE Q3,C		;[4425]  and terminal number
+	  JUMPE B,ATTAC7	;[4425] Yes, use that one only if no det jobs
+	ENDIF.			;[4425] So no single attached job
+
+	JUMPL C,ATTAC6		;[4425] If multiple attached jobs jump
+	JUMPL B,ATTAC6		;[4425] Attach, if multiple detached jobs jump
+
+	CAMN Q1,CUSRNO		;[4425] Trying to attach to another of my jobs?
+	ERROR <No other jobs logged in under %5R> ;[4425] Yes
+	ERROR <No jobs logged in under %5R> ;[4425] No
+
+;ATTACH...
+
+;[4425] Here when we have multiple target job possibilities, list them.  Do not
+;list a job in the table if (1) it is job zero (2) it is our job or (3) if it
+;is an unattach command and job is detached.
+
+ATTAC6:	MOVN Q3,BUF0		;[4425] Load -count
+	HRLZ Q3,Q3		;[4425]  and make it -count,,0
+	SETZ B,			;[4425] Clear job number of first one displayed
+	DO.			;[4425] Loop to output jobs that are candidates
+	  HLRZ D,BUF0+1(Q3)	;[4425] Load the job number
+	  SKIPE D		;[4425] If job 0
+	  CAMN D,JOBNO		;[4425]  and not our job
+	  IFSKP.		;[4425] It's not my job (or job 0)
+	    HRRE C,BUF0+1(Q3)	;[4425] Load the terminal number
+	    SKIPGE C		;[4425] Is job detached?
+	    TLNN Z,F1		;[4425] Yes, is this an unattach command?
+	    IFNSK.		;[4425] We need to output this job
+	      GTB .JOBPN	;[4425] (D/A) Get program name of that job
+	      SKIPN A		;[4425] Anything there?
+	      MOVX A,<SIXBIT/?/> ;[4425] Say what?
+	      TXO C,.TTDES	;[4425] Make terminal designator from that
+	      ETYPE < Job %4Q, %3L, Running %1'%%_> ;[4450] Output info for job
+	      SKIPN B		;[4425] Any job number to default yet?
+	      MOVE B,D		;[4425] Nope, use first one
+	    ENDIF.		;[4425] End of need to display job code
+	  ENDIF.		;[4425] End of "it's not my job or job 0" code
+	  AOBJN Q3,TOP.		;[4425] Loop for all of them
+	OD.			;[4425] End of loop for all of them
+
+;[4425] Select a job if none selected and more than one target job found.
+
+	PROMPT <Job: >		;[4425] Prompt for job number
+	HRROI A,APBUF		;[4425] Get pointer for default string
+	MOVEM A,CMDEF		;[4425] Save pointer to default
+	MOVEI C,^D10		;[4425] In octal
+	NOUT			;[4425] Create default string
+	 ERJMP .+1		;[4425] Won't fail
+	DECX <Job number>	;[4425] Get the job number for attach
+	 CMERRX			;[4425] Bomb if not a number
+;	JRST ATTNUM		;[4425] Now B/ job number to use
 
 ;ATTACH...
-;CHECK THAT USER-GIVEN JOB # IS IN LEGAL RANGE
 
-	SETO D,
-	GTB .JOBRT		;GET MAX JOB # AS LENGTH OF SYSTEM TABLE
-	MOVN A,A		;LENGTH COMES BACK NEGATIVE
-	SUBI A,1		;SO VALUE COMES OUT RIGHT IN ERR MSG
-	CAML A,(P)		;LENGTH MUST BE > GIVEN #
-	SKIPGE D,(P)		;GIVEN JOB # TO D
-	ERROR <Job # must be between 0 and %1Q>
+;[4425] Here after the job number has been input to confirm the command.
 
-;MAKE SURE GIVEN JOB # IS LOGGED IN W MATCHING USER # AND IS ATTACHED
+ATTNUM:	CONFIRM			;[4425] Confirm after job number input
+	MOVEM B,Q2		;[4425] Save target job number 
 
-	GTB .JOBRT		;ENTRY NEG IF NO SUCH JOB
-	JUMPL A,[UERR[ASCIZ /No job %4Q/]]
-	GTB .JOBTT		;LINE # OR NEGATIVE FOR DETACHED IN LH
-	HLREM A,ATTNM		;STORE ATTACHED LINE NUMBER FOR LATER
-	CALL USERNO		;GET USER OWNING JOB BEING ATTACHED
-	JUMPE A,[UERR [ASCIZ /Job %4Q not logged in/]]
-	MOVE Q1,-1(P)		;DESIRED USER #, FOR USE IN ERR MSG
-	CAME A,Q1
-	ERROR <Job %4Q not logged in under %5R>
-	JRST ATTAC7		;GO CONFIRM AND EXECUTE
-
-;ATTACH...
-;NO JOB # GIVEN, SEE IF THERE IS A UNIQUE ONE FOR GIVEN NAME.
+;Check that user given job number is in legal range of jobs for this system.
 
-ATTAC5:				;SEARCH JOBDIR TABLE FOR A MATCH
-	GJINF			;GET JOB # INTO C FOR TEST LATER
-	MOVE Q1,(P)		;DIR # TO SEARCH FOR (USED IN ERR MSGS!)
-	SETO D,
-	GTB .JOBRT		;JOBRT TABLE BY JOB #, LOGIN DIR # IN RH.
-	HRLZ D,A		;SET UP XWD LENGTH, INDEX FOR AOBJN & GTB.
-	TLZ Z,F2		;FLAG NO DETACHED JOBS SEEN YET
-	PUSH P,[-1]		;INIT JOB TO UNKNOWN
-ATA5A:	CAIN C,(D)		;ALWAYS SKIP US
-	JRST ATA5L
-	CALL USERNO
-	CAME A,Q1		;IS THIS THE CORRECT USER?
-	JRST ATA5L		;NO
-	GTB .JOBTT		;YES - GET TTY WORD
-	TLNN Z,F1		;ATTACH OR UNATTACH?
-	JRST ATA5B		;ATTACH
-	JUMPL A,ATA5L		;JUMP IF DETACHED
-	SKIPL (P)		;ATTACHED JOB, SEEN ONE ALREADY?
-	JRST ATA5E1		;YES, ERROR
-	HRRZM D,(P)		;SAVE JOB #
-	SETOM ATTNM		; AND SET TERM AS DETACHED
-	JRST ATA5L
+	SETO D,			;[4425] We want the size of the table
+	GTB .JOBRT		;[4425] (D/A) Get max job as length of table
+	MOVN A,A		;[4425] Length comes back negative
+	SUBI A,1		;[4425] So value comes out right in error 
+	CAML A,Q2		;[4425] Length must be greater than given job
+	SKIPG D,Q2		;[4425] Move given job to D, no job 0 attach
+	ERROR <Job number must be between 1 and %1Q> ;[4425] Owie job number
 
-ATA5B:	JUMPL A,ATA5C		;JUMP IF DETACHED
-	TLNE Z,F2		;ALREADY SEEN DETACHED JOB?
-	JRST ATA5L		;YES, DON'T LOOK AT ATTACHED ONES
-	SKIPL (P)		;FIRST ATTACHED ONE?
-	JRST ATA5D		;NO, STOP LOOKING AT ATTACHED ONES
-	HRRZM D,(P)		;SAVE JOB #
-	HLREM A,ATTNM		; AND TERMINAL #
-	JRST ATA5L
+;Make sure given job is logged in with matching username.
 
-ATA5D:	SETOM (P)		;RESET JOB # TO UNKNOWN
-	SETOM ATTNM		; AND TERMINAL # ALSO
-	TLO Z,F2		;SET FLAG TO LOOK ONLY AT DETACHED JOBS
-	JRST ATA5L
-
-ATA5C:	TLON Z,F2		;FLAG DETACHED JOB FOUND
-	SETOM (P)		;FORGET ANY ATTACHED JOB
-	SKIPL (P)		;MORE THAN ONE?
-	ERROR <Job # required - %5R has more than one detached job>
-	HRRZM D,(P)		;NO, SAVE JOB #
-	SETOM ATTNM		; AND MARK TERMINAL DETACHED
-ATA5L:	AOBJN D,ATA5A		;LOOP THROUGH ALL JOBS
-	SKIPL (P)		;DID WE FIND A JOB?
-	JRST ATTAC7		;YES, GO DO IT
-	TLNE Z,F2		;.GT. 1 ATTACHED, BUT 0 DETACHED?
-	JRST ATA5E1		;YES, SAME ERROR MESSAGE AS UNATTACH
-	TLNE Z,F1		;ATTACH OF UNATTACH?
-	JRST ATA5E2		;UNATTACH
-	CAMN Q1,CUSRNO
-	ERROR <No other jobs logged in under %5R>
-	ERROR <No jobs logged in under %5R>
-
-ATA5E2:	CAMN Q1,CUSRNO
-	ERROR <No other attached jobs logged in under %5R>
-	ERROR <No attached jobs logged in under %5R>
-
-ATA5E1:	CAMN Q1,CUSRNO
-	ERROR <Job # required - %5R has more than one other attached job>
-	ERROR <Job # required - %5R has more than one attached job>
+	GTB .JOBRT		;[4425] (D/A) Runtime negative if no such job
+	JUMPL A,[UERR[ASCIZ /No job %4Q/]] ;[4425] Job not active apparently
+	GTB .JOBTT		;[4425] (D/A) Line or 777777 if detached in lh
+	HLREM A,Q3		;[4425] Store attached line number for later
+	CALL USERNO		;[4425] (D/A) Get user owning target job
+	JUMPE A,[UERR [ASCIZ /Job %4Q not logged in/]] ;[4425] Not logged in!
+	CAME A,Q1		;[4425] Do the user numbers match?
+	ERROR <Job %4Q not logged in under %5R>	;[4425] Nope, give gripe 
+;	JRST ATTAC7		;[4425] We know the target job, get to work
 
 ;ATTACH...
 
-;CHECK FOR SELF
+;Here with 
+;	Q1/ target user number
+;	Q2/ target job number
+;	Q3/ target's currently attached terminal number
 
-ATTAC7:	GJINF			;GET JOB NUMBER IN C
-	CAMN C,(P)		;IS IT US?
-	 JRST [	TLNN Z,F1	;ATTACH OR UNATTACH?
-		ERROR <Cannot ATTACH to self>
-		ERROR <Cannot UNATTACH self>]
+;Check for self
 
-;CHECK FOR ALREADY ATTACHED
+ATTAC7:	CAME Q2,JOBNO		;[4425] Doing it to ourselves?
+	IFSKP.			;[4425] Yes
+	  TLNN Z,F1		;[4425] Attach or unattach?
+	  ERROR <Cannot ATTACH to self>	;[4425] Maybe it was attach
+	  ERROR <Cannot UNATTACH self> ;[4425] Uh, I guess unattach
+	ENDIF.			;[4425] End of self check
 
-	SKIPGE A,ATTNM		;TTY #
-	JRST ATAC4B
-	HRROI B,APBUF		;REDIRECT OUTPUT TO OUR BUFFER
-	MOVEM B,COJFN
-	ETYPE < [Attached to TTY%1O, confirm]>
-	CALL FIXIO		;RESUME NORMAL OUTPUT
-	UPROMP APBUF		;PROMPT USER FOR CONFIRMATION
-	CALL FCONFA
+;[4450] Check for already attached or detached running RMSFAL, confirm if so.
 
-;EXECUTE THE COMMAND
-ATAC4B:	POP P,A			;TSS JOB # TO ATTACH TO
-	MOVEI C,0		;NO PASSWORD POINTER
-	POP P,B			;USER TO ATTACH TO
-	TLNN Z,F1		;IF NOT LOSING THIS JOB
-	SKIPN CUSRNO		;OR NOT LOGGED IN,
-	CAIA			;THEN SAY NOTHING
-	ETYPE < Detaching job # %J
->
-	TLNE Z,F1		;UNATTACH?
-	TLO A,(1B1)		;YES, TELL ATACH
-	DMOVEM A,AT1		;SAVE ARGS IN CASE REDO NECESSARY
-	ATACH			;TRY TO DO IT
-	 ERJMP .+2		;FAILED
-	JRST ATGOOD		;SUCCEEDED
-	CAIE A,ATACX4		;PASSWORD PROBLEM?
-	JRST ATNG		;NO, SOME OTHER ERROR
-	CALL PASLIN		;PASSWORD NOT GIVEN BUT REQUIRED, GET IT
-	MOVE C,A		;STORE NEW PASSWORD POINTER
-	DMOVE A,AT1		;GET OTHER ARGS
-	ATACH
-ATNG:	 CALL [	TLNN Z,F1	;DIDN'T SAY DETACHING JOB IF UNATTACH
-		ETYPE <?ATTACH failure, still attached to job # %J
->
-		CALL CJERRE]
+	TXO Q3,.TTDES		;[4450] Make designator out of line number
+	MOVE D,Q2		;[4450] Load target job number
+	GTB .JOBPN		;[4450] (D/A) Get program name of that job
+	SKIPN D,A		;[4450] Is the program name nonzero?
+	MOVX D,<SIXBIT/?/>	;[4450] In this unlikely event, show something
+	MOVE A,Q3		;[4450] Assume jump if attached
+	CAMN D,[SIXBIT/RMSFAL/]	;[4450] Running RMSFAL detached?
+	SETCMM A		;[4450] Yes, complement test
+	IFGE. A			;[4450] If attached non-RMSFAL or det RMSFAL
+	  HRROI B,APBUF		;Redirect output to our buffer
+	  MOVEM B,COJFN		; by pointing herre
+	  ETYPE < [Job %6Q, %7L, Running %4', confirm]> ;[4450] Make prompt
+	  CALL FIXIO		;(/) Resume normal output
+	  UPROMP APBUF		;Prompt user for confirmation
+	  CALL FCONFA		;(/) Call routine to get confirm
+	ENDIF.			;[4425] End of "job not detached" code
+;ATTACH...
+
+;We have a legal target job, execute the ATACH JSYS now
+
+	MOVE A,Q2		;[4425] Load job to attach to
+	MOVEI C,0		;No password pointer for first try
+	MOVE B,Q1		;[4425] Load user to attach to 
+	TLNN Z,F1		;If not losing this job (UNATTACH command)
+	SKIPN CUSRNO		; or not logged in,
+	CAIA			;  then say nothing
+	ETYPE < Detaching job %J
+>				;Otherwise tell me you are saying good bye
+	TLNE Z,F1		;Unattach?
+	TXO A,AT%NAT		;[4425] Yes, tell ATACH this is an UNATTACH
+	DMOVEM A,AT1		;[4425] Save args in case redo necessary
+	ATACH			;Try to do it without password
+	 ERJMP .+2		;Failed, maybe we need a password
+	JRST ATGOOD		;Succeeded
+	CAIE A,ATACX4		;Was the error due to a password problem?
+	JRST ATNG		;No, some other error
+	CALL PASLIN		;(/A) Password not given but required, get it
+	MOVE C,A		;Store new password pointer for ATACH
+	DMOVE A,AT1		;Get args saved before the first ATACH
+	ATACH			;Try the attach again
+	 ERJMP ATNG		;[4425] It really didn't work
 
 ATGOOD:	JRST CMDIN4		;ATACH RETURNS +2 IF LOGGED IN--THIS JOB
 				; STILL ATTACHED IF 'UNATTACH' JUST DONE.
+
+;[4425] Here if attach failure
+
+ATNG:	TLNN Z,F1		;[4425] UNATTACH command?
+	ETYPE <?ATTACH failure, still attached to job %J
+>				;[4425] Only output message if ATTACH command
+	CALL CJERRE		;[4425] Give JSYS error and return 
+
+;ATTACH...
+
+;[4425] Local routine called to get list of jobs logged in to this username.
+;Jobs are returned in BUF0 in standard INFO JSYS format.  The first word is a
+;word count including that word.  Following that word are a number of words
+;containing <job,,tty> for each job on the system.  Sets up BUF0 as INFO would
+;have if INFO JSYS failed.
+;Call with B/ user number to get information on
+;Return +1 always with BUF0 set up.
+
+	FNDUSN==BUF0+760	;[4425] Place to make username stirng
+	FNDUSI==BUF0+772	;[4425] Place to make INFO JSYS block
+
+FNDUSR:	SETZM FNDUSN		;[4425] Make sure nothing there if failure
+	HRROI A,FNDUSN		;[4425] Point to storage for username
+	DIRST%			;[4425] Get that changed into a string
+	 ERJMP .+1		;[4425] Ignore errors for now
+	 
+	MOVX A,<.INJOB,,.INAC2+1> ;[4425] Load function,,size of block
+	MOVEM A,.INFUN+FNDUSI	;[4425] Save function and size
+	SETOM .INCID+FNDUSI	;[4425] Local system
+	HRROI A,FNDUSN		;[4425] Point to username to get jobs for
+	MOVEM A,.INAC1+FNDUSI	;[4425] Save as byte pointer to username
+	MOVEI A,BUF0		;[4425] Point to place to store block
+	MOVEM A,.INAC2+FNDUSI	;[4425]  and save that for INFO
+	MOVEI A,FNDUSI		;[4425] Point to block
+	INFO%			;[4425] Get the information from the monitor
+	IFNJE.			;[4425] If that worked
+	  RET			;[4425]  return now
+	ENDIF.			;[4425] So, the INFO JSYS failed, eh?
+
+	SETZM BUF0		;[4425] First make the header word zero
+	SETO D,			;[4425] We want the size of the table
+	GTB .JOBRT		;[4425] JOBRT table is a good one to pick
+	HRLZ D,A		;[4425] Set up XWD -jobs,,0
+	DO.			;[4425] Loop through all known jobs
+	  CALL USERNO		;[4425] (D/A) Get the user number for a job
+	  CAME A,Q1		;[4425] Match?
+	  IFSKP.		;[4425] Yes
+	    AOS C,BUF0		;[4425] Count this job as found
+	    HRLM D,BUF0(C)	;[4425] Store the job number that matched
+	    GTB .JOBTT		;[4425] (D/A) Get the terminal number for job
+	    HLRM A,BUF0(C)	;[4425]  and save that too
+	  ENDIF.		;[4425] That's all we need to do
+	  AOBJN D,TOP.		;[4425] Continue for all jobs on system
+	OD.			;[4425] End of loop for all jobs on system
+	AOS BUF0		;[4425] Count the header word
+	RET			;[4425] End of this routine
 
 ;BREAK (LINKS)
 
@@ -901,6 +1073,17 @@ DELET3:	CALL RLJFNS		;RELEASE ALL TEMPORARY JFNS
 		CALL DELINI	;ESTABLISH THIS DIRECTORY AS CURRENT
 		SETZM EXMFLG	;SAY NO MORE EXAMINATION NEEDED YET
 		JRST .+1]
+
+	HRRZ A,@INIFH1		;[4453]Get the JFN with no bits
+	MOVE B,[1,,.FBCTL]	;[4453]Get FDB flag word
+	MOVEI C,C		;[4453]Return status in AC C
+	GTFDB			;[4453]Get it now
+	 ERJMP NXTJFN 		;[4453]Skip this one
+	TXNE C,FB%INV		;[4453]File is invisible?
+	TXNE C,FB%OFF		;[4453]Because it's archived? 
+	SKIPA			;[4453]Yes
+	JRST NXTJFN		;[4453]No, skip invisible files.
+
 ;[7.1178]
 ;Find out if we have any date/time/size constraints.
 
@@ -1200,10 +1383,10 @@ KEEPD1:	MOVE A,KEPJNM		;GET VERSION POINTER
 	MOVEI C,C
 	GTFDB
 	 ERJMP .+1
-	TXNE C,FB%ARC		;NOT DELETABLE?
+	TXNE C,FB%NDL!FB%ARC	;[4438] Not deletable or archived?
 	 JRST KEEPD9		;NO, PASS OVER IT
 	HRRZ A,@INIFH1
-	MOVE B,[1,,.FBBK0]
+	MOVE B,[1,,.FBBBT]	;[4438] Word in FDB with AR%RAR in it
 	MOVEI C,C
 	GTFDB
 	 ERJMP .+1
@@ -1607,12 +1790,10 @@ LINK6:	AOBJN D,LINK3		;MAY HAVE MORE JOBS
 		JRST LINK11]
 
 LINK7:	MOVE C,B		;SAVE FOR POSSIBLE DEFAULT
-	ETYPE < TTY%2O%, >
-	JUMPE A,[PRINT "?"	;NO SUBSYS NAME
-		JRST LINK8]
-	CALL SIXPRT		;PRINT SUBSYSTEM
-
-LINK8:	ETYPE <%_>
+	SKIPN A			;[4425] Any subsys name?
+	MOVX A,<SIXBIT/?/>	;[4425] Nope, say something at least
+	TXO B,.TTDES		;[4425] Make terminal designator
+	ETYPE < %2L, %1'%%_>	;[4425] Print line and what's running
 	CAMN P,TFRAME		;DONE ALL?
 	 JRST LINK9		;YES
 	POP P,A
@@ -1947,7 +2128,7 @@ ADVMES::TYPE <
 ;LOGIN (USER) NAME (ACCOUNT) ACCOUNT (SESSION-REMARK) REMARK
 ;PASSWORD: PASSWORD
 
-.LOGIN::TRVAR <LERRF,LPASP,LOGNO,RCBITS,<LDBLK,GTDLN>,LACCT>
+.LOGIN::TRVAR <LERRF,LPASP,LOGNO,RCBITS,<LDBLK,GTDLN>,LACCT,LASNLD> ;[4419][4412]
 	SKIPE CUSRNO
 	ERROR <You are already logged in>
 
@@ -2014,18 +2195,26 @@ LOGIN1:	SETZM CMDEF		;NO DEFAULT
 	SKIPN D			;HAVE ONE?
 	SETZM C			;NO. USE NOTHING
 	MOVEI D,0		;RESERVE D FOR FUTURE FLAGS
+	SETZM .CDNLD+LDBLK	;[4412] Clear this
+	SETZM .CDPED+LDBLK	;[4412] And this
+	SETZM .CDFPA+LDBLK	;[4412] And this
 	LOGIN
 	 JRST [	CAIN A,LGINX1
 		ERROR <Illegal account>
 		CAIN A,LGINX4
 		ERROR <Incorrect password>
 		CALL CJERRE]	;GNRL JSYS ERR RET ROUTINE (XSUBRS.MAC).
+	MOVEM B,LASNLD		;[4412] Hold onto this for a second
 	MOVEI B,LDBLK		;GET THE LOGIN DATA BLOCK
 	MOVEM A,.CDLLD(B)	;SAVE LOGIN DATE AND TIME IN CASE NON WHEEL
+	MOVEM A,LOGDAT		;[4412] Save date of login
+	MOVE A,LASNLD		;[4412] Now get last non-interactive login
+	MOVEM A,.CDNLD(B)	;[4412] And save it
+	MOVEM C,.CDPED(B)	;[4412] Save password expiration date and time
+	MOVEM D,.CDFPA(B)	;[4412] Save password fail counts
 	SETOM SYSMF		;SET FLAG SO SYSTEM MESSAGES WILL GET PRINTED
 	MOVE B,LOGNO		;WHAT "RCUSR" RETURNED
 	MOVEM B,CUSRNO		;STORE USER NUMBER
-	MOVEM A,LOGDAT		;SAVE DATE OF LOGIN
 	GJINF			;GET LOGGED-IN DIRECTORY NUMBER
 	MOVEM B,LIDNO		;SAVE IT.
 	CALL PION		;ALLOW ^C NOW THAT CUSRNO IS SET UP
@@ -2041,19 +2230,134 @@ LOGIN1:	SETZM CMDEF		;NO DEFAULT
 	TIMER
 	 JFCL			;DON'T CARE IF NONE PENDING
 
-;TYPE "JOB <N> ON LINE N <DATE> <TIME>"
+;Type "Job n on TTYn origin(type) date-time", and last login dates.
 
-	ETYPE < Job %J on %L %D %E, Last Login >
-	MOVEI A,LDBLK		;GET ADDRESS OF THE DIRECTORY BLOCK
-	SKIPN A,.CDLLD(A)	;GET THE TIME AND DATE OF LAST LOGIN
-	IFSKP.
-	 ETYPE <%1W
->				;EOL NEEDED BEFORE LOGIN MESSAGE
-	ELSE.
-	 ETYPE <Never
->
+	MOVE A,.CDLLD+LDBLK	;[4420] Get last interactive login date-time
+	ETYPE < Job %J on %L %D %E
+  Last interactive login %1W
+>				;[4420] Output usual stuff on TTY
+	SETO A,			;[4412] This job
+	HRROI B,A		;[4412] Put last non-interactive time in 1
+	MOVEI C,.JINLD		;[4412] This is the function
+	GETJI%			;[4412] Retrieve it
+	 ERJMP NOPEXP		;[4420] If not there, monitor doesn't give it
+	MOVE A,.CDNLD+LDBLK	;[4420] Get last non-interactive login date
+	ETYPE <  Last non-interactive login %1W
+>				;[4420] Output last d-t of non-interactive
+
+;[4420] Output login failures if any, as returned by LOGIN JSYS.
+
+	HLRZ B,.CDFPA+LDBLK	;[4420] Any password failures?
+	IFN. B			;[4412] Are there any?
+	  ETYPE <%% %2Q interactive login failure>
+	  CAIE B,1		;[4412] Singular?
+	  ETYPE <s>		;[4412] No, say so
+	  ETYPE < since last succesful login
+>				;[4412] Be wordy
+	ENDIF.			;[4412]
+	HRRZ B,.CDFPA+LDBLK	;[4420] Get non-interactive failures
+	IFN. B			;[4412] Are there any?
+	  ETYPE <%% %2Q non-interactive login failure>
+	  CAIE B,1		;[4412] Are we singular?
+	  ETYPE <s>		;[4412] Nope
+	  ETYPE < since last succesful login
+>				;[4412]
 	ENDIF.
-	MOVE B,RCBITS		;WHAT RCUSR RETURNED
+
+;LOGIN...
+
+;[4420] Check password expiration and get new password if current one expired.
+
+	MOVEI A,.SFPEX		;[4412] Password expiration turned on?
+	TMON%			;[4412] Check to see
+	 ERJMP NOPEXP		;[4412] If not in here, then bypass this code
+	JUMPE B,NOPEXP		;[4420] If not enabled don't bother user
+
+	MOVE B,.CDPED+LDBLK	;[4420] Get password expiration date and time
+	JUMPE B,NOPEXP		;[4412] If no password expiration, continue
+	JUMPG B,PWECHK		;[4420] Check password expiration if a date
+
+;[4420] Password has expired.  Ask for a new one.
+
+	ETYPE <
+?Your password has expired. Please change your password now.
+
+>				;[4420]
+	HRROI A,BUF0		;[4412] Put username here
+	MOVE B,LIDNO		;[4412] Get logged in directory
+	DIRST%			;[4412] Put directory string in here
+	 ERJMP .+1		;[4412]
+
+REPWD:	SETZM LDBLK		;[4412] Zero out first word
+	HRLZI A,LDBLK		;[4412] And now for the source
+	HRRI A,1+LDBLK		;[4412] Get destination
+	BLT A,.CDFPA+LDBLK	;[4412] And zero out everything
+	MOVEI A,[ASCIZ /Old password: /] ;[4412] Prompt for old password
+	CALL PASSX		;[4412] (A/A) Input the current password
+	PUSH P,A		;[4412] Save pointer to it here
+	MOVEI A,[ASCIZ /New password: /] ;[4412] Get new one
+	CALL PASSX		;[4412] (A/A) Read password
+	MOVEM A,.CDPSW+LDBLK	;[4412] Save pointer to new password string
+	MOVEI A,[ASCIZ /Retype new password: /]	;[4412]
+	CALL PASSX		;[4412] (A/A) Read new password again
+	MOVE B,.CDPSW+LDBLK	;[4412] Get first attempt at typing it
+	STCMP%			;[4412] Make sure they're the same
+	 ERJMP .+1		;[4412]
+	IFN. A			;[4412] Are they?
+	  POP P,A		;[4412] Restore this
+	  ETYPE <?The two copies of the new password weren't the same> ;[4420]
+	  JRST REPWD		;[4412] Have the user try again
+	ENDIF.			;[4420] Typed in passwords not the same
+
+;LOGIN...
+
+	MOVE A,(P)		;[4414] Get pointer to old password back
+	MOVE B,.CDPSW+LDBLK	;[4414] And get the one to the new password
+	STCMP%			;[4414] Are they the same?
+	ERJMP .+1		;[4414] Let's be safe
+	IFE. A			;[4414] Are they the same?
+	  POP P,A		;[4414] Make the stack normal again
+	  ETYPE <?The new password is the same as the old password. Try again.%_> ;[4414]
+	  JRST REPWD		;[4414] And have the user give it another shot
+	ENDIF.			;[4414]
+	HRROI A,BUF0		;[4412] Get directory string again
+	MOVEI B,LDBLK		;[4412] And get argument block
+	TXO B,CD%PSW		;[4412] Say we just want to set this
+	MOVEI C,.CDFPA		;[4412] Length of argument block
+	MOVEM C,.CDLEN+LDBLK	;[4412] Put it in argument block
+	POP P,C			;[4412] Get old password string back
+	CRDIR%			;[4412] Try to change it
+	IFJER.			;[4414] If error,
+	  ETYPE <?Could not change password - %?. Try again.%_> ;[4414]
+	  MOVEI A,.SFMPL	;[4415] Get minimum password length
+	  TMON%			;[4415] Well
+	   ERJMP REPWD		;[4415] If this fails, don't say anything
+	  JUMPE B,REPWD		;[4415] System manager has not set a minimum password length
+	  ETYPE <Your new password must be at least %2Q character> ;[4415]
+	  CAIE B,1		;[4415] Only 1 character minimum?
+	  ETYPE <s>		;[4415] No, smart system manager
+	  ETYPE < long.%_>	;[4415]
+          JRST REPWD		;[4414] And go try again
+	ENDIF.			;[4414]
+	JRST NOPEXP		;[4412] Password changed, continue below
+
+;LOGIN...
+
+;Here to check to see if password is within a week of expiring
+
+PWECHK:	GTAD%			;[4420][4412] Get current date and time
+	SUB B,A			;[4412] Find the difference
+	HLRZS B			;[4412] Just get days
+	CAILE B,7		;[4412] Within a week?
+	IFSKP.			;[4412] If so,
+	  MOVE B,.CDPED+LDBLK	;[4412] Get password expiration date and time
+	  ETYPE <  Warning: Your password expires on %2W
+>				;[4412] Let user know what is happening
+	ENDIF.			;[4412]
+
+;Here when all password-expiration work is done.
+
+NOPEXP:	MOVE B,RCBITS		;[4412] WHAT RCUSR RETURNED
 	TXNE B,RC%RLM		;B2 SAYS ALWAYS PRINT LOGIN MESSAGE
 	SETZM LOGDAT		;SET DATE TO 0 TO FORCE PRINTING
 
@@ -2062,6 +2366,7 @@ LOGIN1:	SETZM CMDEF		;NO DEFAULT
 	SETOM LOGINI		;SET FLAG TO DO "TAKE INITIAL-LOGIN-TYPIN.TXT"
 				;AT NEXT OPPORTUNITY.
 	RET
+
 
 ;SIMULATE "TAKE" COMMAND OF FILSPEC (STRING POINTER IN B)
 ;SKIPS IFF SUCCEEDS IN SETTING UP STREAM
@@ -2291,7 +2596,6 @@ MESMES::SKIPN CUSRNO
 	HRLOI B,377777		;SET INF COUNT FOR US
 	MOVEM B,MWATN0
 	MOVE B,POBXNO		;[3040] SET UP FOR MAIL CHECK FOR THIS USER
-	MOVEM B,MWATDR
 	CALL MALCHK		;DO MAIL CHECK
 	 JRST MESMS9		;NO MAIL
 	TYPE < You have >
@@ -2522,7 +2826,7 @@ FLOTAB:	TABLE
 		CALL PRVCK
 		ERROR <Not legal in top-level EXEC>
 		JRST .+1]
-QUIT2:	MOVE A,SAVT20		;GET STATE BEFORE WE RAN
+QUIT2::	MOVE A,SAVT20		;[4431] Get state before we ran
 	CALL SETMOD		;RESTORE IT
 	MOVE A,SAVNAM		;GET SAVED PROGRAM NAME
 	SETNM			;RESTORE IT
@@ -3009,11 +3313,10 @@ LICK3:	AOBJN D,LICK2		;LOOP THRU ALL JOBS
 	POP P,B			;TTY#
 	CAMN P,SAVP  		;ONLY ONE POSSIBILITY?
 	JRST LICK9		;YES - USE IT
-LICK7:	ETYPE < TTY%2O%, running >
-	JUMPE A,[PRINT "?"	;GOT PROGRAM NAME ? NO
-		 JRST LINK8]
-	CALL SIXPRT		;YES - PRINT SUBSYSTEM
-LICK8:	ETYPE <%_>
+LICK7:	SKIPN A			;[4425] Any program name?
+	MOVX A,<SIXBIT/?/>	;[4425] Nope, load unknown
+	TXO B,.TTDES		;[4425] Make terminal designator please
+	ETYPE < %2L, %1'%%_>	;[4425] Tell about user's job
 	CAMN P,SAVP  		;DONE ALL?
 	IFSKP.
 	 POP P,A		;NO - NOT YET - GET PROGRAM NAME
@@ -3169,11 +3472,7 @@ LICTTY:	MOVEI P1,JOBS		;Start checking from here
 	    JRST TOP.		;Now check the next set of jobs
 	  ENDIF.
 
-	  HRROI A,[ASCIZ /Node:/] ;Preceed node name
-	  ETYPE < %1M >		;Give to the user
-	  MOVE A,P2		;Now flash him the node
-	  ETYPE <%1M,>		;Here we go
-	  ETYPE < TTY%2O%, running > ;Show user the terminal number
+	  ETYPE < Node %11M, TTY%2O%, running > ;[4426]
 	  MOVEI A,INFBLK	;Store information here
 	  MOVE B,[.INGJI,,.INAC3] ;Get function code and argument block length
 	  MOVEM B,.INFUN(A)	;Save this
@@ -3627,15 +3926,11 @@ ELOGO1:	ERROR <That job does not exist>
 	 ELSE.
 	  ETYPE <Not logged in>	;OR NOT LOGGED IN IF USER # IS 0
 	 ENDIF.
-	SKIPGE A,.JITNO(C)	;GET TTY 
-	 IFSKP.
-	  ETYPE < on TTY%1O>	;TYPE IT
-	 ELSE.
-	  ETYPE <, Detached>	;UNLESS -1
-	 ENDIF.
-	SKIPN B,.JIPNM(C)	;AND PROGRAM NAME UNLESS IT'S 0
-	 MOVE B,.JISNM(C)	;IF PROG NAME WAS ZERO, USE SYSTEM NAME
-	ETYPE <, running %2'>
+	MOVE A,.JITNO(C)	;[4425] Load terminal number
+	TXO A,.TTDES		;[4425] Make that a designator
+	SKIPN B,.JIPNM(C)	;Load program name, skip if nonzero
+	MOVE B,.JISNM(C)	;If prog name was zero, use system name
+	ETYPE < %1L, running %2'> ;[4425] Give location and program running
 
 ELOGO2:	CALL FCONF		;CONFIRM   
 	MOVE A,JUSJOB		;NOW, RECHECK THE USER NUMBERS

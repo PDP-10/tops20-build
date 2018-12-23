@@ -1,7 +1,37 @@
+; Edit= 4437 to EXEC0.MAC on 21-May-90 by GSCOTT
+;Default fork properly at EXDPDF (thanks MRC). 
+; Edit= 4436 to EXEC0.MAC on 15-May-90 by GSCOTT
+;Output PCs in halfword format if non-zero section. 
+; Edit= 4435 to EXEC0.MAC on 15-May-90 by GSCOTT
+;Prevent autologout done too soon, fix PCL/kept fork bug, fix window when
+;interrupts turned on before CERET set (thanks MRC). 
+; Edit= 4432 to EXEC0.MAC on 25-Apr-90 by GSCOTT
+;Use CMFLD rather than CMKEY to parse the command that invoked the EXEC when
+;the EXEC rescans commands (so that "SYSTEM:EXEC.EXE.4432 command" works).
+; Edit= 4431 to EXEC0.MAC on 24-Apr-90 by GSCOTT
+;Allow the EXEC to rescan commands of the form "EXEC command".
+; Edit= 4427 to EXEC0.MAC on 27-Apr-89 by GSCOTT
+;Add support for ENABLE/DISABLE NOT-LOGGED-IN-SYSTAT command in SETSPD. 
+; Edit= 4424 to EXEC0.MAC on 9-Mar-89 by GSCOTT
+;Support terminal type IDEAL. 
+; Edit= 4422 to EXEC0.MAC on 3-Mar-89 by RASPUZZI
+;Fix insufficient size of STKVAR in GETPOB for large usernames.
+; Edit= 4420 to EXEC0.MAC on 16-Feb-89 by GSCOTT
+;Make ETYPE's %W say "never" for a zero date, then clean up login message code
+;in EXEC0 and EXEC1.
+; Edit= 4413 to EXEC0.MAC on 19-Dec-88 by RASPUZZI
+;Fix broken SYSTAT in subcommand mode when username contains a wildcard
+;character.
+; Edit= 4412 to EXEC0.MAC on 13-Dec-88 by RASPUZZI
+;Add new commands, features and support for security enhancements.
+; Edit= 4401 to EXEC0.MAC on 17-Mar-88 by RASPUZZI
+;Take another whack at POBOX. Rewrite GETPOB so that it translates POBOX: and
+;searches each structure for the user's POBOX directory. Also, fix ACSPOB to
+;work correctly and look for STRX10 in MALCHK.
 ; UPD ID= 4106, RIP:<7.EXEC>EXEC0.MAC.21,   7-Mar-88 18:19:46 by GSCOTT
 ;TCO 7.1255 - Update copyright notice.
 ; UPD ID= 82, RIP:<7.EXEC>EXEC0.MAC.20,  10-Dec-87 15:14:16 by RASPUZZI
-;TCO 7.1161 - Do something reasonable when user fills .CMFLD will crapola.
+;TCO 7.1161 - Do something reasonable when user fills .CMFLD with crapola.
 ;             Also, ***PERFORMANCE***. Remove extraneous INFO% (doing
 ;             GETJI%) that is causing a slow down.
 ; UPD ID= 76, RIP:<7.EXEC>EXEC0.MAC.19,  24-Nov-87 15:10:09 by MCCOLLUM
@@ -322,7 +352,7 @@
 ;<4.1.EXEC>EXEC0.MAC.2, 20-Nov-79 10:46:37, EDIT BY OSMAN
 ;TCO 4.1.1023 - FIX TAKE STUFF
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -391,7 +421,7 @@ PAT:: BLOCK 200
 ALOTST:	PUSH P,A
 	GTAD
 	SUB A,STRTIM
-	SUB A,[AUTOL1]
+	SUB A,[AUTOL1*3]	;[4435] Seconds*3 is roughly GTAD units
 	JUMPG A,AUTOLO		;DO AUTOLOGOUT (EXECSU.MAC)
 	POP P,A
 	RET
@@ -649,7 +679,30 @@ CMDIN0:	SKIPE BATCHF		;BATCH JOB?
 	GETJI			;FETCH CONTROLLING JOB NUMBER
 	 CALL JERR
 	JUMPE C,CMDIN2		;SYSJOB, SO SKIP IT
-CMDIN1:	ETYPE <%_>		;HERALD
+
+;[4431] Check for rescanned EXEC command that some program wants today.
+
+CMDIN1:	MOVEI A,.RSINI		;[4431] Function to make input available
+	RSCAN			;[4431] Get the input
+	 JRST HEARLD		;[4431] Nothing there, no rescanning to do
+	JUMPE A,HEARLD		;[4431] Jump if returned character count zero
+	HRROI A,0		;[4431] Indicate no prompt supplied
+	CALL READ1		;[4431] (A/) Set up COMND state block
+	MOVEI B,[FLDDB. .CMFLD]	;[4432] Eat the invoking filename or command
+	CALL FLDSKP		;[4431] (B/) Gulp, the command should be next
+	 JRST HEARLD		;[4431] If that failed, no command follows
+	MOVEI B,[FLDDB. .CMCFM]	;[4431] Load function to parse crlf
+	CALL FLDSKP		;[4431] (B/) Is a confirm there?
+	 SKIPA			;[4431] No, a command follows the exec keyword
+	JRST HEARLD		;[4431] Yes, a confirm, act normally
+	SETOM FSTLGN		;[4431] Pretend fast login done
+	SETOM PCCURC		;[4431] Insure that SETSN won't be done
+	SETOM RSCANF		;[4431] Remember RSCAN found something
+	JRST CMDIN2		;[4431] Skip hearlds and parse the command
+
+;[4431] Here to output usual hearlds when starting up a new EXEC.
+
+HEARLD:	ETYPE <%_>		;[4431] Send CRLF to terminal
 	CALL $VERSI		;VERSIONS
 	CALL DWNTYP		;IF THERE IS A DOWN TIME
 
@@ -806,45 +859,110 @@ ERRET::	SETZM ERRMF		;CLEAR ERROR WITHIN ERROR FLAG
 CMDIN3:	MOVEI A,1
 	MOVEM A,INTDF
 	MOVEM A,IINTDF		;MAKE SURE IPCF INTERRUPTS ALLOWED
-	CALL PION		;MAKE SURE ^C ALLOWED
-	CALL IPCON		;MAKE SURE IPCF INTERRUPTS ALLOWED
 
 ;MISCELLANEOUS INITIALIZATION
 
 	MOVEI A,RERET		;SAY WHERE TO GO ON ERROR WHILE TYPING
 	MOVEM A,CERET		; ...LOGIN MESSAGE
-
-;PRINT "YOU HAVE A MESSAGE" IF APPROPRIATE
-;HERE SO DONE EVEN AFTER ^C DURING LOGIN MESSAGE
 
-	SKIPE CRPRA		;IS CRJOB START UP?
-	 JRST [ HRRZ A,CRPRA+.CJPLP ;GET FLAGS PTR
-		MOVE B,CRPRA(A)
-		TLNE B,(1B4)	;SIMULATE LOGIN?
-		SETOM LOGINI	;YES.
-		TLNN B,(1B3!1B4);CREATOR WANT SYSTEM MESSAGES ETC?
-		 JRST [ SETZM MESMSF ;NO LOGIN CHECK
-			SETZM MWATCF ;NO MAIL WATCH
-			JRST CMDIN4] ;BYPASS
-		ETYPE < Job %J on %L %D %E, Last Login > ;[3030] Add Last login
-		SETO A,		;THIS JOB
-		HRROI B,LOGDAT
-		MOVEI C,.JILLN	;GET LAST LOGIN D&T
-		GETJI
-		IFSKP.		;[3030]
-		 MOVE A,LOGDAT	;[3030] Get last login date and time
-		 ETYPE <%1W
->				;[3030] Print it out
-		ELSE.		;[3030]
-		 SETZ A,	;[3030] Failed, user never logged in
-		 ETYPE <Never
->				;[3030]
-		ENDIF.		;[3030]
-		SETOM SYSMF	;INIT GUY SO IT WORKS...
-		CALL FREINI	;INITIALIZE FREE SPACE
-		CALL PNTMES	;PRINT SYSTEM MESSAGE(S)
-		JRST .+1]
-	JRST CMDIN4
+;[4435] Now turn on interrupts.
+
+	CALL PION		;[4435] (/) Make sure ^C allowed
+	CALL IPCON		;[4435] (/) Make sure IPCF interrupts allowed
+
+
+;[4420] Process CRJOB startup flags to simulate login, or look like an EXEC1
+;LOGIN command.
+
+	SKIPN CRPRA		;[4420] Is crjob start up?
+	JRST CMDIN4		;[4420] Nope, normal start
+
+	HRRZ A,CRPRA+.CJPLP	;[4420] Get flags ptr
+	MOVE B,CRPRA(A)		;[4420] Get the flags themselvex
+	TLNE B,(1B4)		;[4420] Simulate login?
+	SETOM LOGINI		;[4420] Yes.
+	TLNE B,(1B3!1B4)	;[4420] Creator want system messages etc?
+	IFSKP.			;[4420] Nope
+	  SETZM MESMSF		;[4420] No login check
+	  SETZM MWATCF		;[4420] No mail watch
+	  JRST CMDIN4		;[4420] Get quickly to normal commands
+	ENDIF.			;[4420] So, we aren't being quiet, eh?
+
+;[4420] Look like a job logged into from a terminal.  It's probably BATCON
+;logging in a batch job for some user.
+
+	CALL FREINI		;[4420] (/) Initialize free space
+	CALL DOMESS		;[4420] (/) Display login messages
+	CALL DOFAIL		;[4412] (/) Display login failures
+	SETOM SYSMF		;[4420] We want system messages
+	CALL PNTMES		;[4420] (/) Print system message if needed
+	JRST CMDIN4		;[4420] Restart command
+
+;[4420] DOMESS - Routing to output the LOGIN command messages.  Since
+;GETJI will get this information from this job's JSB, and not from the
+;directory on disk, it will contain the proper date time.
+;Returns +1 always with current and last login date and time messages sent.
+
+DOMESS:	SETO A,			;[4420] This job
+	HRROI B,LOGDAT		;[4420] Point to the place to store last login
+	MOVEI C,.JILLN		;[4420] Get the last login date-time from JSB
+	GETJI%			;[4420] Get from JSB, directory was updated
+	 ERJMP .+1		;[4420] No error
+	MOVE A,LOGDAT		;[4420] Get the date time returned
+	ETYPE < Job %J on %L %D %E
+  Last interactive login %1W
+>				;[4420] Output whole message at once 
+	SETO A,			;[4420] Done this way to insure compatibility
+	HRROI B,LOGDAT		;[4420] Point back to place to store last login
+	MOVEI C,.JINLD		;[4420] Now try to get last non-int login
+	GETJI%			;[4420] Can we get it today?
+	 ERJMP R		;[4420] Nope, return now
+	MOVE A,LOGDAT		;[4420] Use last non-int login as login time
+	ETYPE <  Last non-interactive login %1W
+>				;[4420] Output that information
+	RET			;[4420] Return
+
+;[4412]
+;DOFAIL - Routine called by EXEC when started goofy (PRARG%) to display various
+;login failures.  [4420] Note the directory's login failures are not updated on
+;a non-interactive login, the counts will be correct in the directory.
+;
+; Called with:
+;	no arguments
+;	CALL DOFAIL
+;
+; Returns:
+;	+1 - Always, with login failures displayed
+
+DOFAIL:	STKVAR <<CDBLK,.CDFPA+1>> ;Temp storage
+	SETZM .CDFPA+CDBLK	;Clear this word in case monitor don't have it
+	MOVE A,LIDNO		;Get logged in directory number
+	MOVEI B,CDBLK		;Here's the place to write the information
+	MOVEI C,.CDFPA+1	;Want this many words
+	MOVEM C,.CDLEN(B)	;Save it in argument block
+	SETZ C,			;Don't use password string
+	GTDIR%			;Get the password failure count
+	 ERJMP .+1		;If failure, continue
+
+	HLRZ B,.CDFPA+CDBLK	;[4420] Get interactive login failures
+	IFN. B			;Is it non-0?
+	  ETYPE <%% %2Q interactive login failure>
+	  CAIE B,1		;Singular?
+	  ETYPE <s>		;Nope
+	  ETYPE < since last successful login
+>
+	ENDIF.
+
+	HRRZ B,.CDFPA+CDBLK	;[4420] Non-interactive failures are unusual
+	IFN. B			;Non-0?
+	  ETYPE <%% %2Q non-interactive login failure>
+	  CAIE B,1		;More than one?
+	  ETYPE <s>		;Yes, say so
+	  ETYPE < since last successful login
+>
+	ENDIF.			;[4420] End of non-interactive login failures
+	RET			;[4420] Return with all information displayed
+	ENDSV.			;End GTDIR% block
 
 ;CMDOUT - FROM LOGOUT CODE TO PROCESS LOGOUT.CMD AND SAVE OUR RETURN
 ;CMDIN4 - WHEN READY TO INPUT A COMMAND.
@@ -897,7 +1015,7 @@ CMDIN4::SETZM .JBUFP		;ALLOW ALL JFNS TO BE RELEASED
 ;SET UP A PENDING TIMER INTERRUPT FOR AUTO-LOGOUT IF JOB IS INACTIVE
 
 	MOVE A,[.FHSLF,,.TIMEL]	;SET AN ELAPSED TIMER FOR SELF
-	MOVE B,[AUTOL2*^D1000]	;FOR THAT FAR IN FUTURE
+	MOVE B,[AUTOL2*3*^D1000] ;[4435] for AUTOL2 seconds in the future
 	MOVEI C,2		;ON CHANNEL 2
 	CALL PIOFF		;DISABLE CONTROL-C'S
 	SETOM ALOST		;SAY AUTOLOGOUT STUFF STARTED
@@ -1017,6 +1135,15 @@ FST3:	;..
 				;TO FLUSH JFN USED BY MWATCH.  THIS IS NECESSARY
 				;SO THAT "COPY TTY:$" DOESN'T TYPE "MAIL"!
 	SETOM CLF		;SAY WE'RE AT COMMAND LEVEL
+
+	SKIPN RSCANF		;[4431] Are we rescanning an EXEC command?
+	IFSKP.			;[4431] Yes, since this is nonzero we are
+	  SKIPL RSCANF		;[4431] If -ive, then we haven't run yet
+	  JRST QUIT2		;[4431] It was +ive, the day's work is done
+	  HRRZS RSCANF		;[4431] Set +ive to exit next time thru here
+	  JRST CIN42		;[4431] Don't call READY, we are all set now
+	ENDIF.			;[4431] End of rescanned EXEC command check
+
 	CALL READY		;INITIALIZE FOR COMND JSYS
 CIN42::	MOVEI A,RERET		;REGULAR ERROR RETURN ADDRESS
 	MOVEM A,CERET		;SAY WHERE TO GO AFTER PRINTING ERR MSG
@@ -1048,42 +1175,55 @@ CIN42::	MOVEI A,RERET		;REGULAR ERROR RETURN ADDRESS
  
 
 GETPOB: SKIPN  CUSRNO		; Logged in?
-	RET			; No, don't bother with this 
-	MOVX A,<GJ%SHT!GJ%DEL!GJ%PHY!GJ%OFG> ; [3062] Short form, look for deleted file also, 
-				; ...no job-wide logicals,parse only
-	HRROI B,[ASCIZ/POBOX:MAIL.TXT.1/] ; Filespec
-	GTJFN%			;
-         ERJMP GETPBE           ; Error - pass directory number of zero
-	MOVEI B,(A)		; Get JFN into AC2
-	MOVE A, CSBUFP		; Put string here
-	MOVX C,FLD (.JSAOF,JS%DEV)!JS%PAF ; Get punctuated structure
-	JFNS%			;
-        IFJER.
-         MOVEI A,(B)            ; Can't find it - strange
-	 RLJFN%	                ; So release JFN
-          ERJMP .+1    		; Couldn't...oh well
-         JRST GETPBE            ; And exit
-	ENDIF.
-	EXCH A,B		; Swap pointer and JFN
-	RLJFN%			; Release JFN - we don't need it now
-	 ERJMP GETPBE	
-	MOVE A,B		; Get pointer into AC1
-	MOVEI B,"<"		; Opener for directory spec
-	IDPB B,A		; Plunk it in
-	MOVE B, CUSRNO		; User number
-	DIRST%			; Get name
-	 ERJMP GETPBE
-	MOVEI B,">"		; Close directory spec
-	IDPB B,A		;
-	SETZ B,			; Tie it off with a null
-	IDPB B,A
-	SETZ A,			; Clean up AC1
-	MOVE B,CSBUFP		; Where to get string
-	RCDIR%
-        ERJMP GETPBE		; Some problem
-	RETSKP			; OK - got dir number in AC3
-GETPBE: MOVEI C,0		; Problem getting dir number - set POBXNO=0
-	RETSKP			; And return
+	RET			; No, don't bother with this
+	STKVAR <<TMPSTR,15>,SAVPTR> ;[4422] Temp storage
+	MOVEI A,.LNSSY		;[4401] Do system wide translation
+	HRROI B,[ASCIZ /POBOX/] ;[4401] of this logical name
+	MOVE C,CSBUFP		;[4401] Get temp byte pointer
+	MOVEM C,SAVPTR		;[4401] Hold onto this
+	LNMST%			;[4401] Translate
+	IFJER.			;[4401] If no such logical,
+	  TYPE <?Failed to translate POBOX: logical name.
+>
+	  JRST GETPBE		;[4401] Error - pass directory number of zero
+	ENDIF.			;[4401]
+GETPB1:	SKIPN C,SAVPTR		;[4401] Still a pointer there?
+	JRST GETPBE		;[4401] No, out of structures and couldn't find directory
+	MOVEI A,TMPSTR		;[4401] STR:<DIRECTORY> goes here
+	HRLI A,(POINT 7,)	;[4401] Make real byte pointer
+	DO.			;[4401] Now make STR:<DIRECTORY>
+	  ILDB B,C		;[4401] Get a character from POBOX:
+	  CAIE B,.CHNUL		;[4401] End of logical name list?
+	  IFSKP.		;[4401] If so,
+	    SETZ C,		;[4401] No more byte pointer
+	    EXIT.		;[4401] And now check this final structure
+	  ENDIF.		;[4401]
+	  CAIN B,","		;[4401] Have we obtained a full STR:?
+	  EXIT.			;[4401] Yes, now put in directory
+	  IDPB B,A		;[4401] Stick byte in here
+	  JRST TOP.		;[4401] And continue with STR:
+	OD.			;[4401]
+	MOVEM C,SAVPTR		;[4401] Remember where we were in str list
+	MOVEI B,"<"		;[4401] Get directory delimiter
+	IDPB B,A		;[4401] Drop it in
+	MOVE B,CUSRNO		;[4401] Get user number
+	DIRST%			;[4401] Translate directory (should work)
+	 ERJMP GETPBE		;[4401] If not, that's life
+	MOVEI B,">"		;[4401] Delimit STR:<DIRECTORY>
+	IDPB B,A		;[4401] Stick it in
+	MOVEI B,.CHNUL		;[4401] End string
+	IDPB B,A		;[4401] By adding NULL
+	MOVX A,<RC%EMO>		;[4401] Want exact match
+	HRROI B,TMPSTR		;[4401] Get string we just made
+	RCDIR%			;[4401] Find it
+	 ERJMP GETPB1		;[4401] If it is not there, try next STR:
+	TXNE A,RC%DIR		;[4401] Files only?
+	JRST GETPB1		;[4401] Yes, try again
+	TXNE A,RC%NOM		;[4401] Not even there?
+	JRST GETPB1		;[4401] Not there, try another STR:
+	RETSKP			;OK - got dir number in AC3
+GETPBE: MOVEI C,0		;Problem getting dir number - set POBXNO=0
+	RETSKP			;And return
 
 
 ;[3046]  ROUTINE TO ACCESS POBOX: ON BEHALF OF THIS USER. SINCE POBOX: MAY NOT BE    
@@ -1104,17 +1244,16 @@ ACSPOB: STKVAR <ACSJOB,ACSPSW,ACSDIR> ;[3046] KEEP THESE IN ORDER FOR ACCES%!!!
 	RETSKP			;[3046] YES, NO NEED TO DO THE ACCES%
 	MOVE A,CSBUFP		;[3046] GET POBOX: NAME STRING FOR ACCES%
 	MOVE B,POBXNO		;[3046] USE THIS NUMBER TO GET THE STRING
-	DIRST%
-	 ERJMP ACSPBR
+	DIRST%			;[4401] Get POBOX: directory string
+	 ERJMP R		;[4401] Should never happen
 	SETZM ACSPSW		;[3046] NO PASSWORD
 	MOVE C,CSBUFP		;[3046] WHERE NAME STRING IS
-	MOVEM C, ACSDIR         ;[3046] .ACDIR FOR ACCES%
+	MOVEM C,ACSDIR		;[3046] .ACDIR FOR ACCES%
 	SETOM  ACSJOB           ;[3046] -1 MEANS THIS JOB - .ACJOB FOR ACCES%
-	MOVX A, AC%OWN!.ACJOB+1	;[3046] OWNER ACCESS,,BLK LEGTH=3
-	MOVEI B, ACSDIR		;[3046] ADDRESS OF BLOCK
+	MOVX A,AC%OWN!.ACJOB+1	;[3046] OWNER ACCESS,,BLK LEGTH=3
+	MOVEI B,ACSDIR		;[3046] ADDRESS OF BLOCK
 	ACCES%			;[3046]
-	ERJMP ACSPBR		;[3053] IN CASE ACCESS FAILS
-ACSPBR:  RET              	;[3046] FAILED, POSSIBLY STRUCTURE REGULATED
+	 ERJMP R		;[3053] IN CASE ACCESS FAILS
 	RETSKP			;[3046] POBOX: HAS BEEN SUCCESSFULLY ACCESSED
 
 ;BEGIN INPUTTING AND DECODING A COMMAND
@@ -1138,7 +1277,12 @@ CIN1:	SETZM CIPF		;[PCL] No command in progress yet
 CIN9:	MOVEI B,CM1DB		;GET THE UNPRIVILEGED DESCRIPTOR BLOCKS
 	SKIPE CUSRNO		;LOGGED IN?
 	JRST CIN7		;YES - GO CHECK PCL
-	MOVEI B,CM1XL		;NO - USE NOT-LOGGED-IN DESCRIPTOR BLOCKS
+	MOVX A,.SFXEC		;[4427] Function to get EXEC flags word
+	TMON			;[4427] Get EXEC flags word from monitor
+	 ERJMP CIN9OM		;[4427] If failed, its an old monitor
+	TXNE B,XC%NLS		;[4427] Disallow not logged in SYSTAT?
+	SKIPA B,[CM1YL]		;[4427] Yes, omit SYSTAT command
+CIN9OM:	MOVEI B,CM1XL		;[4427] Use not-logged-in descriptor blocks
 	JRST CIN10		;NO PCL UNTIL LOGGED IN (USES THE WRONG TABLE)
 
 CIN7:	SKIPN PCFLDB		;IS PCL A FACTOR?
@@ -1205,7 +1349,7 @@ CIN2::	MOVE B,COMAND		;PCL GET WHICH COMMAND WE'RE DOING
 	CAIA			;TOO SMALL OR TOO LARGE.
 	JRST [	CALL CIN3D	;GET RESCAN LINE AND CONFIRMATION
 		MOVEI A,FRKNMS	;SAVED FORK, FIND WHERE IT IS IN FORK TABLE
-		MOVE B,COMAND	;GET POINTER TO NAME ("FIELD" PUT PTR IN COMAND)
+		MOVE B,PNAMP	;[4435] Get pointer to name
 		TBLUK		;GET TABLE ADDRESS
 		MOVEM A,PTBLP	;SAVE TABLE ADDRESS
 		JRST CINFRK]	;JOIN OTHER CODE
@@ -1375,7 +1519,7 @@ BLEN==20			;ENOUGH FOR ASCIZ STRINGS
 	IDPB D,COJFN
 	HRROI D,OCTBF		;NOW CREATE OCTAL VERSION
 	MOVEM D,COJFN
-	ETYPE <%1O/ %3#>
+	ETYPE <%1#/ %3#>	;[4436] Print PC/ value as halfowrds if needed
 	MOVEI D,.CHNUL
 	IDPB D,COJFN		;FINISH WITH NULL
 	CALL FIXIO		;REVERT TO STANDARD IO
@@ -1455,7 +1599,7 @@ BLEN==20			;ENOUGH FOR ASCIZ STRINGS
 ;	A/	0 FOR EXAMINE, -1 FOR DEPOSIT
 
 EXDPDF:	STKVAR <EAM>
-	SKIPE C,FORK		;FORK HANDLE
+	SKIPLE C,FORK		;[****] Load current fork handle, skip if none
 	 SKIPN C,SLFTAB(C)	;KNOWN?
 	  RET			;NO FORK - DO NOT SET DEFAULT
 	SKIPGE B,.FKEDL(C)	;ANY PREVIOUS E/D?
@@ -1514,13 +1658,13 @@ SY%'A==SYSIND
 SYSIND==SYSIND+SYSIND
 >>
 
-SYSBIT <IME,ALL,CLS,HED,NHD,TTY,USR,SUB,TIM,CON,LIM,CJB,JOB,NJB,STA,NOP,4NH,NOD> ;[7.1076]
+SYSBIT <IME,ALL,CLS,HED,NHD,TTY,USR,SUB,TIM,CON,LIM,CJB,JOB,NJB,STA,NOP,4NH,NOD,CT> ;[4412]
 
 SYSDEF==SY%IME!SY%TTY!SY%USR!SY%SUB!SY%4NH	;DEFAULT LISTING
 
 ;[7.1076] Note that the SY%NOD bit is not included in this mask. It is only
 ;turned on when the user explicitly wants a node included in the SYSTAT
-SYSALL==SY%ALL!SY%CLS!SY%TTY!SY%USR!SY%SUB!SY%TIM!SY%CON!SY%LIM!SY%CJB!SY%STA!SY%4NH ;ALL (EVERYTHING)
+SYSALL==SY%ALL!SY%CLS!SY%TTY!SY%USR!SY%SUB!SY%TIM!SY%CON!SY%LIM!SY%CJB!SY%STA!SY%4NH!SY%CT ;[4412] All (everything)
 
 ;INDICES FOR STACK ARGS
 
@@ -1531,11 +1675,12 @@ SY$USR==3	;USER NUMBER
 SY$PRG==4	;PROGRAM NAME
 SY$FLD==5	;[7.1137] Field was typed or WILD username + SY%NOD
 
-JIBLN==.JILNO+1			;SIZE BLOCK NEEDED FOR JOB INFO
+JIBLN==.JICT+1			;[4412] Size of job info block
 SYCLN==10			;SKED% BLOCK SIZE
 
 .SISTA::SAVEAC <Q1,Q2,Q3,P1,P2,P3,P4,P5> ;[7.1076] Used and saved
-	TRVAR <SYSJFN,JNX,<SYCLB,SYCLN>,<.JIBAS,JIBLN>,<.NTBAS,.NWNU1+1>,SFRAME,<SYSTAK,SYSTAL>,SYSDIR,SYSTNM,SISTAS,SISLDS,SISCDS,SISTAN,<HSTNAM,10>,HSTDEL,HDRPOS,NODMSK,CURNOD,CURNDN,STKPTR,FLDPTR,SYJOBM,CLSMSK> ;[7.1140]
+	TRVAR <SYSJFN,JNX,<SYCLB,SYCLN>,<.JIBAS,JIBLN>,<.NTBAS,.NWNU1+1>,SFRAME,<SYSTAK,SYSTAL>,SYSDIR,SYSTNM,SISTAS,SISLDS,SISCDS,SISTAN,<HSTNAM,10>,HSTDEL,HDRPOS,NODMSK,CURNOD,CURNDN,STKPTR,FLDPTR,SYJOBM,CLSMSK,SUBMSK> ;[4413]
+	SETZM SUBMSK		;[4413] Say not in subcommand mode yet
 	SETZM CLSMSK		;[7.1140] Clear class mask to start with
 	SETZM SYJOBM		;[7.1139] SYSJOB mask
 	SETZM WLDPAG		;[7.1137] Clear this to start
@@ -1872,8 +2017,12 @@ SYST2:	MOVEM D,JNX		;REMEMBER JOB NUMBER COUNTER
 	HRRZ A,JNX
 	CALL NODCHK		;[7.1076] (A/) Check out job, see if remote
 	 JRST SYST9		;[7.1076] Job not logged in as far as we can tell
+	SETZM .JIBAS		;[4412] Prepare to clean house
+	HRLI B,.JIBAS		;[4412] Prepare this for BLT
+	HRRI B,1+.JIBAS		;[4412] Start with first word
+	BLT B,JIBLN+.JIBAS	;[4412] Get out the vacuum cleaner
+	HRRZI B,.JIBAS		;[4412] Store into correct block
 	HRLI B,-JIBLN		;LENGTH OF JOB INFO BLOCK
-	HRRI B,.JIBAS		;STORE INTO CORRECT BLOCK
 	MOVEI C,0		;START WITH FIRST ENTRY
 
 	TLNE Z,F4		;[7.1076] Is job remote?
@@ -2156,6 +2305,8 @@ SYST2Z:	TLOE Z,F1		;TYPE HEADER FIRST TIME.
 	ETYPE <  Node  >	;[7.1076] Yes, put it in header
 	TXNE	Q1,SY%STA
 	ETYPE < State>
+	TXNE Q1,SY%CT		;[4412] How about connect time?
+	ETYPE < Connected>	;[4412] Yes, prefix the header
 	TXNE	Q1,SY%TIM
 	ETYPE <  Time   >
 	TXNE Q1,SY%CLS		;CLASS INFO REQUESTED?
@@ -2266,7 +2417,38 @@ SYST81:	TXNN	Q1,SY%STA	;[7.1076]
 	SKIPA B,[-1,,[ASCIZ/  TI  /]]
 SYST8B:	HRROI B,[ASCIZ/  RUN /]
 	ETYPE <%2M>
-SYST8A:	TXNN	Q1,SY%TIM
+SYST8A:	TXNN Q1,SY%CT		;[4412] Want to see connect time?
+	IFSKP.			;[4412] If so,
+	  TLNE Z,F4		;[4412] Remote job?
+	  IFSKP.		;[4412] If not,
+	    MOVE B,.JICT+.JIBAS	;[4412] Retrieve connect time from block
+	  ELSE.			;[4412] Else, get connect time from INFO% block
+	    MOVE B,.SYJCT+INFSYS ;[4412] Here's the connect time
+	  ENDIF.		;[4412]
+	  IDIVI B,^D1000	;[4412] Make sure we have seconds
+	  MOVE A,COJFN		;[4412] Output goes here
+	  IDIVI B,^D3600	;[4412] Get hours
+	  PUSH P,C		;[4412] Save remainder for later (minutes and seconds)
+	  MOVX C,NO%LFL!FLD(4,NO%COL)!FLD(^D10,NO%RDX) ;[4412] Want base 10 output
+	  NOUT%			;[4412] Show us hours
+	   ERCAL JERRC		;[4412] If error
+	  MOVEI B,":"		;[4412] No slam seperator
+	  BOUT%			;[4412]
+	   ERCAL JERRC		;[4412] Report problems
+	  POP P,B		;[4412] Get remainder back
+ 	  IDIVI B,^D60		;[4412] And find out minutes
+	  PUSH P,C		;[4412] Save seconds
+	  MOVX C,NO%LFL!NO%ZRO!FLD(2,NO%COL)!FLD(^D10,NO%RDX) ;[4412] 2 columns
+	  NOUT%			;[4412] And leading zeros for minutes
+	   ERCAL JERRC		;[4412] Ooops
+	  MOVEI B,":"		;[4412] Another seperator
+	  BOUT%			;[4412]
+	   ERCAL JERRC		;[4412]
+	  POP P,B		;[4412] Retrieve seconds
+	  NOUT%			;[4412] Display seconds
+	   ERCAL JERRC		;[4412]
+	ENDIF.			;[4412]
+	TXNN	Q1,SY%TIM
 	JRST SYSTS3
 	MOVE A,.JIRT+.JIBAS
 	ETYPE <  %1B>
@@ -2365,6 +2547,7 @@ SYSTS5:	TXNN Q1,SY%4NH		;DOING FOREIGN HOST NAME?
 	JUMPL B,SYSTS6		;HANDLE DETACHED LINES
 	TRO B,.TTDES		;MAKE THE LINE NUMBER A LINE DESIGNATOR
 	MOVEM B,.NWLIN(A)	;SAVE IT
+	SETZM HSTNAM		;[4412] Zero this out to start with
 	HRROI B,HSTNAM		;POINTER TO SAVE HOST NAME
 	MOVEM B,.NWNNP(A)
 	NTINF%			;GET NETWORK INFO ON THIS TERMINAL
@@ -2446,6 +2629,8 @@ LATDEL:	 [ASCIZ//],,[ASCIZ/(LAT)/]	;SET UP HOST PREFIX AND SUFFIX
 DNAHST:	SKIPE D,(C)		;[7.1008] GET DECNET NODE NUMBER
 	TXNN B,NW%NNN		;HAVE A NODE NAME ?
 	RETSKP			;YES
+	SKIPE HSTNAM		;[4412] No node name, but did NTINF% fill in anything?
+	RETSKP			;[4412] NTINF% did it for us
 	HRROI A,HSTNAM		;OUTPUT TO HSTNAM STRING
 	MOVEI C,^D10		;OUTPUT RADIX IS DECIMAL
 	LDB B,[POINT 6,D,25]	;GET AREA OF DECNET NODE NUMBER
@@ -2600,6 +2785,7 @@ $SESTA:	TABLE
 	T .,,SYSTK.
 	T ALL,,.SYSAL
 	TB CLASS,,CLS
+	TB CONNECT-TIME,,CT	;[4412] Connect time
 	TB CONTROLLING,,CJB
 	TB DIRECTORY,,CON
 	IT FOREIGN-HOST,,F4NH
@@ -2631,6 +2817,7 @@ DEFINE TB(TEXT,FLAGS,BIT)<
 $SYSTB:	TABLE
 	T ALL,,..SYSA
 	TB CLASS,,CLS
+	TB CONNECT-TIME,,CT	;[4412] Connect time
 	TB CONTROLLING,,CJB
 	TB DIRECTORY,,CON
 	IT FOREIGN-HOST,,CF4NH
@@ -2690,7 +2877,8 @@ SYJOB:	DECX <Decimal job number> ;[7.1076]
 	CALL SSTACK
 	JRST .SYSEL
 
-SYUSR:	TLZ Z,F1		;[7.1076] ALLOW DEFAULT
+SYUSR:	SETOM SUBMSK		;[4413] Say in subcommand
+	TLZ Z,F1		;[7.1076] ALLOW DEFAULT
 	SKIPN CUSRNO		;LOGGED IN?
 	TLO Z,F1		;NO, SO DON'T ALLOW DEFAULTING
 	CALL USRNMS
@@ -2735,7 +2923,9 @@ SYSFLD:	MOVE A,FLDPTR		;Get current pointer into WLDPAG
 	MOVE A,C		;Now stack up the wild byte pointer
 	CALL SSTACK		;(A/B) More hack
 	CALL .SYSEL		;(/) Set some bits
-	JRST SYSTK1		;Continue parsing the command
+	SKIPN SUBMSK		;[4413] In subcommand mode?
+	JRST SYSTK1		;[4413] No, continue parsing the command
+	RET			;[4413] Yes, all done
 
 ;"SYSTAT PROGRAM FOO" ONLY LISTS JOBS RUNNING PROGRAM FOO
 
@@ -2816,6 +3006,7 @@ DEFINE TB(TEXT,FLAGS,BIT)<
 $SYSNO:	TABLE
 	TB .,,IME
 	TB CLASS,,CLS
+	TB CONNECT-TIME,,CT	;[4412]
 	TB CONTROLLING,,CJB
 	TB DIRECTORY,,CON
 	IT FOREIGN-HOST,,F4NHN
@@ -3311,7 +3502,7 @@ TTYHLP::CONFIRM
 
 
 ;TERMINAL TYPE N OR <TYPE>
-;NOTE: IF ADDING A NEW TERMINAL, SEE ALSO TTYPTB IN EXECIN
+;Note: If adding a new terminal, see also TTYPTB in EXECCA
 
 .TTYPE::MOVEI B,[FLDDB. .CMNUM,CM%SDH,5+5,<Terminal type>,<SYSTEM-DEFAULT>,[
 		 FLDDB. .CMKEY,,$TTYP]]
@@ -3340,6 +3531,9 @@ TTYHLP::CONFIRM
 .DFLT::				;SYSTEM-DEFAULT TERMINAL TYPE
 .TRMNT::PUSH P,[^D8]
 	JRST .TTY3
+
+.IDEAL::PUSH P,[.TTIDL]		;[4424] Here for TERMINAL IDEAL
+	JRST .TTY3		;[4424] 
 
 .VT05::	PUSH P,[^D10]
 	JRST .TTY3
@@ -3654,6 +3848,7 @@ NODC15:	  SETZ Q2,		;[7.1139] Here's our counter through the CNFIG% tables
 	  MOVEI A,INFBLK	;And get the job information now
 	  MOVEM P2,.INCID(A)	;[7.1089] This is the CI node
 	  MOVEI B,INFSYS	;Here's the SYSTAT block
+	  SETZM .SYJCT(B)	;[4412] Clear this in case we don't get something
 	  HRROI C,UNAME		;User name goes here
 	  MOVEM C,.SYUSR(B)	;Make sure JSYS knows
 	  HRROI C,DIRN		;Connected directory name here

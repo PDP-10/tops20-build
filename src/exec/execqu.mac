@@ -1,5 +1,12 @@
-; UPD ID= 4135, RIP:<7.EXEC>EXECQU.MAC.14,   5-Apr-88 11:42:46 by EVANS
-; TCO 7.1265 - 
+; Edit= 4449 to EXECQU.MAC on 22-May-90 by GSCOTT
+;Update copyright notice as needed. 
+; Edit= 4418 to EXECQU.MAC on 19-Jan-89 by WONG, for SPR #22043
+;Add code to support @MODIFY PRINT /REMOTE-PRINTER: 
+; Edit= 4417 to EXECQU.MAC on 12-Jan-89 by WONG, for SPR #22042
+;Add code to support @SET DEFAULT PRINTER /REMOTE-PRINT: command and fix some
+;bugs in routine SRPPTR: which deals with validating the arguments to the @SET
+;REMOTE PRINTER command.
+; Edit= 4402 to EXECQU.MAC on 5-Apr-88 by EVANS (TCO 7.1265)
 ;Make the EXEC accept non-alphanumeric characters $,_,-,and . in LAT-type
 ;names for remote printing. 
 ; UPD ID= 4127, RIP:<7.EXEC>EXECQU.MAC.13,   7-Mar-88 18:25:31 by GSCOTT
@@ -128,7 +135,7 @@
 ; UPD ID= 95, SNARK:<4.1.EXEC>EXECQU.MAC.2,   5-Dec-79 10:44:27 by OSMAN
 ;tco 4.1.1045 - Allow all filespec characters in jobnames for CANCEL and friends
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -402,6 +409,9 @@ X2:	PRISTG			;ALLOCATE LOCAL STORAGE
 	SETZM FILSF		;NO /FILE:<ANY> SEEN YET
 	SETZM SDF		;NOT SETTING DEFAULTS
 	SETZM ASYF		;SAY NOTHING SEEN YET
+	SETZRO PR%LFT,PRIFLG	;[4417]Clear the left half 
+	SETONE PR%PRI,PRIFLG	;[4417]But we are doing a PRINT
+	SETZM RPQUE		;[4417]No remote queue name yet
 	SETZM RPNODE		; [7.1073] Init "alias node seen" flag
 	SETZM DSTNOD		;[7.1073] Init "destination-node seen" flag
 	TLZ Z,F1		;FILE FLAG, COMES ON IF WE'VE SEEN A FILESPEC
@@ -718,6 +728,7 @@ PRIEOL:	TXZ Z,INFOF		;SAY NOT DOING INFO
 	CALL GROVEL		;PROCESS ALL THE ARGUMENTS
 	CALL FILDO		;FINISH LAST FILESPEC
 	CALL SHPOFF		;SHIP OFF THE LAST BLOCK
+	SETZRO PR%LFT,PRIFLG	;[4417]Clear the left half 
 	CALLRET UNMAP		;CLEAN UP AND RETURN
 
 ;THIS ROUTINE GETS EXECUTED AFTER END OF LINE SEEN TO DO THE ACTUAL
@@ -730,6 +741,11 @@ PRIEOL:	TXZ Z,INFOF		;SAY NOT DOING INFO
 ;BEEN SUBMITTED!
 
 GROVEL:	STKVAR <CURPTR>		;HOLDS END OF ARG LIST
+	MOVE A,PRIFLG		;[4417]Get PRINT command flag
+	TXNN A,PR%PRI		;[4417]Are we doing a PRINT command
+	IFSKP.			;[4417]Yes,
+	  SETONE PR%DEF,PRIFLG	;[4417]then say we are filling in defaults
+	ENDIF.			;[4417]
 	MOVE A,QPT		;GET POINTER TO END OF ARG LIST
 	MOVEM A,CURPTR		;REMEMBER WHERE IT ENDS
 	TLZ Z,F1		;NO FILESPEC SEEN YET
@@ -740,7 +756,11 @@ GROVEL:	STKVAR <CURPTR>		;HOLDS END OF ARG LIST
 	MOVE A,CURPTR
 	MOVEM A,QPT		;SET END OF CURRENT ARGS
 	MOVE Q2,IQPT		;GET POINTER TO TOP OF LIST
-	CALLRET GROVEX		;GROVEL THROUGH REAL ARGS
+	CALL GROVEX		;[4417]GROVEL THROUGH REAL ARGS
+	MOVE A,PRIFLG		;[4417]Get the PRINT flag
+	TXNE A,PR%DER		;[4417]Any errors?
+	 ERROR <Error detected while processing DEFAULT printer> ;[4417]Yes
+	RET			;[4417]
 
 ;ROUTINE TO GROVEL THROUGH THE DEFAULTS
 
@@ -755,13 +775,18 @@ GRVDEF:	MOVE Q2,[IOWD QSLEN,DCSTK
 		 DTPT
 		 DPLPT](P4)	;GET POINTER TO END OF LIST
 	MOVEM A,QPT		;REMEMBER WHERE END OF DEFAULT LIST IS
-	JUMPE A,R		;RETURN IF THERE ARE NO DEFAULTS
-				;ELSE FALL INTO GROVEX
-
+	IFE. A			;[4417]Any defaults?
+	  SETZRO PR%DEF,PRIFLG	;[4417]No, all done clear doing default flag	
+	  RET			;[4417]and return
+	ENDIF.			;[4417]
+	
 GROVEX:	ADJSP Q2,1-ISIZ		;SO FIRST INCREMENT GETS TO BEGINNING
 GRV1:	ADJSP Q2,ISIZ		;POINT TO NEXT ENTRY
-	CAML Q2,QPT		;STILL IN THE STACK ?
-	RET			;NOPE-GO AWAY
+	CAMG Q2,QPT		;[4417]STILL IN THE STACK ?
+	IFSKP.			;[4417]No
+	  SETZRO PR%DEF,PRIFLG	;[4417]All done clear doing default flag
+	  RET			;[4417]Nope-Go away
+	ENDIF.			;[4417]
 	DMOVE A,(Q2)		;ADDRESSES IN A, DATA IN B
 	MOVE C,2(Q2)		;SECOND WORD OF DATA IN C
 	TXNE Z,INFOF		;DOING INFO?
@@ -1750,10 +1775,7 @@ LOW2:	MOVX C,OBDLLC		;FIRST ASSUME LOWERCASE
         MOVE A,[IRPRNT,,RPRNT]
         CALLRET STOR1
 
-
-GPRNTR:	SKIPE SDF		;[7.1113] Are we setting defaults?
-	ERROR <Defaults are not implemented for remote-printing
->				;[7.1113] Yes - sorry
+GPRNTR:	
         SETZM ODDPTR		; Clear "odd printer" flag (TRVAR'd at .PRINT)
         MOVE A,PTRTAB		; Get the address
 	MOVEI B,PBKFDB		; ...and the pre-fab FDB
@@ -1774,7 +1796,7 @@ GPRNTR:	SKIPE SDF		;[7.1113] Are we setting defaults?
 	LOAD C,CM%FNC,.CMFNP(C)	; Get what was typed
 	CAIN C,.CMKEY		; Keyword? 
 	JRST RESOLV		; Yes. Go find out queue/nodename
-	MOVE A,CMABP		; Point to user's input
+GPRNT1:	MOVE A,CMABP		;[4417] Point to user's input
         ILDB B,A		; Get first character
         CAILE B,"Z"		; Lowercase char?
         SUBI B,40		; Yes, uppercase-ize
@@ -1784,50 +1806,117 @@ GPRNTR:	SKIPE SDF		;[7.1113] Are we setting defaults?
         MOVE A,CMABP		; point to ATMBUF
         CALL BCOUNT		; (A/A,B)How many characters?
         CAILE B,PTRCHR          ; More than allowed?
-        ERROR <Too many characters in VMS queue, or LAT Port/Service name>
+         ERROR <Too many characters in VMS queue, or LAT Port/Service name>
         MOVSI A,(POINT 7,0)	; Point
         HRRI A,RPQUE            ; Save string here
         MOVE B,CMABP		; Take it from here
         SETZ C,	                ; End on null
         CALL ASOUT		; (A,B,C/A,B)Copy string
+;This is for @SET DEF PRINT /REM:queue /DEST:node, were queue is just a Q name.
+;We have a queue name so check to see if whether we are SET DEFAULT PRINT.
+;If we are save the queue name because there might be a/DEST with it.
+;Remember to check for /DEST at SDEOL:
+	SKIPN SDF		;[4417]SET DEFAULT?
+	IFSKP.			;[4417]Yes,
+	  MOVSI A,RPQUE		;[4417]Source is addr of queue name
+	  HRRI A,DEFQUE		;[4417]Destination is addr of store queue name
+	  BLT A,DEFQUE+6	;[4417]Save it
+	  SETONE PR%QUL,PRIFLG	;[4417]Set queue name bit
+	  SETZRO PR%RDF,PRIFLG	;[4417]Clear the default /REMOTE bit
+	  SETZM DEFADR		;[4417]Clear addr of alias to defaulted printer
+	ENDIF.			;[4417]
 	SETOM ODDPTR		; Signal we have an "odd printer" i.e.,not in table
 	SETZM RPNODE		; Clean up node location
 	RET
+
 
 ;[7.1073]
 ;HERE TO RESOLVE AN ALIAS FROM THE TABLE TO QUEUENAME AND NODENAME
 
 RESOLV:	MOVNI A,^D10		; Initialize counter
         MOVEM A,KEYLVL
-RESLV1:	HLRZ A,(B)		; Get LH of entry
-	SKIPN A			; Zero = end of table
-	ERROR <Unexpected error - Requested Printer not found in table>
+	SKIPE SDF		;[4417]Doing SET DEFAULT
+	MOVEM B,DEFADR		;[4417]Yes, save the address of the alias
+
+;Caller of this routine, on return should clear the left half of PRIFLG and
+;make sure that PR%DDF and PR%RDF are set correctly because in resolving the
+;alias, RESLV1: will change the bit setting of PR%DDF and PR%RDF if it is
+;called on behalf of a SET DEFAULT PRINTER command.
+
+RESLV1::HLRZ A,(B)		; Get LH of entry
+	IFE. A			;[4417]End of table?
+	  MOVE A,PRIFLG		;[4417]Get Print flag
+	  TXNN A,PR%DEF		;[4417]Filling in defaults?
+	  IFSKP.		;[4417]Yes
+	    SETONE PR%DER,PRIFLG ;[4417]Say we have an error
+	    RET			;[4417] and return
+	  ELSE.			;[4417]
+	    ERROR <Unexpected error - Requested Printer not found in table>
+	  ENDIF.		;[4417]
+	ENDIF.			;[4417]
         HRRZ A,(B)		; Get RH of entry
-	SKIPN A
-	ERROR <Remote Printer alias name resolves to a deleted entry>
+	IFE. A			;[4417]Deleted entry
+	  MOVE A,PRIFLG		;[4417]Get Print flag
+	  TXNN A,PR%DEF		;[4417]Filling in defaults?
+	  IFSKP.		;[4417]Yes
+	    SETONE PR%DER,PRIFLG ;[4417]Say we have an error
+	    RET			;[4417] and return
+	  ELSE.			;[4417]
+	    SKIPE SDF		;[4417]SET DEFAULT
+	    JRST GPRNT1		;[4417]Yes, then its o.k because there might be a
+				;/DESTINATION with the SET command.
+	    ERROR <Unexpected error - Requested Printer is a deleted entry>
+	  ENDIF.			;[4417]
+	ENDIF.			;[4417]
 	MOVE D,A		; Move pointer into a safe AC
 	HLRZ C,(D)		; Get LH of data we point to
 	SKIPN C			; If zero, this is an alias
 	JRST STPTAB		; Go step thru the table
+
         MOVSI B,(POINT 7,0)
         HRR B,C 		; Point to the queue name
         MOVSI A,(POINT 7,0)	; Point
         HRRI A,RPQUE            ; Save string here
         SETZ C,	                ; End on null
         CALL ASOUT		; (A,B,C/A,B)Copy string
-        SKIPE RPNODE		; Do we already have a destination node?
-        RET			; Yes, we're done
         HRRO A,(D)		; Now point to RH of word
         CALL GETSIX		;(A/A) Make nodename SIXBIT
          ERROR <Unexpected error - Node name too long>
         MOVEM A,RPNODE          ; Save it
-        RET			; Done
+	SKIPN SDF		;[4417] setting defaults?
+	IFSKP.			;[4417]yes
+	  SKIPE SDECHO		;[4417]1st pass?
+	  IFSKP.		;[4417]Yes 
+	    MOVE B,DEFADR	;[4417]Get entry
+	    HLRZ A,(B)		;[4417]Get address of alias string
+	    MOVSI B,(POINT 7,0)	;[4417]Pointer
+            HRR B,A		;[4417]Take it from here
+            MOVSI A,(POINT 7,0)	;[4417]Pointer
+            HRRI A,DEFREM	;[4417]Save input arg from SET DEF /REMOTE
+            SETZ C,	        ;[4417]End on null
+            CALL ASOUT		;[4417](A,B,C/A,B)Copy string
+	    SETONE PR%RDF,PRIFLG ;[4417]Default /REMOTE takes precedent
+	    SETONE PR%RML,PRIFLG ;[4417]Seen /REMOTE in SET DEFAULT
+	    SETZRO PR%DDF,PRIFLG ;[4417]Default /DESTINATION take a back seat
+	    SETZM DEFQUE	;[4417]Clear just queue name
+	  ENDIF.		;[4417]
+	ENDIF.			;[4417]
+	RET			;[4417]All done
+
 
 ;WE FOUND AN ALIAS, SO WE HAVE TO KEEP LOOKING
 
 STPTAB:	AOS KEYLVL		; Increment the counter
-	SKIPL KEYLVL		; Counted out?
-	ERROR <Physical printer not found - aliases nested too deeply> ;Yep
+	SKIPG KEYLVL		;[4417]Counted out?
+	IFSKP.			;[4417]Yes,
+	  MOVE A,PRIFLG		;[4417]Get Print flag
+	  TXNN A,PR%DEF		;[4417]Filling in defaults?
+	  IFSKP.		;[4417]Yes
+	    SETONE PR%DER,PRIFLG ;[4417]Say we have an error
+	  ELSE.			;[4417]
+	    ERROR <Physical printer not found - aliases nested too deeply> ;Yep
+	  ENDIF.		;[4417]
+	ENDIF.			;[4417]
 	HRRO B,(A)		; Make pointer from RH of data word
 	MOVE A,PTRTAB		; Addr of table
 	TBLUK			; Where's the string we are pointing to?
@@ -1835,7 +1924,15 @@ STPTAB:	AOS KEYLVL		; Increment the counter
 	MOVE B,A		; Here
 	JRST RESLV1 		; Loop 	
 
-NOFIND:	ERROR <Unexpected error - cannot resolve alias name>
+NOFIND:	
+	MOVE A,PRIFLG		;[4417]Get Print flag
+	TXNN A,PR%DEF		;[4417]Filling in defaults?
+	IFSKP.			;[4417]Yes
+	  SETONE PR%DER,PRIFLG ;[4417]Say we have an error
+	ELSE.			;[4417]
+	  ERROR <Unexpected error - cannot resolve alias name>
+	ENDIF.			;[4417]
+	RET			;[4417]
 
 ;SO DO SOMETHING WITH THE QUEUE AND NODENAME
 
@@ -1844,19 +1941,57 @@ RPRNT:  SKIPE ODDPTR		; Was printer arbitrary field?
 	IFSKP.			; [7.1110] No -see if we have a default set
           MOVE A,.EQROB+.ROBND(P1) ; [7.1110] Nodename already there?
           JUMPN A,RPRNT1	; [7.1110] Yes, use it
-          ERROR <Printer name ambiguous, or not in table and requires a DESTINATION-NODE> ;[7.1188] No. 
+           ERROR <Printer name ambiguous, or not in table and requires a DESTINATION-NODE> ;[7.1188] No. 
 	ENDIF. 
-	SKIPN B,DSTNOD		; If a dest-node, then always use it
-       	MOVE B,RPNODE		; ...else retrieve our node name
+	MOVE A,PRIFLG		;[4417]Get PRINT command flag
+	TXNN A,PR%DEF		;[4417]Filling in defaults
+	IFSKP.			;[4417]Yes, 
+	  SKIPE RPQUE		;[4417]Do we have a queue name?
+	  RET			;[4417]yes, no need for default
+	  SKIPN B,DEFADR	;[4417]Do we have default remote printer?
+	  JRST RPRNT1		;[4417]No, check for just default queue name
+	  MOVNI A,^D10		;[4417]Initialize counter
+          MOVEM A,KEYLVL	;[4417]Save it for RESLV1
+	  CALL RESLV1		;[4417]Resolve it
+	  MOVE A,PRIFLG		;[4417]GET PRINT FLAG
+	  TXNE A,PR%DER		;[4417]Any errors?
+	  RET			;[4417]Yes, done
+	  SETONE PR%RND,PRIFLG	;[4417]Default node on behalf of /REMOTE
+	  TXNE A,PR%RDF		;[4417]/REMOTE first?
+	  SKIPN B,RPNODE	;[4417]Yes, use this node	  
+	  JRST RPRNT1		;[4417]No, skip node name fill in
+	ELSE.
+	  SETZRO PR%DER,PRIFLG	;[4417]Clear error bit
+	  SKIPN B,DSTNOD	;[4417]Do we have a DESTINATION
+	  MOVE B,RPNODE		;[4417]No, use node name from /REMOTE:
+	ENDIF.
 	MOVEM B,.EQROB+.ROBND(P1) ; Store it in .EQ block for GALAXY
 RPRNT1:	SETONE EQ.DLR,.EQSEQ(P1);  [7.1110]Set the "this is DQS or LAT print" bit
-        MOVSI B,(POINT 7,0)	; 
-        HRRI B,RPQUE		;  Point to the queue name
-        MOVSI A,(POINT 7,0)	;  Point
+        MOVSI B,(POINT 7,0)	;[4417]Byte pointer
+	MOVE A,PRIFLG		;[4417]Do we have a PRINT command flag
+	TXNN A,PR%DEF		;[4417]Filling in defaults
+	IFSKP.			;[4417]Yes
+	  SETONE PR%QUE,PRIFLG	;[4417]set defaulted queue bit
+	  SKIPE RPQUE		;[4417]do we have a queue name?
+	  JRST RPRNT2		;[4417]Yes, use it
+	  SKIPE DEFQUE		;[4417]Do we have a just queue name 
+	  IFSKP.		;[4417]No
+	    SETZRO PR%JQN,PRIFLG ;[4417]Clear defaulted queue name
+	    RET			;[4417]No, then no defaults
+	  ELSE.			;[4417]
+	    HRRI B,DEFQUE	;[4417]Get just default queue name
+	    SETONE PR%JQN,PRIFLG ;[4417]Just queue name
+	    JRST RPRNT3		;[4417]and continue
+	  ENDIF.		;[4417]
+	ELSE.			;[4417]No
+	  SETZRO PR%QUE,PRIFLG	;[4417]Clear defaulted queue bit
+	ENDIF.			;[4417]
+RPRNT2:	HRRI B,RPQUE		;[4417]Point to the queue name
+RPRNT3:	MOVSI A,(POINT 7,0)	;[4417]Point
         HRRI A,.EQRPN(P1)       ;  And copy to EQ block
         SETZ C,	                ;  End on null
         CALL ASOUT		;  (A,B,C/A,B)Copy string
-	RET
+	RET			;[4417]
 
 ;[7.1073]
 ;CHARACTERISTICS FOR REMOTE PRINT JOB
@@ -1865,7 +2000,7 @@ RPRNT1:	SETONE EQ.DLR,.EQSEQ(P1);  [7.1110]Set the "this is DQS or LAT print" bi
         MOVE A,[ICHRNM,,CHARN]
         CALLRET STOR1
 
-GCHAR:  SKIPE SDF		;[7.1113] setting defaults?
+GCHAR:	SKIPE SDF		;[7.1113] setting defaults?
 	ERROR <Defaults are not implemented for remote-printing
 >				;[7.1113] Yes - sorry
         SETZM BTMSK1		; Clear the bitmask....
@@ -2372,7 +2507,9 @@ PRN6:	TYPE <" >		;TERMINATING QUOTE FOR SPECIAL NOTE
 
 IPRIOR:	PSWITCH <PRIORITY:%2Q>
 
-IDESTI:	PSWITCH <DESTINATION-NODE:%2'::>
+IDESTI:	SKIPE B,DEFDST		;[4417]Do we have a default node name
+	PSWITCH <DESTINATION-NODE:%2'::>
+	RET			;[4417]
 
 IPROCE:	PSWITCH <PROCESSING-NODE:%2'::>
 
@@ -2395,20 +2532,62 @@ GPNODE:	FNODEX <Network node where batch job should be run>
 	MOVE A,[IDESTI,,NODE2]
 	CALLRET STOR1		;REMEMBER IT
 
-NODE2:	CAIE P4,X%SU		;DIFFERENT PLACE TO STASH DESTINATION NODE OF LOG FILE
+NODE2:	MOVE A,PRIFLG		;[4417]GET PRINT FLAG
+	TXNE A,PR%PRI		;[4417]DOING A PRINT COMMAND
+	JRST NODE3		;[4417]YES, HANDLE THIS DIFFERRENTLY
+	
+	CAIE P4,X%SU		;DIFFERENT PLACE TO STASH DESTINATION NODE OF LOG FILE
 	MOVEM B,.EQROB+.ROBND(P1)
 	CAIN P4,X%SU
 	STOLIM B,.EQLIM(P1),ONOD
 	RET
 
-GDNODE:	MOVE Q3,[ASCIZ /LAT/]	;[7.1265] Set flag in Q3
-	WORDX <Network node or LAT server to receive output> ;[7.1265]
-GNODEA:	 CMERRX <Invalid node>
-GNODEB:	CALL GETSXF		;[7.1265]Get SIXBIT of node - allow funny chars
-	MOVE B,A
-	SKIPN SDF		; [7.1110] Are we setting a default? If no....
-	MOVEM B,DSTNOD		; [7.1073] ...Signal REMOTE-PRINTING we have a dest-node
+NODE3:	CALL FILDEF		;[4417](/)Are we filling in DEFAULTS?
+	 JRST NODE4		;[4417]No, check to see if we should override
+	SETONE PR%DES,PRIFLG	;[4417]Set DESTINATION is defaulted
+	MOVE A,PRIFLG		;[4417]GET PRINT FLAG
+	TXNE A,PR%DDF		;[4417]DID /DEST COME FIRST?
+	MOVEM B,.EQROB+.ROBND(P1) ;[4417]Yes, save node name
 	RET
+
+NODE4:	CAIE P4,X%SU		;[4417]STASH DESTINATION NODE OF LOG FILE
+	IFSKP.			;[4417]Yes
+	  STOLIM B,.EQLIM(P1),ONOD ;[4417]Do it.
+	ELSE.
+	  MOVEM B,.EQROB+.ROBND(P1) ;[4417]Save node name in EQ
+	  SETZRO PR%DES,PRIFLG	;[4417]Clear defaulted /DEST
+	  MOVE A,PRIFLG		;[4417]Get PRINT command flag
+	  TXNN A,PR%QUE!PR%JQN	;[4417]Queue name defaulted?
+	  IFSKP.		;[4417]Yes
+	    HRLI A,.EQRPN(P1)	;[4417]Source=queue/service/port block
+	    HRRI A,.EQRPN+1(P1)	;[4417]source,,destination
+	    SETZM .EQRPN(P1)	;[4417]Clear the first word
+	    BLT A,.EQRPN+6(P1)	;[4417]Clear the block
+	    SETZRO EQ.DLR,.EQSEQ(P1) ;[4418]Clear the DQS or LAT bit	    
+	  ENDIF.
+	  SETZRO PR%DER,PRIFLG ;[4417]Clear any errors while resolving RP
+	ENDIF.
+	RET			;[4417]All done
+
+
+GDNODE:	MOVE Q3,[ASCIZ /LAT/]	;[4402] Set flag in Q3
+	WORDX <Network node or LAT server to receive output> ;[4402]
+GNODEA:	 CMERRX <Invalid node>
+GNODEB:	CALL GETSXF		;[4402]Get SIXBIT of node - allow funny chars
+	MOVE B,A
+	MOVEM B,DSTNOD		; [7.1073] ...Signal REMOTE-PRINTING we have a dest-node
+	SKIPN SDF		;[4417]SET DEFAULT?
+	IFSKP.			;[4417]Yes,
+	  SKIPE SDECHO		;[4417]1st pass?
+	  IFSKP.
+	    MOVEM B,DEFDST	;[4417]Save default /DEST
+	    SETONE PR%DDF,PRIFLG ;[4417]Default /DESTINATION takes precedent
+	    SETZRO PR%RDF,PRIFLG ;[4417]over /REMOTE
+	    SETONE PR%DSL,PRIFLG ;[4417]Seen /DEST in SET DEFAULT PRINT command
+	  ENDIF.
+	ENDIF.
+	RET
+
 
 ;SPECIFIC UNIT NUMBER
 
@@ -2419,14 +2598,41 @@ GNODEB:	CALL GETSXF		;[7.1265]Get SIXBIT of node - allow funny chars
 UNIT2:	STOR B,RO.UNI,.EQROB+.ROBAT(P1)
 	MOVEI A,1		;SAY "PHYSICAL UNIT SUPPLIED"
 	STOR A,RO.PHY,.EQROB+.ROBAT(P1)
+	MOVE B,PRIFLG		;[4417]Get PRINT flag 
+	TXNE B,PR%DEF		;[4417]Filling in defaults 
+	IFSKP.			;[4417]No,
+	  SETZRO PR%DER,PRIFLG	;[4417]Clear any errors while resolving RP
+	  TXNN B,PR%QUE!PR%JQN	;[4417]Do we have defaulted queue name
+	  IFSKP.		;[4417]Yes,
+	    SETZRO EQ.DLR,.EQSEQ(P1) ;[4418]clear the DQS or LAT bit
+	    HRLI A,.EQRPN(P1)	;[4417]Source=queue/service/port block
+	    HRRI A,.EQRPN+1(P1)	;[4417]source,,destination
+	    SETZM .EQRPN(P1)	;[4417]Clear the first word
+	    BLT A,.EQRPN+6(P1)	;[4417]Clear the block
+	    TXNE B,PR%DES	;[4417]Destination Node defaulted?
+	    IFSKP.		;[4417]No, check default remote-printer
+	      SKIPN DSTNOD	;[4417]Destination node in commmand?
+	      SETZM .EQROB+.ROBND(P1) ;[4417]No, clear node name from remote
+	    ELSE.
+	      SKIPE DSTNOD	;[4417]
+	      IFSKP.		;[4417]
+	        MOVE A,DEFDST	;[4417]Ge default node name
+	        MOVEM A,.EQROB+.ROBND(P1) ;[4417]No, clear node name from remote
+	      ENDIF.
+	    ENDIF.
+	  ENDIF.
+	ENDIF.
 	RET
 
-IUNIT:	PSWITCH <UNIT:%2Q>	;[3036] DECIMAL UNIT NUMBER
+IUNIT:	MOVE B,DEFUNT		;[4417]GET DEFAULT UNIT 
+	PSWITCH <UNIT:%2Q>	;[3036] DECIMAL UNIT NUMBER
 
 GUNIT:	DECX <Decimal unit number>
 	 CMERRX <Invalid unit number>
 	VERIFY B,C,RO.UNI	;MAKE SURE UNIT FITS IN FIELD
 	 ERROR <Unit number out of range>
+	SKIPE SDF		;[4417]SET DEFAULT
+	MOVEM B,DEFUNT		;[4417]YES SAVE IT
 	RET
 
 IFORMS:	PSWITCH <FORMS:%2'>
@@ -2453,6 +2659,11 @@ IUNIQU:	HRROI C,[ASCII /NO/
 ;MODIFY (REQUEST TYPE) REQUEST-TYPE (JOBNAME) JOBNAME /SW/SW/SW/SW
 
 .MODIF::PRISTG			;ALLOCATE STORAGE
+	SETZM SDF		;[4418]NOT SETTING DEFAULTS
+	SETZM KEYLVL		;[4418]Counter for levels of tracing aliase
+	SETZM RPQUE		;[4418]Queue name from /REMOTE
+	SETZM RPNODE		;[4418]Node name from /REMOTE
+	SETZM DSTNOD		;[4418]Destination-node
 	CALL MODINI		;INITIALIZE MODIFY BLOCK
 	CALL GQUEM		;GET CORRECT QUEUE NAME
 	MOVEM B,IPCFP+MOD.OT
@@ -2794,6 +3005,32 @@ MCASE:	SETZM 4(P1)		;DEFAULT TO /GENERIC
 .MSEQ:	CALL GSEQ		;GET SEQUENCE NUMBER
 	MOVEM B,IPCFP+MOD.RQ+.RDBES ;STORE SEQUENCE NUMBER
 	RET
+
+;[4418]
+;Modifying /REMOTE-PRINT:
+
+.MREPR:
+	CALL GPRNTR		;[4418]Get /REMOTE arguments
+	SKIPN RPQUE		;[4418]Do we have a queue/port/service name
+	IFSKP.			;[4418]Yes
+          MOVSI B,(POINT 7,0)	;[4418]Byte pointer
+	  HRRI B,RPQUE		;[4418]Get queue name
+	  MOVSI A,(POINT 7,0)	;[4418]Pointer
+          HRRI A,G1SIZ(P2)	;[4418]And copy to end of group 1
+          SETZ C,	        ;[4418]End on null
+          CALL ASOUT		;[4418](A,B,C/A,B)Copy string
+	  MOVEI A,G1SIZ+G0SIZ-7	;[4418]Get the end of group 1
+	  MOVEM A,7(P1)		;[4418]Save the address of where to find Q name
+	  SKIPE B,RPNODE	;[4418]Do we have a node name?
+	  MOVEM B,5(P1)		;[4418]SAVE IN GROUP 0 (MAJOR MOD)
+  	  SKIPE B,DSTNOD	;[4418]/DEST:?
+	  MOVEM B,5(P1)		;[4418]SAVE IN GROUP 0 (MAJOR MOD)
+	ENDIF.			;[4418]
+	SETZM DSTNOD		;[4418]Clear /DEST:
+	SETZM RPQUE		;[4418]Clear que/port/service
+	SETZM RPNODE		;[4418]Clear node
+	RET
+
 
 ;SWITCHES FOR MODIFYING OUTPUT REQUESTS
 
@@ -2826,6 +3063,7 @@ REPEAT 0,<
 	JOBS <T PRESERVE,,.MPRES>
 	JOBS <TV PRIORITY,,.MPRIO>
 	JOBS <TV PROCESSING-NODE,,.MPNOD>,B%SU
+	JOBS <TV REMOTE-PRINTER,,.MREPR>,B%PR ;[4418]/REMOTE PRINTER:
 	JOBS <TV REPORT,,.MREPO>,B%PR
 	JOBS <TV RESTARTABLE,,.MREST>,B%SU
 	JOBS <TV SEQUENCE,,.MSEQ>
@@ -3082,9 +3320,56 @@ SDEOL1:	TXZ Z,SETDEF		;SECOND PASS,CLEAR FLAG
 		  DSPT
 		  DTPT
 		  DPLPT](P4)	;STORE POINTER IN CORRECT PLACE
+	MOVE A,PRIFLG		;[4417]Get the print flag
+	TXNN A,PR%DSL		;[4417]/DESTINATION the last switch in command?
+	IFSKP.			;[4417]Yes,
+  	  MOVE B,DEFDST		;[4417]Yes, save node name
+	  TXNN A,PR%QUL		;[4417]Do we have just queue name
+	  IFSKP.		;[4417]Yes,
+	    HRROI A,DEFQUE	;[4417]Get just queue name
+	    ETYPE <Default printer is queue/port/service %1M on node %2':: >
+	  ELSE.			;[4417]
+	    TXNN A,PR%RML	;[4417]Do we have /REMOTE
+	    IFSKP.		;[4417]Yes,
+	      HRROI A,RPQUE	;[4417]Get default Que/Port/Service name
+	      ETYPE <Default printer is queue/port/service %1M on node %2':: >
+	    ELSE.		;[4417]
+	      SKIPN B,DEFADR	;[4417]Default /REMOTE already exists?
+	      IFSKP.		;[4417]Yes,
+	        MOVNI A,^D10	;[4417]Initialize counter
+                MOVEM A,KEYLVL	;[4417]Save it here
+                CALL RESLV1	;[4417]Resolve alias
+		HRROI A,RPQUE	;[4417]Get default Que/Port/Service name
+  	        MOVE B,DEFDST	;[4417]Get node name
+	        ETYPE <Default printer is queue/port/service %1M on node %2'::>
+	        SETONE PR%DDF,PRIFLG ;[4417]/DEST takes precedent over
+		SETZRO PR%RDF,PRIFLG ;[4417]/REMOTE
+	        SETZRO PR%LFT,PRIFLG ;[4417]Clear the left half
+	      ELSE.		;[4417]
+  	        MOVE B,DEFDST	;[4417]Get node name
+	        ETYPE <Default /DESTINATION is %2':: >
+	      ENDIF.		;[4417]
+	    ENDIF.		;[4417]
+	  ENDIF.		;[4417]
+	ELSE.			;[4417]
+	  TXNN A,PR%QUL		;[4417]Just Queue name?
+	  IFSKP.		;[4417]Yes, but no /DESTINATION!!
+	    SETZM DEFQUE	;[4417]Clear just queue name
+	    SETZRO PR%LFT,PRIFLG ;[4417]Clear the left half 
+            ERROR <Default remote printer is not defined.  /DESTINATION: switch is missing.>
+	  ENDIF.		;[4417]
+	  TXNN A,PR%RML		;[4417]/REMOTE the last switch in command?
+	  IFSKP.		;[4417]Yes,
+	    HRROI A,DEFREM	;[4417]Get default remote printer name
+	    HRROI B,RPQUE	;[4417]Get default Que/Port/Service name
+	    MOVE C,RPNODE	;[4417]Get default node name
+	    ETYPE <Default printer is %1M --- %2M on node %3' %_> ;[4417]
+	  ENDIF.		;[4417]
+	ENDIF.			;[4417]
+	SETZRO PR%LFT,PRIFLG	;[4417]Clear the left half 
 	RET			;DONE
 
-
+	
 ;SET NO DEFAULT (FOR) SUBMIT
 
 .SNDS::	CONFIRM			;WAIT FOR COMMAND CONFIRMATION
@@ -3133,6 +3418,11 @@ SDEOL1:	TXZ Z,SETDEF		;SECOND PASS,CLEAR FLAG
 	CALL REMDEF
 	TYPE <All defaults for PRINT command cleared
 >
+	SETZM DEFREM		;[4417]
+	SETZM DEFUNT		;[4417]
+	SETZM DEFDST		;[4417]
+	SETZM DEFADR		;[4417]
+	SETZM DEFQUE		;[4417]
 	RET
 
 ;INFO DEF PLOT
@@ -3260,7 +3550,19 @@ IREPOR:	HRROI A,[ASCIZ /REPORT/]
 ;[7.1073] No defaults allowed for remote printing
 ICHRNM: PSWITCH <CHARACTERISTIC:[Defaults not implemented]>
 
-IRPRNT: PSWITCH <REMOTE-PRINTER:[Defaults not implemented]>
+IRPRNT: SKIPN DEFADR		;[4417]Do we have a default remote printer
+	IFSKP.			;[4417]Yes,
+	  HRROI B,DEFREM	;[4417]Get Alias name
+	ELSE.			;[4417]
+	  SKIPN DEFQUE		;[4417]Do we have just a default queue name
+	  IFSKP.		;[4417]Yes,
+	    HRROI B,DEFQUE	;[4417]Get queue name
+	  ELSE.			;[4417]No just queue name or remote printer
+	    RET			;[4417]
+	  ENDIF.
+	ENDIF.
+	PSWITCH <REMOTE-PRINTER:%2M>
+
 
 ;PRINT /SPOOLED-OUTPUT, PUNCH PAPER-TAPE /SPOOLED-OUTPUT ETC.
 
@@ -3839,6 +4141,17 @@ BAD1:	SOJL A,[MOVEI A,IPCFX4	;MESSAGE WASN'T BEING SENT TO SPECIAL PID, LET CALL
 	CALL (A)		;RECALCULATE REQUESTED PID
 	MOVE B,A		;GET REVISED PID IN B
 	JRST SNDMS1		;GO TRY TO RESEND MESSAGE
+
+SUBTTL FILDEF - CHECK TO SEE IF WE ARE FILLING IN DEFAULTS
+
+;FILDEF - Check PRIFLG to see if we filling in the defaults.
+;	returns +1 not doing defaults
+;	returns +2 doing defaults
+
+FILDEF:	MOVE A,PRIFLG		;[4417]Get the print flag word
+	TXNN A,PR%DEF		;[4417]Doing defaults?
+	RET			;[4417]No, +1 return
+	RETSKP			;[4417]Yes, +2 return
 
 	END
 

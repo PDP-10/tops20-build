@@ -1,5 +1,13 @@
-; 4144 Tue Oct  9 01:16:20 EDT 2018 kcr
-; turn on XTNDSW and EMCCSW
+; Edit= 4449 to EXECDE.MAC on 22-May-90 by GSCOTT
+;Update copyright notice as needed. 
+; Edit= 4433 to EXECDE.MAC on 7-May-90 by GSCOTT
+;Default EMCSSW on, reuse old EMACS fork at .EMCSF+2.
+; Edit= 4417 to EXECDE.MAC on 12-Jan-89 by WONG, for SPR #22042
+;Add code to support @SET DEFAULT PRINTER /REMOTE-PRINT: command and fix some
+;bugs in routine SRPPTR: which deals with validating the arguments to the @SET
+;REMOTE PRINTER command.
+; Edit= 4412 to EXECDE.MAC on 13-Dec-88 by RASPUZZI
+;Add new commands, features and support for security enhancements.
 ; UPD ID= 4132, RIP:<7.EXEC>EXECDE.MAC.11,   7-Mar-88 20:15:10 by GSCOTT
 ;More of TCO 7.1255 - Fix copyright macro.
 ; UPD ID= 4115, RIP:<7.EXEC>EXECDE.MAC.10,   7-Mar-88 18:22:41 by GSCOTT
@@ -151,7 +159,7 @@
 ;<4.1.EXEC>EXECDE.MAC.2, 20-Nov-79 11:25:22, EDIT BY OSMAN
 ;TCO 4.1.1023 - FIX TAKE STUFF
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -189,9 +197,9 @@ OURNAM==SIXBIT /EXEC/		;OUR PROGRAM NAME WHILE WAITING FOR A COMMAND
 DEFINE CPYRYT,<
 	LOC	0
 	ASCIZ /
-COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION, 1976, 1988.
+COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION, 1976, 1990.
 ALL RIGHTS RESERVED.
-/				;;[7.1255]
+/				;;[7.1255][4449]
 	RELOC>
 
 ;MACRO TO DO STANDARD STUFF AT BEGINNING OF EACH ASSEMBLY
@@ -251,7 +259,7 @@ DEFINE XARC<IFN XARCSW,>
 
 ;ASSEMBLY SWITCH FOR EXTENDED EXEC FEATURES.
 
-IFNDEF XTNDSW,<XTNDSW==:1>
+IFNDEF XTNDSW,<XTNDSW==:0>
 DEFINE XTND<IFN XTNDSW>
 DEFINE NOXTND<IFE XTNDSW>
 
@@ -269,10 +277,9 @@ DEFINE NOSED<IFE SEDSW>
 
 ;ASSEMBLY SWITCH FOR EMACS CODE IN EXECED
 
-;[7.1092] Set EMCSSW to 1
-;[7.1143] Now reset it to 0 
+;[4433] Default EMCSSW to on for fancy EMACS code in EXECED
 
-IFNDEF EMCSSW,<EMCSSW==:1>
+IFNDEF EMCSSW,<EMCSSW==:1>	;[4433]
 DEFINE EMCS<IFN EMCSSW>
 DEFINE NOEMCS<IFE EMCSSW>
 
@@ -774,7 +781,7 @@ DEFINE TEND<
 ;AREA SIZES
 
 PDL==1000			;PUSHDOWN
-GTDLN==1+.CDPPN			;LEAVE ROOM FOR GTDIR INFO
+GTDLN==1+.CDFPA			;[4412] Leave room for GTDIR% information
 UGBUFL==^D41			;ALLOW UP TO 40 USER GROUP ENTRIES
 DGBUFL==UGBUFL			;SAME FOR DIRECTORY GROUPS
 SGBUFL==UGBUFL			;SAME FOR ALLOWABLE SUBDIRECTORY USER GROUPS
@@ -1174,6 +1181,30 @@ BUFEND==BUFL+777		;LAST WORD OF BUFFER SPACE
 ;	B3 - Type out the normal LOGIN messages; i.e. system message
 ;		of the day, Job X on TTYn..., You have new mail, etc.
 
+
+
+;[4417]
+;These bits are in PRIFLG
+PR%LFT==-1,,0			;[4417]Left half of PRIFLG
+ PR%DEF==:1B0			;[4417]Filling in defaults for PRINT command
+ PR%PRI==:1B1			;[4417]Doing a print command
+ PR%QUE==:1B2			;[4417]Queue/Port/Service defaulted
+ PR%RND==:1B3			;[4417]VMS/Server defaulted
+ PR%DES==:1B4			;[4417]DESTINATION defaulted
+ PR%JQN==:1B5			;[4417]Just queue name defaulted 
+ PR%DER==:1B6			;[4417]Default remote printer was deleted
+ PR%DSL==:1B7			;[4417]Seen /DEST in SET DEFAULT PRINT 
+ PR%RML==:1B8			;[4417]Seen /REMOTE in SET DEFAULT PRINT 
+ PR%QUL==:1B9			;[4417]Seen just queue in SET DEFAULT PRINT 
+
+;Right half of PRIFLG is used to keep an account of what defaults are set for
+;the print command.  These bit pertains to the process.  If PR%DDF is on then
+;the node name in /DEST takes precedent over the node name in /REMOTE: and vice
+;versa if PR%RDF is on.  Either PR%DDF or PR%RDF is set, both can't be set.
+
+PR%RHT==0,,-1
+ PR%DDF==:1B18			;[4417]Default to /DEST: node
+ PR%RDF==:1B19			;[4417]Default to node defined in /REMOTE:
 
 ;XGLOBS FOLLOWS THIS
 

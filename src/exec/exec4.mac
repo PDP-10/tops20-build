@@ -1,3 +1,12 @@
+; Edit= 4449 to EXEC4.MAC on 22-May-90 by GSCOTT
+;Update copyright notice as needed. 
+; Edit= 4429 to EXEC4.MAC on 25-Sep-89 by GSCOTT
+;Change references from "ARPANET" to "INTERNET", keeping old commands around
+;with the invisible bit for CMDs, CTLs, and habitual users.
+; Edit= 4423 to EXEC4.MAC on 9-Mar-89 by GSCOTT
+;Make user change password on next login if password changed with BUILD. 
+; Edit= 4412 to EXEC4.MAC on 13-Dec-88 by RASPUZZI
+;Add new commands, features and support for security enhancements.
 ; UPD ID= 4110, RIP:<7.EXEC>EXEC4.MAC.5,   7-Mar-88 18:21:29 by GSCOTT
 ;TCO 7.1255 - Update copyright notice.
 ; UPD ID= 4091, RIP:<7.EXEC>EXEC4.MAC.4,  19-Jan-88 15:34:55 by EVANS
@@ -66,7 +75,7 @@
 ; UPD ID= 191, SNARK:<4.1.EXEC>EXEC4.MAC.2,   8-Jan-80 14:06:56 by OSMAN
 ;tco 4.1.1060 - Warn about non-accessed directories under INFO DIR
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -150,6 +159,9 @@ DIRPNT:	SAVEAC <P1>		;GET A PERMANENT AC TO USE FOR ADDRESS
 	MOVE C,.CDDAC(B)	;GET ACCOUNT POINTER
 	MOVEM C,DACTPR		;REMEMBER POINTER TO ACCOUNT
 	MOVE P1,B		;SAVE ADDRESS OF BLOCK
+	SETZM .CDPED+DFBUF	;[4412] Init this
+	SETZM .CDNLD+DFBUF	;[4412] Clear this for old monitors
+	SETZM .CDFPA+DFBUF	;[4412] ANd this one too
 	SKIPE A			;NAME IS NOT IN BLOCK FOR "PRINT".
 	ETYPE < Name %1R%%_>
 	TLNE Z,F4		;PRINT NAME ONLY?
@@ -195,14 +207,14 @@ PR2A:	MOVSI B,(<7B2>)		;CLEAR EXTRA BITS
 	CALL F3NOT
 	TXZE B,SC%ENQ
 	ETYPE < ENQ-DEQ%_>
-	TXZE B,SC%NWZ		;ARPANET WIZARD?
-	ETYPE < ARPANET-WIZARD%_>
-	TXZE B,SC%NAS		;ABSOLUTE ARPANET SOCKETS?
-	ETYPE < ABSOLUTE-ARPANET-SOCKETS%_>
+	TXZE B,SC%NWZ		;[4429] Internet wizard?
+	ETYPE < INTERNET-WIZARD%_> ;[4429] Wow
+	TXZE B,SC%NAS		;[4429] Absolute internet sockets?
+	ETYPE < ABSOLUTE-INTERNET-SOCKETS%_> ;[4429] Impressive
 	TXZE B,SC%DNA
 	ETYPE < DECNET-ACCESS%_>
-	TXZE B,SC%ANA
-	ETYPE < ARPANET-ACCESS%_>
+	TXZE B,SC%ANA		;[4429] Internet access?
+	ETYPE < INTERNET-ACCESS%_> ;[4429] Yep
 	TXZE B,SC%SEM		;[7.1077]SEMI-OPR?
 	ETYPE < SEMI-OPERATOR%_> ;[7.1077]YES
 	JUMPE B,.+2		;NO MORE PRIVILEGES
@@ -216,6 +228,10 @@ PR2A:	MOVSI B,(<7B2>)		;CLEAR EXTRA BITS
 	CALL F3NOT
 	TXZE B,CD%DIR
 	ETYPE < FILES-ONLY%_>
+	TXNN B,CD%SEC		;[4412] Is directory secure?
+	CALL F3NOT		;[4412] No, say "not" if supposed to
+	TXZE B,CD%SEC		;[4412] Is directory secure?
+	ETYPE < SECURE%_>	;[4412] Yes, say so
 	TXZ B,CD%ANA		;IGNORE ALPHA NUMERIC BIT
 	TXZE B,CD%RLM
 	ETYPE < Repeat LOGIN messages%_>
@@ -262,12 +278,46 @@ XARC <
 	CAME B,A
 	ETYPE < Maximum subdirectories allowed %2Q%%_>
 	SKIPN A,.CDLLD(P1)
-	JRST [	TLNE Z,F3
-		ETYPE < Never logged in%_>
-				;CAN'T USE REG CASE CAUSE %D TYPES CURRENT
-				;DATE FOR 0
-		JRST .+2]
-	ETYPE < Last LOGIN %1D %1E%%_>
+	IFSKP.			;[4412] If so,
+	  ETYPE < Last interactive login %1D %1E%%_> ;[4412]
+	ELSE.			;[4412]
+	  TLNE Z,F3		;[4412] Verbose?
+	  ETYPE < Never logged in interactively%_>
+	ENDIF.			;[4412]
+	SKIPN A,.CDNLD(P1)	;[4412] Ever logged in like in batch?
+	IFSKP.			;[4412] If so,
+	  ETYPE < Last non-interactive login %1D %1E%%_> ;[4412]
+	ELSE.			;[4412]
+	  TLNE Z,F3		;[4412] Being verbose?
+	  ETYPE < Never logged in non-interactively%_>
+	ENDIF.			;[4412]
+	SKIPN A,.CDPED(P1)	;[4412] Does this password have an expiration?
+	IFSKP.			;[4412] If so,
+	  IFG. A		;[4412] If a real value
+	    ETYPE < Password expires on %1D %1E%%_> ;[4412]
+	  ELSE.			;[4412] Else, say something meaningful
+	    ETYPE < Password has EXPIRED%_> ;[4412] Spit it out, man
+	  ENDIF.		;[4412]
+	ELSE.			;[4412] If none set,
+	  TLNE Z,F3		;[4412] See if words wanted
+	  ETYPE < Password expiration date not set%_> ;[4412]
+	ENDIF.			;[4412]
+	HLRZ A,.CDFPA(P1)	;[4412] Get interactive failures
+	SKIPN A			;[4412] Any failures?
+	IFSKP.			;[4412] If so,
+	  ETYPE < Number of interactive login failures %1Q%%_> ;[4412]
+	ELSE.			;[4412] Else, check for verbose
+	  TLNE Z,F3		;[4412] Want verbiage?
+	  ETYPE < No interactive login failures%_> ;[4412]
+	ENDIF.			;[4412]
+	HRRZ A,.CDFPA(P1)	;[4412] Get non-interactive failures
+	SKIPN A			;[4412] Any failures?
+	IFSKP.			;[4412] If so,
+	  ETYPE < Number of non-interactive login failures %1Q%%_> ;[4412]
+	ELSE.			;[4412] Else, check for verbose
+	  TLNE Z,F3		;[4412] Want verbiage?
+	  ETYPE < No non-interactive login failures%_> ;[4412]
+	ENDIF.			;[4412]
 	MOVE A,.CDUGP(P1)
 	MOVEI B,[ASCIZ /User of groups/]
 	CALL GRPPNT
@@ -585,8 +635,19 @@ CREAT3:	COMMAX <Optional comma, then carriage return to go into subcommand mode>
 	SETZM .CDLEN+CRBLK	;CLEAR CRDIR BITS
 CRSUB:	SUBCOM $CREAT,[TLZ Z,F1
 		       RET]	;GET SUBCOMMANDS, CLEAR "NOT" BEFORE EACH ONE
-CRSUB1:	MOVE A,KREDIR		;GET POINTER TO NAME STRING
-	MOVEI B,CRBLK
+
+CRSUB1:	MOVX B,CD%PED		;[4423] Load set password expiration date flag
+	TXNE Q1,CD%PSW		;[4423] Setting password?
+	TDNE B,.CDLEN+CRBLK	;[4423] Yes, setting password exp date?
+	IFSKP.			;[4423] Setting password but not the date
+	  IORM B,.CDLEN+CRBLK	;[4423] Greg wants the date to be zero here
+	  SETZM .CDPED+CRBLK	;[4423]  so that user must change pwd at login
+	ENDIF.			;[4423] Not setting password or setting date
+
+	MOVE A,KREDIR		;GET POINTER TO NAME STRING
+	MOVEI B,GTDLN		;[4412] Get argument block length
+	HRRM B,.CDLEN+CRBLK	;[4412] Slam it in CRDIR% argument block
+	MOVEI B,CRBLK		;[4412] Get argument block address
 	HLL B,Q1		;XWD FLAGS, PARAMETER BLOCK ADDRESS
 	MOVE C,CRPASS		;GET 0 OR POINTER TO PASSWORD
 	MOVE D,@.CDDRN(B)	;GET ADDRESS OF REMOTE ALIAS LIST
@@ -668,13 +729,15 @@ NOTF==1B5
 
 $CREAT:	TABLE
 	T ABORT,ONEWRD
-	T ABSOLUTE-ARPANET-SOCKETS,NOTF,..AAS
+	TA ABS,..ABSO		;[4429]
+	IT ABSOLUTE-ARPANET-SOCKETS,NOTF,..AAS ;[4429]
+..ABSO:	T ABSOLUTE-INTERNET-SOCKETS,NOTF,..AAS ;[4429]
 	T ACCOUNT-DEFAULT,,.AD
    XARC <
 	T ARCHIVE-ONLINE-EXPIRED-FILES,NOTF,..ARCH
    >
-	T ARPANET-ACCESS,NOTF,..ANA
-	T ARPANET-WIZARD,NOTF,..ANW
+	IT ARPANET-ACCESS,NOTF,..ANA ;[4429]
+	IT ARPANET-WIZARD,NOTF,..ANW ;[4429]
 	T CONFIDENTIAL,NOTF
 	T DECNET-ACCESS,NOTF,..DNA
 	T DEFAULT-FILE-PROTECTION,,..PFIL
@@ -682,8 +745,12 @@ $CREAT:	TABLE
 	T DISABLE
 	T ENABLE
 	T ENQ-DEQ,NOTF,..ENQ
+	T EXPIRATION-OF-PASSWORD,NOTF,GETPEX ;[4412] Set password expiration
+	T EXPIRE,,EXPPAS	;[4412] Expire user
 	T FILES-ONLY,NOTF,.FILES
 	T GENERATIONS,,..GENR
+	T INTERNET-ACCESS,NOTF,..ANA ;[4429]
+	T INTERNET-WIZARD,NOTF,..ANW ;[4429]
 	T IPCF,NOTF
 	T KILL,NOTF
 	T LIST,,..LIST
@@ -703,6 +770,7 @@ $CREAT:	TABLE
 	T PUSH,,...PUS
 ;	T REMOTE-ALIAS,NOTF,RNAALI
 	T REPEAT-LOGIN-MESSAGES,NOTF,..RLM
+	T SECURE,NOTF,.SDSEC	;[4412] Build secure
 	T SEMI-OPERATOR,NOTF,..SOPR ;[7.1077]ADD NEW KEYWORD
 	T SUBDIRECTORY-USER-GROUP,,.SUSER
 	T TOPS10-PROJECT-PROGRAMMER-NUMBER,NOTF,..TPPN
@@ -723,23 +791,29 @@ $CREAT:	TABLE
 	JRST (P3)
 
 $$CREA:	TABLE
-	T ABSOLUTE-ARPANET-SOCKETS,NOTF,..AAS
+	TA AB,...ABS		;[4429]
+	IT ABSOLUTE-ARPANET-SOCKETS,NOTF,..AAS ;[4429]
+...ABS:	T ABSOLUTE-INTERNET-SOCKETS,NOTF,..AAS ;[4429]
    XARC <
 	T ARCHIVE-ONLINE-EXPIRED-FILES,NOTF,..ARCH
    >
-	T ARPANET-ACCESS,NOTF,..ANA
-	T ARPANET-WIZARD,NOTF,..ANW
+	IT ARPANET-ACCESS,NOTF,..ANA ;[4429]
+	IT ARPANET-WIZARD,NOTF,..ANW ;[4429]
 	T CONFIDENTIAL,NOTF
 	T DECNET-ACCESS,NOTF,..DNA
 	T DIRECTORY-GROUP,NOTF,..DIRE
 	T ENQ-DEQ,NOTF,..ENQ
+	T EXPIRATION-OF-PASSWORD,NOTF,GETPEX ;[4412] Set no password expiration
 	T FILES-ONLY,NOTF,.FILES
+	T INTERNET-ACCESS,NOTF,..ANA ;[4429]
+	T INTERNET-WIZARD,NOTF,..ANW ;[4429]
 	T IPCF,NOTF
 	T KILL,NOTF
 	T MAINTENANCE,NOTF
 	T OPERATOR,NOTF
 ;	T REMOTE-ALIAS,,RNAALI
 	T REPEAT-LOGIN-MESSAGES,NOTF,..RLM
+	T SECURE,NOTF,.SDSEC	;[4412] Build SECURE directory
 	T SEMI-OPERATOR,NOTF,..SOPR ;[7.1077]ADD NEW KEYWORD
 	T SUBDIRECTORY-USER-GROUP,,.SUSER
 	T TOPS10-PROJECT-PROGRAMMER-NUMBER,,..NPPN
@@ -760,6 +834,35 @@ $$CREA:	TABLE
 	MOVEM A,.CDPSW+CRBLK
 	TXO Q1,CD%PSW
 	RET
+
+;[4412]
+;Making the directory SECURE
+
+.SDSEC:	MOVX A,CD%SEC		;Flag that we are trying to make it secure
+	CALLRET CCMODE		;And join common folk
+
+;[4412]
+;Set password expiration date and time
+GETPEX:	TLNN Z,F1		;Has not been typed?
+	IFSKP.			;If clearing password expiration,
+	  SETZ B,		;Clear this out
+	ELSE.			;Else,
+	  DTX <Expiration date and time for password>
+	   CMERRX		;Handle error
+	ENDIF.
+	CONFIRM			;Parse an EOL
+	MOVEM B,.CDPED+CRBLK	;Save password expiration date and time
+GETPX1:	MOVX B,CD%PED		;Get flag
+	IORM B,.CDLEN+CRBLK	;Set it in argument block
+	TXO Q1,CD%LEN		;And say length is in argumnet block
+	RET			;Back to subcommand mode
+
+;[4412]
+;Here to expire a naughty user
+EXPPAS:	NOISE <USER PASSWORD>	;A little guidance
+	CONFIRM 		;Get that ever present EOL
+	SETOM .CDPED+CRBLK	;Expire the password
+	CALLRET GETPX1		;And join common code
 
 ;TOPS10 PROJECT PROGRAMMER NUMBER
 

@@ -1,12 +1,34 @@
-; UPD ID= 4139, RIP:<7.EXEC>EXECSU.MAC.12,   5-May-88 15:51:48 by RASPUZZI
-;TCO 7.1284 - Add comma in routine GETSIX so that we don't trash AC 0.
-; UPD ID= 4138, RIP:<7.EXEC>EXECSU.MAC.11,  12-Apr-88 09:42:05 by RASPUZZI
-;TCO 7.1271 - Remove in garbage in routine GETSIX that is causing
-;	      illegal instruction traps.
-; UPD ID= 4134, RIP:<7.EXEC>EXECSU.MAC.10,   5-Apr-88 11:41:47 by EVANS
-; TCO 7.1265 - 
+; Edit= 4451 to EXECSU.MAC on 25-May-90 by GSCOTT
+;FCONF/FCONFA should clear the typeahead buffer for safety (thanks MRC). 
+; Edit= 4446 to EXECSU.MAC on 21-May-90 by GSCOTT
+;Fix bad tomorrow calculation because of DST, account for PCL losing JFN in
+;LFJFNS, prevent bogus "process disappeared" messages in .CTRLC, turn off
+;terminal pausing in AUTOLO, catch zero passed as a directory in MALCHK,
+;thanks MRC. 
+; Edit= 4435 to EXECSU.MAC on 15-May-90 by GSCOTT
+;Prevent autologout done too soon, fix PCL/kept fork bug, fix window when
+;interrupts turned on before CERET set (thanks MRC). 
+; Edit= 4425 to EXECSU.MAC on 14-Mar-89 by GSCOTT
+;Rewrite ATTACH command to allow user to pick a job to attach to if more than
+;one candidate job. Also allow ETYPE's %L to take an AC argument. 
+; Edit= 4421 to EXECSU.MAC on 28-Feb-89 by GSCOTT
+;Suppress columnization in ETYPE %W's ODTIM.
+; Edit= 4420 to EXECSU.MAC on 16-Feb-89 by GSCOTT
+;Make ETYPE's %W say "never" for a zero date, then clean up login message code
+;in EXEC0 and EXEC1.
+; Edit= 4419 to EXECSU.MAC on 9-Feb-89 by GSCOTT
+;INFORMATION JOB command should show network origin. %L now will output this. 
+; Edit= 4412 to EXECSU.MAC on 13-Dec-88 by RASPUZZI
+;Add new commands, features and support for security enhancements.
+; Edit= 4405 to EXECSU.MAC on 5-May-88 by RASPUZZI (TCO 7.1284)
+;Don't trash AC 0. Fix SETO instruction introduced by edit 4402.
+; Edit= 4402 to EXECSU.MAC on 5-Apr-88 by EVANS (TCO 7.1265)
 ;Make the EXEC accept non-alphanumeric characters $,_,-,and . in LAT-type
 ;names for remote printing. 
+; Edit= 4401 to EXECSU.MAC on 17-Mar-88 by RASPUZZI
+;Take another whack at POBOX. Rewrite GETPOB so that it translates POBOX: and
+;searches each structure for the user's POBOX directory. Also, fix ACSPOB to
+;work correctly and look for STRX10 in MALCHK.
 ; UPD ID= 4129, RIP:<7.EXEC>EXECSU.MAC.9,   7-Mar-88 18:27:47 by GSCOTT
 ;TCO 7.1255 - Update copyright notice.
 ; UPD ID= 49, RIP:<7.EXEC>EXECSU.MAC.8,  27-Oct-87 17:24:01 by RASPUZZI
@@ -344,7 +366,7 @@
 ;<4.1.EXEC>EXECSU.MAC.2,  1-Nov-79 13:39:12, EDIT BY OSMAN
 ;tco 4.1.1005 - Fix I MEM when restricted jfn is involved
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -1024,7 +1046,10 @@ SBCOM9:	MOVE A,OJBUFP		;GET OLD JFN BOUNDARY
 ;FCONF PRINTS [CONFIRM] THEN FORCES FURTHER CONFIRMATION
 
 FCONF::	PROMPT <[Confirm]>
-FCONFA::
+FCONFA::PUSH P,A		;[4451] Save A
+	MOVE A,CIJFN		;[4451] Input JFN 
+	CFIBF			;[4451] Clear typeahead
+	POP P,A			;[4451] Restore A
 
 ;CONF
 
@@ -1224,9 +1249,8 @@ DT1:	TRVAR <RETBTS,TODAY,SENSE,DAYWEK,NOW,TOMORO,BTIME,<STRNG0,10>,DAYFLG>
 	CALL GETHLP
 	GTAD			;GET CURRENT TIME AND DATE
 	MOVEM A,NOW
-	MOVSI B,1
-	ADD B,A			;GET TOMORROW SAME TIME IN A
-	CALL	TSTDST		;correct for DST
+	MOVE B,A		;[4446] Copy today's time
+	CALL TSTDST		;correct for DST
 	HRROI A,STRNG0		;WRITE TO SCRATCH
 	MOVX C,OT%NTM		;WE WANT ONLY DATE
 	ODTIM			;GET STRING FOR TOMORROW'S DATE
@@ -1235,11 +1259,27 @@ DT1:	TRVAR <RETBTS,TODAY,SENSE,DAYWEK,NOW,TOMORO,BTIME,<STRNG0,10>,DAYFLG>
 	SOUT			;MAKE DATE AND TIME FOR BEGINNING OF TOMORROW
 	HRROI A,STRNG0		;POINT AT FULL STRING
 	MOVEI B,0		;NO SPECIAL FORMAT
-	IDTIM			;GET INTERNAL FORMAT FOR TOMORROW
+	IDTIM			;Get internal format for today 00:00:00
 	 CALL JERR		;SHOULDN'T FAIL
-	MOVEM B,TOMORO		;REMEMBER VALUE FOR TOMORROW
-	SUB B,[1B17]		;CREATE BEGINNING OF TODAY
-	MOVEM B,TODAY
+	MOVEM B,TODAY		;[4446] Save internal format for today
+        SETZ D,                 ;[4446] Don't supply any bits to ODCNV
+        ODCNV                   ;[4446] Break today into integers for day, etc
+        HLRZS C                 ;[4446] Day of month to right half
+        HRLZI C,1(C)            ;[4446] Add one and return to left half
+        TXZ D,IC%DSA            ;[4446] Don't force daylight savings time
+        IDCNV%                  ;[4446] Get internal date/time of tomorrow 0000
+        IFJER.                  ;[4446] Day is after last day of month
+          SETZ C,               ;[4446] Ok, make it first day of month
+          ADDI B,1              ;[4446]  And bump month
+          IDCNV%                ;[4446] Try again
+          IFJER.                ;[4446] Month is not less than 12
+            HLRZS B             ;[4446] Year to right half
+            HRLZI B,1(B)        ;[4446] Next try first month of next year
+            IDCNV%              ;[4446] Last try
+             ERCAL JERR         ;[4446] Punt, can't figure out tomorrow's date
+          ENDIF.		;[4446] Now we have
+        ENDIF.			;[4446]  tomorrow's real date in B
+        MOVEM B,TOMORO          ;[4446] Save tomorrow at 00:00:00
 	MOVX A,CM%IDA+CM%ITM
 	MOVEM A,CMDAT		;FIRST FUNCTION IN CHAIN IS DATE AND TIME
 	MOVE A,[CMTAD+[FLDDB. .CMTAD,CM%SDH,CM%IDA,,,[
@@ -1613,21 +1653,21 @@ WORD$:	USTAR @40		;WORD MIGHT BE "*"
 	CALL GETHLP
 	MOVX A,CMFLD		;ARBITRARY FIELD FUNCTION
 	CAME Q3,[ASCIZ /PSWD/]	;PARSING A PASSWORD ?
-	IFSKP.			;[7.1265] Yes.
-	  MOVEI B,MSKLB		;[7.1265] Get appropriate mask
+	IFSKP.			;[4402] Yes.
+	  MOVEI B,MSKLB		;[4402] Get appropriate mask
           MOVEM B,FBLOCK+4	;MOVE ADDR TO .CMBRK
           TXO A,CM%BRK		;SET CMBRK FLAG IN CMFNP
 	ENDIF.
-	CAME Q3,[ASCIZ /LAT/]	;[7.1265] How about a LAT-type name?
-	IFSKP.			;[7.1265] Yes.
-	  MOVEI B,LATMSK        ;[7.1265] So allow appropriate characters
+	CAME Q3,[ASCIZ /LAT/]	;[4402] How about a LAT-type name?
+	IFSKP.			;[4402] Yes.
+	  MOVEI B,LATMSK        ;[4402] So allow appropriate characters
           MOVEM B,FBLOCK+4	;MOVE ADDR TO .CMBRK
           TXO A,CM%BRK		;SET CMBRK FLAG IN CMFNP
 	ENDIF.
 
-;[7.1265] Neither password nor LAT name - proceed as normal
+;[4402] Neither password nor LAT name - proceed as normal
 
-       	SETZM Q3		;[7.1265] RESTORE TEMP AC
+       	SETZM Q3		;[4402] RESTORE TEMP AC
 	CALLRET $WORK
 
 ;END OF LINE
@@ -2344,7 +2384,7 @@ LFJFNS:	SAVEAC <A>
 	JRST LFJF9		;-1, -2 ISN'T A JFN BUT MIGHT GET HERE
 	HRROI A,LFBUF
 	MOVE B,JBUFP
-	MOVE B,(B)		;PICK UP JFN AGAIN
+	SKIPE B,(B)		;[4446] Pick up JFN, allow for PCL smashing it
 	JFNS			;DO THE JFN TO STRING CONVERSION
 	SKIPN LFBUF
 	HRLI A,440700		;RETURN POINTER TO NULL STRING
@@ -2491,6 +2531,8 @@ GETDRP::STKVAR <GACTPR,DNOO,DRADR,SAVPP,DRPASP>
 	MOVE C,SAVPP		;WHERE TO PUT PASSWORD (POINTER RETURNED IN BUFFER)
 	AOS .CDDRN(B)		;FOR REMOTE ALIAS BLOCK, FIRST WORD NOT USED
 				; BY GTDIR
+	SETZM .CDNLD(B)		;[4412] Zero this in case of an old monitor
+	SETZM .CDFPA(B)		;[4412] And this too
 	GTDIR			;GET ALL THE INFO INTO THAT BLOCK
 	 ERJMP R		;IF FAILED, RETURN NO-SKIP
 	HLRZ A,@.CDDRN(B)	;GET USED COUNT FOR GTDIR BLOCK
@@ -2912,10 +2954,10 @@ ASC2:	MOVEI C,0		;GUARANTEE NULL AT END
 	RET			;RETURN POINTER
 
 ;ROUTINE TO RETURN SIXBIT VERSION OF LATEST FIELD IN A.
-;[7.1265] Add entry to allow non-alphanumeric characters
+;[4402] Add entry to allow non-alphanumeric characters
 
-GETSXF::TDZA Q2,Q2  		;[7.1265] Say "allow funny characters"
-GETSXB::SETO Q2, 		;[7.1284] No funny chars allowed
+GETSXF::TDZA Q2,Q2  		;[4402] Say "allow funny characters"
+GETSXB::SETO Q2, 		;[4405] No funny chars allowed
         HRROI A,ATMBUF		;POINT AT WHAT USER TYPED
 	CALL GETSIX		;GET SIXBIT VERSION
 	 ERROR <Name too long or contains invalid character>
@@ -2930,7 +2972,7 @@ GETSIX::STKVAR <ASPTR,SIXPTR>
 	CALL FIXPT		;FIX POINTER
 	MOVEM A,ASPTR		;REMEMBER ASCII POINTER
 	MOVE A,[440600,,A]	;POINTER TO SIXBIT RESULT
-	MOVEM A,SIXPTR		;[7.1271]
+ 	MOVEM A,SIXPTR
 	MOVEI A,0		;START WITH NULL RESULT
 	MOVSI B,-6		;DO SIX CHARS MAXIMUM
 GETSX1:	ILDB C,ASPTR		;GET NEXT ASCII CHARACTER
@@ -2943,7 +2985,7 @@ GETSX1:	ILDB C,ASPTR		;GET NEXT ASCII CHARACTER
 	CAIA			;NOT LOWERCASE
 	TRZ C,40		;LOWERCASE, CHANGE IT
 	SUBI C,40		;CHANGE TO SIXBIT
-	SKIPE Q2 		;[7.1265] Skip if allowing funny characters
+	SKIPE Q2 		;[4402] Skip if allowing funny characters
 	JUMPL C,R		;IF ILLEGAL CHARACTER, GIVE NON-SKIP
 	IDPB C,SIXPTR		;STORE IN SIXBIT RESULT IN A
 	AOBJN B,GETSX1		;ONLY DO SIX CHARACTERS
@@ -3965,11 +4007,9 @@ CCPSI:	TLOE Z,CTLCF1		;SAY WE'VE SEEN ^C
 
 	TXO Z,NECHOF		;PRETEND ECHOING OFF IN CASE PROG TURNED IT OFF, IN ORDER THAT DOECHO TURN IT BACK ON
 	SKIPG	A,RUNFK		;HAVE A RUNNING FORK
-	MOVE	A,FORK
+	SKIPLE A,FORK		;[4446] Load fork handle, skip if none
 	FFORK			;FREEZE THE WORLD
-	ERCAL	[TYPE <% Process disappeared>
-		 ETYPE<%_>
-		 RET]
+	 ERJMP .+1		;[4446] Ignore error here
 	MOVX Q1,FK%INT		;MARK INTERRUPTED
 	SKIPE SLFTAB(A)
 	IORM Q1,SLFTAB(A)
@@ -4029,8 +4069,9 @@ TLMPSI:	SETZM .JBUFP		;SAY FLUSH ALL JFN'S USED IN CURRENT COMMAND
 ;*** NEED TO SET CTLCF2 HERE IFF FORK WAS IN TTY INPUT WAIT ***
 
 	SKIPG A,RUNFK		;CURRENT FORK
-	MOVE A,FORK
+	SKIPLE A,FORK		;[4446] Is there a stopped fork to use?
 	FFORK			;FREEZE THE WORLD
+	 ERJMP .+1		;[4446] Ignore error from this
 	MOVX Q1,FK%INT		;MARK INTERRUPTED
 	SKIPE SLFTAB(A)
 	IORM Q1,SLFTAB(A)
@@ -4079,7 +4120,7 @@ ALOPSI:	PUSH P,[[DEBRK]]	;FAKE UP RETURN
 	 JRST ALOPS1		;YES, CLOBBER JOB, IT IS INACTIVE
 	MOVEM C,PTTYAC		;NO, SAVE CURRENT AS PREVIOUS
 	MOVE A,[.FHSLF,,.TIMEL]	;SET NEXT TIME TO CHECK
-	MOVE B,[AUTOL3*^D1000]
+	MOVE B,[AUTOL3*3*^D1000] ;[4435] AUTOL3 seconds in the future
 	MOVEI C,2		;CHANNEL 2
 	TIMER
 	 ERROR <Couldn't set auto-logout timer - %?>
@@ -5116,18 +5157,60 @@ USRCNT::MOVSI A,(RC%EMO)	;EXACT MATCH ONLY
 %K:	TIME			;TIME SINCE SYSTEM RESTARTED
 	IDIV A,B		;CONVERT TO SECONDS
 	CALLRET TOUT		;PRINT AS HH:MM:SS AND RETURN
+;ETYPE's % routines ...
+
+;%L takes .TTDES+n or no arg (or 0) for controlling terminal.
+;%L will output output "TTYn", "TTYn org(typ)" or "Detached".
+
+%L:	STKVAR <<NTBLK,.NWNU1+2>,<HSTNAM,20>> ;[4419] NTINF storage
+	IFE. C			;[4425] If no AC or 0 specified do this job
+	  GJINF%		;[4419] Get information about the job
+	  MOVEI C,.TTDES(D)	;[4425] Load terminal number to C
+	ENDIF.			;[4425] End of defaulting code
+	IFL. C			;[4419] Detached?
+	  UTYPE [ASCIZ /Detached/] ;[4419] Yes say so
+	  RET			;[4419] and return
+	ENDIF.			;[4419] Not detached
+	MOVEM C,.NWLIN+NTBLK	;[4419] Want this terminal's location
+	UTYPE [ASCIZ/TTY/]	;[4419] Spread TTY 
+	MOVEI B,-.TTDES(C)	;[4425] Get just the number for TOCT
+	CALL TOCT		;[4419] (B/) Type octal from B
+	SETZM HSTNAM		;[4419] Clear this out
+	MOVEI B,.NWNU1+1	;[4419] Size of argument block
+	MOVEM B,.NWABC+NTBLK	;[4419] Save it in the right place
+	SETZM .NWFNC+NTBLK	;[4419] Clear out function (func=0)
+	HRROI B,HSTNAM		;[4419] Remote goes here
+	MOVEM B,.NWNNP+NTBLK	;[4419] Save in argument block
+	MOVEI A,NTBLK		;[4419] Here's the argument block
+	NTINF%			;[4419] Get information
+	 ERJMP R		;[4419] Return now if old monitor
+	SKIPN HSTNAM		;[4419] Do we have a host?
+	RET			;[4419] Nope, return
+	UTYPE [ASCIZ/ /]	;[4419] Output a space
+	UTYPE HSTNAM		;[4419] Output host name
+	HRRZ B,.NWTTF+NTBLK	;[4419] (no symbol for this field) Get type 
+	MOVSI A,-%L%SIZ		;[4419] Load number of things in table,,0
+	DO.			;[4419] Loop for things in table
+	  HRRZ C,%L%TAB(A)	;[4419] Load type of connection from table
+	  CAMN C,B		;[4419] Match the type we want to hear about?
+	  EXIT.			;[4419] Yes
+	  AOBJN A,TOP.		;[4419] Loop for all of them
+	  RET			;[4419] Unknown type, just return
+	OD.			;[4419] End of loop
+	HLRO B,%L%TAB(A)	;[4419] Match, load address of text
+	UTYPE (B)		;[4419] Output the type text
+	RET			;[4419]  and return
+
+;[4419] Table of network connection types for above code.
+
+%L%TAB:	XWD [ASCIZ/(NRT)/],NW%MC ;[4419] MCB (NRT) terminal
+	XWD [ASCIZ/(TCP)/],NW%TV ;[4419] TVT (TCP) terminal
+	XWD [ASCIZ/(CTM)/],NW%CH ;[4419] CTERM terminal
+	XWD [ASCIZ/(LAT)/],NW%LH ;[4419] LAT terminal
+	%L%SIZ==.-%L%TAB	;[4419] Make size of table
+	ENDSV.			;[4419] End of STKVAR at %L
 
 ;ETYPE'S % ROUTINES ...
-
-;"TTY N" OR "DETACHED"
-
-%L:	GJINF
-	JUMPL D,[UTYPE [ASCIZ /Detached/]
-		RET]
-	TYPE <TTY>
-	MOVE A,COJFN
-	MOVE B,D
-	JRST TOCT		;TYPE OCTAL FROM B
 
 ;TAKES 5B2+NUMBER, OR STRING POINTER, IN INDICATED AC
 
@@ -5377,11 +5460,20 @@ JFNSIL::CALL %GETER
 	RET
 
 ;PRINT C(AC) AS DATE AND TIME
+;[4420] If supplied date time is zero, print "Never"
 
-%W:	MOVE A,COJFN
-	MOVE B,C		;ARG SUPPLIED IN C
-	MOVEI C,0		;USE STANDARD BRIEF FORMAT
-	ODTIM
+%W:	MOVE A,COJFN		;[4420] Load the usual output JFN
+	SKIPE B,C		;[4420] Arg supplied in C, was it zero?
+	IFSKP.			;[4420] Yes, it was zero
+	  HRROI B,[ASCIZ/Never/] ;[4420] Never say never, just display it
+	  SETZ C,		;[4420] Terminate on a null
+	  SOUT			;[4420] Send that along slowly please
+	   ERJMP .+1		;[4420] Avoid problem if owie byte pointer
+	  MOVEM A,COJFN		;[4420] Save it back incase a pointer
+	  RET			;[4420]  and return
+	ENDIF.			;[4420] Argument was nonzero, its a date time
+	MOVX C,OT%SCL		;[4421] Suppress columnization please
+	ODTIM			;Output the date and time
 	MOVEM A,COJFN		;UPDATE COJFN IF BYTE POINTER
 	RET
 
@@ -5496,7 +5588,8 @@ COMTAB: [ASCIZ/,/]
 	JFCL			;IGNORE ERRORS
 	RET
 
-	;%b TYPES OUT CONTENTS OF ATOM BUFFER
+;%b TYPES OUT CONTENTS OF ATOM BUFFER
+
 %BB:	MOVE A,COJFN		;GET CURRENT JFN
 	MOVE B,[POINT 7,ATMBUF]
 	SETZM C
@@ -5725,17 +5818,24 @@ MWATC4:	SOJGE Q2,MWATC0		;LOOP BACK FOR NEXT
 ;			    C(C) := AUX MESSAGE
 ;[3040]			    C(P1):= POINTER TO MAILBOX NAME
 
-MALCHK::STKVAR <MALDIR,<MALFDB,16>,POBJFN> ;[3040]
+MALCHK::JUMPE B,R		;[4446] Return +1 if zero directory offered
+	STKVAR <MALDIR,<MALFDB,16>,POBJFN> ;[3040]
 	SETO Q1,		;INIT FLAG
 	HRROI A,MALBUF		;POINT AT BUFFER 
 	DIRST			;NAME STRING TO BUFFER
-	  IFJER.
-            TYPE <% POBOX: - >	;[3066] Handle error
-	    CALL %GETER	;[3065] Get error code
-	    MOVE A,ERCOD
-	    CALL $ERSTR	;[3065] Print it
-	    RET		;[3065] And return
+	IFJER.
+	  CAIE A,STRX10		;[4401] Is structure offline?
+	  IFSKP.		;[4401] If so,
+	    TYPE <?Mail checking failed because mail structure is offline
+>
+	    RET			;[4401] And return
 	  ENDIF.
+          TYPE <%POBOX: - >	;[3066] Handle error
+	  CALL %GETER		;[3065] Get error code
+	  MOVE A,ERCOD
+	  CALL $ERSTR		;[3065] Print it
+	  RET			;[3065] And return
+	ENDIF.
 	HRROI B,[ASCIZ "MAIL.TXT.1"]
 	MOVEI C,0
 	SOUT			;FINISH FILE SPEC
@@ -6173,7 +6273,7 @@ MSKLB:	1B9+1B10+1B13		;TAB AND CR/LF ARE BREAK MASK
 	0
 	0
 
-LATMSK: BRMSK.(FLDB0.,FLDB1.,FLDB2.,FLDB3.,<$_-.>) ;[7.1265]
+LATMSK: BRMSK.(FLDB0.,FLDB1.,FLDB2.,FLDB3.,<$_-.>) ;[4402]
 
 
 ;BITS+N CONTAINS A WORD WITH A 1 IN BIT N

@@ -1,3 +1,7 @@
+; Edit= 4449 to EXECMT.MAC on 22-May-90 by GSCOTT
+;Update copyright notice as needed. 
+; Edit= 4428 to EXECMT.MAC on 22-Sep-89 by GSCOTT
+;Improve error message when the ASSIGN command fails.
 ; UPD ID= 4124, RIP:<7.EXEC>EXECMT.MAC.2,   7-Mar-88 18:24:12 by GSCOTT
 ;TCO 7.1255 - Update copyright notice.
 ; UPD ID= 234, SNARK:<6.1.EXEC>EXECMT.MAC.5,  10-Jun-85 08:44:27 by DMCDANIEL
@@ -46,7 +50,7 @@
 ;<4.1.EXEC>EXECMT.MAC.4, 12-Mar-80 10:59:41, EDIT BY OSMAN
 ;Make 4.1 version with SMOUNT and bug fixes
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -1171,24 +1175,25 @@ CHKAV:	STKVAR <SAVDEV,SAVCHR,SAVJOB,CHKSFX>
 	SETZM CHKSFX		;NO SUFFIX YET
 	TXNE B,DV%AV		;"AVAILABLE" BIT
 	RET			;YES - RETURN
-	LDB D,[POINTR (A,DV%TYP)]
-	CAMN C,[-2]		;SPECIAL ERROR
-	JRST CHKAV1		;ALLOCATER HAS IT
-	CAIN D,.DVMTA		;MAGTAPE?
-	JRST [	CALL MTLSKP	;YES, SEE IF TAPE ALLOCATION IS ENABLED
-		 JRST .+1	;NO
-		HRROI A,[ASCIZ / - Use MOUNT command/]
-		MOVEM A,CHKSFX
-		JRST .+1]
-	MOVE A,SAVDEV
-	MOVE B,SAVCHR		;MTLSKP CLOBBERED THESE
-	MOVE C,SAVJOB
+	LDB D,[POINTR (A,DV%TYP)] ;[4428] Load device type
+	CAIE D,.DVMTA		;[4428] Magtape device?
+	IFSKP.			;[4428] Yes, magtape device
+	  CALL MTLSKP		;[4428] (/) See if tape allocation is enabled
+	   TDZA D,D		;[4428] Tape allocation is not enabled
+	  HRROI D,[ASCIZ /
+ Use MOUNT command to access magtape devices/] ;[4428] Ask for it buddy
+	  MOVEM D,CHKSFX	;[4428] Save the suffix for the user
+	  MOVE A,SAVDEV		;[4428] Restore device designator
+	  MOVE B,SAVCHR		;[4428]  and dev char that MTLSKP clobbered
+	  SKIPN C,SAVJOB	;[4428] Is device open by job 0?
+	  ERROR <%1H: Not known to this system%4M> ;[4428]
+	ENDIF.			;[4428] 
 	MOVE D,CHKSFX		;GET POSSIBLE SUFFIX
+	CAMN C,[-2]		;[4428] Under control of allocator?
+	ERROR <%1H: Under control of allocator%4M> ;[4428] Yes
 	TXNN B,DV%ASN		;NOT AVAILABLE - ASSIGNED?
 	ERROR <%1H: Already open by job %3Q%%4M>
 	ERROR <%1H: Already assigned to job %3Q%%4M>
-
-CHKAV1:	ERROR <%1H: Unavailable, under control of allocator>
 
 ;DEASSIGN <DEVICE NAME>
 ;ACCEPTS LOGICAL OR REAL DEVICE NAME

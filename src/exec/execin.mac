@@ -1,3 +1,20 @@
+; Edit= 4452 to EXECIN.MAC on 27-Jun-90 by GSCOTT
+;The INFO INTERNET command shouldn't say "%No internet software" when a GTHST%
+;to return the name of a network or address fails.
+; Edit= 4443 to EXECIN.MAC on 21-May-90 by GSCOTT
+;Handle ITRAP from GCVEC at VERSIX+1, don't allow "%" in alert reason to print
+;bad things in INFO ALERT. 
+; Edit= 4429 to EXECIN.MAC on 25-Sep-89 by GSCOTT
+;Change references from "ARPANET" to "INTERNET", keeping old commands around
+;with the invisible bit for CMDs, CTLs, and habitual users.
+; Edit= 4419 to EXECIN.MAC on 9-Feb-89 by GSCOTT
+;INFORMATION JOB command should show network origin. %L now will output this. 
+; Edit= 4416 to EXECIN.MAC on 10-Jan-89 by RASPUZZI
+;Add commands and modify INFO SYS for password dictionary.
+; Edit= 4412 to EXECIN.MAC on 13-Dec-88 by RASPUZZI
+;Add new commands, features and support for security enhancements.
+; Edit= 4410 to EXECIN.MAC on 15-Aug-88 by GSCOTT
+;Correct minor error in INFORMATION REMOTE-PRINTING. 
 ; UPD ID= 4122, RIP:<7.EXEC>EXECIN.MAC.11,   7-Mar-88 18:23:26 by GSCOTT
 ;TCO 7.1255 - Update copyright notice.
 ; UPD ID= 4099, RIP:<7.EXEC>EXECIN.MAC.10,  18-Feb-88 15:47:16 by RASPUZZI
@@ -290,7 +307,7 @@
 ;<4.1.EXEC>EXECIN.MAC.2,  2-Nov-79 15:32:25, EDIT BY OSMAN
 ;tco 4.1.1006 - Use CMERRX for HELP command error instead of ERROR
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -898,7 +915,7 @@ SYSINF::MOVEI A,.SFOPR
 	HRROI B,[ASCIZ / Pseudo-terminal logins /]
 	CALL TYPALO
 	MOVEI A,.SFNVT
-	HRROI B,[ASCIZ / ARPANET terminal logins /]
+	HRROI B,[ASCIZ \ Internet TCP/IP terminal logins \] ;[4429]
 	CALL TYPALO
 	MOVEI A,.SFMCB		;GET DECNET LOGINS ALLOWED BIT
 	HRROI B,[ASCIZ / DECnet terminal logins /]  ;FIRST PART OF MSG
@@ -1046,7 +1063,29 @@ NOCLS:	ETYPE <%_>
 	  ETYPE <disabled>	;[7.1231] Say it is disabled
 	ENDIF.			;[7.1231]
 	ETYPE <%_>		;[7.1076] Finish it up
-	CALLRET SYSDWN		;PRINT INFO AND EXIT
+	MOVEI A,.SFPEX		;[4412] Check password expiration
+	TMON%			;[4412] Get it
+	 ERJMP NOPEX		;[4412] If not in monitor, then blow it off
+	ETYPE < Password expiration is > ;[4412]
+	IFE. B			;[4416] Is it set?
+	  ETYPE <disabled>	;[4412] Say so
+	ELSE.			;[4412] It is set, so...
+	  ETYPE <%2Q day>	;[4412] Say how many days
+	  CAIE B,1		;[4412] If not singular
+	  ETYPE <s>		;[4412] Make it plural
+	ENDIF.			;[4412]
+	ETYPE <%_>		;[4412] Make neat
+NOPEX:	MOVEI A,.SFPWD		;[4416] Check password dictionary
+	TMON%			;[4416] Get it
+	 ERJMP NOPWDC		;[4416] If not in monitor, then blow it off
+	ETYPE < Password dictionary is > ;[4416]
+	IFE. B			;[4416] Is it set?
+	  ETYPE <disabled>	;[4416] Say so
+	ELSE.			;[4416] It is set, so...
+	  ETYPE <enabled>	;[4416] Say it is enabled
+	ENDIF.			;[4416]
+	ETYPE <%_>		;[4416] Make neat
+NOPWDC:	CALLRET SYSDWN		;[4416] Print downtime info and exit
 
 ;ROUTINE TO DO COMMON WORK FOR INFO SYSTEM-STATUS
 ;A/	CODE FOR ASKING MONITOR FOR INFO
@@ -1952,107 +1991,116 @@ DUMNO:	TYPE <
 	MOVEI P1,0		;NOTE THAT WE'RE ON NEW LINE
 	JRST DIRUMX
 
-;JOBSTAT
+;JOBSTAT (INFORMATION JOB command).
 
-.JOBST::STKVAR <LLPTR>
-	CALL GETNOD		;GET NODE NAME
-	JRST TRYARP		;[7.1199] NO DECnet, TRY ARPANET
-        CALL DEKCHK		;DECnet EXISTS - IS IT USED?
-	ETYPE < Host %1M%%_>   	;YES, TELL DECnet NODE NAME
-NOTNOD:	ETYPE < Job %J, %L, User %N>  ;NO DECnet OR ARPANET, JUST SAY JOB STUFF
-	GJINF
-	CAME B,LIDNO		;SKIP IF CONNECTED TO LOGGED-IN DIR
-	ETYPE <, %G% >
-	ETYPE <%_>
-	CALL ACTSTG		;PRINT ACCOUNT INFO
-	HRROI A,-1		;CURRENT JOB
-	MOVE D,CSBUFP		;USE FREE SPACE POINTER
-	HRROI B,D		;SAY ONE ENTRY, POINTER IN D
-	MOVEI C,.JISRM		;SPECIFY WE WANT SESSION REMARK
-	GETJI			;GET SESSION REMARK
-	 ERJMP LOC		;IF FAILS, THERE'S NO REMARK
-	MOVE A,CSBUFP		;GET POINTER TO REMARK
-	ILDB A,A		;GET FIRST CHARACTER
-	MOVE D,CSBUFP
-	CAIE A,0		;PRINT NOTHING IF NO SESSION REMARK
-	ETYPE < Session remark: %4M%%_>
-	CALL LM         	;CARRIAGE RETURN IF NEEDED
+.JOBST::SAVEAC <P1>		;[4419] Preserve P1
+	CALL IJHOST		;[4419] (/A) Output host name (if any set)
+	 SETZ A,		;[4419] No host name found
+	MOVEM A,P1		;[4419] Save pointer to node name
+	ETYPE < Job %J, %L%%_ User %N> ;[4419] Output job, terminal, user
+	GJINF			;Get current job information
+	CAME B,LIDNO		;Skip if connected to logged-in directory
+	ETYPE <, %G% >		;No, output connected directory
+	ETYPE <%_>		;Output a return
 
-LOC:	HRROI A,-1		;OURSELF
-	HRROI B,CSBUFP		;POINT TO BYTE POINTER
-	MOVEI C,.JILLO		;SAY WE WANT LOGICAL LOCATION
-	MOVE D,CSBUFP		;GET POINTER TO BEGINNING OF STRING
-	GETJI			;GET IT
-	 ERCAL CJERRE		;SHOULDN'T FAIL
-	MOVE A,D		;GET POINTER TO LOGICAL LOCATION
-	CALL BUFFS		;SAVE THE LOCATION
-	MOVEM A,LLPTR		;REMEMBER POINTER TO IT
-	CALL GETNOD		;GET HOST NODE NAME
-	 MOVE A,LLPTR		;ON NONDECNET, GUARANTEE THAT THEY MATCH
-	MOVE B,LLPTR		;COMPARE WITH OUR JOB'S NODE
-	STCMP
-	JUMPE A,IJDONE		;DON'T PRINT NAME IF THEY'RE THE SAME
-	MOVE A,LLPTR
-	ETYPE < Located at %1M%%_>
-IJDONE:	RET
+	CALL ACTSTG		;(/) Print account info
+	CALL IJSESS		;[4419] (/) Print session remark if any
+;	CALLRET IJLOCA		;[4419] (P1/) Output location info and return
 
+;[4419] Output job's location only if it is different from node name.
+;Call with P1/ pointer to host node name
+;Returns +1 always
+
+IJLOCA:	JUMPE P1,R		;[4419] Return now if no host name known
+	SETO A,			;[4419] Get information about self
+	HRROI B,D		;[4419] Point to byte pointer
+	MOVEI C,.JILLO		;Say we want logical location
+	MOVE D,CSBUFP		;[4419] Point to free space
+	GETJI			;Get job's location
+	 ERCAL CJERRE		;Shouldn't fail
+
+	MOVE A,CSBUFP		;[4419] Point to location string
+	MOVE B,P1		;[4419] Point to the host name
+	STCMP			;[4419] Are they the same?
+	JUMPE A,R		;[4419] Return if they are the same
+	MOVE B,CSBUFP		;[4419] Point to the returned location string
+	ETYPE < Located at %2M%%_> ;[4419] Output job's location
+	RET			;[4419] and return from command
 
+;INFORMATION JOB command continues
 
-; SEE IF INSTALLATION HAS LEFT DEFAULT NODE NAME - "TOPS20" . IF SO, ASSUME
-; EITHER DECNET TURNED OFF, OR THEY DON'T WANT HOST NAME DISPLAYED FROM "INFO JOB"
+;[4419] Routine called from INFORMATION JOB command to output host name.  This
+;routine will output the Arpanet host name if the DECnet host name is not set
+;(i.e. set to "TOPS20") or if there is no DECnet host name (this is an Arpanet
+;only system).
+;Returns +1 if no DECnet, or DECnet host name not set 
+;Returns +2 if DECnet host name output, A/ pointer to host name
 
-DEKCHK: STKVAR <SAVEA,SAVEB>
-	MOVEM B, SAVEB		;SAVE AC2 - THIS CLOBBERS IT
-	MOVEM A,SAVEA           ;SAME WITH AC1
-	HRROI B,[ASCIZ/TOPS20/] ;DEFAULT NODE NAME BEING USED?
-	STCMP
-	CAIN A,0                ;IF 0, STRINGS ARE EQUAL - USING THE DEFAULT
-	RETSKP			;THEY'RE THE SAME - DON'T SAY HOST NAME
-	MOVE A,SAVEA  		;RESTORE NODE NAME TO AC1
-	MOVE B,SAVEB		;RESTORE AC2
-	RET			;NOT DEFAULT NODE NAME, TELL WHAT IT IS
-	ENDSV.
+IJHOST:	CALL GETNOD		;[4419] (/A) Get pointer to the node name
+	IFSKP.			;[4419] If there was a DECnet node name
+	  MOVE D,A		;[4419] Save pointer to that node name
+	  HRROI B,[ASCIZ/TOPS20/] ;[4419] Point to node name that is default
+	  STCMP			;[4419] Is the node name set to TOPS20?
+	  EXCH A,D		;[4419] Swap flag with node name pointer
+	  JUMPE D,R		;[4419] Return +1 if no node name
+	  ETYPE < Host %1M,>	;[4419] Output host name
+	  RETSKP		;[4419]  and return +2
+	ENDIF.			;[4419] No DECnet node name, try Arpanet
 
-
-; SEE IF WE'RE ARPANET - IF SO, TELL THE HOST NAME
-
-
-TRYARP:	MOVEI A,.GTHSZ		;SEE IF ANY ARPANET HOSTS
-	GTHST		        
-       	 JRST NOTNOD		;IF FAILS, NO ARPA HOSTS
-	ETYPE < Host >
-	MOVE C,D	                   
-	MOVE B,COJFN		;OUTPUT DESIGNATOR
-	MOVEI A,.GTHNS		;WE WANT HOST NAME
-	GTHST	         	;TELL HOST NAME  
-         JRST NOTNOD	        ;NO ARPA HOST
-	ETYPE < %_>
-	JRST NOTNOD		;SKIP RETURN IN ANY CASE
+	MOVEI A,.GTHSZ		;[4419] See if any Arpanet hosts on system 
+	GTHST			;[4419] Ask monitor for local host number
+	 ERJMP R		;[4419] If this fails, non-arpanet monitor
+	MOVE C,D		;[4419] Copy local host number to C
+	MOVE B,CSBUFP		;[4419] Point to free space
+	MOVEI A,.GTHNS		;[4419] We want name for our host number
+	GTHST	         	;[4419] Get our host name  
+	 ERJMP R		;[4419] We forgot our own name
+	MOVE A,CSBUFP		;[4419] Point to the host name again
+	ETYPE < Host %1M,>	;[4419] Output host name
+	RET			;[4419] Return +1 indicating no DECnet name
 
+;INFORMATION JOB command continues
+
 ;ROUTINE TO PRINT ACCOUNTING STRING IF PRESENT
 
-ACTSTG:	STKVAR <<ACCBUF,EXTSIZ>>
-	HRROI B,ACCBUF		;POINT TO ACCOUNT BUFFER
-	MOVNI	A,1		;-1 FOR SELF
-	GACCT			;GET IT
-	LDB A,[410300,,B]	;GET SIG. OCTAL DIGIT
-	CAIE A,5		;5 MEANS NUMBER INSTEAD OF STRING
-	JRST	[MOVE B,[POINT 7,ACCBUF]
-		 ILDB B,B	;GET FIRST BYTE OF STRING
-		 JUMPE B,R     	;IF NULL, NO STRING THEN
-		 HRROI A,ACCBUF	;POINT TO STRING
-		 ETYPE < Account %1M >	;DUMP IT
-		 RET]
-	TLZ B,500000		;GET RID OF CONTROL BITS
-	ETYPE < Account %2Q >	;DECIMAL
-	RET			;RETURN
+ACTSTG:	MOVE B,CSBUFP		;[4419] Point to free space
+	MOVNI A,1		;-1 for self
+	GACCT			;Get the job's account string
+	LDB A,[POINT 3,B,2]	;[4419] Get first octal digit 
+	CAIE A,5		;5 means number instead of string
+	IFSKP.			;[4419] If numeric account
+	  TLZ B,500000		;Get rid of control bits
+	  ETYPE < Account %2Q%%_> ;[4419] Output account number in decimal
+	  RET			;[4419] Return
+	ENDIF.			;[4419] Otherwise must be alphanumeric account
+	MOVE A,CSBUFP		;[4419] Point back to buffer
+	ILDB A,A		;[4419] Get first byte of buffer
+	IFN. A			;[4419] If there is an account string
+	  MOVE A,CSBUFP		;[4419] Point to free space again
+	  ETYPE < Account %1M%%_> ;[4419] Output account string
+	ENDIF.			;[4419] No account string, see if number
+	RET			;[4419] Return
 
+;[4419] Here from INFORMATION JOB command to output session remark.
+;Returns +1 always
 
+IJSESS:	HRROI A,-1		;[4419] Current job
+	MOVE D,CSBUFP		;[4419] Use free space pointer
+	HRROI B,D		;[4419] Say one entry, pointer in D
+	MOVEI C,.JISRM		;[4419] Specify we want session remark
+	GETJI			;[4419] Get session remark from monitor
+	 ERJMP R		;[4419] If fails, there's no remark
+	MOVE A,CSBUFP		;[4419] Get pointer to remark
+	ILDB A,A		;[4419] Get first character
+	JUMPE A,R		;[4419] Return if no session remark
+	MOVE D,CSBUFP		;[4419] Point back at free space area
+	ETYPE < Session remark %4M%%_> ;[4419] Output session remark
+	RET			;[4419] Return
 
 ;RUNSTAT - INFO PROGRAM-STATUS
 
 .RUNST::STKVAR <FRKSNW>
-ETYPE < Used %B% in %C%
+	ETYPE < Used %B% in %C%
 >
 	TLOA Z,F1		;SET FLAG FOR JOB STATUS
 .FRKST::TLZ Z,F1		;CLEAR FLAG FOR FORK STATUS ONLY
@@ -2751,24 +2799,21 @@ MBOX:	WORDX		;[3040] ASSUME A MAILBOX
 	CONFIRM
 	SKIPG A,ALRTIM		;ANY PENDING?
 	 JRST ALRST4		;NO
-	ETYPE < Next alert at %1D %1E>
-	SKIPE B,REASON		;USER MESSAGE
-	 TYPE < - >
-	ETYPE <%2\%%_>
+	TYPE < Next alert at>	;[4443] Output label for first one
+	MOVE B,REASON		;[4443] Is there a reason set?
+	CALL ALRSTR		;[4443] (A,B/) Print time and reason
 	MOVSI D,-NALTS		;CHECK FOR MORE
 ALRST2:	SKIPG A,ALRTMS(D)	;ANY?
 	 JRST ALRST3		;EMPTY SLOT - GO ON
 	TLON Z,F1		;FIRST TIME FLAG
 	 TYPE < Other alerts set for:
 >
-	ETYPE <   %1D %1E>
-	SKIPE B,REASON+1(D)	;MESSAGE TABLE
-	 TYPE < - >
-	ETYPE <%2\%%_>
+	TYPE <  >		;[4443] Output two spaces
+	MOVE B,REASON+1(D)	;[4443] Load entry in message table
+	CALL ALRSTR		;[4443] (A,B/) Print the alert
 ALRST3:	AOBJN D,ALRST2		;LOOP OVER ALL
 
-ALRST5:	TYPE <
- Alerts are >
+ALRST5:	TYPE < Alerts are >	;[4443] Let us know if timers are set
 	SKIPN IITSET		;IF THE ALERT TIMER IS SET THER'RE AUTOMATIC
 	TYPE <not >
 	TYPE <automatic
@@ -2778,6 +2823,16 @@ ALRST5:	TYPE <
 ALRST4:	TYPE < No alerts set
 >
 	JRST	ALRST5		;TELL IF THEY'RE AUTOMATIC AND RETURN
+
+;[4443] Here from above to print alert string with A/time, B/address
+
+ALRSTR:	ETYPE < %1D %1E>	;[4443] Output date and time
+	IFN. B			;[4443] If an address specified
+	  TYPE < - >		;[4443] Seperate with space dash space
+	  UTYPE (B)		;[4443] Output the alert string
+	ENDIF.			;[4443] End of reason output code
+	ETYPE <%_>		;[4443] Output crlf
+	RET			;[4443] Return
 
 
 
@@ -3047,7 +3102,7 @@ XRMAPX:	TRO D,777		;NO - SKIP TO THE END OF THE SECTION
 	BLT A,XRMBUF+1777
 	RET			;DONE WITH THIS SECTION
 
-;INFORMATION (ABOUT) ARPANET
+;[4429] INFORMATION (ABOUT) INTERNET
 
 .IARPA::KEYWD $IARPA
 	 T STATUS,ONEWRD,.ANSTS
@@ -3058,7 +3113,7 @@ $IARPA:	TABLE
 	T STATUS,ONEWRD,.ANSTS
 	TEND
 
-;INFORMATION (ABOUT) APRANET STATUS
+;[4429] INFORMATION (ABOUT) INTERNET STATUS
 
 .ANSTS:				;INFORMATION ARPANET STATUS
 	STKVAR <<DCAHST,10>,<DCASTS,7>,<DCANAM,10>>
@@ -3097,57 +3152,68 @@ ANSTS1:				;INTERFACE LOOP
 	MOVEI A,.GTHNS		;GET HOST NAME FUNCTION
 	HRROI B,DCANAM		;TARGET ADDRESS
 	GTHST%			;GET THE NETWORK NAME
-	 ERJMP ANSTS2		;ON ERROR ASSUME NO NAME
-	HRROI A,DCANAM		;GET A POINTER TO THE NAME STRING
-	ETYPE <Local %1M >
+	IFNJE.			;[4452] If that worked
+	  HRROI A,DCANAM	;[4452] Get a pointer to the name string
+	  ETYPE < Network %1M> ;[4452] Send the network name to terminal
+	ELSE.			;[4452] Otherwise just print number
+	  MOVEM C,DCANAM	;[4452] Store the network number
+	  MOVE D,[POINT 8,DCANAM,3] ;[4452] Get pointer to address octets
+	  ILDB A,D		;[4452] Get the first octet
+	  ILDB B,D		;[4452] Get the second
+	  ILDB C,D		;[4452] Get the third
+	  ILDB D,D		;[4452] Get the fourth
+	  ETYPE < Network %1Q.%2Q.%3Q.%4Q> ;[4452] Send net number
+	ENDIF.			;[4452] End of local interface output
 	MOVEI A,.GTHNS		;GET HOST NAME FUNCTION
 	HRROI B,DCANAM		;GET POINTER TO STRING TARGET
 	MOVE C,(Q1)		;GET THE HOST NUMBER
 	GTHST%			;GET THE HOST NAME STRING
-	 ERJMP ANSTS2		;ON ERROR ASSUME NO ARPANET
-	HRROI A,DCANAM		;GET A POINTER TO THE NAME STRING
-	ETYPE <host name is %1M>
+	IFNJE.			;[4452] If worked, we know our own name (whew!)
+	  HRROI A,DCANAM	;[4452] Get a pointer to our name string
+	  ETYPE < host name is %1M> ;[4452] Output host name
+	ENDIF.			;[4452] Pointer to host name now in A
+	ETYPE <%_>		;[4452] Output CRLF
 
+	SKIPGE A,2+DCASTS	;[4452] Interface type known (newer monitor)?
+	ETYPE < Network interface type is %1',> ;[4452] Yes, send it 
 	MOVX D,<POINT 8,(Q1),3> ;GET POINTER TO ADDRESS OCTETS
 	ILDB A,D		;GET THE FIRST OCTET
 	ILDB B,D		;GET THE SECOND
 	ILDB C,D		;GET THE THIRD
 	ILDB D,D		;GET THE FOURTH
-	ETYPE <, Internet address is %1Q.%2Q.%3Q.%4Q
->
+	ETYPE < Internet address is %1Q.%2Q.%3Q.%4Q
+>				;[4452] Send interface's address
 	HRROI A,[ASCIZ/up/]	;ASSUME INTERFACE IS UP
 	SKIPN 0+DCASTS		;INTERFACE DOWN?
 	HRROI A,[ASCIZ/down/]	;YES
 	SKIPLE 0+DCASTS		;CYCLING?
 	HRROI A,[ASCIZ/cycling/] ;YES
-	ETYPE <Network interface is %1M
->
-	HRROI A,[ASCIZ/enabled/] ;ASSUME OUTPUT ENABLED
+	HRROI B,[ASCIZ/enabled/] ;[4452] Assume output enabled
 	SKIPN 3+DCASTS		;OUTPUT DISABLED?
-	HRROI A,[ASCIZ/disabled/] ;YES
-	ETYPE <Network interface output is %1M
->
+	HRROI B,[ASCIZ/disabled/] ;[4452] Yes, output disabled
+	ETYPE < Network interface is %1M, output is %2M
+>				;[4452] Output interface status
 	HRROI A,[ASCIZ/enabled/] ;ASSUME ENABLED INTERFACE
 	SKIPN 1+DCASTS		;INTERFACE DISABLED?
 	HRROI A,[ASCIZ/disabled/] ;YES
 	SKIPLE 1+DCASTS		;CYCLING
 	HRROI A,[ASCIZ/cycling/] ;YES
-	ETYPE <Network service is %1M
->
+	ETYPE < Network service is %1M
+>				;[4429] Output service status
 	SKIPLE A,4+DCASTS	;GET NETWORK CYCLE TIME
-	ETYPE <Last network interface cycle transition: %1W
->
+	ETYPE < Last network interface cycle transition: %1W
+>				;[4429] Output time of last cycle
 	SKIPLE A,5+DCASTS	;GET NETWORK OFF TIME
-	ETYPE <Last network interface off transition: %1W
->
+	ETYPE < Last network interface off transition: %1W
+>				;[4429] Output network off time
 	SKIPLE A,6+DCASTS	;GET NETWORK ON TIME
-	ETYPE <Last network interface up transition: %1W
->
+	ETYPE < Last network interface up transition: %1W
+>				;[4429] Output on time
 	AOBJN Q1,ANSTS0		;LOOP FOR ALL THE INTERFACES
 	RET			
 
 ANSTS2:				;HERE WHEN GTHST GAVE AN ERROR
-	ETYPE <%%No ARPANET>
+	ETYPE <%%No Internet software>
 	RET
 
 
@@ -3515,8 +3581,7 @@ JFNGON:	CALL DGETER		;GET THE REASON FOR THE FAILURE
 	MOVE D,CHRTAB		; Get table address
 	MOVE B,(D)       	; Get first table word
 	HLRZ C,B		;     and number of entries
-	SKIPE C			; No entries?
-	IFSKP.
+	IFE. C			;[4410] No entries?
           ETYPE <%%No CHARACTERISTICs found%_> ;Guess not
 	  JRST REMOT3
 	ENDIF.
@@ -3546,15 +3611,15 @@ REMOT2: HLRO C,(D)		; Make a byte pointer to address of string
 	MOVE D,TBLPTR		; Get back our table pointer
 	MOVE C,STRPTR		; And our string pointer
  	MOVE Q2,STRLEN		; Get length of string to type
-	CAIL Q2,^D8		; Less than 8 characters?
-	IFNSK.
+	CAIGE Q2,^D8		;[4410] Less than 8 characters?
+	IFSKP.			;[4410] 
           ETYPE <%3M>		; No - more. Just print the name
 	ELSE.	
           ETYPE <%3M       >	; Print the name with an extra tab
 	ENDIF.
 	AOJ D,			; Next table entry
 	AOBJN Q3,REMOT2		; and loop
-
+	ETYPE <%_>		;[4410] Give ourselves some room
 ;	JRST REMOT3
 
 ;[7.1068]
@@ -3563,18 +3628,15 @@ REMOT2: HLRO C,(D)		; Make a byte pointer to address of string
 ;FINALLY THE PHYSICAL PRINTER IN THE FORM "NAME (ON NODE) NODE"
 ;
 
-REMOT3:	ETYPE <%_>
-	ETYPE <%_>		; Give ourselves some room
-	SKIPN  PTRTAB		; No table at all?
-	IFNSK.
+REMOT3:	SKIPE PTRTAB		;[4410] No table at all?
+	IFSKP.			;[4410] Nope
           ETYPE <%%No REMOTE PRINTER Table%_> ; Nope.
 	  RET
 	ENDIF.
 	MOVE D,PTRTAB		; Get table address
 	MOVE B,(D)       	; Get first table word
         HLRZ C,B		;     and number of entries
-	SKIPN C			; No entries?
-	IFNSK.
+	IFE. C			;[4410] No entries?
           ETYPE <%%No REMOTE PRINTERs found%_> ;Guess not
 	  RET
 	ENDIF.
@@ -3598,25 +3660,23 @@ REMOT4: HLRO C,(D)		; Make a byte pointer to address of string
 	HRROI A, [ASCIZ/--> /]	; Now pointer thingy
 	ETYPE <%1M >
         HRRZ B,(D)		; Get address of data
-	SKIPN B			;Zero?
-	IFNSK.
+	IFE. B			;[4410] If zero, an deleted entry!
 	  ETYPE <[Deleted entry found]%_> ;Yes.
 	  JRST REMOT5
 	ENDIF.
 	HLRZ C,(B)		; LH of data pointer
-	SKIPN C			; Is it zero?
-	IFNSK.			;Yes. This is an alias.
+	IFE. C			;[4410] If zero, then its an alias
 	  HRRO C,(B)		; Then we need the RH
           ETYPE < %3M
 >                               ; Print the name
 	ELSE.			; Not zero - this is a "physical printer"
           HRLI C,-1  		; Make a byte pointer
-          ETYPE < %3M on node >    ; Print the name
+          ETYPE < %3M on node>	;[4410] Print the name
           HRR A,(D)		; Get RH of data word
           HRRO C,(A)		; Point to nodename
 
           ETYPE < %3M
->                               ;Print the nodename
+>                               ; Print the nodename
 	ENDIF.
 
 REMOT5:	AOJ D,			; Next table entry
@@ -3719,6 +3779,7 @@ NOVERS:	 SETZ Q1,		;NO VERSION
 VERSI0:	CALL VERPNT		;PRINT VERSION
 VERSIX:	MOVE A,FORK
 	GCVEC			;GET COMPATIBILITY ENTRY VECTOR
+	 ERJMP VN		;[4443] Handle error from GCVEC as not there
 	JUMPLE B,VN		;MAYBE COMPATIBILITY DISABLED OR NOT THERE
 	HLRZ A,B
 	CAIGE A,2		;DOES VERSION ENTRY EXIST?

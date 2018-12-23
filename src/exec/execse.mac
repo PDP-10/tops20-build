@@ -1,5 +1,25 @@
-; UPD ID= 4133, RIP:<7.EXEC>EXECSE.MAC.22,   5-Apr-88 11:41:27 by EVANS
-; TCO 7.1265 - 
+; Edit= 4448 to EXECSE.MAC on 22-May-90 by GSCOTT
+;Default the directory for SET DIRECTORY commands, validate account for the
+;SET DIRECTORY ACCOUNT-DEFAULT command, and add SET FILE [NO] PERMANENT, SET
+;FILE [NO] SAVED-BY-BACKUP-SYSTEM, SET FILE [NO] TEMPORARY, and SET FILE [NO]
+;UNDELETABLE. 
+; Edit= 4445 to EXECSE.MAC on 21-May-90 by GSCOTT
+;Prevent %x recursion when displaying alert text (thanks MRC).
+; Edit= 4429 to EXECSE.MAC on 25-Sep-89 by GSCOTT
+;Change references from "ARPANET" to "INTERNET", keeping old commands around
+;with the invisible bit for CMDs, CTLs, and habitual users.
+; Edit= 4417 to EXECSE.MAC on 12-Jan-89 by WONG, for SPR #22042
+;Add code to support @SET DEFAULT PRINTER /REMOTE-PRINT: command and fix some
+;bugs in routine SRPPTR: which deals with validating the arguments to the @SET
+;REMOTE PRINTER command.
+; Edit= 4416 to EXECSE.MAC on 10-Jan-89 by RASPUZZI
+;Add commands and modify INFO SYS for password dictionary.
+; Edit= 4412 to EXECSE.MAC on 13-Dec-88 by RASPUZZI
+;Add new commands, features and support for security enhancements.
+; Edit= 4409 to EXECSE.MAC on 12-Aug-88 by GSCOTT
+;It's OK to have the second field of SET REMOTE-PRINTING PRINTER start with a
+;mimeric character, remove code that checks for alphabetic only in SRPPTR. 
+; Edit= 4402 to EXECSE.MAC on 5-Apr-88 by EVANS (TCO 7.1265)
 ;Make the EXEC accept non-alphanumeric characters $,_,-,and . in LAT-type
 ;names for remote printing. 
 ; UPD ID= 4128, RIP:<7.EXEC>EXECSE.MAC.21,   7-Mar-88 18:27:20 by GSCOTT
@@ -213,7 +233,7 @@
 ;<4.1.EXEC>EXECSE.MAC.2, 20-Nov-79 14:01:16, EDIT BY OSMAN
 ;TCO 4.1.1023 - Fix TAKE stuff
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -837,8 +857,9 @@ JTAB::	SJLEN,,JLEN
 	SJLN=0			;RESET COUNTER
 	JSLIST			;USE JSYS LISTER FROM MONSYM (CALLS DEFJS)
 	JLEN==:.-JTAB		;LENGTH OF TABLE
-	RELOC JTAB+LARGST+1	;ALLOW FOR JSYSES NOT BEING IN ORDER IN JSLIST
+	RELOC JTAB+LARGST+1	;Allow for JSYSes not being in order in JSLIST
 	SJLEN==:SJLN		;COUNT OF ALL DEFINED JSYS'S
+	BLOCK 1			;[4412] Table is not big enough
 
 
 ;SET TRAP FILE-OPENINGS causes all forks' file-openings to be announced
@@ -1748,9 +1769,13 @@ ALRCHK::SKIPG B,ALRTIM		;ANY ALERTS PENDING?
 	ETYPE <[%5\%%2E% alert>	;START THE MESSAGE
 	SKIPE Q1		;IS THE ALERT COMING OUT LATE?
 	 ETYPE < at %D %E>	;YES - APOLOGIZE
-	SKIPE B,REASON		;GIVE MESSAGE SAVED
-	 TYPE < - >
-	ETYPE <%2\]%_>
+	SKIPN B,REASON		;[4445] Is there a reason to display?
+	IFSKP.			;[4445] Yes, there is
+	  TYPE < - >		;[4445] Output the seperator
+	  UTYPE (B)		;[4445] Type out user's string
+	ENDIF.			;[4445] End of reason display
+	ETYPE <]%_>		;[4445] Close the alert and output crlf
+
 	GTAD			;GET TIME NOW
 	MOVE B,A		; INTO B
 	HRLOI Q1,377777		; FOR RE-ORDER
@@ -2089,6 +2114,18 @@ ALONOI::NOISE (ERRORS DURING "TAKE" FILE)	;THE "NOISE" CALL *MUST* STAY ON THIS 
 ECHNOI::NOISE (COMMANDS FROM "TAKE" FILE)	;THE "NOISE" CALL *MUST* STAY ON THIS TAG
 	CALLRET CONF		;CONFIRM AND RETURN
 
+;[4412]
+;SET PASSWORD command
+
+SETPAS::NOISE <OF LOGIN DIRECTORY>
+	CONFIRM			;Get EOL
+	MOVE A,[POINT 7,BUF0]	;Put directory name here
+	MOVEM A,DIRP		;Save byte pointer to where directory will be
+	MOVE B,LIDNO		;This is the directory
+	DIRST%			;Get name
+	 ERCAL CJERRE		;Say what?
+	CALLRET DPASS0		;And try this again
+
 ;"SET DIRECTORY"
 
 .SDIR::	SETZM SETNOF		;ASSUME "NO" NOT TYPED
@@ -2112,6 +2149,7 @@ XARC <
    >
 	T PASSWORD,,.DPASS
 	T PROTECTION,,.DPRO
+	T SECURE,,DIRSEC	;[4412] SET DIRECTORY SECURE
 	TEND
 
 .SDNO:	SETOM SETNOF		;FLAG THAT NO WAS SAID
@@ -2122,6 +2160,7 @@ XARC <
 
 $SDNO:	TABLE
 	T ARCHIVE-ONLINE-EXPIRED-FILES,WHLU,.DARF
+	T SECURE,,DIRSEC	;[4412] SET DIRECTORY NO SECURE
 	TEND
 
 ;SET PROGRAM ENTRY (VECTOR LOCATION) <OCTAL> (LENGTH) <OCTAL>
@@ -2335,35 +2374,79 @@ PROTE2:	CALL GNFIL
 	RET
 
 
-;SET FILE EPHEMERAL (ALSO SET NO ...)
+;[4448] SET FILE [NO] SECURE
 
-.EPHM::	MOVSI A,.FBEPH		;CODE FOR EPHEMERAL
-.EPHM0:	STKVAR <FCODE>
-	SETZM FCODE		;CLEAR CODE
-	SKIPN SETNOF		;SET NO ...?
-	 MOVEM A,FCODE		;STORE ACTUAL CODE TO SET
-	CALL INFGNS		;COLLECT FILE NAME GROUPS
-	CONFIRM
-	SETOM TYPGRP		;TYPE THE NAMES AS WE GO
-	MOVE A,JBUFP
-	MOVEM A,.JBUFP		;COVER JFN STACK
-EPHM1:	CALL RLJFNS		;RELEASE SPARE JFNS
-	CALL NXFILE		;GET THE NEXT FILE
-	 JRST EPHM2		;NO MORE - FINISH UP
-	CALL TYPIF		;TYPE OUT THE FILE NAME
-	CALL MFINP		;GET A SECOND JFN
-	 JRST EPHM2		;COULDN'T - ON TO NEXT FILE
-	HRLI A,.FBCTL		;WORD IN FDB TO CHANGE
-	MOVX B,FB%FCF		;MASK FOR FILE TYPE CODE
-	MOVE C,FCODE		;GET CODE OR 0
-	CALL $CHFDB		;SET CODE IN FDB
-	 JRST [	TYPE <  Access not allowed
->
-		JRST EPHM2]
-	CALL TYPOK		;SAY THE CHANGE SUCCEEDED
-EPHM2:	SKIPE INIFH1		;ANYTHING LEFT?
-	 JRST EPHM1		;YES - LOOP
-	RET			;NO - DONE
+SECFIL::NOISE (FILES)		;[4448] Type out some semi-help
+	MOVX A,FB%SEC		;[4448] Mask for secure
+	MOVX B,FB%SEC		;[4448] Select secure bit
+	JRST SETFIL		;[4448] Join common code to set file
+
+;[4448] SET FILE [NO] PERMANENT
+
+.PRMNT::MOVX A,FB%PRM		;[4448] Mask for permanent
+	MOVX B,FB%PRM		;[4448] Select permanent bit 
+	JRST SETFIL		;[4448] Join common code to set file
+
+;[4448] SET FILE [NO] UNDELETABLE
+
+.NODEL::MOVX A,FB%NDL		;[4448] Mask for undeleteable
+	MOVX B,FB%NDL		;[4448] Select undeleteable bit 
+	JRST SETFIL		;[4448] Join common code to set file
+
+;[4448] SET FILE [NO] TEMPORARY
+
+.TMPRY::MOVX A,FB%TMP		;[4448] Mask for temporary
+	MOVX B,FB%TMP		;[4448] Select temporary bit 
+	JRST SETFIL		;[4448] Join common code to set file
+
+;[4448] SET FILE [NO] SAVED-BY-BACKUP-SYSTEM
+
+.SVBAK::MOVX A,FB%NOD		;[4448] Mask for not to be saved with DUMPER
+	MOVX B,FB%NOD		;[4448] Bit for not to be saved with DUMPER
+	SETCMM SETNOF		;[4448] Invert NO flag, bit set means NO
+	JRST SETFIL		;[4448] Join common code to set file
+
+;[4448] SET FILE [NO] EPHEMERAL
+
+.EPHM::	MOVX A,FB%FCF		;[4448] Load file class field mask
+	MOVX B,FLD(.FBEPH,FB%FCF) ;[4448] Load code for ephemeral
+;	JRST SETFIL		;[4448] Join common code to set file
+
+
+;[4448] SET FILE command continued...
+;Here with field mask in A, bits to change in B, and SETNOF/ zero if this
+;routine is to clear the bit.  Parse the list of files the follow, then do
+;all of the work to set (or clear) the bits.
+
+SETFIL:	STKVAR <<SETFMB,2>>	;[4448] Place to save bits and mask
+	SKIPE SETNOF		;[4448] Clearing or setting this bit?
+	SETZ B,			;[4448] We are clearing today thank you
+	DMOVEM A,SETFMB		;[4448] Save bits to change
+	CALL TYPFLS		;[4448] (/) Collect file name groups
+	SETOM TYPGRP		;[4448] Type the names as we go
+	MOVE A,JBUFP		;[4448] Get JFN stack
+	MOVEM A,.JBUFP		;[4448] Cover JFN stack
+SETFI1:	CALL RLJFNS		;[4448] (/A) Release spare JFNs
+	CALL NXFILE		;[4448] (/) Get the next file
+	 JRST SETFI2		;[4448] No more - finish up
+	CALL TYPIF		;[4448] (/A) Type out the file name
+	CALL MFINP		;[4448] (/A) Get a second JFN
+	 JRST SETFI2		;[4448] Couldn't - on to next file
+	HRLI A,.FBCTL		;[4448] Word in fdb to change
+	DMOVE B,SETFMB		;[4448] Load mask in B and bits in C
+	CALL $CHFDB		;[4448] (A,B,C/A) Set code in FDB
+	IFSKP.			;[4448] If CHFDB worked
+	  CALL TYPOK		;[4448] Say the change succeeded
+	ELSE.			;[4448] If it failed
+	  CAIN A,CFDBX5		;[4448] Non-directory device?
+	  ETYPE <  Illegal action for non-directory device%_> ;[4448] Yep
+	  CAIE A,CFDBX5		;[4448] If any other error code
+	  ETYPE <  Access not allowed - %?%%_> ;[4448] Grumble about it
+	ENDIF.			;[4448] Done with that file
+SETFI2:	SKIPE INIFH1		;[4448] Anything left?
+	JRST SETFI1		;[4448] Yes, do more
+	RET			;[4448] No, done
+	ENDSV.			;[4448] End of STKVAR at SETFIL
 
 ;SET DIRECTORY [NO] ARCHIVE-ONLINE-EXPIRED-FILES (OF DIRECTORY)
 
@@ -2464,14 +2547,16 @@ DOFXP1:	HRRI B,.CDDFE+1		;LENGTH OF THE BLK
 	LDF A,CD%FPT		;SPECIFY WHICH PARAMETER WE'RE CHANGING
 	CALLRET DWORK		;GO DO THE WORK
 
+;[4412]
+;DIRSEC - SET DIRECTORY SECURE (Also SET DIRECTORY NO ...)
+
+DIRSEC:	CALL INPDIR		;Get directory name
+	MOVX A,CD%SEC		;Bit for secure directory
+	CALLRET DMODE		;Do the work and return
+
 ;SET DIRECTORY PASSWORD
 
-.DPASS:	NOISE <OF DIRECTORY>
-	TLO Z,F1		;DON'T DEFAULT THE DIRECTORY NAME
-	CALL DIRNAM		;READ THE DIRECTORY NAME
-	 ERROR <Invalid directory name or syntax>
-	CALL BUFFF		;GET POINTER TO DIRECTORY NAME
-	MOVEM A,DIRP		;LEAVE DIRECTORY NAME IN DIRP
+.DPASS:	CALL INPDIR		;[4448] (/) Get the directory 
 	CONFIRM			;INPUT PASSWORDS ON SEPARATE LINES
 DPASS0:	MOVEI A,[ASCIZ /Old password: /]
 	CALL PASSX		;INPUT THE CURRENT PASSWORD
@@ -2497,7 +2582,15 @@ DPASS1:	MOVEI A,[ASCIZ /New password: /]
 	LINEX <Default account string for directory>
 	 CMERRX
 	CALL BUFFF
-	MOVEM A,.CDDAC+SEBLK	;SAVE POINTER TO DEFAULT ACCOUNT STRING
+	MOVEM A,.CDDAC+SEBLK	;[4448] Save pointer to default account string
+	MOVX A,RC%EMO		;[4448] Exact match only
+	MOVE B,DIRP		;[4448] On this directory
+	RCDIR%			;[4448] Get corresponding directory number
+	 ERCAL CJERR		;[4448] Owie
+	MOVE A,C		;[4448] Copy directory number
+	MOVE B,.CDDAC+SEBLK	;[4448] Load byte pointer to account string
+	VACCT%			;[4448] Legal account for this user?
+	 ERCAL CJERR		;[4448] No, reject it
 	MOVX A,CD%DAC		;BIT FOR SETTING DEFAULT ACCOUNT STRING
 	CALLRET DWORK		;DO THE WORK AND RETURN
 
@@ -2518,7 +2611,7 @@ DMODE:	MOVEM A,WBITS		;SAVE THE DESIRED MODE BIT
 	MOVE B,DIRP		;DIRECTORY # IN QUESTION
 	SETZ C,
 	RCDIR			;GET THE DIRECTORY #
-	MOVEI A,.CDMOD		;READ SOME OF THE DIRECTORY
+	MOVEI A,.CDMOD+1	;[4412] Read some of the directory
 	MOVEM A,.CDLEN+SEBLK
 	MOVE A,C		;SET UP DIRECTORY NUMBER
 	MOVEI B,SEBLK		;READ WHAT THINGS ARE NOW
@@ -2537,7 +2630,7 @@ DMODE:	MOVEM A,WBITS		;SAVE THE DESIRED MODE BIT
 ;COMMANDS.
 
 INPDIR:	NOISE <OF DIRECTORY>
-	TLO Z,F1		;DON'T DEFAULT THE DIRECTORY NAME
+	TLZ Z,F1		;[4448] Default the directory name
 	CALL DIRNAM		;READ THE DIRECTORY NAME
 	 ERROR <Invalid directory name or syntax>
 	CALL BUFFF		;GET POINTER TO DIRECTORY NAME STRING
@@ -3086,9 +3179,9 @@ SRPPTR::SKIPE PTRTAB		;Table set up yet?
 ;SECOND FIELD
 
  	MOVEI A,[FLDDB. .CMCFM,CM%SDH,,<Carriage return to delete an existing Remote Printer name>,,[
-                 FLDBK. .CMFLD,CM%BRK!CM%SDH,,<VMS queue - 31 characters or less
+                 FLDBK. .CMFLD,CM%BRK!CM%SDH,,<DQS Queue - 31 characters or less
   or LAT Port/Service - 16 characters or less>,,[
-			   BRMSK. FLDB0.,FLDB1.,FLDB2.,FLDB3.,<$_-.>]]] ;[7.1099][7.1265]
+			   BRMSK. FLDB0.,FLDB1.,FLDB2.,FLDB3.,<$_-.>]]] ;[7.1099][4402][4409]
 	HRRM A,PBKFDB+.CMFNP	; Link in the Keyword FDB
 	MOVEI B,PBKFDB		; Get it into the correct AC
         CALL FLDSKP		; Parse printer name
@@ -3100,17 +3193,10 @@ SRPPTR::SKIPE PTRTAB		;Table set up yet?
 	IFSKP.			; Yes.
 	  MOVEM B,PTRLOC	; [7.1136]  Save the address.
 	ELSE.			; Must've been arbitrary field
-	  MOVE A,CMABP		; Point to user's input
-	  ILDB B,A		; Get first character
-	  CAILE B,"Z"		; Lowercase char?
-	  SUBI B,40		; Yes, uppercase-ize
-	  CAIL B,"A"		;	If not between "A"
-	  CAILE B,"Z"		;     and "Z", it's not a letter.
-	  ERROR <VMS Queue, or LAT Port/Service name must begin with alphabetic character>
 	  MOVE A,CMABP		; point to ATMBUF
           CALL BCOUNT		; (A/A,B)How many characters?
 	  CAILE B,PTRCHR	; More than allowed?
-	  ERROR <Too many characters in VMS Queue, or LAT Port/Service name>
+	  ERROR <Too many characters in DQS Queue, or LAT Port/Service name> ;[4409]
 	  MOVEM B,FLDSZ2	; Save number of characters
 	ENDIF.
 ;
@@ -3134,21 +3220,29 @@ SRPPTR::SKIPE PTRTAB		;Table set up yet?
 				
  	SKIPN PTRLOC		; Was last field a keyword?
 	IFSKP.			; Yes
-          MOVE Q3,[ASCIZ /LAT/]	;[7.1265] Set flag in Q3
-          WORDX <Node name, LAT Server name, or confirm with carriage return> ;[7.1265]
-	  JRST RPPEND		; Wasn't a node name, try confirm
+          MOVE Q3,[ASCIZ /LAT/]	;[4402] Set flag in Q3
+          WORDX <Node name, LAT Server name, or confirm with carriage return> ;[4402]
+	   CMERRX		;[4417]Handle the error return
 	ELSE.
-          MOVE Q3,[ASCIZ /LAT/]	;[7.1265] Set flag in Q3
-          WORDX <Node name or LAT Server name>  ;[7.1265]
+          MOVE Q3,[ASCIZ /LAT/]	;[4402] Set flag in Q3
+          WORDX <Node name or LAT Server name>  ;[4402]
            CMERRX <Node name or LAT Server name required> ;[7.1071]
 	ENDIF.			; So we have to get a node name
 	
-;[7.1265] Check node/LAT Server name length
+;[4402] Check node/LAT Server name length
 
-	MOVE A,CMABP		;[7.1265] Point to input
-	CALL BCOUNT		;[7.1265] (A/A,B) How many characters?
-	CAILE B,NODSIZ		;[7.1265] More than allowed in node name (6)?
-	ERROR <Too many characters in node or LAT Server name> ;[7.1265]
+	MOVE A,CMABP		;[4402] Point to input
+	CALL BCOUNT		;[4402] (A/A,B) How many characters?
+	CAILE B,NODSIZ		;[4402] More than allowed in node name (6)?
+	IFSKP.			;[4417]No
+	  IFE. B		;[4417]No, but
+	    SKIPN PTRLOC	;[4417]Was last field a keyword?
+	    ERROR <Missing node name in SET REMOTE-PRINTER command> ;[4417]No
+	    JRST RPPEND		;[4417]Yes, try confirm
+	  ENDIF.
+	ELSE.
+	  ERROR <Too many characters in node or LAT Server name> ;[4402]
+	ENDIF.
 	
 ;UPPERCASE THE NODE NAME
 
@@ -3441,6 +3535,16 @@ ALIAS:	MOVE B,FLDSZ1		; Size of alias name
 	TBADD
          ERJMP TRYOLD		; Uh-oh. See if we can put the old stuff back
 				; Success. New table entry is now in place
+;Save addr of alias in PTRTAB in case it is the alias is the default queue
+;name.
+	HRLM A,DEFADR		;[4417]Save alias addr in left half BUT
+				;  remember to clear it after we check to see
+				; if we are changing the default printer.
+;Since the table just got updated we better check to see if the address of
+;the default printer is still pointing at the correct alias.
+	CALL UPDFPR		;[4417]Check to see if we have to update
+				;default printer alias
+	 AOS DEFADR		;[4417]Entry comes before default printer
 	SKIPN TMPLOC		; Was there "old" data?
 	IFSKP.			; Yes, wipe it out
           HRRZ B,TMPLOC         ; Address of data word
@@ -3448,9 +3552,79 @@ ALIAS:	MOVE B,FLDSZ1		; Size of alias name
           MOVE A,(B)		; And get block size
           CALL RETBUF		; (A,B/ )Return the freespace
 	ENDIF.			; 
+	SKIPN DEFQUE		;[4417]Do we have default to just queue name
+	IFSKP.			;[4417]yes
+	  MOVE A,ALIAD		;[4417]Get alias
+	  HRLI A,(POINT 7,0)	;[4417]pointer to alias
+	  MOVE B,[POINT 7,DEFQUE] ;[4417]pointer to default just queue name
+	  CALL RPEQUE		;[4417](A,B/)Check to see if they are the same
+	ENDIF.			;[4417]
+	HRRZS DEFADR		;[4417]Clear the left half of default printer
+				; address
 	CALL PION
 	RET			; There wasn't any old data, so..Done
-	
+
+
+;RPEQUE - Check to see whether the alias in remote printer is a default queue
+;name. If so, change the default printer to what the alias is pointing to and
+;tell the user.  If not the caller of RPEQUE should clear the left half of
+;DEFADR.
+
+;ACCEPTS A/POINTER OF ASCIZ STRING
+;	 B/POINTER OF ASCIZ STRING
+;RETURNS +1 ALWAYS
+
+RPEQUE:	CALL MATCH		;[4417]Do they match?
+	 RET			;[4417]No
+	HLRZ B,DEFADR		;[4417]Get addr of alias
+	CALL RESLV1		;[4417](B/B)Resolve alias
+	HLRZS B,DEFADR		;[4417]Save the new addr
+	HLRZ A,(B)		;[jw[Get address of alias string
+	MOVSI B,(POINT 7,0)	;[4417]Pointer
+        HRR B,A			;[4417]Take it from here
+        MOVSI A,(POINT 7,0)	;[4417]Pointer
+        HRRI A,DEFREM		;[4417]Save input arg from SET DEF /REMOTE
+        SETZ C,	        	;[4417]End on null
+        CALL ASOUT		;[4417](A,B,C/A,B)Copy string
+	HRROI A,DEFREM		;[4417]Get default remote printer name
+	HRROI B,RPQUE		;[4417]Get default Que/Port/Service name
+	MOVE C,RPNODE		;[4417]Get default node name
+	ETYPE <Default printer is %1M --- %2M on node %3' %_>
+	SETONE PR%RDF,PRIFLG 	;[4417]Default /REMOTE takes precedent
+	SETZRO PR%DDF,PRIFLG 	;[4417]Default /DESTINATION take a back seat
+	SETZRO PR%LFT,PRIFLG 	;[4417]Clear the left half
+	RET			;[4417]
+
+;Match two ASICZ strings
+;Returns +1 on no match
+;	 +2 on match
+
+MATCH:	ILDB C,A		;[4417]Get a byte
+	ILDB D,B		;[4417]Get a byte
+	CAILE C,"Z"		;[4417]Lower case?
+	SUBI C,40		;[4417]Make it uppercase
+	CAILE D,"Z"		;[4417]Lower case?
+	SUBI D,40		;[4417]Make it uppercase
+	CAME C,D		;[4417]Are they the same?
+	RET			;[4417]No, all done
+	JUMPN C,MATCH		;[4417]If nul then we have a match
+	RETSKP			;[4417]
+
+;UPDFPR - Since routine ALIAS: or SRPDEL just modified PTRTAB, DEFADR might
+;be off be one.  Check to see if the new entry is alphabetically before the
+;default alias.  If so, ALIAS: should add 1 to DEFADR and SRPDEL: should
+;subtract 1 to DEFADR.
+;Accepts DEFADR/addr of entry in question (add/delete),,addr of default printer
+;entry
+;Returns +1/if entry comes alphabetically before default printer
+;	 +2/If entry doesn't comes alphabetically before default printer
+
+UPDFPR:	HRRZ A,DEFADR		;[4417]Get the address of default printer
+	JUMPE A,RSKP		;[4417]No address, no default printer
+	HLRZ B,DEFADR		;[4417]Get the address of entry
+	CAMLE B,A		;[4417]Entry comes before default printer
+	RETSKP			;[4417]Yes
+	RET			;[4417]No,
 
 ;ERROR ROUTINES FOR TBADD AND TBDEL FAILURES
 ;THESE ROUTINES ASSUME: CALLED FROM SRPNOD, AND CALLED PIOFF
@@ -3509,7 +3683,7 @@ BADOLD: MOVE B,PPRINT		; Address of pointers
 
 ;NOW RELEASE THE OLD DATA, IT'S USELESS ANYWAY
 
-        HRRZ B,@TMPLOC        ; Address of data word
+       HRRZ B,@TMPLOC        ; Address of data word
         SUBI B,2              ; So decrement to loc holding block size
         MOVE A,(B)	      ; And get block size
         CALL RETBUF	      ; (A,B/ )Return the freespace
@@ -3685,17 +3859,41 @@ SRPDL2:	SKIPN COUNTP		; Anybody pointing to me?
 >                               ; Failed - this is unlikely
 	   RET
 	 ENDIF.
+	CAME B,DEFADR		;[4417]Did we just deleted our default printer
+	IFSKP.			;[4417]Yes,
+	  CALL SRPDL4		;[4417]Tell the user
+	ELSE.			;[4417]No
+	  HRLM B,DEFADR		;[4417]Setup DEFADR for UPDFPR
+	  CALL UPDFPR		;[4417]See if we have to adjust the entry in
+				;[4417] PTRTAB so that the default printer is
+				;[4417] still pointing at the right entry
+	   SOS DEFADR		;[4417]Adjust the pointer
+	  HRRZS DEFADR		;[4417]Clear the left half
+	ENDIF.
+	CALL PION		;[4417]
 	RET
 
 ;HERE WHEN SOMEBODY WAS POINTING TO THE ENTRY TO DELETE
 
 SRPDL3:	SETZ A,			; Get a zero
 	HRRM A,@ALILOC		; Put in RH of table entry for this string
+	MOVE A,DEFADR		;[4417]Get default printer addr
+	CAMN A,ALILOC		;[4417]Are we deleting it
+	CALL SRPDL4		;[4417]Yes,
 	CALL PION
 	RET			; Done
 	ENDSV.
 	ENDTV.
 
+SRPDL4:	HRROI A,DEFREM		;[4417]Get default remote printer name
+	ETYPE <Default printer %1M no longer applies to the PRINT command>
+	SETZM DEFADR		;[4417]Clear default addr
+	SETZM DEFQUE		;[4417]Clear just queue name
+	SETZM DEFREM		;[4417]Clear default alias name
+	SETZRO PR%RDF,PRIFLG	;[4417]Clear default /REMOTE seen
+	SKIPE DEFDST		;[4417]Any default /DEST
+	SETONE PR%DDF,PRIFLG	;[4417]Yes,
+	RET			;[4417]
 
 
 $ESET:	TABLE
@@ -3710,8 +3908,11 @@ $ESET:	TABLE
 	T NO,NOLG,ESETNO		;^ESET NO
 	T OFFLINE-STRUCTURES,,ENAOFS 	;[7.1063] ^ESET OFFLINE-STRUCTURES
 	T OPERATOR-IN-ATTENDANCE,ONEWRD,SETOPR	;^ESET OPERATOR
+	T PASSWORD-DICTIONARY,ONEWRD,SETPWD ;[4416] ^ESET Password dictionary
+	T PASSWORD-EXPIRATION,,STPEXP	;[4412] ^ESET PASS-EXP
 	T PRIVATE-QUASAR,,.GDEBG	;^ESET PRIVATE-QUASAR
 	T RUN-TIME-GUARANTEE,,.JRUNG	;^ESET JOB RUN-TIME
+	T SYSTEM-ACCESS-CONTROL-JOB,,SETACJ ;[4412] ^ESET SYSTEM-ACJ
 	T TERMINAL,,ETERMI		;^ESET TERMINAL (NUMBER)
 	T WORKING-SET-PRELOADING,ONEWRD,SETWSP ;^ESET WORKING-SET-PRELOADING
 	TEND
@@ -3736,6 +3937,8 @@ $ESETN:	TABLE
 	T MINIMUM-PASSWORD-LENGTH,ONEWRD,DISMPL ;[7.1231] ^ESET NO MINIMUM-PASSWORD-LENGTH
 	T OFFLINE-STRUCTURES,ONEWRD,DISOFS ;[7.1063] ^ESET NO OFFLINE-STRUCTURES
 	T OPERATOR-IN-ATTENDANCE,ONEWRD,SETOPR	;^ESET NO OPERATOR
+	T PASSWORD-DICTIONARY,ONEWRD,SETPWD ;[4416] ^ESET Password Dictionary
+	T PASSWORD-EXPIRATION,ONEWRD,DISEXP ;[4412] ^ESET NO PASS-EXP
 	T PRIVATE-QUASAR,,.GDEBG	;^ESET NO PRIVATE-QUASAR
 	T RUN-TIME-GUARANTEE,,.JRUNG	;^ESET NO RUN-TIME
 	T WORKING-SET-PRELOADING,ONEWRD,SETWSP ;^ESET NO WORKING-SET-PRELOADING
@@ -3802,9 +4005,10 @@ TTYLOG:	NOISE <ON>
 
 $LGTTY:	TABLE
 	T ANY-TERMINAL,ONEWRD,.ANTTY
-	T ARPANET-TERMINALS,ONEWRD,.NVTTY
+	IT ARPANET-TERMINALS,ONEWRD,.NVTTY ;[4429]
 	T CONSOLE-TERMINAL,ONEWRD,.CNTTY
 	T DECNET-TERMINALS,ONEWRD,.MCTTY
+	T INTERNET-TERMINALS,ONEWRD,.NVTTY ;[4429]
 	T LAT-TERMINALS,ONEWRD,.LTTTY 		;[3041][7.1091]
 	T LOCAL-TERMINALS,ONEWRD,.LCTTY
 	T PSEUDO-TERMINALS,ONEWRD,.PSTTY
@@ -3818,7 +4022,7 @@ $LGTTY:	TABLE
 	CALL .NVTTY
 	CALL .PSTTY
 	CALL .MCTTY
-	CALL .LTTTY				;[7.1091
+	CALL .LTTTY				;[7.1091]
 ;	CALLRET .RMTTY
 
 .RMTTY:	MOVEI A,.SFRMT
@@ -3882,6 +4086,39 @@ SETMP1:	ERROR <Must be between 1 and 39>
 	RET
 
 	ENDSV.
+
+;[4412] ^ESET SYSTEM-ACJ gets here
+SETACJ:	CONFIRM			;Parse a CRLF
+	MOVEI A,.SFACJ		;Get function
+	SETZ B,			;Say we want to enable
+	SMON%			;Try it
+	 ERJMP CJERRE		;Couldn't do it, tell user why
+	RET			;Done, back to command level
+
+;[4412] ^ESET PASS-EXP does work here
+STPEXP:	STKVAR <EXPDAY>		;Place to save parsed number
+	MOVEI B,[FLDDB. .CMNUX,<CM%SDH>,^D10,<number of days a password remains valid>] ;Get a number
+	CALL FLDSKP		;(A,B/) Get days
+	 CMERRX			;User made a mistake
+	CAIL B,1		;Is it at least this?
+	CAILE B,^D366		;But not more than this?
+	JRST STPXP1		;It's bad, say error
+	MOVEM B,EXPDAY		;Save for now
+	CONFIRM			;Tie off the input
+	MOVEI A,.SFPEX		;Say setting min password length
+	MOVE B,EXPDAY		;Get count
+	SMON%			;Set it
+	 ERJMP CJERRE		;Report any failure
+	RET			;And done
+
+STPXP1:	ERROR <Must be between 1 and 366 days>
+	RET
+
+	ENDSV.
+
+;^ESET NO PASS-EXP
+DISEXP:	MOVEI A,.SFPEX		;Get function
+	JRST SETMSS		;And disable it
 
 ;[7.1063]"^ESET OFFLINE STRUCTURES mm:ss"
 
@@ -3952,6 +4189,9 @@ SETTMG:	MOVEI A,.SFTMG		;Here's the SMON% function
 
 SETOPR:	MOVEI A,.SFOPR
 	JRST SETMSS		;JOIN COMMON CODE
+;[4416]
+SETPWD:	MOVEI A,.SFPWD		;[4416] Get password dictionary
+	JRST SETMSS		;[4416] And join common code
 
 ;"^ESET LEVEL-ZERO-MESSAGES"
 

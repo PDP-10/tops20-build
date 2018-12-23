@@ -1,3 +1,13 @@
+; Edit= 4449 to EXECPR.MAC on 22-May-90 by GSCOTT
+;Update copyright notice as needed. 
+; Edit= 4431 to EXECPR.MAC on 24-Apr-90 by GSCOTT
+;Allow the EXEC to rescan commands of the form "EXEC command".
+; Edit= 4417 to EXECPR.MAC on 12-Jan-89 by WONG, for SPR #22042
+;Add code to support @SET DEFAULT PRINTER /REMOTE-PRINT: command and fix some
+;bugs in routine SRPPTR: which deals with validating the arguments to the @SET
+;REMOTE PRINTER command.
+; Edit= 4412 to EXECPR.MAC on 13-Dec-88 by RASPUZZI
+;Add new commands, features and support for security enhancements.
 ; UPD ID= 4126, RIP:<7.EXEC>EXECPR.MAC.10,   7-Mar-88 18:25:20 by GSCOTT
 ;TCO 7.1255 - Update copyright notice.
 ; UPD ID= 4100, RIP:<7.EXEC>EXECPR.MAC.9,  18-Feb-88 15:56:18 by RASPUZZI
@@ -145,7 +155,7 @@
 ;tco 4.1.1023 - REMOVE ECHOF, PECHOF, OKERR.  ADD TAKDEF, TAKBTS
 ;REMOVE SAVFLG AND SAVPTR
 
-;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1988.
+;	COPYRIGHT (c) DIGITAL EQUIPMENT CORPORATION 1976, 1990.
 ;	ALL RIGHTS RESERVED.
 ;
 ;	THIS SOFTWARE IS FURNISHED UNDER A  LICENSE AND MAY BE USED AND  COPIED
@@ -371,6 +381,15 @@ BTMSK4::Z			;[7.1061] FOURTH WORD IN CHARACTERISTICS BIT-MASK
 DSTNOD::Z			;[7.1073] DESTINATION-NODE NAME - SIGNALS REMOTE-PRINTING
 RPNODE::Z			;[7.1073] REMOTE PRINTER NODE NAME
 RPQUE::	BLOCK 7			;[7.1073] REMOTE PRINTER QUEUE NAME
+
+;[4417]For SET DEFAULT PRINTER /REMOTE:
+DEFREM:: BLOCK 7		;[4417]SET DEFAULT PRINT /REMOTE-PRINTER:arg
+DEFQUE:: BLOCK 7		;[4417]SET DEFAULT PRINT /REMOTE:x/DEST:y
+DEFADR::Z			;[4417]Right half contains addr of default
+				;[4417] remote printer entry in PTRTAB.
+DEFDST::Z			;[4417]SET DEFAULT PRINT /DESTINATION:node
+DEFUNT::Z			;[4417]SET DEFAULT PRINT /UNIT:x
+PRIFLG::Z			;[4417]Flags,,default status, defined in EXECDE
 
 
 
@@ -638,7 +657,7 @@ OURNOD::BLOCK 2			;[7.1076] Place to hold our node name
 NODBLK::BLOCK 4			;[7.1076] NODE% argument block useage
 INFBLK::BLOCK 6			;[7.1076] INFO% argument block useage
 INFLEN==:<.-INFBLK-1>		;[7.1076] Size of INFO% arg block
-INFSYS::BLOCK .SYUSE+1		;[7.1076] Block for SYSTAT stuff
+INFSYS::BLOCK .SYJCT+1		;[4412] Block for SYSTAT stuff
 UNAME::	BLOCK 10		;[7.1076] For user name (SYSTAT)
 DIRN::	BLOCK 21		;[7.1076] For conn directory name (SYSTAT)
 ORGN::	BLOCK 21		;[7.1076] For job origin (SYSTAT)
@@ -696,6 +715,8 @@ CECNT:: BLOCK 1			;COUNT OF COMMANDS IN THE BUFFER
 CEPSIC::BLOCK 1			;INTERRUPT CHARACTER TO ENTER EDITOR
 NOPRMT::BLOCK 1			;FLAG NOT TO PRINT PROMPT AFTER CMDED
 PCLMID::BLOCK 1			;PCL FLAG
+RSCANF::BLOCK 1			;[4431] Nonzero if rescanning EXEC command
+
 
 CSZ4==:.-1			;END OF AREA TO ZERO AT STARTUP (BEGINS AT CSZ1)
 
