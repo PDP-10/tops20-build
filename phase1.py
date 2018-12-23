@@ -64,7 +64,7 @@ def build():
     kl.line('')
     kl.assert_exists('2060-monmax.exe', 'ln2070.log')
 
-    kl.cl('submit t20-an.ctl/time/notify')
+    kl.cl('submit t20-an70.ctl/time/notify')
     kl.expect('From SYSTEM: Job T20-AN request #[0-9]* finished executing at', timeout=3600)
     kl.line('')
     kl.assert_exists('an-monmax.exe', 't20-an.log')

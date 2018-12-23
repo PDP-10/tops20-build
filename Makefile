@@ -110,7 +110,7 @@ clean:: clean-phase1
 phase1/phase1.tap: phase1 pexpect-venv/bin/python3 tapes/bootstrap.tap bin/kn10-kl phase1.py src/monitor.tap src/exec.tap src/midas.tap src/iddt.tap
 	(cd phase1; script -c '../pexpect-venv/bin/python3 ../phase1.py' phase1.out)
 
-tools/back10/back10:
+tools/back10/back10: tools/back10/back10.c tools/back10/back10.h
 	make -C tools/back10 all
 
 clean::
@@ -146,7 +146,7 @@ clean::
 src/midas: $(wildcard ref/its/midas/*)
 	$(RM) -r src/midas src/-midas
 	mkdir src/-midas
-	for i in ref/its/src/midas/*; do echo $$i | sed -Ee 's;(.*/)([^.]*)\.(.*);perl -p -e '\''s/\\000//g'\'' \1\2.\3 | perl -p -e '\''s/$$/\\r/'\'' > src/-midas/\2.mid;'  | sh -x; done
+	for i in ref/its/src/midas/*; do echo $$i | sed -Ee 's;(.*/)([^.]*)\.(.*);perl -p -e '\''s/\\000//g'\'' \1\2.\3 | perl -p -e '\''s/$$/\\r/'\'' > src/-midas/\2.mid.\3;'  | sh -x; done
 	ls src/-midas
 	mv src/-midas src/midas
 
@@ -154,7 +154,7 @@ clean::
 	$(RM) -r src/midas src/-midas
 
 src/midas.tap: src/midas tools/back10/back10
-	(cd src/midas; ../../tools/back10/back10 -c -f ../midas.tap -i $(notdir $(wildcard src/midas/*.mid)))
+	(cd src/midas; ../../tools/back10/back10 -c -f ../midas.tap -i $(notdir $(wildcard src/midas/*.mid.*)))
 
 clean::
 	$(RM) src/midas.tap

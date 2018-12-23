@@ -286,6 +286,7 @@ char f_device[STRSIZE];		/* Device. */
 char f_ufd   [STRSIZE];		/* Directory. */
 char f_name  [STRSIZE];		/* File name. */
 char f_ext   [STRSIZE];		/* Extension. */
+char f_gen   [STRSIZE];		/* Version. */
 char f_sfd[6][STRSIZE];		/* SFDs. (0 unused) */
 
 /* File name variants: */
@@ -754,7 +755,11 @@ void buildnames(void)
 
   /* Always include the dot in the tops-style file name. */
 
-  snprintf(iname, STRSIZE, "%s.%s", f_name, f_ext);
+  if (!f_gen[0]) {
+    snprintf(iname, STRSIZE, "%s.%s", f_name, f_ext);
+  } else {
+    snprintf(iname, STRSIZE, "%s.%s.%s", f_name, f_ext, f_gen);
+  }
 
   pos = 0;
 
@@ -1984,6 +1989,59 @@ void fakesfd(u_int level, char* name)
   fakestring(f_sfd[level], name, 6);
 }
 
+/* split a name into tops-20 name, ext, version
+ * for an interchange file
+ */
+
+void fake20x(char *name)
+{
+  char *basename, *p;
+  char *genp = NULL, *extp = NULL;
+  typedef enum {NAME, EXT, VER, QUOTE} State;
+  State state, save, next;
+
+  basename = strrchr(name, '/');
+  if (basename == NULL) {
+    basename = name;
+  } else {
+    basename++;
+  }
+
+  state = NAME;
+  for (p = basename; *p; p++) {
+    if (state == NAME || state == EXT) {
+      if (state == NAME) {
+        next = EXT;
+      } else if (state == EXT) {
+        next = VER;
+        if (extp == NULL)
+          extp = p;
+      }
+      if (*p == '.') {
+        state = next;
+        *p = 0;
+      } else if (*p == '\026') { // ^V
+        save = state;
+        state = QUOTE;
+      }
+    } else if (state == VER) {
+      if (genp == NULL)
+        genp = p;
+      if (!isdigit(*p)) {
+        genp = NULL;
+      }
+    } else if (state == QUOTE) {
+      state = save; // pass the current character
+    }
+  }
+
+  fakestring(f_name, basename, STRSIZE);
+  if (extp != NULL)
+    fakestring(f_ext, extp, STRSIZE);
+  if (genp != NULL)
+    fakestring(f_gen, genp, STRSIZE);
+}
+
 /*
  *  Set up the tops-10 versions of NAME.EXT from the file name.
  */
@@ -1992,6 +2050,11 @@ void faketops(char* name)
 {
   char* namepart;
   char* extpart;
+
+  if (interchange) {
+    fake20x(name);
+    return;
+  }
 
   namepart = strrchr(name, '/');
   if (namepart == NULL) {
@@ -2535,6 +2598,8 @@ void write_file(char* pfx, char* name)
   }
   pos = w_text(pos, _FCNAM, 0, f_name);
   pos = w_text(pos, _FCEXT, 0, f_ext);
+  if (interchange && f_gen[0])
+    pos = w_text(pos, _FCGEN, 0, f_gen);
 
   /* Build the file attribute block at 0200: */
 
@@ -2664,6 +2729,7 @@ void z_f_info(void)
   f_ufd   [0] = 0;
   f_name  [0] = 0;
   f_ext   [0] = 0;
+  f_gen   [0] = 0;
   f_sfd[1][0] = 0;
   f_sfd[2][0] = 0;
   f_sfd[3][0] = 0;
@@ -2741,6 +2807,7 @@ void pars_name(u_int offset, int length)
     case _FCDEV:  str = f_device; break;
     case _FCNAM:  str = f_name;   break;
     case _FCEXT:  str = f_ext;    break;
+    case _FCGEN:  str = f_gen;    break;
     case _FCDIR:  str = f_ufd;    break;
     case _FCSF1:  str = f_sfd[1]; break;
     case _FCSF2:  str = f_sfd[2]; break;
@@ -2764,6 +2831,7 @@ void pars_name(u_int offset, int length)
   downcase(f_device);
   downcase(f_name);
   downcase(f_ext);
+  downcase(f_gen);  /* ? */
   downcase(f_sfd[1]);
   downcase(f_sfd[2]);
   downcase(f_sfd[3]);
