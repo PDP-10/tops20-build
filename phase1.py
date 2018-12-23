@@ -73,6 +73,9 @@ def build():
     kl.cl('copy *.exe <system>')
     kl.cl('copy an-monmax.exe <system>monitr.exe')
 
+    kl.cl('copy monsym.unv <subsys>')
+    kl.cl('copy macsym.unv <subsys>')
+
     kl.build('<src.exec>')
     kl.cl('connect <src.exec>')
     kl.cl('del *.*.*')
