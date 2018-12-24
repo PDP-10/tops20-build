@@ -72,10 +72,27 @@ def build():
 
     kl.cl('dir *.exe')
     kl.cl('copy *.exe <system>')
+    kl.cl('copy bugstrings.txt <system>')
     kl.cl('copy an-monmax.exe <system>monitr.exe')
 
     kl.cl('copy monsym.unv <subsys>')
     kl.cl('copy macsym.unv <subsys>')
+
+    kl.cl('copy kddt.rel <subsys>')
+    kl.cl('copy mddt.rel <subsys>')
+
+    kl.cl('copy ctermd.unv <subsys>')
+    kl.cl('copy d36par.unv <subsys>')
+    kl.cl('copy globs.unv <subsys>')
+    kl.cl('copy mscpar.unv <subsys>')
+    kl.cl('copy phypar.unv <subsys>')
+    kl.cl('copy prolog.unv <subsys>')
+    kl.cl('copy scpar.unv <subsys>')
+    kl.cl('copy scapar.unv <subsys>')
+    kl.cl('copy sercod.unv <subsys>')
+
+    kl.cl('vdir')
+    kl.sync()
 
     kl.build('<src.exec>')
     kl.cl('connect <src.exec>')
@@ -83,7 +100,9 @@ def build():
     kl.restore_interchange('../src/exec.tap')
     kl.cl('del *.exe')
     kl.cl('submit exec/time/notify')
-    kl.expect('From SYSTEM: Job EXEC request #[0-9]* finished executing at', timeout=3600)
+    kl.expect(
+        'From SYSTEM: Job EXEC request #[0-9]* finished executing at',
+        timeout=3600)
     kl.line('')
     kl.assert_exists('exec.exe', 'exec.log')
 
