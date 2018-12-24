@@ -51,6 +51,7 @@ def build():
     kl = tops20.KLH10()
     kl.boot()
     kl.login()
+    kl.sync()
     kl.build('<src>', maximum_subdirectories=262143)
 
     kl.build('<src.monitor>')
@@ -85,6 +86,8 @@ def build():
     kl.expect('From SYSTEM: Job EXEC request #[0-9]* finished executing at', timeout=3600)
     kl.line('')
     kl.assert_exists('exec.exe', 'exec.log')
+
+    kl.sync()
 
     kl.cl('copy exec.exe <system>exec.exe')
     kl.expect('OK')
@@ -137,6 +140,7 @@ def build():
     kl.cl('submit emacs/time/notify')
     kl.expect('From SYSTEM: Job EMACS request #[0-9]* finished executing at', timeout=3600)
     kl.line('')
+    kl.assert_exists('nemacs.exe', 'emacs.log')
     kl.cl('rename nemacs.exe emacs.exe')
 
     # make clean by any other name

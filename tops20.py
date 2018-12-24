@@ -55,7 +55,7 @@ class KLH10:
     def line(self, s, **kw):
         return self.send(s + '\r', **kw)
 
-    def cl(self, s, prompt=r'\$', **kw):
+    def cl(self, s, prompt='\r\n\\$', **kw):
         self.expect(prompt, **kw)
         self.line(s)
 
@@ -74,7 +74,7 @@ class KLH10:
         self.cl('go', 'KLH10. ')
         self.cl('', 'BOOT>')
         self.cl('NEW', r'(?i)WHY RELOAD\? ')
-        self.cl('Y', f'(?i)RUN CHECKD\? ')
+        self.cl('N', f'(?i)RUN CHECKD\? ')
         self.expect(r'(?i)STRUCTURE STATUS CHANGE DETECTED', timeout=300)
         self.expect(f'(?i)STRUCTURE STATUS CHANGE DETECTED')
         self.expect('SJ  0: \r')
@@ -194,8 +194,9 @@ class KLH10:
                 command = 'no %s' % (k,)
             else:
                 command = '%s %s' % (k, v)
-            self.cl(command, '\$\$')
-        self.cl('', '\$\$')
+            self.cl(command, '\r\n\\$\\$')
+        self.cl('', '\r\n\\$\\$')
+        self.cl('')
 
     def restore(self, tape, dirs=['<*>*.*.*'], interchange=False):
         self.mttape(tape)
@@ -268,4 +269,8 @@ class KLH10:
                 self.cl(f'type {logfile}')
             self.shutdown()
             sys.exit(1)
+
+    def sync(self):
+        self.cl('information structure ps')
+        self.expect('\r\nUsers CONNECTed to [^:]+: OPERATOR')
 
