@@ -99,16 +99,31 @@ def build():
     kl.cl('del *.*.*')
     kl.restore_interchange('../src/exec.tap')
     kl.cl('del *.exe')
-    kl.cl('submit exec/time/notify')
+
+    kl.cl('submit exec/notify')
     kl.expect(
         'From SYSTEM: Job EXEC request #[0-9]* finished executing at',
-        timeout=3600)
+        timeout=305)
     kl.line('')
     kl.assert_exists('exec.exe', 'exec.log')
 
+    kl.cl('submit mkmexc/notify')
+    kl.expect(
+        'From SYSTEM: Job MKMEXC request #[0-9]* finished executing at',
+        timeout=305)
+    kl.line('')
+    kl.assert_exists('mic-exec.exe', 'mkmexc.log')
+
+    kl.cl('submit mkcexc/notify')
+    kl.expect(
+        'From SYSTEM: Job MKCEXC request #[0-9]* finished executing at',
+        timeout=305)
+    kl.line('')
+    kl.assert_exists('cmd-exec.exe', 'mkcexc.log')
+
     kl.sync()
 
-    kl.cl('copy exec.exe <system>exec.exe')
+    kl.cl('copy cmd-exec.exe <system>exec.exe')
     kl.expect('OK')
 
     kl.build('<third>')
