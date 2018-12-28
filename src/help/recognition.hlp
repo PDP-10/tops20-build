@@ -1,0 +1,33 @@
+
+Recognition
+
+"Recognition" input is another feature of the TOPS-20 operating system
+that  speeds  up  your  input, by finishing the typing of a command or
+command argument for you when you have given only part of it and  then
+prompting your next response.
+
+As soon as  you  have  typed  enough  of  a  command  or  argument  to
+distinguish it from others, press the ESC key:  the system will finish
+the word, if possible, and prompt  your  next  input  with  guidewords
+enclosed in parentheses.  By pressing the ESC key without beginning an
+argument you make the system print the default argument, if  there  is
+one.  If the system cannot help you, either because you have not typed
+enough characters to make your intentions clear or because there is no
+default,  your  terminal makes a warning noise - either a ringing bell
+or high-pitched beep.
+
+Because the ESC key does not produce a printed character, you  may  be
+unable  to  remember exactly where you pressed it when later examining
+the output from a hard-copy terminal.   If  you  want  to  avoid  this
+possibility,  use  the TERMINAL NO RAISE command to make your terminal
+produce lowercase input, to distinguish it from the uppercase printing
+of the system.
+
+For TOPS-20 Version 7, recognition has been expanded so that presssing
+the  ESC  key  also  shows  as  much  of  a  command  keyword  or file
+specification as possible.  For file specifications, recognition is in
+effect only for the file name, extension, and version.
+
+You cannot  use  recognition  for  device  names  or  directory  names
+(including file structures), jobnames (for example, with the MODIFY or
+CANCEL command) or logical names.

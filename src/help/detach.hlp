@@ -1,0 +1,136 @@
+
+DETACH command
+
+The DETACH command disconnects your job from your terminal.
+
+
+Format
+
+     @DETACH (AND) argument
+
+     where:
+
+     argument                 can be one of these:
+
+                              CONTINUE - directs the  current  program
+                                         to  proceed,  just  as if you
+                                         had   typed   the    CONTINUE
+                                         command.
+
+                              REENTER -  reenters the current program,
+                                         just  as if you had typed the
+                                         REENTER command.
+
+                              START -    starts the  current  program,
+                                         just  as if you had typed the
+                                         START command.
+                                   Default - the program  is  left  in
+                                   its present state
+
+
+Characteristics
+
+     Effects of Detached Jobs
+
+          Detached jobs use scarce system  resources  (e.g.,  swapping
+          space,  process  slots, job slots) and can prevent new users
+          from logging in.
+
+
+Warning
+
+     Programs Writing to the Controlling Terminal (Device TTY:)
+
+          If a program running in a detached job attempts to write  to
+          device TTY:, the job will wait until it is again attached to
+          a terminal.
+
+
+Effect on Terminal
+
+     The DETACH command leaves your terminal detached from the  system
+     in the state before log-in.
+
+     If the system manager enables the hangup-on-DETACH feature,  then
+     if  a  user DETACHes from a DECSYSTEM-20, the system hangs up the
+     terminal line that user was connected to.  The job still  remains
+     detached, but the user no longer retains a terminal line.
+
+
+Related Commands
+
+     ATTACH       for joining a detached job to your terminal
+
+     SYSTAT       for finding out which jobs are detached
+
+     SUBMIT       for running independent jobs
+
+     UNATTACH     for disengaging another job from its terminal
+
+
+Examples
+
+     1.  Detach your job.
+
+         @DETACH
+         Detaching job # 16
+
+     2.  Detach your job while starting the program  in  memory,  then
+         log in again.
+
+         @DETACH START
+          Detaching job # 45
+
+          BOSTON, TOPS-20 Development System, TOPS-20 Monitor 7(21002)
+         @LOGIN LATTA 341
+
+     3.  Log in and put a program in  memory;  detach  the  job  while
+         starting  this program, and repeat the entire procedure.  Log
+         in a third time and  begin  execution  of  a  third  program.
+         Interrupt  this execution with CTRL/C, then detach this third
+         job while continuing its program.  Now you  have  three  jobs
+         running  at  once.   Instead  of logging in again, attach the
+         first job (specifying the job number) and verify the system's
+         action.
+
+@LOGIN LATTA 341
+ Job 5 on TTY230 26-Mar-87 14::09, Last Login 26-Mar-87 11:36:12
+
+@GET DMN
+@DETACH START
+ Detaching job # 5
+
+ BOSTON, TOPS-20 Development System, TOPS-20 Monitor 7(21002)
+@LOGIN LATTA 341
+ Job 22 on TTY222 26-Mar-87 14:42:03, Last Login 26-Mar-87 14:38:09
+
+@GET TESTA1
+@DETACH START
+ Detaching job # 22
+
+ BOSTON, TOPS-20 Development System, TOPS-20 Monitor 7(21002)
+@LOGIN LATTA 341
+ Job 53 on TTY222 26-Mar-87 14:44:02, Last Login 26-Mar-87 14:42:03
+
+@EXECUTE TESTF1
+FORTRAN: TESTF1
+MAIN.
+LINK:   Loading
+[LNKXCT  TESTF1 Execution]
+^C
+
+@DETACH CONTINUE
+ Detaching job # 53
+
+ BOSTON, TOPS-20 Development System, TOPS-20 Monitor 7(21002)
+@ATTACH LATTA
+  Job 22, Detached, Running DETACH
+  Job 53, Detached, Running DETACH
+Job: 5
+Password:___
+
+EXIT
+@SYSTAT LATTA
+   5*   222   EXEC      LATTA
+  22    DET   TESTA1    LATTA
+  53    DET   TESTF1    LATTA

@@ -1,0 +1,152 @@
+
+CONNECT command
+
+The CONNECT command connects your job to a directory.
+
+
+Format
+
+     @CONNECT (TO DIRECTORY) dev:<directory>
+     PASSWORD:password
+
+     where:
+
+     dev:<directory>     is  the  directory  to  which  you  want   to
+                         connect.
+                              Default dev: - your connected structure
+
+                              Default <directory> - the directory  (on
+                                      the  specified structure) of the
+                                      same  name  as  your   connected
+                                      directory
+
+                              Default (if no arguments  are  given)  -
+                                      your  log-in  directory  on  the
+                                      public structure
+
+     password            is  the  password  of  the   directory   (not
+                         requested  for  your  log-in  directory  or a
+                         directory to which you already have ownership
+                         or sufficient group rights).
+
+
+Characteristics
+
+     Capabilities
+
+          Your   capabilities   (WHEEL,    OPERATOR,    SEMI-OPERATOR,
+          CONFIDENTIAL)  are  associated  with  your  log-in user name
+          only.  If you connect to a directory whose owner  has  Wheel
+          capabilities, you do not gain these capabilities.
+
+
+Hints
+
+     Obtaining Group Rights
+
+          You can obtain group rights equal to those of the owner of a
+          directory  by  giving  the  ACCESS command instead of, or in
+          addition to, CONNECT for that directory.
+
+
+Restrictions
+
+     Features Not Affected
+
+          For some  system  features,  CONNECT  does  not  affect  the
+          directory used:
+
+     System Accounting
+
+          The SET ACCOUNT command  allows  arguments  valid  for  your
+          log-in  user  name  only.  Generally, charges for system use
+          are made to your log-in user name.
+
+     Queue-class Commands
+
+          The Queue-class commands charge processing requests to  your
+          log-in user name only.
+
+
+Related Commands
+
+     ACCESS     for obtaining group as well as ownership rights  equal
+                to those of the owner of a directory
+
+     MOUNT      for making a structure available  for  connecting  and
+                ensuring the continued availability of the structure
+
+
+Examples
+
+     1.  Connect to another user's directory.
+
+         @CONNECT <HOLLAND>
+         Password:___
+
+     2.  Try  to  access  a  directory.   Discovering  that  it  is  a
+         files-only directory, connect to it instead.
+
+         @ACCESS <MANUALS>
+         ?Directory is "files-only" and cannot be accessed
+         @CONNECT <MANUALS>
+         Password:___
+
+
+     3.  Connect to another  user's  directory  on  a  different  file
+         structure  and then to your directory on that structure; then
+         return to your log-in directory  on  PS:.   Give  INFORMATION
+         JOB-STATUS  commands  as  you go along to check which is your
+         connected directory.
+
+         @INFORMATION JOB-STATUS
+          Host AURORA
+          Job 36, TTY207, User LATTA
+          Account 341
+         @MOUNT STRUCTURE SNARK:
+         Structure SNARK: mounted
+         @CONNECT SNARK:<HOLLAND>
+         Password:___
+         @INFORMATION JOB-STATUS
+          Host  AURORA
+          Job 36, TTY207, User LATTA, SNARK:<HOLLAND>
+          Account 341
+         @CONNECT <LATTA>
+         @INFORMATION JOB
+          Host AURORA
+          Job 36, TTY207, User LATTA, SNARK:<LATTA>
+          Account 341
+         @CONNECT
+         @INFORMATION JOB-STATUS
+          Host AURORA
+          Job 36, TTY207, User LATTA
+          Account 341
+         @DISMOUNT STRUCTURE SNARK:
+         Structure SNARK: dismounted
+
+     4.  Connect to your directory on  another  structure  and  obtain
+         your   full  rights  to  it.   After  giving  an  INFORMATION
+         JOB-STATUS command to verify your connected directory, give a
+         command  that  depends  on these rights.  Then return to your
+         log-in directory on PS:.
+
+         @MOUNT STRUCTURE SNARK:
+         Structure SNARK: mounted
+         @ACCESS SNARK:
+         @CONNECT SNARK:
+         @INFORMATION JOB
+          Host AURORA
+          Job 36, TTY207, User LATTA, SNARK:<LATTA>
+          Account 341
+         @INFORMATION DIRECTORY <LATTA.*>,
+         @@NAME-ONLY
+         @@
+          Name SNARK:<LATTA.ALLEN>
+          Name SNARK:<LATTA.BLAKE>
+          Name SNARK:<LATTA.LAB-NOTES>
+          Name SNARK:<LATTA.TESTS>
+         @END-ACCESS SNARK:<LATTA>
+         @CONNECT
+         @DISMOUNT STRUCTURE SNARK:
+         Structure SNARK: dismounted
+

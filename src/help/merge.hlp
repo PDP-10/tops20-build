@@ -1,0 +1,107 @@
+
+MERGE command
+
+The MERGE command places an executable program into the current  fork,
+combining it with whatever program (if any) is already there.
+
+
+Format
+
+     @MERGE (PROGRAM) filespec /switch
+
+     where:
+
+     filespec     is the file specification of any executable program.
+                       Default file type - .EXE
+
+     /switch      is one or more of the following:
+
+                       /OVERLAY       allows pages of the DDT  program
+                                      to be loaded over pages occupied
+                                      by  the  existing   program   in
+                                      memory.
+
+                       /USE-SECTION:n
+                                      specifies  the  memory   section
+                                      (from  0 to 37 octal) into which
+                                      your program is  to  be  merged.
+                                      You  can use this switch only if
+                                      your program can be contained in
+                                      one section.
+
+
+Characteristics
+
+     Executable Files Only
+
+          If a program you try to merge is not in  executable  format,
+          you   may   get   an   immediate  error  message  (that  is,
+          "?UNEXPECTED END-OF-FILE TRAP...") or a  delayed  one  (that
+          is,  "?ENTRY VECTOR LENGTH IS NOT LESS THAN 1000") after the
+          merge.  In either case, be sure that you have  specified  an
+          executable  program before investigating further.  The MERGE
+          command does not alter the entry vector if  the  file  being
+          merged is in the proper .EXE format.
+
+     Existing Pages Not Overlaid
+
+          If there is a program already in memory when  you  give  the
+          MERGE  command, and pages of the new program overlay it, the
+          new program is not placed into memory, and the system prints
+          the  error message, "?Illegal to overlay existing pages." To
+          force the existing pages to be overlaid, reissue  the  MERGE
+          command using the /OVERLAY switch.
+
+
+Effect on Memory
+
+     The MERGE command combines the specified program with the program
+     in  the  current  fork.   It  does not affect the contents of the
+     current fork unless you specify the /OVERLAY switch.
+
+
+Related Commands
+
+     INFORMATION MEMORY-USAGE      for  examining  the   contents   of
+                                   memory
+
+     GET                           for putting  a  saved  (executable)
+                                   file into memory
+
+     SAVE                          for storing a copy of  the  program
+                                   in  the  current  fork in a file in
+                                   executable format
+
+     START                         for starting the program in memory
+
+
+Examples
+
+     1.  Merge an executable program into memory.
+
+         @MERGE TESTF1.EXE
+
+     2.  Place an executable system program in memory,  then  merge  a
+         system   debugging   program   with   it.   Give  INFORMATION
+         MEMORY-USAGE  commands  to  verify  that  both  programs  are
+         intact.
+
+         @GET SYS:DUMPER
+         @INFORMATION MEMORY-USAGE
+
+         34. pages, Entry vector loc 4715 len 3
+
+           Section 0     R, W, E,  Private
+         0        RANDOM:<NEXT-RELEASE>DUMPER.EXE 4  1   R, CW, E
+         4-44     RANDOM:<NEXT-RELEASE>DUMPER.EXE.4  2-42   R, CW, E
+         @MERGE SYS:UDDT
+         @INFORMATION MEMORY-USAGE
+
+         45. pages, Entry vector loc 4715 len 3
+
+           Section 0     R, W, E,  Private
+         0        RANDOM:<NEXT-RELEASE>DUMPER.EXE.4  1   R, CW, E
+         4-44     RANDOM:<NEXT-RELEASE>DUMPER.EXE.4  2-42   R, CW, E
+         764-767  RANDOM:<NEXT-RELEASE>UDDT.EXE.1  1-4   R, CW, E
+         770-776  RANDOM:<NEXT-RELEASE>UDDT.EXE.1  5-13   R, E
+

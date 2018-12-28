@@ -1,0 +1,226 @@
+
+APPEND command
+
+Adds the contents of one or more source files to the end of a  new  or
+existing  destination  file on disk, leaving the original source files
+unchanged.
+
+
+Format
+
+     @APPEND (SOURCE FILE) source filespec(s) (TO) destination
+     filespec,
+     @@subcommand
+
+     where:
+
+     source filespec(s)       is a single file specification, or a
+                              series of them separated by commas.
+
+     destination filespec     is the specification of the destination
+                              file on disk; this can be a new file.
+
+     @@subcommand             means that after a final comma you can
+                              type an optional keyword, modifying the
+                              mode or format of information transfer.
+
+
+APPEND Subcommands (when used with the paper tape reader - PTR:)
+
+
+ASCII
+
+     Specifies that the files being  appended  are  written  in  ASCII
+     mode, with 36-bit words each consisting of five 7-bit bytes and a
+     parity bit; the parity bit means that  the  eighth  hole  of  the
+     paper tape is never punched.
+
+BINARY
+
+     Specifies that the files being appended are  composed  of  36-bit
+     words,  each consisting of six 6-bit bytes, with the seventh hole
+     of the paper tape set always to 0 and the eighth hole set  always
+     to 1; causes a checksum calculation.
+
+BYTE n
+
+     Specifies that the byte size of the destination file is to  be  n
+     (any  decimal  number).   If you do not give the BYTE subcommand,
+     the destination file will have the same byte size as  the  source
+     file.
+
+IMAGE
+
+     Specifies that the files being appended are  composed  of  36-bit
+     words, each consisting of one 8-bit byte; the 28 most significant
+     bits are lost on output.
+
+IMAGE BINARY
+
+     Same as BINARY, but lacking the checksum.
+
+
+APPEND Subcommands (when used with devices other than the paper tape
+                        reader)
+
+
+ASCII
+
+     Specifies that the files being  appended  are  written  in  ASCII
+     mode, with 36-bit words each consisting of five 7-bit bytes and a
+     parity bit; the parity bit means that the least  significant  bit
+     is set to 0 on input and is lost on output.
+
+BINARY
+
+     Calls for a direct transfer of data in 36-bit bytes.
+
+BYTE n
+
+     Specifies that the byte size of the destination file is to  be  n
+     (any  decimal  number).   If you do not give the BYTE subcommand,
+     the destination file will have the same byte size as  the  source
+     file.
+
+IMAGE  same as BINARY.
+
+IMAGE BINARY  same as BINARY.
+
+
+Output
+
+     As each file is appended, the system prints its specification and
+     the  word  [OK].  Also, if recognition is used on the destination
+     file specification, the system prints its status (Old generation,
+     New  generation, New file, or Superseding, for disk files; or OK,
+     if the files are appended to a non-disk device).
+
+
+Characteristics
+
+     Files Appended in Order Specified
+
+     The APPEND command attaches source files to the destination  file
+     in the order you specify them; the contents of the last specified
+     source will appear at the end of the destination file when APPEND
+     is finished.
+
+Subcommands Optional
+
+     For most purposes  you  do  not  need  to  use  subcommands  when
+     transferring   information   with   the  APPEND  command.   These
+     subcommands, specifying the format of  the  appended  files,  are
+     required only when using certain devices (for example, devices of
+     the form MTn:  (tape drives) using labeled tapes, or PTR:  (paper
+     tape  reader))  or under particular conditions (for example, when
+     transferring  files  over  network  facilities).   If   you   are
+     appending  information  from disk files or from your terminal and
+     you do not use any subcommands, the  data  will  be  appended  as
+     written,  whether  in a standard format (usually ASCII or binary)
+     or not.
+
+
+Special Cases
+
+     Wildcard Characters
+
+     Wildcard characters  (*  and  %)  can  be  used  in  source  file
+     specifications only.  The files are then appended in alphabetical
+     order.
+
+Appending Information from your Terminal
+
+     If you type TTY:  in place of  source  file  specifications,  the
+     system appends any characters you then type (after completing the
+     command itself), until you give a CTRL/Z to return your  terminal
+     to TOPS-20 command level.  CTRL/U, CTRL/R, CTRL/W, and the Delete
+     key can be used to edit the current line of terminal input.
+
+
+Restrictions
+
+     Source Files With Differing Formats
+
+     You can use the APPEND command to transfer data from  a  magnetic
+     tape,  terminal,  card reader, paper tape reader, or other device
+     to disk files, but if source files written in  differing  formats
+     are  specified  within the same command, some data can be lost in
+     the transfer.
+
+     Mixing Sequenced and Unsequenced Files
+
+     Source files created by  the  EDIT  program  should  not  contain
+     sequence  numbers  when  they  are  appended.   Mixing files that
+     contain sequence numbers with files that do not will  cause  EDIT
+     to function improperly if used on the resulting file.
+
+     Appending to Archived Files
+
+     You can append the contents of an archived file to another  file,
+     by  specifying  it as the first (or source) argument of an APPEND
+     command.  You can then edit the resulting file, because  it  does
+     not  gain  archive  status  although part of its contents are the
+     same as those of the archived file;  the  archived  file  remains
+     unchanged.   However,  you  cannot  give  the specification of an
+     archived file as the  second  (or  destination)  argument  of  an
+     APPEND command, as this would change the file's contents.
+
+
+Related Commands
+
+     COPY
+
+          For making copies of files.
+
+
+Examples
+
+     1.  Use the APPEND command to join two files.
+
+         @APPEND FORT.FOR FIL.FOR
+          FORT.FOR.8 [OK]
+
+     2.  Append two files to the end of a third file.
+
+         @APPEND FORT.FOR, GORT.FOR GIL.FOR
+          FORT.FOR.8 [OK]
+          GORT.FOR.6 [OK]
+
+     3.  Access a directory and append a file from it  to  a  file  in
+         your connected directory.
+
+         @ACCESS <MANUALS>
+         Password:___
+         @APPEND <MANUALS>REL3A.MEM REL3A.MEM
+          <MANUALS>REL3A.MEM.4 [OK]
+         @END-ACCESS <MANUALS>
+
+     4.  Use a wildcard character (%) to append several files  to  the
+         end of another file.
+
+         @APPEND %ORT.FOR HIL.FOR
+          FORT.FOR.8 [OK]
+          GORT.FOR.6 [OK]
+          HORT.FOR.3 [OK]
+          MORT.FOR.2 [OK]
+
+     5.  Use a wildcard character with the APPEND command to create  a
+         new file.
+
+         @APPEND *.TXT BACKUP.TXT
+          MAIL.TXT.1 [OK]
+          NEWRUN.TXT.1 [OK]
+          NX.TXT.1 [OK]
+
+     6.  Append a message from your terminal to the beginning  of  the
+         file  created  in  Example  5.   Use  the symbolic generation
+         number -1 to specify this action.
+
+         @APPEND TTY:,BACKUP.TXT BACKUP.TXT.-1
+          TTY:
+
+         !THIS IS A BACKUP FILE FOR ALL TEXT FILES.
+         ^Z
+
+          BACKUP.TXT.1  [OK]
+

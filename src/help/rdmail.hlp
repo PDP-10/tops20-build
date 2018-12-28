@@ -1,0 +1,256 @@
+
+The RDMAIL Program
+
+The RDMAIL program prints messages that have been sent to you by other
+users  of  the system through the MAIL program.  Your MAIL.TXT file in
+your logged-in directory on PS:  contains these messages.
+
+Note:  If your MAIL.TXT file contains mail sent by Version  4  of  the
+MAIL program, you must use Version 4 of RDMAIL to read it.
+
+There are various ways that the system notifies you whenever there  is
+mail that you have not read.  If another user sends you mail while you
+are not logged in, you receive the following message the next time you
+log in:
+
+
+     @LOGIN (USER) DBELL (PASSWORD) (ACCOUNT) 341<RET>
+      Job 35 on TTY42 29-Aug-79 16:14:12
+      You have a message
+     @
+
+
+Another user may send you a message while you are logged in.  In  this
+case, the system types
+
+     [You have a message from SENDER]
+
+on your terminal.
+
+Messages-of-the-Day sent to you when you are not logged in are printed
+on  your  terminal  automatically  after you log in.  However, if your
+directory  is  set  to  REPEAT   LOGIN-MESSAGES,   you   receive   all
+Messages-of-the-Day  every  time  you log in.  For more information on
+the REPEAT LOGIN-MESSAGES subcommand, see the BUILD command help file.
+If  a  system  message  is  sent  while  you are logged in and you are
+receiving system messages, you are notified immediately:
+
+     [New Message-of-the-Day available]
+
+You can give the SET MAIL-WATCH command to keep informed  of  any  new
+mail   you   receive,   especially   if  you  have  given  the  REFUSE
+SYSTEM-MESSAGES command.  You can add the SET  MAIL-WATCH  command  to
+your COMND.CMD file, if you have one, or type it each time you log in.
+When you give this command, it tells the system to notify you when you
+have  new  mail.   You  receive this notification only when you are at
+TOPS-20 command level.  At intervals of  approximately  five  minutes,
+the  TOPS-20  Command  Processor  informs  you  that you have new mail
+whenever it prompts you for a new command.  This  message  appears  on
+your terminal:
+
+     [You have new mail]
+
+You may give the INFORMATION MAIL command, even if you are not  logged
+in,  to  check  on the status of new mail for yourself or other users.
+To do this, type the following:
+
+     @INFORMATION (ABOUT) MAIL (FOR USER) name<RET>
+
+The system returns with one of the following responses:
+
+     New mail exists
+
+or
+
+     No new mail exists
+
+or
+
+     Mailbox protected
+
+
+Running RDMAIL To start RDMAIL, type RDMAIL after the TOPS-20 prompt @
+and press the RETURN key.  The program responds with the date and time
+prompt as follows:
+
+     @RDMAIL<RET>
+     Date and time (/HELP for help)
+
+If you have enabled WHEEL or OPERATOR capabilities, RDMAIL first  asks
+you  whether  you  want to read your own mail or that of another user.
+For example:
+
+     $RDMAIL<RET>
+     Special user (y or n)?
+
+If you type y, you are indicating that you wish to read another user's
+mail.   Type  y and press RETURN.  RDMAIL then prompts you to type the
+name of the user whose mail you wish to read.  Type the user name  and
+press  RETURN.   RDMAIL then prompts you for date and time input.  For
+example:
+
+     $RDMAIL<RET>
+     Special user (y or n)?  y<RET>
+     User name:  DNeff<RET>
+     Date and time (/HELP for help)
+
+If you type n, you are indicating that you wish to read your own mail.
+Type  n  and  press RETURN.  RDMAIL then prompts you for date and time
+input.  For example:
+
+     $RDMAIL<RET>
+     Special user (y or n)?  n<RET>
+     Date and time (/HELP for help)
+
+RDMAIL allows you to read your messages several ways:
+
+      o  By giving a date and/or time
+
+      o  By giving a program switch or combination of switches
+
+      o  By giving a date  and/or  time  combined  with  one  or  more
+         program switches.
+
+To read any new messages, simply press RETURN.
+
+You can define a time period of mail you wish to read.   To  do  this,
+type a date and/or a time.  A common TOPS-20 format is:
+
+     MMM DD,YYYY HH:MM:SS
+
+For example, a valid date and time is May 22,1979  17:00:00.   If  you
+type  only a date, RDMAIL assumes the time 00:01:00.  If you type only
+a time, the program assumes the  present  date.   RDMAIL  responds  by
+displaying all messages you received on and after the date and/or time
+you typed.
+
+If you type an invalid date or time, you  receive  an  error  message.
+Three of the most common ones are:
+
+     ?Invalid date format
+
+or
+
+?Invalid time format
+
+or
+
+?Day of month too large
+
+After the error message RDMAIL returns with the prompt for you to type
+a valid date and/or time.
+
+You can use the RDMAIL switches after  the  prompt,  either  alone  or
+combined with date/time input.  The RDMAIL switches are:
+
+
+  Switch        Function
+
+
+  /ALL                   Types all messages, regardless of date.
+
+  /HELP                  Types the program help text, outlining  the
+                         time/date  format  and program switches and
+                         their functions.
+
+  /LIST                  Outputs  messages  to  the  line   printer,
+                         rather than to your terminal.
+
+  /MESSAGE-OF-THE-DAY    Types    messages    from    the     system
+                         Message-of-the-Day  file,  rather than from
+                         your own message file.
+
+  /PERUSE                Allows you to peruse  messages,  and  gives
+                         only  the  following  information  for each
+                         message:
+                         Date:  From:  To:  CC:  and Subject.
+
+  /STOP                  Instructs RDMAIL to stop after each message
+                         it  types.  At the end of each message, the
+                         system prompts you to type RETURN for  more
+                         output.  Reading Mail Using RDMAIL Switches
+
+                         You  type   RDMAIL   switches   immediately
+                         following  the  prompt,  and may or may not
+                         combine them with a date and/or time.   You
+                         have  the options of combining switches and
+                         preceding each switch with a space.  To use
+                         RDMAIL  switches, type a slash (/) followed
+                         by the switch name.
+
+/HELP - HELP Switch
+
+     Type /HELP to get information on running RDMAIL.
+
+After the help text prints on your terminal, the system returns with
+the  prompt  for  you  to  type date/time information and/or another
+switch.
+
+Note:  HELP overrides all other switches that you may  combine  with
+it.   The  system  ignores  all  other  specified  switches  in  the
+combination, and prints the full RDMAIL help text.
+
+
+/ALL - ALL Switch
+
+     Type /ALL when you wish to read all messages in the mail  file,
+     regardless of date.
+
+     /ALL may be combined with all  other  program  switches  except
+     /HELP.
+
+/LIST - LIST Switch
+
+     Type /LIST when you want messages output to  the  line  printer
+     rather  than  to  your  terminal.   /LIST  can be combined with
+     date/time input, and/or with /ALL.  If you type only /ALL /LIST
+     after  the  prompt,  RDMAIL prints all messages in your file on
+     the line printer.
+
+/MESSAGE-OF-THE-DAY - System Message Switch
+
+     Type  /MESSAGE-OF-THE-DAY  to  print  mail  from   the   system
+     Message-of-the-Day file (PS:<SYSTEM>MAIL.TXT), rather than from
+     your  own   message   file.    Since   new   entries   in   the
+     Message-of-the-Day file are typed on your terminal when you log
+     in, you normally use this switch when a new  Message-of-the-Day
+     becomes available while you are logged in.  /MESSAGE-OF-THE-DAY
+     may be combined with date/time input.  It may also be  combined
+     with all other program switches except /HELP.
+
+     When you type  /MESSAGE-OF-THE-DAY  after  the  prompt,  RDMAIL
+     outputs  all  new Messages-of-the-Day since you last logged in,
+     whether or not you have read them.
+
+/PERUSE - PERUSE Switch
+
+     Type /PERUSE when you want to peruse  messages  in  your  file.
+     Only  the following lines for each message are printed:  Date:,
+     From:, To:, CC:, and Subject:  /PERUSE  can  be  combined  with
+     date/time input and all other program switches except /HELP.
+
+/STOP - STOP Switch
+
+     Type /STOP to cause RDMAIL to stop after each message  that  it
+     types.   Following  each  message,  the  program prompts you to
+     press RETURN for more  output.   /STOP  can  be  combined  with
+     date/time input and all other program switches except /HELP and
+     /LIST.
+
+If you type an invalid switch in RDMAIL, you receive  the  following
+message:
+
+     ?Does not match switch or keyword
+
+The system returns with the prompt for you to type a valid switch.
+
+
+RDMAIL Messages
+
+Fatal errors are preceded by a question mark (?).  A warning message
+is preceded by a percent sign (%).
+
+See the TOPS-20 User Utility Manual for a description  of  the  most
+common  RDMAIL  messages,  their  descriptions,  and  suggested user
+responses.
+

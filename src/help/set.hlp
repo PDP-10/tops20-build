@@ -1,0 +1,1896 @@
+
+SET command
+
+The SET command sets or modifies various characteristics of your  job,
+a directory, a file, a device, or some other entity.
+
+
+Format
+
+     @SET argument(s) setting(s)
+
+     where:
+
+     argument     is a keyword, chosen from the list below, indicating
+                  your choice of SET command options.
+
+     setting      is a  word  or  number,  required  to  complete  the
+                  meaning of most SET commands.
+
+
+                   Summary of SET Command Arguments
+
+     ACCOUNT account   remark
+     ADDRESS-BREAK octal or symbolic memory address,
+          @@AFTER n     Default n - 1
+          @@ALL
+          @@EXECUTE
+          @@NONE
+          @@READ
+          @@WRITE
+     ALERT date/time message
+     AUTOMATIC
+
+     CARD-READER-INPUT-SET name of input set   n
+     CONTROL-C-CAPABILITY
+
+              ---
+              | CARDS  /switch(es)
+              | COMPILE-SWITCHES file type  /switch(es)
+              | PAPER-TAPE  /switch(es)
+     DEFAULT  | PLOT  /switch(es)
+              | PRINT  /switch(es)
+              | SUBMIT  /switch(es)
+              |     ---
+              |     | ALLOW
+              |TAKE | DISALLOW
+              ---   |
+                    | ECHO
+                    | NO ECHO
+                    ---
+
+                  ---
+                  | ACCOUNT-DEFAULT dev:<directory> account
+                  | password
+                  |
+                  | ARCHIVE-ONLINE-EXPIRED-FILES
+                  | FILE-PROTECTION-DEFAULT dev:<directory> octal code
+                  | password
+                  |      Default code - 777700
+                  | DIRECTORY GENERATION-RETENTION-COUNT-DEFAULT
+                  | dev:<directory> n password
+                  |      Default n - 1
+     DIRECTORY    | NO ARCHIVE-ONLINE-EXPIRED-FILES
+                  | NO SECURE
+                  | OFFLINE-EXPIRATION-DEFAULT dev:<directory>date or +n
+                  |      Default n - 90
+                  | ONLINE-EXPIRATION-DEFAULT dev:<directory>date or +n
+                  |      Default n - 60
+                  | PASSWORD dev:<directory>
+                  | old password
+                  | new password
+                  | new password
+                  |
+                  | PROTECTION dev:<directory> octal protection code
+                  | password
+                  |      Default code - 777700
+                  | SECURE str:<directory>
+                  ---
+
+
+                    ---               ---
+     ENTRY-VECTOR   | octal or symbolic | octal or symbolic length
+                    | memory location   | between 1 and 777
+                    ---               ---
+                           Default length - 1
+
+               ---
+               | ACCOUNT  filespecs account
+               | EPHEMERAL filespecs
+               | EXPIRED filespecs
+               | GENERATION-RETENTION-COUNT filespecs n  Default n - 1
+               | INVISIBLE
+               |    EPHEMERAL filespecs
+               |    PERMANENT filespecs
+               | NO PROHIBIT filespecs
+     FILE      |    RESIST filespecs
+               |    SAVE-BY-BACKUP-SYSTEM filespecs
+               |    SECURE filespecs
+               |    PERMANENT filespecs
+               |    TEMPORARY filespecs
+               |    UNDELETABLE filespecs
+               | OFFLINE-EXPIRATION filespecs date or +n
+               | ONLINE-EXPIRATION filespecs  date or +n
+               | PERMANENT
+               | PROHIBIT filespecs
+               | PROTECTION filespecs   octal protection code
+               |           Default code - 777700
+               | RESIST filespecs
+               | SAVE-BY-BACKUP-SYSTEM
+               | SECURE filespecs
+               | TEMPORARY
+               | UNDELETABLE
+               | VISIBLE
+               ---
+
+                       ---
+     HOST node-name::  | /CTERM
+                       | /NRT
+                       ---
+     LATE-CLEAR-TYPEAHEAD
+     LOCATION node-name  Default node-name - your host node
+     MAIL-WATCH user-name message-count
+     NAME fork-name
+
+          ---
+          | ADDRESS-BREAK
+          | ALERT
+          | AUTOMATIC
+          | CONTROL-C-CAPABILITY
+          |          ---
+          |          | CARDS
+          |          | COMPILE-SWITCHES  file type or *
+          |          | PAPER-TAPE
+          | DEFAULT  | PLOT
+          |          | PROGRAM
+          |          | PRINT
+     NO   |          | SUBMIT
+          |          ---
+          |
+          | LATE-CLEAR-TYPEAHEAD
+          | MAIL-WATCH user-name
+          | RETRIEVAL-WAIT
+          | STATUS-WATCH
+          | TIME-LIMIT
+          |      ---
+          |      | <RET>
+          | TRAP | FILE-OPENINGS
+          |      |     ---
+          |      |     | /ALL
+          |      |     | /DEFINED
+          |      | JSYS| /UNDEFINED
+          |      ---   | name
+          |            | number
+          |            ---
+          | UUO-SIMULATION
+          ---
+                                           ---
+                                           | COPY-ON-WRITE
+                                           | EXECUTE
+                                           |
+                                           |    ---
+                                           |    | COPY-ON-WRITE
+     PAGE-ACCESS  octal page numbers       | NO | WRITE
+                                           |    ---
+                                           |
+                                           | NONEXISTENT
+                                           | READ
+                                           | WRITE
+                                           ---
+
+     PASSWORD dev:<directory>
+     old password
+     new password
+     new password
+
+                        ---
+                        | EPHEMERAL
+                        |      ---
+                        |      | CONTINUE
+     PROGRAM fork-name  | KEEP | REENTER
+                        |      | START
+                        |      ---
+                        | NO-EPHEMERAL
+                        | NONE
+                        ---
+
+                        CHARACTERISTICS name value
+                                     ---              --- ---
+     REMOTE-PRINTING    PRINTER name | remote queue     | | DQS node
+                                     | LATserver port   | | LAT server
+                                     | LATserver service| ---
+                                     | alias            |
+                                     ---              ---
+                        SYSTEM-DEFINITIONS
+
+     RETRIEVAL-WAIT
+
+     SESSION-REMARK remark of up to 39 characters
+
+                     ---
+                     | IMMEDIATE
+     SPOOLED-OUTPUT  | DEFERRED
+                     ---
+
+     STATUS-WATCH,
+          @@INTERRUPT
+          @@NO
+          @@PAGES
+          @@TOPS-10-PAGES
+
+                       ---
+                       |  200
+                       |  556
+          DENSITY      |  800
+                       | 1600
+                       | 6250
+                       | SYSTEM-DEFAULT
+                       ---
+
+                      ---
+                      | ANSI-ASCII
+                      | CORE-DUMP
+                      | HIGH-DENSITY
+     TAPE FORMAT      | INDUSTRY-COMPATIBLE
+                      | SIXBIT
+                      | SYSTEM-DEFAULT
+                      ---
+
+                      ---
+                      | EVEN
+          PARITY      | ODD
+                      ---
+
+          RECORD-LENGTH n bytes     Default n  - 512
+
+     TERMINAL feature or type
+
+     TIME-LIMIT n
+
+           ---
+           | FILE-OPENINGS
+           |      ---
+           |      | /ALL
+           |      | /DEFINED
+           | JSYS | /UNDEFINED
+           |      | name
+           |      | number
+           |      ---
+           |   ---
+           |   | <RET>
+     TRAP  | NO| FILE-OPENINGS
+           |   |      ---
+           |   |      | /ALL
+           |   |      | /DEFINED
+           |   | JSYS | /UNDEFINED
+           |   |      | name
+           |   |      | number
+           |   |      ---
+           |   | PROCEED
+           |   ---
+           | PROCEED
+           ----
+
+                    ---
+     TYPEOUT MODE   | NUMERIC
+                    | SYMBOLIC
+                    ---
+     UUO SIMULATION
+
+
+                        SET Command Arguments
+
+     ACCOUNT account   remark
+                              begins charging  the  specified  account
+                              for   the   remainder  of  your  current
+                              terminal session or until  you  use  the
+                              command   again.   You  must  supply  an
+                              alphanumeric account name of 39 or fewer
+                              characters  valid  for  your  user name.
+                              Then you can type  an  optional  session
+                              remark,  also of 39 or fewer characters,
+                              to be inserted in system accounting data
+                              for   your   current  terminal  session.
+                              Check your current account  and  session
+                              remark with INFORMATION JOB-STATUS.
+
+     ADDRESS-BREAK octal or symbolic memory location,
+                              causes  the  program  in  memory  to  be
+                              suspended and a message to be printed on
+     @@AFTER n                your terminal  when the memory  location
+     @@ALL                    you   specify  is  referenced  for   the
+     @@EXECUTE                indicated   operation - execute,   read,
+     @@NONE                   write, or any of these (ALL).  With  the
+     @@READ                   AFTER subcommand you determine how  many
+     @@WRITE                  times it must be referenced  before  the
+                              address  break  occurs;  with  NONE  you
+                              cancel address breaks for the  specified
+                              location,   just  as  with  the  SET  NO
+                              ADDRESS-BREAK   command.     Each    SET
+                              ADDRESS-BREAK    command   cancels   any
+                              previous  address  break.   Check   your
+                              current  address  break with INFORMATION
+                              ADDRESS-BREAK.
+                                   Default   subcommands - ALL,    and
+                                                           AFTER 1
+
+       ---                    ---
+       | date and hh:mm         |
+       | hh:mm                  |
+ALERT  | +hh:mm                 |             message
+       | day-of-week and +hh:mm |
+       | TODAY and +hh:mm       |
+       ---                    ---
+
+                              causes the system to ring your  terminal
+                              bell  andtype  a  line  at the specified
+                              date and time.  This line  contains  the
+                              time  of day and your message.  The sign
+                              (+), used with the day-of-week and TODAY
+                              arguments,  adds the time you specify to
+                              the beginning of the  day  (00:00:00  or
+                              midnight).  For example, the command SET
+                              ALERT THURSDAY +10:00 sets an alert  for
+                              Thursday  at 10:00 A.M.  If you omit the
+                              plus sign after a day-of-week  or  TODAY
+                              argument,  the  time  is  interpreted as
+                              part  of  the  message.   When  a   time
+                              argument  is  used without a day-of-week
+                              or TODAY argument, the  plus  sign  adds
+                              the  specified time to the current time.
+                              For example, the command SET ALERT +1:00
+                              sets an alert for one hour from the time
+                              the command is given.
+
+                              If  the  SET  AUTOMATIC  command  is  in
+                              effect,  this  message is sent no matter
+                              what you are  doing  at  your  terminal.
+                              Otherwise,  you  are  alerted  only when
+                              your terminal is about to type a TOPS-20
+                              prompt  ($  or  @).   Alert settings are
+                              erased when you log out.  Therefore, you
+                              should   enter   this  command  in  your
+                              COMAND.CMD  file  if  you  want  to   be
+                              alerted  in  the  distant future or on a
+                              regular basis.   Check  the  setting  of
+                              this  command  with  INFORMATION ALERTS.
+                              See Example 8.
+
+AUTOMATIC                     allows you to be notified by the  system
+                              (as  a  result  of  a  SET  ALERT or SET
+                              MAIL-WATCH command) whether or not  your
+                              job  is at TOPS-20 command level.  Every
+                              five minutes, the system checks  to  see
+                              if   you  should  be  notified.   It  is
+                              recommended that you enter this  command
+                              in the LOGIN.CMD file to ensure coverage
+                              from the time you log  in.   Check  with
+                              INFORMATION    ALERTS   or   INFORMATION
+                              COMMAND-LEVEL.
+
+CARD-READER-INPUT-SET name of input set  n
+                              is used by the batch system to associate
+                              the   indicated   set  of  punch  cards,
+                              beginning  with  deck  n,  with   system
+                              device CDR:
+
+CONTROL-C-CAPABILITY          allows  any  program  executed  at   the
+                              current  command  level to handle CTRL/C
+                              interrupts itself.  You cannot use  this
+                              command  in  a  batch  job.   Check  the
+                              current   setting    with    INFORMATION
+                              PROGRAM-STATUS.
+                                   Default
+
+         ---
+         | CARDS /switch(es)
+         | COMPILE-SWITCHES file-type /switch(es)
+         | PAPER-TAPE /switch(es)
+         | PLOT /switch(es)
+         | PRINT /switch(es)
+         |        ---
+         |        | EPHEMERAL
+DEFAULT  |PROGRAM | KEEP argument
+         |        | NO-EPHEMERAL
+         |        |NONE
+         |        ---
+         | SUBMIT /switch(es)
+         |      ---
+         |      | ALLOW
+         |      | DISALLOW
+         | TAKE | ECHO
+         |      | NO ECHO     sets up,  as default global arguments to
+         ---    ---           the command selected, the arguments  you
+                              specify.   CARDS  refers  to  the  PUNCH
+                              CARDS  command, COMPILE- SWITCHES to all
+                              the LOAD-class commands, and  PAPER-TAPE
+                              to  the PUNCH PAPER TAPE command.  These
+                              arguments  are  any  switch  or  keyword
+                              valid for the given command.
+
+                              For COMPILE-SWITCHES, you  must  specify
+                              the  type  of file you want the switches
+                              applied to  by  preceding  the  switches
+                              with  one of the following:  a file type
+                              (excluding the  period),  a  period  for
+                              file    specifications   with   a   null
+                              extension, or an asterisk  (*)  for  all
+                              file types.  Check current settings with
+                              INFORMATION DEFAULTS.
+
+DIRECTORY ACCOUNT-DEFAULT dev:<directory> default account
+PASSWORD:password
+                              sets  the  account  of   39   or   fewer
+                              characters  to  charge for your terminal
+                              session whenever  you  log  in  to  this
+                              directory without specifying an account.
+                              Check with INFORMATION DIRECTORY.
+
+DIRECTORY ARCHIVE-ONLINE-EXPIRED-FILES dev:<directory>
+                              causes on-line files that  have  expired
+                              to  be  automatically  archived.   Check
+                              with INFORMATION DIRECTORY.
+
+DIRECTORY FILE-PROTECTION-DEFAULT dev:<directory> octal code
+PASSWORD:password
+                              sets a default protection code governing
+                              access  to files subsequently created in
+                              the directory.  See description of  FILE
+                              PROTECTION  argument for a list of valid
+                              protection    codes.      Check     with
+                              INFORMATION DIRECTORY.
+                                   Default code - 777700
+
+DIRECTORY GENERATION-RETENTION-COUNT-DEFAULT dev:<directory> n
+PASSWORD:password
+                              prescribes for the directory  a  default
+                              value  for  the number of generations of
+                              subsequently-created  files   to   save.
+                              Check with INFORMATION DIRECTORY.
+                                   Default n - 1
+
+DIRECTORY NO ARCHIVE-ONLINE-EXPIRED-FILES
+                              prevents on-line files that have expired
+                              from being automatically archived
+                                   Default
+
+DIRECTORY NO SECURE str:<directory>
+                              Specifies  that  files  created  in  the
+                              directory  are  not  secure.  The Access
+                              Control Job is not used to  verify  user
+                              access to new files in this directory.
+                                   Default
+
+DIRECTORY OFFLINE-EXPIRATION-DEFAULT dev:<directory> date or +n
+                              sets the tape expiration date for  files
+                              that  are  to  go  off  line  because of
+                              archiving or migration.  If you  specify
+                              "+n", the expiration date is n days from
+                              the date the files were moved off line.
+                                   Default n - 90
+
+DIRECTORY ONLINE-EXPIRATION-DEFAULT dev:<directory> date or +n
+                              sets the disk expiration date for  files
+                              that are to be created in the directory.
+                              If you specify "+n", the expiration date
+                              is n days from the creation date.
+                                   Default n - 60
+
+DIRECTORY PASSWORD dev:<directory>
+Old password:old password
+New password:new password
+Retype new password:new password
+                              allows you to change the password of the
+                              directory   named.    The  password  can
+                              consist  of  up   to   39   alphanumeric
+                              characters, including hyphens.
+
+DIRECTORY PROTECTION dev:<directory> octal protection code
+Password:password
+                              establishes   for   the   directory    a
+                              protection    code    constructed    (by
+                              addition) from the values  shown  below.
+                              Check with INFORMATION DIRECTORY.
+
+  77      full access to the directory
+  40      access  to  files  in  the  directory  (including  expunging
+          individual  files),  consistent  with the file protection of
+          the files
+  10      connect to the directory without giving a password, undelete
+          files, expunge the entire directory, and change times, dates
+          and accounting information for files.  All other  access  is
+          governed by the file protection of each file.
+  04      create files in the directory
+  00      no access to the directory
+                                   Default code - 777700
+
+                              See the TOPS-20 User's  Guide  for  more
+                              information about protection codes.
+
+DIRECTORY SECURE str:<directory>
+                              indicates that any new files created  in
+                              the  specified  directory be made secure
+                              by default.  When a file is secure,  the
+                              Access  Control Job checks to see if the
+                              user has access to that file before  the
+                              user  can  read,  write, append, rename,
+                              delete, set secure, or set unsecure that
+                              file.
+
+               ---               ---
+ENTRY-VECTOR   | octal or symbolic |  octal or symbolic length
+               | memory location   |  from 1 to 777
+               ---               ---
+                              lets you change the entry vector of  the
+                              program  in  memory.   Check the current
+                              setting with INFORMATION MEMORY-USAGE.
+                                   Default length - 1
+
+FILE ACCOUNT filespecs account
+                              specifies  the  account  to  charge  for
+                              storage  of the files named.  Check with
+                              the DIRECTORY command  and  the  ACCOUNT
+                              subcommand.
+
+FILE EPHEMERAL filespec
+                              assigns  an  ephemeral  attribute  to  a
+                              system  program.   The program is placed
+                              in an ephemeral fork only when  you  run
+                              it by typing just the program name as an
+                              EXEC  command.   Running  an   ephemeral
+                              system   program   with  the  R  command
+                              cancels the ephemeral attribute.  For  a
+                              description  of  an  ephemeral fork, see
+                              the ERUN command, Characteristics of  an
+                              Ephemeral Fork.
+
+                              Wheel   or   Operator   privileges   are
+                              required   to   set   a  system  program
+                              ephemeral.  See Example 11 for setting a
+                              system  program  ephemeral.  See Example
+                              12 for  running  your  own  programs  by
+                              typing only the program name.
+
+FILE EXPIRED filespecs
+                              establishes today as the expiration date
+                              for  the specified on-line files.  Check
+                              with the DIRECTORY command and the DATES
+                              ONLINE-EXPIRATION subcommand.
+
+FILE GENERATION-RETENTION-COUNT filespecs n
+                              tells the system how many generations of
+                              the specified files to save.  Check with
+                              the   DIRECTORY    command    and    the
+                              GENERATION-RETENTION-COUNT subcommand.
+                                   Default n - 1
+
+FILE INVISIBLE filespecs
+                              makes the specified file inaccessible to
+                              most   programs  and  TOPS-20  commands.
+                              Check with the DIRECTORY command and the
+                              INVISIBLE subcommand.
+
+FILE NO EPHEMERAL filespec
+                              removes the ephemeral attribute  from  a
+                              system   program.    Wheel  or  Operator
+                              privileges  are  required  to  alter   a
+                              system program.
+
+                              You can cancel the  ephemeral  attribute
+                              for  your  copy of a system program with
+                              the SET PROGRAM NO-EPHEMERAL command or,
+                              by   running  the  program  with  the  R
+                              command instead  of  simply  typing  the
+                              system program name as a command.
+
+FILE NO PERMANENT filespecs   specifies that the file does  not  exist
+                              after it is deleted and expunged.
+                                   Default
+
+FILE NO PROHIBIT filespecs
+                              allows  the  system   to   migrate   the
+                              specified  file  to  off-line storage if
+                              disk space becomes low.  For  privileged
+                              users  only.   Check  with the DIRECTORY
+                              command   and   the   PROHIBIT-MIGRATION
+                              subcommand.
+                                   Default
+
+FILE NO RESIST filespecs
+                              cancels  the  effect  of  the  SET  FILE
+                              RESIST  command.  This switch allows the
+                              system to move the  specified  files  to
+                              off-line   storage  without  hesitating.
+                              Check with the DIRECTORY command and the
+                              RESIST-MIGRATION subcommand.
+                                   Default
+
+FILE NO SAVE-BY-BACKUP SYSTEM filespecs
+                              indicates not to save the specified file
+                              as  indicated  by a DUMPER save command.
+                              For example, a SYSTEM:DUMP.EXE file.
+
+FILE NO SECURE filespecs      indicates that specified files  are  not
+                              secure.   The  Access Control Job is not
+                              used  to  verify  user  access  to  this
+                              file(s).
+
+FILE NO TEMPORARY filespecs   indicates the specified file  is  not  a
+                              temporary file.
+                                   Default
+
+FILE NO UNDELETABLE filespecs
+                              specifies that the file can be deleted.
+                                   Default
+
+FILE OFFLINE-EXPIRATION filespecs date or +n
+                              specifies  when  the  contents   of   an
+                              off-line   file  can  be  expunged  from
+                              off-line storage.  If you specify  "+n",
+                              the  expiration  date is n days from the
+                              date it was moved off line.  Check  with
+                              the  DIRECTORY  command  and  the  DATES
+                              OFFLINE-EXPIRATION subcommand.
+
+FILE ONLINE-EXPIRATION filespecs date or +n
+                              establishes the date on which  the  disk
+                              contents  of  the  specified  files will
+                              expire.   If  you  specify   "+n",   the
+                              expiration  date  is  n  days  from  the
+                              current date.  Check with the  DIRECTORY
+                              command   the   DATES  ONLINE-EXPIRATION
+                              subcommand.
+
+FILE PERMANENT filespecs      specifies that after a file  is  deleted
+                              and   expunged,   the  file  name  still
+                              exists.  For example, a MAIL.TXT file.
+
+FILE PROHIBIT filespecs
+                              tells the system never  to  migrate  the
+                              specified file to off-line storage.  For
+                              privileged users  only.   (Nonprivileged
+                              users should refer to the description of
+                              the SET FILE RESIST command.   See  also
+                              Hints - Alternative to SET FILE PROHIBIT
+                              for Non-privileged Users, below.)  Check
+                              with   the  DIRECTORY  command  and  the
+                              PROHIBIT-MIGRATION subcommand.
+
+FILE PROTECTION filespecs octal protection code
+                              sets,  for  the   specified   files,   a
+                              protection    code    constructed    (by
+                              addition) from the  octal  values  shown
+                              below.  Check with the DIRECTORY command
+                              and the PROTECTION subcommand.
+
+  77      full access to the file
+  40      read the file
+  20      write and delete the file
+  10      execute the program contained in the file
+  04      append to the file
+  02      access the file using wildcarded file specifications
+  00      no access to the file
+                                   Default code - 777700
+
+See the TOPS-20 User's Guide for  more  information  about  protection
+codes.
+
+FILE RESIST filespecs
+                              offers   nonprivileged   users   limited
+                              protection   against   migration.    The
+                              specified files will be forced  off-line
+                              only  when  absolutely necessary.  Check
+                              with  the  DIRECTORY  command  and   the
+                              RESIST-MIGRATION subcommand.
+
+FILE SAVE-BY-BACKUP-SYSTEM filespecs
+                              indicates that  the  specified  file  is
+                              saved  as  required  by a incremental or
+                              full DUMPER save command.
+                                   Default
+
+FILE SECURE filespecs         indicates that the specified  files  are
+                              secure.   When  a  file  is  secure, the
+                              Access Control Job checks to see if  the
+                              user  has access to that file before the
+                              user can read,  write,  append,  rename,
+                              delete, set secure, or set unsecure that
+                              file.
+
+FILE TEMPORARY filespecs      indicates   the   specified   file    is
+                              temporary.
+
+FILE UNDELETABLE filespecs    indicates the specified file  cannot  be
+                              deleted.
+
+FILE VISIBLE filespecs
+                              makes the specified file  accessible  to
+                              all   programs   and  TOPS-20  commands.
+                              Check with the DIRECTORY command and the
+                              INVISIBLE subcommand.
+                                   Default
+
+HOST                          Due to the number of options in the  SET
+                              HOST command, it is described separately
+                              from the SET command.  See the SET  HOST
+                              command  description  following  the SET
+                              command.
+
+LATE-CLEAR-TYPEAHEAD
+                              instructs the system  to  disregard  all
+                              terminal  input  made  after a line that
+                              causes an  error  and  before  the  next
+                              prompt.   Check  the  setting  for  your
+                              current   level    of    TOPS-20    with
+                              INFORMATION COMMAND-LEVEL.
+
+LOCATION node-name::          causes all output device request  to  be
+                              sent   to   the   specified  IBM  remote
+                              station.  Two colons (::) following  the
+                              node name are optional.  Check available
+                              nodes with INFORMATION DECNET, and check
+                              your  current setting (if different from
+                              your  host  node  [log-in  node])   with
+                              INFORMATION JOB-STATUS.
+                                    Default node-name - your host node
+
+MAIL-WATCH user-name message-count
+                              checks the MAIL file for  the  specified
+                              user  immediately and every five minutes
+                              thereafter  whenever  your  terminal  is
+                              about to type a TOPS-20 prompt (@ or $),
+                              and sends a message notifying  you  that
+                              the  user  has  new  mail  if  this file
+                              contains unread mail.   If  you  specify
+                              your  own  user-name,  you  receive  the
+                              message [You have mail from USER-NAME at
+                              00:00:00].   If  you specify a user-name
+                              other than your  own,  you  receive  the
+                              message   [RECEIVER-USER-NAME  has  mail
+                              from SENDER-USER-NAME at 00:00:00].  You
+                              must  have  read access to the specified
+                              user's mail file.
+
+                              The  message  count  argument  sets  the
+                              number  of  times  you  are  notified of
+                              unread  mail.   If  the  SET   AUTOMATIC
+                              command  is  in  effect, this message is
+                              sent no matter what  you  are  doing  at
+                              your  terminal.   The  maximum number of
+                              users that you can MAIL-WATCH  is  five.
+                              See Example 10.
+                                   Default user-name - your user-name
+                                   Default message-count - 1000
+
+NAME fork-name                renames  the  current  fork   with   the
+                              specified alphanumeric name.  Select the
+                              current  fork  with  the  FORK  command.
+                              Check with INFORMATION FORK-STATUS.
+
+                              If you give a fork the name of a program
+                              specified  in a SET PROGRAM command, the
+                              fork   will   receive   the   attributes
+                              assigned  in  the  SET  PROGRAM command.
+                              For  example,  suppose  you  have  given
+                              these two commands:
+
+                                   SET PROGRAM COMPUTE KEEP CONTINUE
+                                   SET PROGRAM SQUARE EPHEMERAL
+
+                              If only COMPUTE is  in  memory  and  you
+                              name it SQUARE, the fork will assume the
+                              attributes defined in  the  SET  PROGRAM
+                              SQUARE  command  and become an ephemeral
+                              fork.  The system  indicates  this  with
+                              the   message  [Assuming  attributes  of
+                              SQUARE].
+
+                              A fork must have a unique name.  If  you
+                              attempt  to  name  a  fork with the same
+                              name as another fork, the system appends
+                              a  digit  to the new name.  For example,
+                              if you attempted to name two forks EDIT,
+                              the second fork would be named EDIT0.
+
+NO ALERT date/time
+                              removes settings that  were  established
+                              with  the  SET  ALERT  command.  You can
+                              specify  date  and  time  in  the   same
+                              formats     as     with    SET    ALERT.
+                              Additionally, you can  enter  BEFORE  or
+                              AFTER  the  date  and time to indicate a
+                              time period in which alerts  are  to  be
+                              suppressed.   If  you specify no date or
+                              time argument, all  alert  settings  are
+                              erased.   Alerts  are valid only for the
+                              current terminal session and are  erased
+                              automatically when you log out.
+                                   Default
+
+NO AUTOMATIC
+                              causes you to be alerted by  the  system
+                              (as  a  result  of  a  SET  ALERT or SET
+                              MAIL-WATCH  command)  only   when   your
+                              terminal  is  about  to  type  a TOPS-20
+                              prompt (@ or $).  Check with INFORMATION
+                              ALERTS or INFORMATION COMMAND-LEVEL.
+                                   Default
+
+NO CONTROL-C-CAPABILITY
+                              removes the ability of programs  at  the
+                              current level of TOPS-20 to prevent your
+                              terminal from returning to  the  TOPS-20
+                              command  processor  whenever  you type a
+                              CTRL/C; ensures that CTRL/C will  return
+                              you  to  TOPS-20.  Check the setting for
+                              your  current  level  of  TOPS-20   with
+                              INFORMATION PROGRAM-STATUS.
+
+             ---
+             | CARDS
+             | COMPILE-SWITCHES file-type
+             | PAPER-TAPE
+             | PLOT
+NO DEFAULT   | PRINT
+             |          ---
+             |          | EPHEMERAL
+             | PROGRAM  | KEEP
+             |          | NO-EPHEMERAL
+             |          | NONE
+             |          ---
+             | SUBMIT
+             ---              nullifies    all    default    arguments
+                              (established with a previous SET DEFAULT
+                              command) for the indicated command.  For
+                              COMPILE-SWITCHES  you  must  specify the
+                              type of file for which you want to clear
+                              the  switches with one of the following:
+                              a file type (excluding  the  period),  a
+                              period  for  file  specifications with a
+                              null extension, or an  *  to  clear  the
+                              switches for all file types.  Check with
+                              INFORMATION DEFAULTS.
+
+NO LATE-CLEAR-TYPEAHEAD       instructs the system to accept  terminal
+                              input  made  after  an  error message is
+                              sent to your  terminal  and  before  the
+                              next prompt.  Check the setting for your
+                              current   level    of    TOPS-20    with
+                              INFORMATION COMMAND-LEVEL.
+                                   Default
+
+NO MAIL-WATCH user-name       disables periodic checking of  the  MAIL
+                              file associated with the specified user.
+                              The  notice  of  new   mail   is   still
+                              displayed  at  log-in  time and when you
+                              receive mail, unless you have given  the
+                              REFUSE  SYSTEM-MESSAGES  or REFUSE LINKS
+                              command.   You  can  always  check   the
+                              status  of your MAIL file at any time by
+                              giving the INFORMATION MAIL command.
+                                   Default user-name - your user-name
+                                   Default
+
+NO RETRIEVAL-WAIT             tells  the  system  to  send  an   error
+                              message  if  your  job  attempts  to use
+                              off-line files.
+                                   Default
+
+NO STATUS-WATCH               cancels   the   effect   of   the    SET
+                              STATUS-WATCH   command,   disabling  the
+                              interrupt   character    or    character
+                              sequence that displays the status of all
+                              open, mapped pages.
+
+NO TIME-LIMIT                 removes any time limit set by a previous
+                              SET  TIME-LIMIT command.  You cannot use
+                              this command in a batch job.
+
+NO TRAP                       prevents any trapping  that  would  have
+                              occurred  as  the  result  of a SET TRAP
+                              command.
+                                   Default
+
+NO TRAP FILE-OPENINGS         nullifies the effects of  the  SET  TRAP
+                              FILE-OPENINGS   command,  disabling  the
+                              TOPS-20 feature that causes  you  to  be
+                              notified  when a program tries to open a
+                              file.
+                                   Default
+              ---
+              | /ALL
+              | /DEFINED
+NO TRAP JSYS  | /UNDEFINED
+              | name
+              | number
+              ---             nullifies
+                              the  effects  of  the  SET   TRAP   JSYS
+                              command,  disabling  the TOPS-20 feature
+                              that causes traps to occur when  a  JSYS
+                              is executed.
+                                   Default
+
+NO TRAP PROCEED               same as TRAP NO PROCEED.
+
+NO UUO-SIMULATION             disables  the  feature  of  the  TOPS-20
+                              monitor  that  makes  it possible to use
+                              programs  originally  written  for   the
+                              TOPS-10  operating  system.   Check  the
+                              current   setting    with    INFORMATION
+                              PROGRAM-STATUS.
+
+PAGE-ACCESS range of octal page numbers    type of access
+                              Sets  the  type  of  access  allowed  to
+                              programs   for   the   specified   pages
+                              existing in memory.
+
+                    COPY-ON-WRITE
+                              provides programs with private copies of
+                              the specified pages (13:17, 21 specifies
+                              pages 13 through 17 and page 21, 6 pages
+                              in  all) of current memory whenever they
+                              try to change (write to) them
+
+                    EXECUTE   allows programs accessing these pages to
+                              execute   the   instructions   they  may
+                              contain
+
+                        ---
+                        | COPY-ON-WRITE
+                    NO  | WRITE
+                        ---
+                              prevents programs  from  performing  the
+                              indicated  operation  on  the  specified
+                              pages
+
+                    NONEXISTENT
+                              removes the indicated pages from memory
+
+                    READ      permits   programs   to   examine    the
+                              indicated pages of memory
+
+                    WRITE     permits programs to change  as  well  as
+                              examine the indicated pages
+
+                    Check the status of current memory pages with
+                    INFORMATION MEMORY-USAGE.
+
+PASSWORD
+Old password:old password
+New password:new password
+Retype new password:new password
+                              allows you to change the password of the
+                              login   directory   PS:<username>.   The
+                              password  can  consist  of  up   to   39
+                              alphanumeric    characters,    including
+                              hyphens.  This command is  identical  to
+                              the   SET  DIRECTORY  PASSWORD  command,
+                              except that PS:<username> is the default
+                              directory for the SET PASSWORD command.
+
+PROGRAM fork-name EPHEMERAL
+                              tells the system to make  the  specified
+                              fork   an  ephemeral  fork  when  it  is
+                              loaded.   For  a   description   of   an
+                              ephemeral  fork,  see  the  ERUN command
+                              help   file,   Characteristics   of   an
+                              Ephemeral Fork.
+
+                              It is recommended that  you  enter  this
+                              command  in  your  COMAND.CMD  file  for
+                              programs  that  you  commonly  place  in
+                              ephemeral forks.  Check with INFORMATION
+                              PROGRAM-STATUS.
+
+                        ---
+                        | CONTINUE
+PROGRAM fork-name KEEP  | REENTER
+                        | START
+                        ---
+                              tells the system to make  the  specified
+                              fork  a kept fork automatically when the
+                              fork is loaded, or  immediately  if  the
+                              fork  is already loaded.  A kept fork is
+                              not reset when another  fork  is  loaded
+                              and  is  not  reset by the RESET command
+                              unless the kept fork is explicitly named
+                              or  the  asterisk  (*),  or  period  (.)
+                              argument is specified.
+
+                              The required KEEP attribute  establishes
+                              where the program restarts when you type
+                              the  fork  name  as  an  EXEC   command.
+                              CONTINUE begins the program at the point
+                              where  it  was   interrupted.    REENTER
+                              begins   the   program  at  its  reentry
+                              address (for most programs  the  reentry
+                              address   is   the  same  as  the  start
+                              address).  START begins the  program  at
+                              its  start  address.  The system informs
+                              you when the fork  is  "kept"  with  the
+                              message  [Keeping  fork-name].  When you
+                              type the  kept  fork  name,  the  system
+                              responds        with       [CONTINUING],
+                              [REENTERING], or [STARTING].
+
+                              This command automatically  keeps  forks
+                              that  are  loaded  by  typing the system
+                              program name or  one  of  the  following
+                              commands:  CSAVE, GET, R, RUN, and SAVE.
+
+                              It is recommended that  you  enter  this
+                              command  in  your  COMAND.CMD  file  for
+                              programs that you commonly place in kept
+                              forks.      Check    with    INFORMATION
+                              PROGRAM-STATUS.  See Example 9.   For  a
+                              restriction  on  the  CONTINUE argument,
+                              see  the  CONTINUE  command  description
+                              under  Restrictions:  Continued Programs
+                              Do Not Prompt for Input.
+
+PROGRAM fork-name NO-EPHEMERAL
+                              disables  the  ephemeral  attribute  for
+                              your  copy  of  a  system program.  Note
+                              that you can  also  cancel  a  program's
+                              ephemeral   attribute   by  running  the
+                              program with the R  command  instead  of
+                              typing  just  the  program  name.  It is
+                              recommended that you enter this  command
+                              in  your  COMAND.CMD  file.  See Example
+                              13.
+
+PROGRAM fork-name NONE        cancels the setting established for  the
+                              specified  fork  with  the  SET  PROGRAM
+                              command.  If the program is  in  a  kept
+                              fork,  the  address  used  when the fork
+                              name is given as a command is changed to
+                              the    start    address.    Check   with
+                              INFORMATION PROGRAM-STATUS.
+                 CHARACTERISTIC name value
+                              ---              ---  ---
+REMOTE-PRINTING  PRINTER name | remote queue     |  | DQS node
+                              | LATserver port   |  | LAT server
+                              | LATserver service|  ---
+                              | alias            |
+                              ---              ---
+                 SYSTEM-DEFINITIONS
+                              Lets  you  create  a  way  to   directly
+                              specify  a  queue  and  a characteristic
+                              parameter when submitting a remote print
+                              request.   SET  REMOTE-PRINTING commands
+                              can  be  invoked  at  command  level  or
+                              within a command file.
+
+                              CHARACTERISTIC sets up a  string  to  be
+                              used  as  input  to  the  PRINT  command
+                              /CHARACTERISTIC switch.  The system file
+                              SYSTEM:REMOTE-PRINTING.CMD   uses   this
+                              command to establish the initial  system
+                              setting,      which      equate     each
+                              characteristic  string  to  an   integer
+                              value.   You  can  rename  a system-wide
+                              characteristic setting by re-issuing the
+                              command  with a new name and value.  You
+                              can undefine a characteristic by issuing
+                              the  SET  REMOTE-PRINTING CHARACTERISTIC
+                              command with  a  null  value.   Multiple
+                              characteristics are separated by commas.
+
+                              The name argument can be a maximum of 14
+                              characters  per  characteristic and must
+                              begin with an alphabetic character.  The
+                              name  can  consist of any combination of
+                              the following:
+
+                               o  the letters of the alphabet
+
+                               o  the digits 0 through 9
+
+                               o  the  symbols  _(underscore)  and   $
+                                  (dollar sign)
+
+                              To  get  information  about  the  system
+                              characteristics    settings,   use   the
+                              INFORMATION REMOTE-PRINTING  command  or
+                              read               the              file
+                              SYSTEM:REMOTE-PRINTING.CMD.
+
+                              PRINTER sets up a string to be  used  as
+                              input     to     the    PRINT    command
+                              /REMOTE-PRINTER switch.  You can  create
+                              keywords  (aliases)  that  designate the
+                              names  of  remote  printers  and   print
+                              queues or LATprinter ports and services.
+                              This allows you to use simple names  for
+                              remote print designations when using the
+                              /REMOTE-PRINTER switch.  You can  define
+                              an alias for the following:
+
+                               o  an actual remote printer queue (such
+                                  as XEROX defining SI$8700 on VAXNOD)
+
+                               o  a LATprinter port or  service  (such
+                                  as LN03 defining LBBNA129 on LAT990)
+
+                               o  another alias (such as FAST defining
+                                  XEROX).
+
+                              The form of the  command  that  includes
+                              the  node  or  server  name  is  used to
+                              define  the  actual  printer  or  queue.
+                              After  this  is  done,  you  can use the
+                              other forms  of  the  command  to  apply
+                              aliases to the defined printer name.
+
+                              SYSTEM-DEFINITIONS   sets   up    remote
+                              printing  information for a job based on
+                              the settings  in  the  system-wide  file
+                              SYSTEM:REMOTE-PRINTING.CMD.     Invoking
+                              this command provides the  complete  set
+                              of    printers    and    characteristics
+                              available for remote printing as defined
+                              by the system manager.
+
+RETRIEVAL-WAIT                tells  the  system  that  your  job   is
+                              willing   to   wait   for  retrieval  of
+                              off-line  files.   Retrieval   is   then
+                              requested  implicitly  whenever you or a
+                              program  you  run  attempts  to   access
+                              off-line    files.     Use   INFORMATION
+                              SYSTEM-STATUS to be sure that  automatic
+                              retrieval  waits  are  enabled  for  the
+                              system before giving this command.
+
+SESSION-REMARK remark         lets you insert a note or reminder of up
+                              to  39 characters into system accounting
+                              data.   Check   with   INFORMATION  JOB-
+                              STATUS.
+
+               ---
+               | IMMEDIATE
+SPOOLED-OUTPUT | DEFERRED     directs the system either to begin
+               ---            processing your spooled output  requests
+                              as  soon  as  you make them, or to defer
+                              them until log-out.   You  make  spooled
+                              output   requests  not  with  the  PLOT,
+                              PRINT,  or  PUNCH  commands  (these  are
+                              always  processed immediately), but with
+                              a command or program that  writes  files
+                              to a spooled output device (for example,
+                              a line  printer - LPT:,  plotter - PLT:,
+                              or   card   punch - CDP:).    The   COPY
+                              commands,  the  /LIST  switch  for  LOAD
+                              class  commands,  the  CREF command, and
+                              the  LPT  and  OUTPUT  subcommands   for
+                              DIRECTORY-class  and SYSTAT commands may
+                              make  spooled  output  requests.   Check
+                              with INFORMATION SPOOLED-OUTPUT-ACTION.
+                                   Default - IMMEDIATE
+
+STATUS-WATCH,
+@@INTERRUPT                   sets   an   interrupt  character   that
+@@NO                          displays  the   status   of   all  open,
+@@PAGES                       non-execute files mapped to the  current
+@@TOPS-10-PAGES               fork.  The display includes:
+
+                               o  the  job  file  number.    The   JFN
+                                  identifies  a  file to the job.  The
+                                  user program uses  the  JFN  in  all
+                                  references to the file.
+
+                               o  the file specification.
+
+                               o  file pages mapped to a process.
+
+                               o  file   position   and   byte    size
+                                  displayed in the form "Byte nn(mm)""
+                                  where nn is  the  byte  pointer  and
+                                  (mm)   is   the   byte   size.   Not
+                                  displayed if file position is zero.
+
+                               o  file  size  displayed  in  the  form
+                                  "Page nn of mm" where nn is the page
+                                  being  read  and  mm  is  the  total
+                                  number  of  pages in the file.  If a
+                                  single number is  displayed,  as  in
+                                  "Page nn", nn is the total number of
+                                  pages in  the  file.   For  example,
+                                  "Page  5  of  9" represents a 9-page
+                                  input file where page 5 is currently
+                                  being read.  "Page 11" represents an
+                                  output file where 11 pages have been
+                                  created.  Note that some programs do
+                                  not    read    the    input     file
+                                  sequentially.
+
+                               o  The mode of access (read, write  and
+                                  append)  for which the file has been
+                                  opened.
+
+                              Although much of the  above  information
+                              is  also  provided  by  the  INFORMATION
+                              FILE-STATUS   and   INFORMATION   MEMORY
+                              commands,   these   commands   can  only
+                              display information while your  terminal
+                              is   at   EXEC   command   level.    The
+                              STATUS-WATCH     interrupt     character
+                              functions  from  EXEC  or program level.
+                              In  addition,  the  interrupt  character
+                              displays the status of an executing EXEC
+                              command (for example, COPY).
+
+                              To check the status of pages mapped to a
+                              program,  you  must specify one of these
+                              subcommands:  PAGES,  or  TOPS-10-PAGES.
+                              The  interrupt character always displays
+                              the  pages  opened  by  the  EXEC,   for
+                              example  the  pages  opened  by  a  COPY
+                              command.   When  an  EXEC   command   is
+                              processing,  only  the  EXEC's pages are
+                              checked.  If no command is in  progress,
+                              the  current  fork's  address  space  is
+                              checked.  If there is no  current  fork,
+                              no checking takes place.
+
+                              For  efficiency  and   to   reduce   the
+                              overhead  of  this command, a maximum of
+                              512 pages (not including EXEC pages) are
+                              checked   by  the  interrupt  character.
+                              These pages do not have to be contiguous
+                              or in the same section.
+
+                              To    simplify    your    typing,    SET
+                              STATUS-WATCH   accepts   subcommands  as
+                              arguments on the command line.
+
+                              INTERRUPT "^x" is a required  subcommand
+                              that   sets   a   control  character  or
+                              character  sequence  that,  when   typed
+                              during    program    or   EXEC   command
+                              execution, displays the  status  of  all
+                              files  opened  by the current fork.  Use
+                              the FORK command to select  a  different
+                              current fork.
+
+                              The interrupt character can be a  single
+                              control  character  or  a  two-character
+                              sequence enclosed in double quotes.  For
+                              example,  "^B",  "DF",  "^QW"  are valid
+                              interrupt      characters.       Control
+                              characters  that are already used by the
+                              system,  such  as  CTRL/C  and   CTRL/T,
+                              cannot be redefined by SET STATUS-WATCH.
+                              Help files are provided for all  defined
+                              system control characters.
+
+                              A two-character  interrupt  sequence  is
+                              job-wide and can be issued from any EXEC
+                              level.  If another program in  your  job
+                              defines    a   two-character   interrupt
+                              sequence  (for  example  the  SET   HOST
+                              command  with  the  CTERM-SERVER),  this
+                              sequence supersedes the SET STATUS-WATCH
+                              interrupt  sequence.  A single-character
+                              interrupt applies only  to  the  current
+                              EXEC   level.    Also,   the   interrupt
+                              character is not echoed on the terminal.
+
+                              NO  INTERRUPT  disables  the   interrupt
+                              characters.
+
+                              PAGES nn adds the specified octal  pages
+                              (nn)  or  range  of  pages  (n:m) to the
+                              pages   checked   by    the    interrupt
+                              character.  Multiple pages and ranges of
+                              pages can be specified by separating the
+                              pages  with  commas.   For example, PAGE
+                              100:40, 350 specifies pages 100  through
+                              140 and page 350.
+
+                              NO PAGES disables checking for all pages
+                              except pages used by the EXEC.
+
+                              The total number of mapped pages checked
+                              by    the   interrupt   character   (not
+                              including EXEC pages) cannot exceed 512.
+                              Generally, programs map pages within the
+                              range of 0:777.
+
+                              TOPS-10-PAGES adds  the  pages  used  by
+                              PA1050  (for  TOPS-10  compatibility) to
+                              the  address  space   checked   by   the
+                              interrupt character.
+
+                              It is recommended that you place the SET
+                              STATUS command in your COMAND.CMD file.
+
+                              See Example 14.
+
+
+                  ---
+                  |  200
+                  |  556
+     TAPE DENSITY |  800
+                  | 1600
+                  | 6250
+                  | SYSTEM-DEFAULT
+                  ---
+                              instructs the system to read  and  write
+                              magnetic  tapes  for  your  job  at  the
+                              indicated density (in  bits  per  inch).
+                              SYSTEM-DEFAULT,   one  of  these  values
+                              (usually 1600), is established  by  your
+                              system  manager.   The value set by this
+                              command can be  superseded  by  commands
+                              within    a    program.     Check   with
+                              INFORMATION TAPE-PARAMETERS.
+                                   Default - SYSTEM-DEFAULT
+
+                  ---
+                  | ANSI-ASCII
+                  | CORE-DUMP
+                  | HIGH-DENSITY
+     TAPE FORMAT  | INDUSTRY-COMPATIBLE
+                  | SIXBIT
+                  | SYSTEM-DEFAULT
+                  ---
+                              advises the system that  the  format  to
+                              use   in   processing  tapes  is  either
+                              ANSI-ASCII, which stores  each  word  of
+                              data  as five 7-bit bytes in five frames
+                              of a 9-track type; or  CORE-DUMP,  which
+                              stores  each  word  of  data as a single
+                              36-bit byte in five frames of a  9-track
+                              tape,  partially  using the fifth frame;
+                              or HIGH-DENSITY, which stores  each  two
+                              words  of  data  as  nine 8-bit bytes in
+                              nine  frames  of  a  9-track  tape;   or
+                              INDUSTRY-COMPATIBLE,  which  stores each
+                              word of data as four 8-bit bytes in four
+                              frames  of  a  9-track  tape; or SIXBIT,
+                              which stores each word of  data  as  six
+                              6-bit  bytes  in six frames of a 7-track
+                              tape.   SYSTEM-DEFAULT,  one  of   these
+                              (usually  CORE-DUMP),  is chosen by your
+                              system manager.  See also Restrictions -
+                              Using  SET  TAPE  Commands, in the MOUNT
+                              command  help  file.   See  the  TOPS-20
+                              Monitor  Calls Reference Manual for more
+                              information about  hardware  data  modes
+                              for    magnetic   tapes.    Check   with
+                              INFORMATION TAPE-PARAMETERS.
+                                   Default - SYSTEM-DEFAULT
+
+            ---
+            | EVEN
+TAPE PARITY | ODD             tells the system which parity to assume
+            ---               when  verifying  the  accuracy  of  tape
+                              records.     Check    with   INFORMATION
+                              TAPE-PARAMETERS.
+                                   Default - ODD
+
+TAPE RECORD-LENGTH n          sets  the  size,  in  bytes,  for   each
+                              physical  record  on a tape.  Check with
+                              INFORMATION    TAPE-PARAMETERS.      Not
+                              applicable with labeled tapes.
+                                   Default n - 512
+
+TERMINAL feature or type      same as TERMINAL command.
+
+TIME-LIMIT n                  tells the system to stop any program  or
+                              terminal  printout when the given amount
+                              of additional CPU time (in seconds)  has
+                              been  used,  and  to  inform  you with a
+                              fatal error message.   This  command  is
+                              used  by  the  batch system to limit the
+                              runtime of batch jobs.  Display the time
+                              limit  set  for your job with the SYSTAT
+                              command  and   the   LIMIT   subcommand.
+                              Display  the  CPU  time used by your job
+                              with     CTRL/T      or      INFORMATION
+                              PROGRAM-STATUS.
+
+TRAP FILE-OPENINGS            displays  a  message  when  any  program
+                              attempts  to  open  a  file.  Check with
+                              INFORMATION PROGRAM-STATUS.  See Example
+                              5.
+
+          ---
+          | /ALL
+          | /DEFINED
+TRAP JSYS | /UNDEFINED
+          | name
+          | number            displays a message when any program
+          ---                 calls a TOPS-20  JSYS.   You  can  cause
+                              trapping  to  occur  for  all JSYSs, for
+                              defined JSYSs only (JSYSs known  to  the
+                              Monitor),   for   undefined  JSYSs  only
+                              (JSYSs not known to the Monitor), or for
+                              the JSYS(s) specified by name or number.
+                              You can specify multiple JSYSs separated
+                              by   commas.    Check  with  INFORMATION
+                              PROGRAM-STATUS.  See Example 6.
+                                   Default - /DEFINED
+
+                                                NOTE
+
+                                  The   SET   TRAP   command    is
+                                  ineffective   for   execute-only
+                                  programs    (those    with     a
+                                  protection  code  that prohibits
+                                  reading and writing  the  file).
+                                  Attempts  to  run  such programs
+                                  after a  SET  TRAP  command  has
+                                  been  specified  will  result in
+                                  error messages.
+
+TRAP NO                       same as SET NO TRAP.
+
+TRAP NO FILE-OPENINGS         same as SET NO TRAP FILE-OPENINGS.
+
+              ---
+              | /ALL
+              | /DEFINED
+TRAP NO JSYS  | /UNDEFINED
+              | name
+              | number        same as SET NO TRAP JSYS.
+              ---
+
+TRAP NO PROCEED               directs  the  system  to  terminate  the
+                              program  after  a trap has occurred as a
+                              result of a  SET  TRAP  command.   Check
+                              with  INFORMATION  PROGRAM-STATUS.   See
+                              Example 7.
+
+TRAP PROCEED                  directs the system to continue a program
+                              after a trap has occurred as a result of
+                              a  SET   TRAP   command.    Check   with
+                              INFORMATION PROGRAM-STATUS.
+                                   Default
+
+              ---
+TYPEOUT MODE  | NUMERIC
+              | SYMBOLIC      establishes the mode in which memory
+              ---              addresses and contents are to be  typed
+                              on   your   terminal  in  response,  for
+                              example, to a CTRL/T  or  the  commands:
+                              INFORMATION  ADDRESS-BREAK,  INFORMATION
+                              FORK-STATUS, INFORMATION PROGRAM-STATUS,
+                              and  EXAMINE.   Note  that  only NUMERIC
+                              typeout is  displayed  for  execute-only
+                              programs.     Check   with   INFORMATION
+                              PROGRAM-STATUS.
+                                   Default - NUMERIC
+
+UUO-SIMULATION                allows the system  to  execute  programs
+                              originally   written   for  the  TOPS-10
+                              operating system, by calling the TOPS-10
+                              compatibility    package,    PA1050.EXE.
+                              Check   the   current    setting    with
+                              INFORMATION PROGRAM-STATUS.
+                                   Default
+
+
+Characteristics
+
+     Affect Only Current Terminal Session
+
+          The SET command, except for  SET  DIRECTORY  and  SET  FILE,
+          applies  to  the  current terminal session only, and in most
+          cases only to the current level of TOPS-20 in that  session.
+          Therefore  put  SET  DEFAULT,  SET CONTROL-C-CAPABILITY, SET
+          PROGRAM, and other SET commands into your COMAND.CMD file if
+          you  want them to be in effect every time you log in or give
+          the PUSH command.  Place commands that apply to any level of
+          TOPS-20 in your LOGIN.CMD file.
+
+     SYSTEM:REMOTE-PRINTING.CMD
+
+          The  system-wide  file  REMOTE-PRINTING.CMD   contains   SET
+          REMOTE-PRINTING  commands  to  establish printer aliases and
+          characteristics    values.     The    SET    REMOTE-PRINTING
+          SYSTEM-DEFINITIONS   command   sets   up   remote   printing
+          information  for  a   job   based   on   the   settings   in
+          REMOTE-PRINTING.CMD.  Internal tables are built that consist
+          of the command arguments.  These tables are used to validate
+          the   /CHARACTERISTIC   and  /REMOTE-PRINTER  switch  values
+          specified by the user.
+
+          You can invoke  the  SET  REMOTE-PRINTING  SYSTEM-DEFINITONS
+          command at command level or within a command file.
+
+
+Hints
+
+     Using SET PAGE-ACCESS
+
+          A SET PAGE-ACCESS command can take several arguments on  the
+          same   line,  with  cumulative  effect;  contradictions  are
+          resolved  in  favor  of  the  last  item  given.    So   SET
+          PAGE-ACCESS  6  EXECUTE  NO  COPY-ON-WRITE NO WRITE allows a
+          user to execute page 6 but not to change it; SET PAGE-ACCESS
+          7 NO WRITE WRITE allows changes to page 7.
+
+     To Make Modifiable Copies of Write-protected Programs
+
+          Because the SAVE command preserves the write  protection  of
+          files,  you  should  use  the  SET  PAGE ACCESS WRITE or SET
+          PAGE-ACCESS COPY-ON-WRITE command before giving SAVE if  you
+          want to save a modifiable copy of a program.
+
+     Using SET TIME-LIMIT
+
+          Although the SET TIME-LIMIT command is  ordinarily  used  by
+          the  batch  system  to  limit  the  runtime of jobs, you can
+          employ it as a timesharing user to give you  a  fatal  error
+          message  when  the  specified  amount  of  CPU time has been
+          spent.  To find out how much of this  time  you  have  left,
+          give   the  SYSTAT . LIMIT  and  INFORMATION  PROGRAM-STATUS
+          commands.  The difference between  the  SYSTAT . LIMIT  time
+          and  the  "Used" time reported by INFORMATION PROGRAM-STATUS
+          tells you the approximate time remaining.
+
+
+     SET Commands Useful for Debugging Programs
+
+          SET ADDRESS-BREAK
+
+               SET ADDRESS-BREAK shows you  how  often  and  for  what
+               purpose  a  memory  address  is  referenced.   When  an
+               address break occurs, a message will  show  the  memory
+               location  at  which  execution  of  your  program  will
+               resume.
+
+          SET  NO  CONTROL-C-CAPABILITY,   SET   UUO-SIMULATION,   SET
+               PAGE-ACCESS
+
+               If  you  are  debugging  a  program,  use  the  SET  NO
+               CONTROL-C-CAPABILITY command to ensure that you can use
+               CTRL/C to leave the program.  Test a program that traps
+               CTRL/Cs  by having it trap, say, CTRL/As instead during
+               debugging.  Also, setting NO  CONTROL-C-CAPABILITY,  NO
+               UUO-SIMULATION,    or    PAGE-ACCESS    NO   WRITE   NO
+               COPY-ON-WRITE will show you what part  of  the  program
+               (if any) is attempting to use these features.
+
+
+     Alternative to SET FILE PROHIBIT for Non-privileged Users
+
+          Even if you do not have sufficient privileges to use the SET
+          FILE  PROHIBIT  command, you can still do something to delay
+          the removal of important files to off-line storage.
+
+          Create a file named MIGRATION.ORDER in  each  directory  for
+          which  you  wish to control migration.  The contents of this
+          file should be the specifications of files that you want  to
+          be migrated first, when migration is performed.  You may use
+          wildcard characters (* and %) to specify more than one file.
+          To  protect  source programs, for example, you could specify
+          that executable programs and binary files be migrated first,
+          by  listing  "*.EXE,  *.REL" in MIGRATION.ORDER.  To protect
+          edited files, you  could  list  "*.Q*"  (this  ensures  that
+          unedited  back-up  files  produced  by  the  EDIT program be
+          migrated before the edited versions).
+
+          Any files not listed in MIGRATION.ORDER  will  be  protected
+          from  migration  until  all listed files have been migrated.
+          Remember that, even without being listed in MIGRATION.ORDER,
+          files  are  not usually migrated to off-line storage if they
+          have been used or changed within a period of time  specified
+          by your system manager.
+
+          The SET FILE RESIST command also offers  limited  protection
+          against involuntary migration.
+
+     Using SET REMOTE-PRINTING PRINTER
+
+          It is possible that two  remote  queue  names  on  different
+          clusters  may be the same or that a remote queue name may be
+          the same as a LAT port or service  name.   The  target  node
+          name  or actual name form of the SET REMOTE-PRINTING PRINTER
+          command resolves this problem.  The node name or server name
+          distinguishes  one  identically  named printer from another.
+          For example, the following two  commands  would  help  avoid
+          confusion in such an instance:
+
+          SET REMOTE-PRINTING PRINTER ODIE LASER LAT1
+          SET REMOTE-PRINTING PRINTER GARFIELD LASER VAXNOD
+
+
+Restrictions
+
+     Using SET Commands in Batch Jobs
+
+          Put SET commands  into  a  BATCH.CMD  file  in  your  log-in
+          directory  if  you want them to apply to the first (highest)
+          level of TOPS-20 in batch jobs you  submit;  put  them  into
+          COMAND.CMD  in  your  log-in  directory  if you want them to
+          apply to all levels of TOPS-20 in both batch and interactive
+          jobs.    Remember,  though,  that  you  must  not  give  SET
+          CONTROL-C-CAPABILITY, SET NO TIME-LIMIT, or  SET  TIME-LIMIT
+          (or the ATTACH command) within any batch job.
+
+     Using SET DIRECTORY Commands
+
+          You will be able to use the SET DIRECTORY commands  only  if
+          your  system  is instructed at system start-up time to allow
+          them.  Otherwise, the system will send you error messages in
+          response to SET DIRECTORY commands.
+
+     Using SET REMOTE-PRINTING Commands
+
+          In supporting host  initiated  connections  to  LATprinters,
+          TOPS-20 users are limited to six character server names.
+
+          The remote printer functionality on TOPS-20 does not include
+          features  to  allow  remote  systems  to  access  a  printer
+          facility local to a TOPS-20 system.
+
+
+Examples
+
+     1.  Set the LATE-CLEAR-TYPEAHEAD parameter for your job.
+
+         @SET LATE-CLEAR-TYPEAHEAD
+
+     2.  Find out the placement of your  program  in  memory;  set  an
+         address  break to occur at location 2412 when the instruction
+         it contains has been  executed  six  times.   Then  give  the
+         INFORMATION  ADDRESS-BREAK  command  to  see the location and
+         operation for which the current address break has been set.
+
+         @INFORMATION MEMORY-USAGE
+
+          5. pages, Entry vector loc 400010 len 254000
+
+         0-3           Private   R, W, E
+         400           Private   R, W, E
+
+         @SET ADDRESS-BREAK 2412,
+         @@AFTER 6
+         @@EXECUTE
+         @@
+         @INFORMATION ADDRESS-BREAK
+         Address break at 2412 on execute.
+
+     3.  Set defaults for PRINT command switches, then  print  a  file
+         immediately  by explicitly supplying an /AFTER switch with an
+         early hour as argument.
+
+         @SET DEFAULT PRINT /LOWERCASE/AFTER:17:00
+         @PRINT /AFTER:+0 4-UPED.TXT
+         [Job 4-UPED Queued, Request-ID 346, Limit 200]
+         @INFORMATION OUTPUT-REQUESTS /USER
+         Printer Queue:
+         Job Name  Req#  Limit            User
+         --------  ----  -----  ------------------------
+         * 4-UPED   346    200  LATTA                       On Unit:0
+           Started at 16:11:11, printed 0 of 200 pages
+
+         There is 1 Job in the Queue (1 in Progress)
+
+     4.  Put an executable program into memory and set the page access
+         of its first page to NO COPY-ON-WRITE; try to deposit a value
+         (32) in memory location 500 of the page (this  fails).   Then
+         set  its  page  access  to  COPY-ON-WRITE  and try once more,
+         succeeding this  time.   Give  the  INFORMATION  MEMORY-USAGE
+         command again.  Notice that you now have your own copy of the
+         page in  memory;  it  is  no  longer  mapped  from  the  file
+         TESTF1.EXE in your connected directory.
+
+         @GET TESTF1
+         @INFORMATION MEMORY-USAGE
+
+          1. pages, Entry vector loc 145 len 254000
+
+         0             TESTF1.EXE.3  1   R, CW, E
+
+         @SET PAGE-ACCESS 0 NO COPY-ON-WRITE
+         @DEPOSIT 500 32
+         ?Can't write that page
+         @SET PAGE-ACCESS 0 COPY-ON-WRITE
+         @DEPOSIT 500 32
+          [Shared]
+         @INFORMATION MEMORY-USAGE
+
+          1. pages, Entry vector loc 145 len 254000
+
+         0             Private   R, W, E
+
+     5.  Learn what files are opened when you edit a file.
+
+         @SET TRAP FILE-OPENINGS
+         @EDIT LOGIN.CMD
+         [Fork EDIT opening SWITCH.INI.3 for reading]
+         [Fork EDIT opening LOGIN.CMD.33 for reading]
+         Edit: LOGIN.CMD.33
+         [Fork EDIT opening EDIT-BUFFER.OUT.100042 for writing]
+         *EU
+         [Fork EDIT opening EDIT-BUFFER.OUT.100042 for reading]
+         [Fork EDIT opening LOGIN.CMD.34 for writing]
+
+         [LOGIN.CMD.34]
+
+     6.  Cause a trap to occur whenever the GTFDB  JSYS  is  executed.
+         Then  edit  a  file.  The EDIT command invokes the GTFDB JSYS
+         and causes a line to type out in the following format:
+
+         [fork "trap" <location>/<jsys name> "Ac's  1-4:" -
+         <ac contents>]
+
+         Note that  the  location  is  in  symbolic  form  if  you  so
+         specified in the SET TYPEOUT MODE command.
+
+         @SET TRAP JSYS GTFDB
+         @EDIT LOGIN.CMD
+         [EDIT trap 3515/ GTFDB Ac's 1-4: 11 1000004 20321 424153000000]
+         [EDIT trap 3562/ GTFDB Ac's 1-4: 11 2000011 4 424153000000]
+         Edit: LOGIN.CMD.42
+         *EU
+
+         [LOGIN.CMD.43]
+
+     7.  Specify that program execution is to halt  whenever  a  GTFDB
+         JSYS  causes  a  trap.   Then  edit a file.  The EDIT command
+         invokes the GTFDB JSYS, causing a trap to occur, which causes
+         the EDIT process to immediately halt.
+
+         @SET TRAP NO PROCEED
+         @SET TRAP JSYS GTFDB
+         @EDIT LOGIN.CMD
+         [EDIT trap 3515/ GTFDB Ac's 1-4: 10 1000004 20321 424153000000]
+
+     8.  Arrange for the system to remind you of a future  obligation.
+         Then verify that you will be reminded.
+
+         @SET ALERT MONDAY +11:00:00 Turn in time card
+         @SET AUTOMATIC
+         @INFORMATION ALERTS
+          Next alert at 8-Jun-84 16:55:00 - Almost time to go home!!
+          Other alerts set for:
+            11-Jun-84 08:55:00 - Project meeting at 9:00
+            14-Jun-84 11:00:00 - Turn in last week's time card by noon
+
+           Alerts are automatic
+
+     9.  Set the CHANGE and RADIUS programs to be automatically placed
+         in  kept  forks when they are run.  Then give the INFORMATION
+         PROGRAM-STATUS  command  to  display  all  the  SET   PROGRAM
+         settings.   Finally,  run  the CHANGE program.  Note that the
+         message [Keeping CHANGE] indicates that the program is  being
+         loaded into a kept fork.
+
+@SET PROGRAM RADIUS KEEP CONTINUE
+@SET PROGRAM CHANGE KEEP CONTINUE
+@INFORMATION (ABOUT) PROGRAM
+ Used 0:00:35 in 0:24:09
+ TOPS-20: 0:00:00.8
+ SET UUO-SIMULATION (FOR PROGRAM)
+ SET TYPEOUT MODE NUMERIC
+ SET PROGRAM RADIUS KEEP (AND) CONTINUE (WHEN INVOKED AS A COMMAND)
+ SET PROGRAM CHANGE KEEP (AND) CONTINUE (WHEN INVOKED AS A COMMAND)
+ SET PROGRAM MS KEEP (AND) START (WHEN INVOKED AS A COMMAND)
+ SET PROGRAM DSRPLUS KEEP (AND) START (WHEN INVOKED AS A COMMAND)
+ => MS (1): Kept, C from IO wait at 104062, 0:00:01.6
+@RUN CAN
+[Keeping CAN]
+CAN>
+
+    10.  Arrange for the system to check for new  mail  in  your  MAIL
+         file  and  the  MAIL  file  of user AI.GROUP.  Notice the two
+         messages indicating that you  and  AI.GROUP  have  new  mail.
+         Then, cancel mail watching for user AI.GROUP.
+
+         @SET MAIL-WATCH
+         @SET MAIL-WATCH AI.GROUP
+         [You have mail from SMITH at 10:12:11]
+         [AI.GROUP has mail from NELSON at 10:12:14]
+         @SET NO MAIL-WATCH AI.GROUP
+
+    11.  Use the DIRECTORY command to learn the name of the  directory
+         that  contains  a  system program.  Then enable your Wheel or
+         Operator privileges and set the system file ephemeral.
+
+         @DIRECTORY SYS:ISPELL
+
+            RANDOM:<UNSUPPORTED>
+          ISPELL.EXE.1
+         @ENABLE
+         $SET FILE EPHEMERAL RANDOM:<UNSUPPORTED>ISPELL.EXE
+          RANDOM:<UNSUPPORTED>ISPELL.EXE.1 [OK]
+         $DISABLE
+         @
+
+    12.  Add one of your own directories to the definition of SYS:  so
+         that  you  can  run programs in that directory by typing just
+         the program name.
+
+         @DEFINE SYS: => SYS:, STUDENTS:<DBONIN.TOOLS>
+
+         Next, set ephemeral  a  file  in  this  directory.   Run  the
+         program  in  an  ephemeral  fork  by typing the program name.
+         Then  CTRL/C  from  the  program.    Give   the   INFORMATION
+         FORK-STATUS  command  and note that the ephemeral fork CHANGE
+         has been reset.
+
+         @SET FILE EPHEMERAL CHANGE.EXE
+         @CHANGE
+         CHANGE>^C
+         @INFORMATION FORK-STATUS
+         => EDIT (1): HALT at 6253, 0:00:00.6
+
+    13.  Run an ephemeral system program  and  disable  the  program's
+         ephemeral attribute.
+
+         @SET PROGRAM CHANGE NO-EPHEMERAL
+         @CHANGE
+         CHANGE>
+
+         or
+
+         @R CHANGE
+         CHANGE>
+
+    14.  Give  the  SET  STATUS-WATCH  command  with   the   INTERRUPT
+         subcommand  to  specify  CTRL/B  as  the interrupt character.
+         Then give the PAGES subcommand to specify the range of  pages
+         to  be  checked  by  the  interrupt  character.  Display both
+         settings with the LIST-PARAMETERS subcommand:
+
+         @SET STATUS-WATCH,
+         @@INTERRUPT "^B"
+         @@PAGES 0:777
+         @@LIST-PARAMETERS
+         Enabled on "^B",  Checking pages: 1-512
+         @@
+
+         Next run the DSRPLUS program and check its status  by  typing
+         CTRL/B.   This  program  reads  the  input  file MEMO.RNO and
+         creates the output file MEMO.MEM.  Note that the  ^B  is  not
+         displayed on the terminal.
+
+         @DSRPLUS
+         DSRPLUS>MEMO.RNO
+
+         ^B
+         Connected to BLAZE:<ROBBERTS>
+         6   PUBLIC:MEMO.RNO.1  [Page 1 of 9. Byte 128(36). Read]
+
+         ^B
+         Connected to BLAZE:<ROBBERTS>
+         7   MEMO.MEM.1  [Page 3. Byte 512(36). Read Write]
+         6   PUBLIC:MEMO.RNO.1  [Page 4 of 9. Byte 1280(36). Read]
+
+         ^B
+         Connected to BLAZE:<ROBBERTS>
+         7   MEMO.MEM.1  [Page 8. Byte 3840(36). Read Write]
+         6   PUBLIC:MEMO.RNO.1  [Page 8 of 9. Byte 3968(36). Read]
+
+         DSRPLUS>
+
+         Now look at the above display.   The  first  time  CTRL/B  is
+         typed,  DSRPLUS  is  reading  the first page of the nine page
+         input file MEMO.RNO.  The second CTRL/B shows that DSRPLUS is
+         reading  page  four  of  the input file and has created three
+         pages of the output file MEMO.MEM.  Nearing  its  completion,
+         DSRPLUS  has  read  eight  of  the  nine  input pages and has
+         created an eight page output file.
+
+    15.  Define the name of the remote printer queue SI$8700  on  node
+         OURVAX to XEROX.
+
+         @SET REMOTE-PRINTING PRINTER XEROX SI$8700 OURVAX
+         @
+
+         Now, assign the alias FAST for the name of  the  same  remote
+         printer queue from XEROX.
+
+         @SET REMOTE-PRINTING PRINTER FAST XEROX
+         @
+
+    16.  Define  the  name  of  a   LATprinter   connected   to   port
+         LBBNA1297Y10X on a server named LAT990 to the alias LN03.
+
+         @SET REMOTE-PRINTING PRINTER LN03 LBBNA1297Y10X LAT990
+         @
+
+         Now, direct a print request to the LATprinter:
+
+         @PRINT MYFILE.MEM/REMOTE-PRINTER:LN03
+
+    17.  Set some remote printer characteristics.
+
+         @SET REMOTE-PRINTING CHARACTERISTIC P90 52 ;portrait 90 wide
+         @SET REMOTE-PRINTING CHARACTERISTIC BOLD 61
+         @
+

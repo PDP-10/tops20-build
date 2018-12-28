@@ -1,0 +1,79 @@
+
+GET command
+
+The GET command places an executable program into memory.
+
+
+Format
+
+     @GET (PROGRAM) filespec /switch
+
+     where:
+
+     filespec       is the specification of  any  file  containing  an
+                    executable program.
+                         Default file type - .EXE
+
+     /switch        is   /USE-SECTION:n
+                         specifies the memory section (from  0  to  37
+                         octal)  into  which  your  program  is  to be
+                         loaded.  You can use this switch only if your
+                         program can be contained in one section.
+
+
+Effect on Memory
+
+     The GET command clears  any  unkept  forks,  puts  the  specified
+     program into memory.
+
+
+Related Commands
+
+     INFORMATION MEMORY-USAGE      for  examining  the   contents   of
+                                   memory
+
+     KEEP                          for making  the  specified  fork  a
+                                   kept fork
+
+     LOAD                          for  loading  a  source  or  object
+                                   program into memory
+
+     MERGE                         for putting an  executable  program
+                                   into  memory without first clearing
+                                   memory
+
+     SAVE                          for storing a copy of  the  program
+                                   in  memory  in a file in executable
+                                   format
+
+     START                         for starting  the  program  in  the
+                                   current fork
+
+
+Examples
+
+     1.  Put an executable program into memory.
+
+         @GET TESTF1.EXE
+
+     2.  Verify that you have a magnetic tape drive assigned  to  your
+         job.   Get one of your executable programs, save a copy of it
+         on tape, and then start it.
+
+         @INFORMATION AVAILABLE DEVICES
+         Devices available to this job:
+          DSK, PS, SNARK, MISC, LANG, REL3, DX20, MTA0
+          LPT, LPT0, LPT1, CDR, PCDR0, CDP, FE0-15
+          PTY23-61, NUL, PLT, PLT0, DCN, SRV
+         Devices assigned to/opened by this job: MT0, TTY230
+         @GET TESTF1
+         @SAVE MT0:
+          MT0:TESTF1 Saved
+         @START
+
+         THIS IS A TEST.
+
+         END OF EXECUTION
+         CPU TIME: 0.03 ELAPSED TIME: 0.72
+         EXIT
+

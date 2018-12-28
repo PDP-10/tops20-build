@@ -1,0 +1,169 @@
+
+SEND command
+
+The SEND  command  sends  a  message  immediately  to  another  user's
+terminal.
+
+
+Format
+
+     @SEND (TO) /switch argument message-text
+
+     where:
+
+     argument     is one of the following:  a user name
+                                            a terminal line number
+                                            an asterisk  (*) [for  all
+                                            terminals]
+                  (The asterisk argument requires  WHEEL  or  OPERATOR
+                  privileges.)
+
+     message      is a message of up to six lines of text followed  by
+                  a carriage return.
+
+     switch       is /NODE:node-name
+                  which specifies a node in  the  TOPS-20  cluster  to
+                  send the message to.
+
+                  Note that the privileged  ^ESEND  command  can  also
+                  send  a message to all terminals on all nodes of the
+                  argument  (see  the   TOPS-20   Operator's   Command
+                  Language Reference Manual).
+
+
+Characteristics
+
+     Multiple-line Messages
+
+          SEND allows you to send multiple-line messages  with  up  to
+          six  80-character  lines of text.  Type the message past the
+          end of the first line and onto the next line without  typing
+          RETURN.  SEND will reorganize your message on the receiver's
+          terminal so that words broken across two lines appear on the
+          same line.
+
+     Refused SEND
+
+          You cannot contact a user with SEND if his terminal  is  set
+          to  refuse messages with the REFUSE USER-MESSAGES command or
+          the TERMINAL INHIBIT command.  Normally, if you  attempt  to
+          SEND  to  a  user  who has refused user messages, the system
+          prints the message ?User is refusing messages and/or links.
+
+          However, a user with Wheel or Operator capabilities enabled,
+          can   SEND  messages  to  users  who  have  given  a  REFUSE
+          USER-MESSAGES command, but not the TERMINAL INHIBIT command.
+
+
+Hints
+
+     Finding the Receiver's Line Number
+
+          To find the terminal line number for the receiver of a  SEND
+          message,  give  the  SYSTAT command with the receiver's user
+          name as an argument.
+
+     Sending Terminal Bells
+
+          To get the attention of the user at the receiving  terminal,
+          type  a  few  CTRL/Gs  in  your message.  This will ring the
+          terminal bell on the receiving terminal.
+
+     SEND in a Batch Job
+
+          You can place SEND commands in a batch control file to  send
+          messages  to  your  terminal  on  the condition of a running
+          batch job.  Since your  username  is  associated  with  your
+          batch  job  and  your  timesharing  job, use the line number
+          argument.
+
+     SEND as an Alternative to Mail
+
+          The SEND command can be used as an alternative to sending  a
+          message  with one of the mail programs.  For short messages,
+          SEND can be more convenient and faster to use  than  a  mail
+          program.   For  urgent  messages,  a  SEND  message  is read
+          immediately by the receiver, unlike a  mail  message,  which
+          can be read at the user's leisure.
+
+
+Special Cases
+
+     User Has More Than One Job
+
+          If you attempt to SEND a message to a user who is  logged-in
+          on  more  than one terminal, the system responds with a list
+          of the user's terminal line numbers and the  programs  being
+          run  at  each  terminal.   Type your choice of terminal line
+          number (if available, one running the EXEC) after  the  TTY:
+          prompt.
+
+
+Related Commands
+
+     ADVISE              for sending commands to another user's job
+
+     RECEIVE USER-MESSAGES
+                         for receiving another user's SEND message
+
+     REFUSE USER-MESSAGES
+                         for refusing another user's SEND message
+
+     REMARK              for  telling  the  system  to   regard   your
+                         terminal input as comment only
+
+     TALK                for linking your terminal to  another  user's
+                         terminal
+
+     TERMINAL INHIBIT    for   refusing   all   types   of    terminal
+                         communication including links, advice, system
+                         messages, user  messages,  alerts,  and  mail
+                         notices
+
+
+Examples
+
+     1.  Send a message with the SEND command.
+
+         @SEND 141 PAUL, DO YOU HAVE THE TCO TAPE?
+
+     2.  Send a multiple-line message.  Type the message past the  end
+         of  the line and onto the next.  Press RETURN only at the end
+         of the message.
+
+         @SEND ASMITH AL, I CAN'T MAKE THE NORTH PROJECT MEETING;
+         HERMAN JUST CALLED A STAFF MEETING. I'LL WRITE MY ENGINE
+         ERING STATUS AND SEND IT TO YOU BEFORE LUNCH. - BILL
+
+     3.  Enable your Wheel or Operator privileges and send  a  message
+         to all users.
+
+         @ENABLE
+         $SEND * THE LETTER QUALITY PRINTER IS UP
+         From NELSON on line 127:
+         [THE LETTER QUALITY PRINTER IS UP]
+         $DISABLE
+         @
+
+     4.  Place SEND commands in your batch control file to monitor the
+         progress of your batch job.
+
+         @IF (ERROR) @SEND 122 Error in PROJEC batch run
+              .
+              .
+              .
+         14015 @SEND 122 PROJEC batch job almost done
+
+     5.  Send a message to a user who has two jobs  on  two  different
+         terminals.   Send the message to the terminal that is running
+         the EXEC.
+
+              @SEND JOHNSON Ready for lunch?
+               TTY20, running EXEC
+               TTY4, running PASCAL
+              TTY: 20
+
+      6.  Send a message to a user on remote node VENUS.
+
+          @SEND /NODE:VENUS ANDERSON Don't forget the meeting!
+

@@ -1,0 +1,81 @@
+
+CSAVE command
+
+The CSAVE command makes a non-sharable copy of the program  in  memory
+and stores it in a file, in compressed executable format.
+
+
+Format
+
+
+     @CSAVE (ON FILE) filespec (WORDS FROM)    loc1     (TO)     loc2,
+     loc3 loc4,...
+
+
+     where:
+
+     filespec            is the file  specification  under  which  you
+                         want to store the program.
+                              Default filespec - program name.EXE
+
+     loc1 loc2,          are  pairs  of  octal  numbers  or   symbolic
+     loc3 loc4,          expressions  that  specify  the  span(s)   of
+     ...                 memory locations you want to save.
+
+                              Default loc1 loc2 - 20 to last  location
+                                              occupied by program
+
+
+Caution
+
+     Inefficiency of CSAVE Compared to SAVE
+
+          The CSAVE  command  saves  in  a  compressed-formatted  file
+          whatever  program the system finds in memory.  When the file
+          is returned to memory, this format prevents other users from
+          sharing  the  in-memory  copy  of  the  file.  Therefore you
+          should ordinarily use the SAVE command instead  for  storing
+          programs in executable format.
+
+
+Related Commands
+
+     GET      for putting a saved file into memory
+
+     LOAD     for putting source or output files into memory
+
+     RUN      for running executable programs
+
+     SAVE     usual command for saving programs in executable format
+
+
+Examples
+
+     1.  Save your currently loaded program in  compressed  executable
+         format.
+
+         @CSAVE
+          DMN.EXE.1 SAVED
+
+     2.  Mount a magnetic tape set.  Then load an  ALGOL  program  and
+         save it in three places in executable format:  once in a disk
+         file under the same filename, again in a disk  file  under  a
+         new filename, and once on magnetic tape.
+
+         @MOUNT TAPE TAPBAK: /WRITE-ENABLED
+         [Mount Request TAPBAK Queued, Request-ID 140]
+         [Tape set TAPBAK, volume TAPBAK mounted]
+         [TAPBAK defined as MT2:]
+         @LOAD TESTA1
+         LINK:   Loading
+
+         EXIT
+         @CSAVE
+          TESTA1.EXE.1 Saved
+         @CSAVE BAK
+          BAK.EXE.1 Saved
+         @CSAVE MT2:
+          MT2:BAK Saved
+         @DISMOUNT TAPE TAPBAK:
+         [Tape dismounted, logical name TAPBAK: deleted]
+

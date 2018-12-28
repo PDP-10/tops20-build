@@ -1,0 +1,171 @@
+
+DDT command
+
+The DDT command loads  or  merges  a  debugging  program  into  memory
+(unless one is already there), then starts it.
+
+
+Format
+
+     @DDT/switch(es)
+
+     where:
+
+     /switch   is one or more of the following:
+
+                    /OVERLAY       allows pages of the DDT program  to
+                                   be  loaded  over  pages occupied by
+                                   the existing program in memory
+
+                    /USE-SECTION:n
+                                   specifies the memory section  (from
+                                   0  to  37  octal)  into  which  the
+                                   debugging program is to be  loaded,
+                                   run, or merged
+
+
+Characteristics
+
+     If a Debugging Program is Already Loaded
+
+          If you have already loaded a debugging program  into  memory
+          along   with  your  program,  the  DDT  command  starts  the
+          debugging program.
+
+     If Your Program, But Not a Debugging Program, is Already Loaded
+
+          If a program containing  symbols  is  in  memory  without  a
+          debugging  program, the DDT command merges SYS:XDDT.EXE into
+          memory, then starts this  debugging  program.   However,  if
+          some  of  XDDT's pages include some of the same pages as the
+          existing program in memory, then  the  DDT  program  is  not
+          placed  into  memory,  and  you  receive  the error message,
+          "?Illegal to overlay existing pages." To force the pages  to
+          be  overlaid,  reissue  the  DDT  command using the /OVERLAY
+          switch.
+
+     If There is No Current Program
+
+          If you do not have a program in memory, or if no program  in
+          memory  is  in the current fork, or if your program does not
+          contain symbols, the  DDT  command  puts  SYS:XDDT.EXE  into
+          memory and starts it.
+
+     Compatibility with Previous DDT Versions
+
+          The UDDT program run by the DDT command has been replaced by
+          the  XDDT  program.   For  compatibility  with programs that
+          reference UDDT, a stub program  named  UDDT  references  the
+          XDDT program.
+
+
+Hints
+
+     Using DDT to Create a Program
+
+          You can use DDT to begin typing instructions  directly  into
+          memory,  without  first putting the instructions into a file
+          for later compilation and loading.  Give a RESET .  (period)
+          command  to  clear  the  current fork, then the DDT command.
+          This will load the SYS:XDDT.EXE program.  Then you can  give
+          commands within XDDT to create your own program.  When using
+          the XDDT program, you can use all the symbols in the  system
+          parameter file MONSYM.MAC.
+
+          See the TOPS-20 Monitor  Calls  Reference  Manual  for  more
+          information  about  MONSYM.MAC.   This  method  of writing a
+          program is most useful for testing  special  cases,  or  for
+          learning to use TOPS-20 monitor calls.
+
+
+Special Cases
+
+     Using COBDDT
+
+          If you put COBDDT into memory along with  a  COBOL  program,
+          the  DDT  command  starts the UDDT program, not COBDDT.  Use
+          the REENTER command to start COBDDT in this case.
+
+
+Effect on Memory and Terminal
+
+     The DDT command merges the SYS:UDDT.EXE program into the  current
+     fork  and  starts  it,  or loads and starts SYS:XDDT.EXE.  If you
+     have already loaded a debugging program, the DDT  command  starts
+     this program.
+
+
+Related Commands
+
+     DEBUG                    for loading your program  along  with  a
+                              particular  debugging  program  (such as
+                              FORDDT or COBDDT).
+
+     FORK                     for selecting the current fork.
+
+     INFORMATION MEMORY-USAGE
+                              for  displaying  the  numbers  of  pages
+                              occupied by the program in memory.
+
+
+Examples
+
+     1.  Give the DDT command to begin  debugging  a  program  in  the
+         current fork in memory.
+
+              @DDT
+              DDT
+
+     2.  Give the DEBUG command to debug a  FORTRAN  program;  type  a
+         CTRL/C to return to TOPS-20 command level so you can find out
+         the current load averages and number of jobs for the  system.
+         Return  to  your  debugging  program (FORDDT in this case) by
+         giving the DDT command.
+
+              @DEBUG TESTF1
+              LINK:   Loading
+              [LNKDEB FORDDT Execution]
+
+              STARTING FORTRAN DDT
+
+              >> ^C
+              @SYSTAT SYSTEM
+               Fri 20-Apr-79 13:50:01  Up 36:47:55
+               35+14 Jobs   Load av (class 0)   0.72   0.81   1.33
+
+              @DDT
+
+              STARTING FORTRAN DDT
+
+              >> START
+
+              THIS IS A TEST.
+
+              END OF EXECUTION
+              CPU TIME: 0.04  ELAPSED TIME: 0.33
+              EXIT
+              @INFORMATION MEMORY-USAGE
+
+               66. pages, Entry vector loc 0 len 254000
+              0-12     Private   R, W, E
+              400      Private   R, W, E
+              401-466  <SUBSYS>FOROTS.EXE.3  3-70   R, CW, E
+
+          3.  Display the programs  in  memory  with  the  INFORMATION
+              FORK-STATUS  command.  Then use the FORK command to make
+              the CLIP program the new current fork.  Verify this with
+              INFORMATION  FORK-STATUS and then merge the UDDT program
+              with the CLIP program.
+
+              @INFORMATION FORK-STATUS
+                  EMACS (1): Kept, HALT at 50340, 0:00:03.6
+                  CLIP (2): Kept, HALT at 70363, 0:00:00.2
+               => UNITS (3): HALT at 162, 0:00:00.9
+              @FORK CLIP
+              @INFORMATION FORK-STATUS
+                  EMACS (1): Kept, HALT at 50340, 0:00:03.6
+              =>  CLIP (2): Kept, HALT at 70363, 0:00:00.2
+                  UNITS (3): HALT at 162, 0:00:00.9
+              @DDT
+              DDT
+

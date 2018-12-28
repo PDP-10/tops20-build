@@ -1,0 +1,546 @@
+
+PRINT command
+
+The PRINT command places requests in a line printer output queue.
+
+
+Format
+
+     @PRINT (FILES) /switch(es) filespec/switch(es),...
+
+     where:
+
+     switches     are keywords, chosen from the list below, indicating
+                  your   choice   of  PRINT  command  options.   These
+                  switches are of two kinds:  job  switches  and  file
+                  switches.
+
+                  Job switches apply to all  files  specified  in  the
+                  command, no matter where you give the switches.
+
+                  File switches have different  effects  depending  on
+                  their  positions in the command file:  placed before
+                  all files in the command, they act as  defaults  for
+                  all;   otherwise   they   affect  only  the  nearest
+                  preceding file.
+                       Defaults are shown in the list of switches
+
+     filespec     is the specification of a file you  wish  to  print.
+                  You can use wildcard characters (% and *) to specify
+                  more than one file.
+
+
+       Summary of PRINT Command Switches (defaults in boldface)
+
+
+                             Job Switches
+                    (affecting the entire command)
+
+
+     /ACCOUNT:account               Default account - your    current
+                                                      account
+     /AFTER:date and/or time
+     /CHARACTERISTIC:characteristic value
+     /DESTINATION-NODE:node name
+     /FORMS:forms name              Default forms name - NORMAL
+     /GENERIC
+     /JOBNAME:6-character name      Default name - first           six
+                                                   characters of first
+                                                   filename in request
+
+     /LIMIT:n                       Default n - calculated from length
+                                                of files
+     /LOWERCASE
+     /NOTE:12-character message
+             YES
+     /NOTIFY:NO
+     /PRIORITY:n                    Default n - 10
+     /REMOTE-PRINTER:type
+     /SEQUENCE:n
+     /UNIT:octal number
+     /UPPERCASE
+     /USER:user name
+
+
+
+                            File Switches
+             (affecting only the nearest preceding file,
+                 unless placed before all filespecs)
+
+
+     /BEGIN:n                       Default n - 0
+     /COPIES:n                      Default n - 1
+     /DELETE                        Default for files of type .LST
+
+           ASCII
+           COBOL
+     /FILE:ELEVEN
+           FORTRAN                  Default for  files  of  type  .DAT
+                                             only
+
+     /HEADER
+
+           ARROW
+           ASCII
+     /MODE:OCTAL
+           SUPPRESS
+
+     /NOHEADER
+     /PRESERVE                      Default for all files except those
+                                            of type .LST
+
+     /REPORT:12-character title
+
+              SINGLE
+     /SPACING:DOUBLE
+              TRIPLE
+
+                        PRINT Command Switches
+
+                             Job Switches
+                    (affecting the entire command)
+
+     /ACCOUNT:account            specifies the account of 39 or  fewer
+                                 characters   to   charge   for   your
+                                 printing request.  This account  must
+                                 be valid for your user name.
+                                      Default account - your   current
+                                                        account (check
+                                                        with
+                                                        INFORMATION
+                                                        JOB-STATUS)
+
+     /AFTER:date and/or time, or
+
+            day  of  week (or TODAY)
+            and/or time          ensures that  the  job  will  not  be
+                                 printed  until  after the date and/or
+                                 time specified.  NOV-12-79 and  18:00
+                                 illustrate   two  arguments  to  this
+                                 switch.  If you give  both  date  and
+                                 time,  separate  them  with  a space.
+                                 When given alone,  the  time  may  be
+                                 preceded  by  a  plus sign (+), which
+                                 will   delay   processing   by    the
+                                 indicated  length  of  time  from the
+                                 present.
+
+                                 Alternatively, you can give a day  of
+                                 the week (such as MONDAY) or TODAY as
+                                 argument; then the job  will  not  be
+                                 printed  until  the  beginning of the
+                                 following day.  If  you  follow  this
+                                 argument with a plus sign and a time,
+                                 the job will be  further  delayed  by
+                                 this amount.
+
+     /CHARACTERISTIC:characteristic value
+                                 specifies an alphanumeric string that
+                                 communicates  print features, such as
+                                 layout  or  lettering  type,  to  the
+                                 remote  system  for  DQS remote print
+                                 requests.  The user can  specify  one
+                                 or   more   characteristic  keywords;
+                                 multiple  values  are  separated   by
+                                 commas.  You can also specify numeric
+                                 bit values, which must  be  separated
+                                 by    commas    and    enclosed    in
+                                 parentheses.   The  keywords  to  the
+                                 /CHARACTERISTIC switch are defined by
+                                 the        SET        REMOTE-PRINTING
+                                 CHARACTERISTICS command.  The maximum
+                                 length of each characteristic keyword
+                                 is  14  characters, and the name must
+                                 begin with an alphabetic character.
+
+                                 You  must  use  the   /CHARACTERISTIC
+                                 switch   in   conjunction   with  the
+                                 /REMOTE-PRINTER switch not  with  the
+                                 /UNIT  switch,  which applies only to
+                                 local and cluster printers.
+
+     /DESTINATION-NODE:node-name
+                                 specifies the remote  node  on  whose
+                                 line  printer  your  request is to be
+                                 printed.   The  remote  node  can  be
+                                 either  an IBM remote station, a node
+                                 in a TOPS-20 cluster,  a  DQS  server
+                                 node,  or LATserver.  Two colons (::)
+                                 following the node name are optional.
+                                 You  can  use  this  switch either to
+                                 send output to a remote  node  or  to
+                                 redirect it from a remote node.
+
+     /FORMS:forms name           specifies,   in    six    or    fewer
+                                 characters,  the  forms  (determining
+                                 the number  of  banner,  header,  and
+                                 trailer   pages;   the  paper  color,
+                                 width, and weight;  vertical  format,
+                                 carriage  control tape, and so on) to
+                                 use for the printing job.  Using this
+                                 switch may delay processing until the
+                                 operator can mount the proper  forms.
+                                 Note   that   your  installation  may
+                                 provide a different default  argument
+                                 to this switch.
+                                      Default forms name - NORMAL
+
+     /GENERIC                    allows any printer, either  upper  or
+                                 lowercase, and of any unit number, to
+                                 be used for satisfying  the  request.
+                                 Use   this   switch   to  override  a
+                                 previous /UPPERCASE,  /LOWERCASE,  or
+                                 /UNIT switch.
+                                      Default
+
+     /JOBNAME:name               assigns  a  name  (of  six  or  fewer
+                                 characters) to the printing job.
+                                      Default name - first         six
+                                                     characters     of
+                                                     first filename in
+                                                     the request
+
+     /LIMIT:n                    places a limit  of  n  pages  on  the
+                                 output of the printing job.
+                                      Default limits,          usually
+                                              adequate,  are  computed
+                                              from  the  size  of  the
+                                              files you want printed
+
+     /LOWERCASE                  directs the job  to  a  line  printer
+                                 that  can  print  both  uppercase and
+                                 lowercase characters.
+
+     /NOTE:message               labels the header page of output (the
+                                 page  displaying  the jobname) with a
+                                 message  or  notation  of  up  to  12
+                                 characters.    The  message  must  be
+                                 enclosed in double quotation marks if
+                                 it       contains      spaces      or
+                                 non-alphanumeric characters.
+
+             YES
+     /NOTIFY:NO                  tells the system whether  to  send  a
+                                 message  to  your  terminal  when the
+                                 request has been satisfied.
+                                      Default argument - NO
+
+                                      Default argument (if  switch  is
+                                              given) - YES
+
+     /PRIORITY:n                 assigns a number  n,  reflecting  the
+                                 urgency of the print request.  This n
+                                 must be from 1  to  63,  with  larger
+                                 numbers  receiving earlier treatment.
+                                 Note that  for  non-privileged  users
+                                 the  maximum  priority  that  can  be
+                                 specified is lower (usually 20),  and
+                                 that  your installation may provide a
+                                 different value both for this maximum
+                                 and for the default priority.
+
+                                 The system acknowledges  this  switch
+                                 by  displaying  the message [Priority
+                                 has been modified].
+                                      Default n - 10
+
+     /REMOTE-PRINTER:type        directs a print request to  a  remote
+                                 destination.    The   destination  is
+                                 either a remote printer queue for DQS
+                                 printers   or  a  LATserver  PORT  or
+                                 SERVICE for LAT printers.   The  type
+                                 refers to an actual remote queue name
+                                 or an alias of a remote printer queue
+                                 name  for  DQS  printers,  or  to  an
+                                 application terminal on  a  reachable
+                                 LATserver.   Aliases  are set up with
+                                 the SET REMOTE-PRINTER command.
+
+                                 You  can  use   the   /REMOTE-PRINTER
+                                 switch   with  the  /DESTINATION-NODE
+                                 switch,  but  not  with   the   /UNIT
+                                 switch.
+
+     /SEQUENCE:n                 specifies sequence number n  for  the
+                                 printing  request,  which you can use
+                                 when  modifying  or   canceling   the
+                                 request.
+
+     /UNIT:octal number          directs  your  request  to  the  line
+                                 printer with the specified octal unit
+                                 number.  This switch only applies  to
+                                 local   or   TOPS-20   cluster  print
+                                 requests.
+
+     /UPPERCASE                  directs the job  to  a  line  printer
+                                 that uses only uppercase characters.
+
+     /USER:user name             specifies the user who is to  be  the
+                                 owner  of  the  print  request.   For
+                                 privileged users only.
+
+
+                           File Switches
+             (affecting only the nearest preceding file,
+            unless placed before all file specifications)
+
+
+     /BEGIN:n                    starts the printing at page n of  the
+                                 file.
+                                      Default n - 0
+
+     /COPIES:n                   requests that n copies of the file be
+                                 printed; n must be less than or equal
+                                 to 62.
+                                      Default n - 1
+
+     /DELETE                     deletes the file after printing.
+                                      Default for files of type .LST
+
+           ASCII                 specifies  that the file consists  of
+           COBOL                 ASCII text, or COBOL SIXBIT  text; or
+     /FILE:ELEVEN                (ELEVEN)   contains  four   eight-bit
+           FORTRAN               bytes  in  each   36-bit   word - for
+                                 emulating  paper  tape punch only; or
+                                 is FORTRAN ASCII text, where column 1
+                                 of  each  line  is  interpreted  as a
+                                 carriage control character.
+                                      Default - ASCII   (except    for
+                                                files  of  type  .DAT,
+                                                for which the  default
+                                                is FORTRAN)
+
+     /HEADER                     causes header  pages  containing  the
+                                 jobname to be printed before the file
+                                 itself.
+                                      Default
+
+           ARROW                 designates the mode  for printing the
+           ASCII                 file.   ARROW    prints   the    file
+     /MODE:OCTAL                 literally;  but denotes  each control
+           SUPPRESS              character by an up-arrow (^) and  the
+                                 character,  except for the following,
+                                 which are reproduced literally  (that
+                                 is,  the  control  characters perform
+                                 their  normal   actions):    carriage
+                                 return,  line  feed,  horizontal tab,
+                                 vertical tab, form feed, ^P, ^Q,  ^R,
+                                 ^S,  and  ^T.   ASCII prints the file
+                                 literally,   without   omissions   or
+                                 substitutions,  except for the escape
+                                 character (^[) which  is  represented
+                                 as a dollar sign.
+
+                                 OCTAL prints each word in the file as
+                                 unsigned  octal integers; 3 groups of
+                                 128 words (8 rows of 16 columns each)
+                                 appear  on  a  standard  line printer
+                                 page.   SUPPRESS  prints   the   file
+                                 without  any blank lines, causing all
+                                 vertical format  characters  (CTRL/K,
+                                 CTRL/L,  CTRL/Q,  CTRL/R, CTRL/S, and
+                                 CTRL/T)  to  be  converted  to  CRLFs
+                                 (carriage return/linefeeds), and then
+                                 interpreting multiple occurrences  of
+                                 CRLFs as a single CRLF.
+                                      Default - ARROW
+
+     /NOHEADER                   prevents the printing of header pages
+                                 before the file.
+
+     /PRESERVE                   saves the file after printing.
+                                      Default for  all  files   except
+                                              those of type .LST
+
+     /REPORT:title               scans  your  files  and  prints  only
+                                 those  lines  whose  first characters
+                                 are the title you give.   This  title
+                                 may   contain  up  to  12  characters
+                                 (including the quotation  marks  that
+                                 must enclose the title if it contains
+                                 spaces).  The switch  is  used  along
+                                 with the COBOL report writer.
+
+              SINGLE
+     /SPACING:DOUBLE             determines the spacing  between lines
+              TRIPLE             in the printout.
+                                      Default - SINGLE
+
+
+Output
+
+     Jobname, Request ID, Limit, Number of Files
+
+          As soon as you complete a valid PRINT  command,  the  system
+          responds  by  printing,  on  your terminal, the jobname, the
+          node name (if printed on remote node),  request  ID  number,
+          the  limit  in  pages of output assigned to the request, and
+          the number of files in the request.
+
+
+Characteristics
+
+     Ordinary Operation - No Switches
+
+          For most purposes you can use the PRINT command with just  a
+          series of filespecs for arguments.
+
+     Switch Defaults Set by System Manager
+
+          The defaults shown in the list of switches are  correct  for
+          most  user  sites.   However, your system manager can change
+          some of those default settings.  The switches most  commonly
+          affected  are:   /FORMS,  /HEADER and /NOHEADER, /LIMIT, and
+          /PRIORITY.
+
+Restrictions
+
+     Using /UNIT, /REMOTE-PRINTER, and /CHARACTERISTICS
+
+          You must use the /CHARACTERISTICS switch in conjunction with
+          the  /REMOTE-PRINTER  switch  and not with the /UNIT switch,
+          which applies only to local and cluster  printers.   If  you
+          use the /UNIT switch in conjunction with the /REMOTE-PRINTER
+          switch, it  is  ignored.   The  /CHARACTERISTICS  switch  is
+          ignored if used in a local or cluster print job.
+
+                                      NOTE
+
+              The  /CHARACTERISTICS  switch  does  not  apply   to
+              LATprinters.
+
+
+Hints
+
+     Using SET DEFAULT PRINT
+
+          If there are switches that you always or usually supply when
+          using PRINT, give the SET DEFAULT PRINT command to establish
+          them as defaults (at the current TOPS-20 command level)  for
+          the  remainder  of your terminal session.  The switches will
+          then behave as if you had  typed  them  directly  after  the
+          command  name.   You  can  supersede  any  of  these default
+          switches by actually  supplying  the  switch,  with  another
+          value,  when  you  give  the PRINT command.  Put SET DEFAULT
+          PRINT into a file of specification COMAND.CMD in your log-in
+          directory if you want these default switches to be in effect
+          for all levels of future terminal sessions as well.
+
+Special Cases
+
+     /SPOOLED-OUTPUT Switch
+
+          You can give the special switch,  /SPOOLED-OUTPUT,  as  sole
+          argument  to  the  PRINT  command.   This causes any spooled
+          output accumulated so far during your terminal session to be
+          placed  in  a line printer queue immediately, rather than at
+          log-out time.  The /SPOOLED-OUTPUT switch is useful only  if
+          the  SET  SPOOLED-OUTPUT  DEFERRED  command  is  in  effect.
+          Programs that you  run  (especially  FORTRAN  programs)  may
+          create  spooled output for the printer, or you can create it
+          directly by writing to device LPT:  (by giving the  command,
+          COPY filespec LPT:), or giving a CREF command.
+
+
+Related Commands
+
+   CANCEL                                  for    withdrawing    PRINT
+                                           requests
+
+   INFORMATION OUTPUT-REQUESTS             for examining  requests  in
+                                           the output queues
+
+   MODIFY                                  for changing PRINT requests
+                                           before processing has begun
+
+   SET DEFAULT PRINT                       for  establishing   default
+                                           switches   for   subsequent
+                                           PRINT commands
+
+   SET REMOTE-PRINTING CHARACTERISTICS     for setting up a string  to
+                                           be  used  as  input  to the
+                                           /CHARACTERISTICS switch
+
+   SET REMOTE-PRINTING PRINTER             for setting up a string  to
+                                           be  used  as  input  to the
+                                           /REMOTE-PRINTER switch
+
+   SET REMOTE-PRINTING SYSTEM-DEFINITIONS  for   setting   up   remote
+                                           printing  information for a
+                                           job  based  on   input   in
+                                           SYSTEM:REMOTE-PRINTING.CMD
+
+
+Examples
+
+     1.  Print two of your files.
+
+         @PRINT 4-UPED.TXT, CMPTN.TXT
+         [Printer job 4-UPED queued, request  302, limit 200, 2 files]
+
+     2.  Print three files, assigning a jobname and  a  note  for  the
+         header  page; postpone the printing.  Make 4 copies of one of
+         the files, and double-space another one.
+
+         @PRINT /JOBNAME:COMFIL/NOTE:CONFIDENTIAL/AFTER:12-DEC-85 -
+         FOO.CTL, HOLMAX.CTL/COPIES:4, INSIDE.RNO/SPACING:DOUBLE
+         [Printer job COMFIL queued, request #306, limit 27, 3 files]
+         @INFORMATION OUTPUT-REQUESTS /USER/ALL
+
+         Printer Queue:
+         Job Name  Req#  Limit             User
+         --------  ----  -----  ------------------------------
+           COMFIL   306     27  LATTA  /After:12-Dec-85  0:00
+                   /Note:CONFIDENTIAL   /Seq:1865
+         There is 1 job in the queue (none in progress)
+
+     3.  Print a job in a hurry, by  assigning  a  high  priority  and
+         skipping the header and first five pages.  Print 10 copies of
+         the first file, and 18 of the second.
+
+         @PRINT /JOBNAME:RUSH /PRIORITY:60/NOHEADER/BEGIN:5/COPIES:1 -
+         0 RFM.CTL, HOLMAX.CTL/COPIES:18
+         [Printer job RUSH queued, request #312, limit 27, 2 files]
+         [Priority has been modified]
+         @INFORMATION OUTPUT-REQUESTS /USER/ALL
+
+         Printer Queue:
+         Job Name  Req#  Limit             User
+         --------  ----  -----  ------------------------------
+         * RUSH    312      27  LATTA    On Unit:0  /Prio:20
+                  /Seq:1870
+            Started at 15:00:11, printed 10 of 27 pages
+          COMFIL   306      27  LATTA   /After:12-Dec-79  0:00
+                  /Note:CONFIDENTIAL  /Seq:1865
+         There are 2 jobs in the queue (1 in progress)
+
+     4.  Print a job with a P90 characteristic on a XEROX 8700 printer
+         on a VMS system.
+
+         @PRINT FILE4.MEM/REMOTE-PRINTER:XEROX/CHARACTERISTIC:P90
+         [Printer job FILE4 queued, request #33, limit 1 files]
+
+     5.  Print a job on LATserver printer in one of  four  ways.   The
+         TOPS-20  host  has  access  to a printer service named LASER,
+         which is attached to port LC14 on a LATserver named LAT97.
+
+         o SERVICE name only
+
+         @PRINT FILE.DAT/REMOTE-PRINTER:LASER
+         [Printer job FILE queued, request #43, limit 1 files]
+
+         o SERVICE name and SERVER name
+
+         @PRINT FILE.DAT/REMOTE-PRINTER:LASER/DESTINATION-NODE:LAT97
+         [Printer job FILE queued, request #45, limit 1 files]
+
+         o PORT name and SERVER name
+
+         PRINT FILE.DAT/REMOTE-PRINTER:LC14/DESTINATION-NODE:LAT97
+         [Printer job FILE queued, request #53, limit 1 files]
+
+         o SERVER name
+
+         @PRINT FILE.DAT/DESTINATION-NODE:LAT97
+         [Printer job FILE queued, request #58, limit 1 files]
+

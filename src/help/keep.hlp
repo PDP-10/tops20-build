@@ -1,0 +1,154 @@
+
+KEEP command
+
+The KEEP command protects a fork from being cleared from memory.
+
+
+Format
+
+     @KEEP (FORK) fork
+
+     where:
+
+     fork is one of the following:  Fork name
+                                    Fork number
+                                         Default - the current fork
+
+
+Characteristics
+
+     Characteristics of Kept Forks
+
+          The KEEP command gives a fork a "kept" status.  A kept  fork
+          has these characteristics:
+
+           o  A kept fork is not reset when another program is brought
+              into  memory.   Normally,  when  a  program  is  run, it
+              replaces the fork currently in memory.  However, if  the
+              program in memory is in a kept fork and a new program is
+              run, the new program is placed  in  a  new  fork.   This
+              allows you to have several programs in memory.
+
+           o  A kept fork is not cleared from memory  with  the  RESET
+              command   unless   one   of  these  RESET  arguments  is
+              specified:  the fork name, a period or an asterisk.
+
+           o  A kept fork can be restarted by  typing  the  kept  fork
+              name  as  an  EXEC  command.   The kept fork name can be
+              abbreviated to the point where it is  unique  from  EXEC
+              commands  and other kept fork names.  ESCAPE recognition
+              and question mark help  also  function  with  kept  fork
+              names.
+
+              The KEEP command sets the kept fork to  restart  at  its
+              starting  address  when the kept fork name is given as a
+              command.  For information on changing the fork's restart
+              address  see  Hints,  Setting  the  Kept  Fork's Restart
+              Address.
+
+           o  A kept fork is named  after  the  program  it  contains.
+              Forks  are  numbered  in  the  order  in which they were
+              created.  In multiforking-class commands the  fork  name
+              and number are interchangable.
+
+
+     Inferior Forks
+
+          Any inferior forks created by a kept fork are also kept.
+
+
+Hints
+
+     Keeping Forks Automatically
+
+          Place  SET  PROGRAM  KEEP  commands  in  your  LOGIN.CMD  or
+          COMAND.CMD file for programs that you normally place in kept
+          forks.   Then  when  you  load  the  program,   the   system
+          automatically  keeps  the  fork  and  notifies  you with the
+          message [Keeping FORK-NAME].
+
+          The SET PROGRAM command applies only  to  the  current  EXEC
+          level.   If  you  want  your  SET  PROGRAM commands to be in
+          effect after a PUSH command,  put  the  commands  into  your
+          COMAND.CMD   file.    The   COMAND.CMD   file   is  executed
+          automatically after every PUSH command.
+
+     Kept Forks Continued Using the Fork Name
+
+          The KEEP command sets  the  fork  to  be  restarted  at  its
+          starting  point  when  the  fork name is given as a command.
+          So, if a program that was kept  with  the  KEEP  command  is
+          running  in  a  background  fork, and you type the kept fork
+          name, execution of the program is canceled and  the  program
+          returns to its start address, which is usually the program's
+          prompt.
+
+          With the SET PROGRAM KEEP command, you have to  specify  the
+          point  at  which the fork will restart when the fork name is
+          given as a command.  The starting point can be the program's
+          continue,  reentry,  or  start  address.   The  command  SET
+          PROGRAM KEEP CONTINUE gives the fork name the same  function
+          as  the  CONTINUE  /NORMALLY command.  So, if a program that
+          was kept with the  SET  PROGRAM  KEEP  CONTINUE  command  is
+          running  in  a  background  fork, and you type the kept fork
+          name, execution of the program continues and  your  terminal
+          is placed at program level.
+
+     More Information
+
+          The KEEP command is one of  the  TOPS-20  multiforking-class
+          commands.   For more information about multiforking, see the
+          section Running Multiple  Programs  in  the  TOPS-20  User's
+          Guide.
+
+
+Restrictions
+
+     Limited Number of Forks
+
+          There is a limited number of forks available  on  a  system.
+          When  all  forks are in use, existing users cannot add forks
+          and new users cannot log in.  Therefore, KEEP only necessary
+          forks and return idle forks to the system with the UNKEEP or
+          RESET commands.
+
+
+Related Commands
+
+     INFORMATION FORK-STATUS       for displaying the fork status
+
+     RESET                         for clearing forks from memory
+
+     UNKEEP                        for changing  a  kept  fork  to  an
+                                   unkept fork
+
+     CONTINUE, FORK, FREEZE,       other       multiforking-class
+     INFORMATION PROGRAM-STATUS,   commands
+     SET NAME, and SET PROGRAM
+
+
+Examples
+
+     1.  Display the fork  status  with  the  INFORMATION  FORK-STATUS
+         command.   Then,  give  the  KEEP command to make the current
+         fork a kept fork and redisplay the fork status.
+
+         @INFORMATION FORK-STATUS
+          => EDIT (1): HALT at 6254, 0:00:00.5
+             FILCOM (2): ^C from IO wait at 700272, 0:00:00.3
+         @KEEP
+         @INFORMATION FORK-STATUS
+          => EDIT (1): Kept, HALT at 6254, 0:00:00.5
+             FILCOM (2): ^C from IO wait at 700272, 0:00:00.3
+
+     2.  Display the fork status, and  KEEP  the  FILCOM  fork.   Then
+         verify the new fork status.
+
+         @INFORMATION FORK-STATUS
+          => EDIT (1): Kept, HALT at 6254, 0:00:00.5
+             FILCOM (2): ^C from IO wait at 700272, 0:00:00.3
+         @KEEP FILCOM
+         @INFORMATION FORK-STATUS
+          => EDIT (1): Kept, HALT at 6254, 0:00:00.5
+             FILCOM (2): Kept, ^C from IO wait at 776721, 0:00:00.3
+

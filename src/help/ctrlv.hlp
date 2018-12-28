@@ -1,0 +1,11 @@
+
+CTRL/V
+
+Allows special characters (any character other than  an  alphanumeric,
+or  the  special  characters  - _ . or  $)  in file specifications and
+directory names.  Type CTRL/V before typing the special character  any
+time you type the file specification.
+
+Special characters are not accepted by the following system programs:
+                  ALGOL    COBOL    CREF    FILCOM    ISAM
+                  LIBARY   LINK     MAKLIB  RERUN

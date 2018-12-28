@@ -1,0 +1,166 @@
+
+ARCHIVE command
+
+The ARCHIVE command asks that a permanent off-line copy  of  specified
+files  be  made  on  magnetic  tape,  and  prevents  the disk copy (if
+retained) from being modified.
+
+
+Format
+
+     @ARCHIVE (FILES) filespec,...,
+     @@subcommand
+
+     where:
+
+     filespec            is the specification of a file of which you
+                         want a permanent copy.
+
+     @@subcommand        means that after a final comma you can type
+                         the following optional subcommand:
+
+     RETAIN              which causes the disk copies of the files
+                         being archived to be retained in your
+                         directory, rather than deleted and expunged.
+
+     NORETAIN            which sets the file invisible.
+
+     VISIBLE             which leaves file visible after ARCHIVE
+                         command.
+
+
+Output
+
+     Notice of Archive Sent to Requestor
+
+     Whenever a file is taken off line as a  result  of  your  ARCHIVE
+     command  (for  example,  when  you  do  not  also give the RETAIN
+     subcommand), the operator sends a mail message notifying you that
+     the file has been archived.
+
+
+Characteristics
+
+     Archived Files Unalterable
+
+     You cannot change the contents of files specified in  an  ARCHIVE
+     command  once  the  command  is  given, even if the files are not
+     immediately copied to tape.  This means that you cannot alter  or
+     add  to  them  by  using the EDIT or APPEND command, or overwrite
+     them by using the COPY or RENAME command.  In general, files  for
+     which you have requested archival must not be given as the second
+     filespec argument of these commands.
+
+     Archived Files Invisible
+
+     The files you specify in an  ARCHIVE  command  ordinarily  become
+     invisible to most TOPS-20 commands as soon as the ARCHIVE command
+     is given.  However, if you include  the  RETAIN  subcommand  when
+     giving  the  ARCHIVE  command,  the  files  remain  visible.  See
+     Related Commands, below, for a list of commands you can use  with
+     invisible files.
+
+
+Related Commands
+
+     CANCEL ARCHIVE
+
+          For canceling archival requests.
+
+     DELETE
+
+          With the ARCHIVE subcommand, for deleting archived files.
+
+          With the CONTENTS-ONLY subcommand,  for  deleting  only  the
+          disk copy of files that also have a tape copy.
+
+     DIRECTORY
+
+          With the ARCHIVE subcommand, for requesting  information  on
+          archived files (visible and invisible) only.
+
+          With the INVISIBLE subcommand, for requesting information on
+          invisible files only.
+
+     DISCARD
+
+          For giving up the tape copy of on-line files.
+
+     INFORMATION ARCHIVE-STATUS
+
+          For determining if archival for the specified files (visible
+          and invisible) has been accomplished.
+
+     RETRIEVE
+
+          For restoring off-line  files  (visible  and  invisible)  to
+          on-line status.
+
+     SET FILE INVISIBLE
+
+          For making visible files invisible
+
+     SET FILE VISIBLE
+
+          For making invisible files visible
+
+
+Examples
+
+     1.  Archive a file.
+
+         @ARCHIVE ARTEST.FIL
+          ARTEST.FIL.1 [Requested]
+
+     2.  Archive a file, but keep a copy on disk.  Check  the  archive
+         status of files.
+
+         @ARCHIVE ARCHEK.FIL,
+         @@RETAIN
+         @@
+          ARCHEK.FIL.1 [Requested]
+         @INFORMATION ARCHIVE-STATUS
+          ARCHEK.FIL.1 Archive requested,  Retain contents
+          ARTEST.FIL.1 Archive requested
+
+     3.  Attempt to use the EDIT  editor  to  edit  an  archived  file
+         (first you must make it visible).  Note that, afterwards, the
+         unedited backup copy is  the  archived  file,  and  that  the
+         edited file has no archive status.
+
+         @INFORMATION ARCHIVE-STATUS ARTEST.FIL
+          ARTEST.FIL.1 Archive requested
+         @EDIT ARTEST.FIL
+
+         %No such filename, Creating New file
+         Input: ARTEST.FIL.2
+         00100   $
+         *EQ
+         @SET FILE VISIBLE ARTEST.FIL.1
+          ARTEST.FIL.1 [OK]
+         @EDIT ARTEST.FIL.1
+         Edit: ARTEST.FIL.1
+         *P
+         00100  !TEST FILE FOR ARCHIVING
+         *I200
+         00200  !FIRST MODIFICATION
+         00300   $
+         *P^:*
+         00100  !TEST FILE FOR ARCHIVING
+         00200  !FIRST MODIFICATION
+         *EU
+
+         [ARTEST.FIL.2]
+         @INFORMATION ARCHIVE-STATUS ARTEST.*
+          ARTEST.QIL.1 Archive requested
+         @TYPE ARTEST.QIL
+         !TEST FILE FOR ARCHIVING
+         @TYPE ARTEST.FIL
+         !TEST FILE FOR ARCHIVING
+         !FIRST MODIFICATION
+         @DIRECTORY ARTEST.*
+
+            MISC:<LATTA>
+          ARTEST.FIL.2
+            .QIL.1
+

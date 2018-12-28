@@ -1,0 +1,73 @@
+
+TYPE command The TYPE command displays the contents  of  one  or  more
+files on your terminal.
+
+
+Format
+
+     @TYPE (FILE) filespec,...,
+     @@subcommand
+
+     where:
+
+     filespec            is the specification of the file you want  to
+                         display on your terminal.
+
+     @@subcommand        means that after a final comma you can  enter
+                         the following optional subcommand:
+
+                         UNFORMATTED    Disables  the  formatting   of
+                                        control  characters  contained
+                                        in the  file.   Normally,  the
+                                        TYPE   command   displays  the
+                                        graphic equivalent for certain
+                                        control     characters,    for
+                                        example,  ESCAPE  as   $   and
+                                        CTRL/C as ^C.  The UNFORMATTED
+                                        subcommand  causes  characters
+                                        to   be  displayed  literally,
+                                        allowing  graphic  text   (for
+                                        example  REGIS  files)  to  be
+                                        displayed on the terminal.
+
+
+Output
+
+     Entire Contents of Files
+
+          In response to the TYPE command the system prints the entire
+          contents  of  a  file (up to the EOF (end-of-file) pointer),
+          including blank lines and line numbers if there are any.  If
+          you  specify  more  than one file, the filespec precedes the
+          contents of each file.
+
+
+Hints
+
+     Stopping TYPE Output
+
+          To stop the TYPE command, type two CTRL/Cs.  A  CTRL/O  will
+          also  stop  the  output, but will not stop the processing of
+          the command or the accumulation of CPU charges.  Note that a
+          pair  of  CTRL/Os causes the system to skip over part of the
+          output and continue printing.
+
+
+Related Commands
+
+     COPY      for copying files to any device
+
+     EDIT      for examining specific parts of a file
+
+     PERUSE    for editing files in read-only mode
+
+     PRINT     for printing files on the line printer
+
+
+Examples
+
+     1.  Have the system print a file on your terminal.
+
+         @TYPE TEST.TXT
+         ! This is file TEST.TXT !
+

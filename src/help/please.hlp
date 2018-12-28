@@ -1,0 +1,122 @@
+
+PLEASE
+
+The PLEASE program allows you to communicate either with  your  system
+operator  or  with  a remote-node operator.  For instance, you may ask
+the operator to perform a task or ask for information about  your  job
+or the system, or give the operator information about your job.
+
+Note:  The PLEASE command that  you  use  in  a  batch  job  does  not
+function  like  the  timesharing  PLEASE  program.  For information on
+using the PLEASE command in a batch job, refer to the  TOPS-10/TOPS-20
+Batch Reference Manual.
+
+
+Switches Used with PLEASE
+
+The PLEASE program has two switches:
+
+/HELP                    prints information about this program on your
+                         terminal
+
+/NODE:node-name::        specifies the  node  name  of  the  operator,
+                         other  than  your  system  operator, that you
+                         wish to communicate with.  You must terminate
+                         the node name with two colons (::).
+
+
+Message Terminators Used with PLEASE
+
+<RET>                    the only terminator  for  a  message  on  the
+                         PLEASE  command  line.   (The message must be
+                         limited to a single line.)
+
+<ESC>                    a valid terminator only for a  message  being
+                         sent in dialogue mode.  It indicates that you
+                         do not expect a reply,  and  returns  you  to
+                         system level.
+
+<CTRL/Z>                 a valid terminator for a message  being  sent
+                         in dialogue mode.  It indicates that you want
+                         to wait for a reply from the operator.
+
+
+Running PLEASE
+
+To send a message to your own system operator, you can use  PLEASE  in
+either the DIALOGUE or MESSAGE mode.
+
+The simplest way to enter DIALOGUE Mode is to type PLEASE, followed by
+a  one-line  message,  and  then  press  RETURN.   The  PLEASE program
+acknowledges the message and notes the time your operator received it.
+You then see your operator's reply.  That is followed by a prompt from
+PLEASE, which indicates that you are now  in  DIALOGUE  mode  and  can
+respond  with  one  or  more  additional messages, as in the following
+example:
+
+     @PLEASE When is the system scheduled to go down?<RET>
+     [PLSOPN Operator at KL2102 has been notified at 10:04:42]
+     10:05:58  From Operator at terminal 3
+            => At noon
+     Enter text, terminate with CRTL/Z to wait for response
+     Or ESC to send message and Exit
+     Thank you <ESC>
+     @
+
+To terminate DIALOGUE mode, you press ESC after your  final  reply  to
+the  operator  in  order to return to the system level.  In this case,
+the user has chosen to end the interchange by  thanking  the  operator
+and typing <ESC> to return to the system level.
+
+The second way to communicate with your own operator in DIALOGUE  Mode
+is  to  type  PLEASE  and  then press RETURN.  You enter DIALOGUE mode
+immediately and receive the PLEASE prompt for your message, as
+
+     @PLEASE<RET>
+     Enter text, terminate with CTRL/Z to wait for response
+     Or ESC to send message and exit<RET>
+
+     When is the system scheduled to go down?<CTRL/Z>
+
+To communicate with a remote-node operator,  type  PLEASE,  the  /NODE
+switch,  and the node name of the remote operator, and press RETURN to
+enter dialogue mode and receive the PLEASE prompt for your message, as
+
+@PLEASE/NODE:node-name::<RET>
+Enter text, terminate with CTRL/Z to wait for response
+Or ESC to send message and exit<RET>
+
+From the point where you enter DIALOGUE mode and receive  the  message
+prompt,  messages  to  both  your  own  operator  and to a remote-node
+operator follow the same format.
+
+If you do not need a reply from the operator, use MESSAGE mode.  After
+you have accessed PLEASE and typed your message, type <ESC> to end the
+message.  PLEASE acknowledges that  the  message  has  been  sent  and
+records the time the operator received it, before returning you to the
+system level, as
+
+@PLEASE I am leaving here at 4 today<ESC>
+[PLSOPN Operator at KL2102 has been notified at 11:00:03]
+
+In this example, you have sent a message to the operator and have been
+immediately  returned  to the system level.  You are not requesting an
+immediate reply.
+
+
+PLEASE Messages
+
+Informational  messages  are  enclosed  in  brackets  ([]).    Warning
+messages  are  preceded  by  a percent sign (%); for these, processing
+will continue but perhaps not in the way you  intended.   Fatal  error
+messages  are  preceded  by  a  question  mark  (?); such messages may
+terminate the program.
+
+Each message is followed by a brief explanation of the problem you may
+encounter, which may in itself tell you what you need to do to correct
+it.  In most cases, simply trying the procedure again is sufficient to
+correct the problem.  In some cases, though, you may need to call your
+Software Specialist.
+
+For a listing and description of the PLEASE messages, see the  TOPS-20
+User Utilities Manual.

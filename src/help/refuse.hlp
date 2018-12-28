@@ -1,0 +1,132 @@
+
+REFUSE command
+
+The REFUSE command notifies the system that you  are  not  willing  to
+accept   communication   links,  advice,  user  messages,  and  system
+messages.
+
+
+Format
+
+     @REFUSE argument
+
+     where:
+
+     argument            is a keyword, chosen  from  the  list  below,
+                         naming  the kind of communication you are not
+                         willing to accept.
+
+
+                       REFUSE Command Arguments
+
+
+     ADVICE              prevents  assistance  initiated  by   another
+                         user's ADVISE command.
+
+     LINKS               prevents both  assistance  and  communication
+                         links   from  being  established  by  another
+                         user's ADVICE or TALK command.
+
+     SYSTEM-MESSAGES     prevents notices of new mail and messages  of
+                         general  interest  sent  to  all users by the
+                         monitor  or  by   the   operator   or   other
+                         privileged users.
+
+     USER-MESSAGES       prevents messages sent by another user's SEND
+                         command.
+                              Default - ADVICE and LINKS
+
+
+Hints
+
+     Refusing All Communication
+
+          Users  with  Wheel  or  Operator  capabilities  enabled  can
+          ADVISE,  SEND,  and  TALK  to  terminals  that  have refused
+          advice, user-messages, and links.  To  refuse  messages  and
+          links  from  privileged  users,  use  the  TERMINAL  INHIBIT
+          command.
+
+     Typing RECEIVE During Attempted TALK
+
+          If your terminal has been set to refuse  links  and  another
+          user  tries  to  talk to you by using the TALK command, both
+          terminals will give a  series  of  CTRL/G  signals  (ringing
+          bells or beeps) indicating the refused attempt.  If you give
+          the RECEIVE LINKS command before these signals are finished,
+          the TALK command will succeed.
+
+     Safeguarding Terminal Output
+
+          If you want your terminal to  print  a  long  file,  without
+          interference,  use  the  TERMINAL INHIBIT command to prevent
+          all classes of message from being received.  Be sure to  use
+          the  TERMINAL  NO  INHIBIT command afterwards to restore the
+          previous condition of your terminal.
+
+
+Special Cases
+
+     Implicit Refusal of Advice
+
+          If you give the REFUSE LINKS command, your terminal will  be
+          set   to  refuse  advice  also.   However,  the  INFORMATION
+          TERMINAL-MODE command may not display  this  setting  unless
+          you give an explicit REFUSE ADVICE command as well.
+
+     Privileged Disregard of REFUSE
+
+          A user with enabled Wheel or Operator capabilities can  give
+          the TALK or ADVISE command for any job.
+
+
+Related Commands
+
+     ADVISE                        for  sending  commands  to  another
+                                   user's job
+
+     INFORMATION TERMINAL-MODE     for examining your current terminal
+                                   settings
+
+     RECEIVE                       for receiving communication  links,
+                                   advice,   and   system   and   user
+                                   messages
+
+     SEND                          for sending a  message  to  another
+                                   user's terminal
+
+     TALK                          for  linking   your   terminal   to
+                                   another user's terminal
+
+     TERMINAL INHIBIT              for refusing all types of  terminal
+                                   communication    including   links,
+                                   advice,   system   messages,   user
+                                   messages, and notices of new mail.
+
+Examples
+
+     1.  Use the REFUSE command to prevent other users  from  advising
+         your job.
+
+         @REFUSE ADVICE
+
+     2.  Receive a communication link formed by  another  user's  TALK
+         command.   Confer with him briefly, then set your terminal to
+         refuse all classes of message over which you have control.
+
+         LINK FROM RENQUIST, TTY 127
+         @!HELLO DAVID. CAN YOU HELP ME WITH EDIT?
+         @!SORRY, PLEASE BREAK.  I'M EXPECTING PRINTOUT AND THIS
+         @!WILL INTERFERE.  WILL GET IN TOUCH LATER.
+         @!OKAY
+         @BREAK
+         @REFUSE LINKS
+         @REFUSE SYSTEM-MESSAGES
+         @REFUSE USER-MESSAGES
+
+     3.  As an alternative to giving three REFUSE commands as  in  the
+         previous  example,  give  the TERMINAL INHIBIT command.  This
+         command refuses all types of messages.
+
+         @TERMINAL INHIBIT
+

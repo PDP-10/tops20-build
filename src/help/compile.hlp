@@ -1,0 +1,448 @@
+
+COMPILE command
+
+The COMPILE command translates source files into  object  (relocatable
+binary) files.
+
+
+Format
+
+     @COMPILE (FROM) /switch(es) source/switch(es) object,...
+
+     where:
+
+     switches       are  keywords  chosen   from   the   list   below,
+                    indicating your choice of COMPILE command options.
+                    They have different  effects  depending  on  their
+                    position  in  the command line:  placed before all
+                    files in the command, they  act  as  defaults  for
+                    all;  otherwise,  they  affect  only  the  nearest
+                    preceding file.
+                         Defaults are shown in the list of switches
+
+     source         is the file specification  of  a  source  program.
+                    The filename must be of 6 or fewer characters, and
+                    the file type of 3 or fewer characters; you cannot
+                    use a generation number.
+                         Default - arguments you  gave  in  your  last
+                                   LOAD-class command
+
+     object         is the filename you choose for the object file; it
+                    must be of 6 or fewer characters.
+                         Default - filename of the source  file  (file
+                                   type is .REL)
+
+      Summary of COMPILE Command Switches (defaults in boldface)
+
+          /10-BLISS
+          /36-BLISS
+          /68-COBOL
+          /74-COBOL
+          /ABORT
+          /ALGOL
+          /BINARY
+          /COBOL
+          /COMPILE
+          /CREF
+          /CROSS-REFERENCE
+          /DDT
+          /DEBUG
+          /FAIL
+          /FLAG-NON-STANDARD
+          /FORTRAN
+          /LANGUAGE-SWITCHES:"/switch(es)"
+          /LIBRARY
+          /LIST
+          /MAC
+          /MACHINE-CODE
+          /MACRO
+          /MAP
+          /NOBINARY
+          /NOCOMPILE
+          /NOCREF
+          /NOCROSS-REFERENCE
+          /NODBUG
+          /NOFLAG-NON-STANDARD
+          /NOLIST
+          /NOLIBRARY
+          /NOMACHINE-CODE
+          /NOOPTIMIZE
+          /NOSEARCH
+          /NOSTAY
+          /NOSYMBOLS
+          /NOWARNINGS
+          /OPTIMIZE
+          /PASCAL
+          /RELOCATABLE
+          /SAIL
+          /SEARCH
+          /SIMULA
+          /SNOBOL
+          /STAY
+          /SYMBOLS
+          /WARNINGS
+
+     Descriptions of these switches are  given  below.   Although  the
+     system  will  not  reject  switches  described  under  any of the
+     LOAD-class commands, only those switches commonly associated with
+     COMPILE are described here.
+
+
+                         COMPILE Command Switches
+
+
+     /10-BLISS      compiles the file using the BLISS-10 compiler.
+                         Default for files of type .B10 and .BLI
+
+     /36-BLISS      compiles the file using the BLISS-36 compiler.
+                         Default for files of type .B36
+
+     /68-COBOL      compiles the file using the COBOL-68 compiler.
+                         Default for files of type .C68 or .68C
+
+     /74-COBOL      compiles the file using the COBOL-74 compiler.
+                         Default for files of type .C74 or .74C
+
+     /ABORT         stops a compile if a fatal error is  detected  and
+                    returns your terminal to TOPS-20 command level.
+
+     /ALGOL         compiles the file using the ALGOL compiler.
+                         Default for files of type .ALG
+
+     /BINARY        allows generation of an object (binary)  file  for
+                    each source file given.  Use this switch to cancel
+                    a /NOBINARY switch.
+                         Default
+
+     /COBOL         compiles the file using the COBOL compiler, either
+                    COBOL-68  or  COBOL-74, that your installation has
+                    stored in the file SYS:COBOL.EXE.
+                         Default for files of type .CBL
+
+     /COMPILE       forces compilation of the source file  even  if  a
+                    current  object  file  already  exists.   Use this
+                    switch along with the /LIST  or  /CREF  switch  to
+                    obtain  listings  when  you  have  current  object
+                    files.  (See also the /NOBINARY switch.)
+
+     /CREF          same as /CROSS-REFERENCE
+
+     /CROSS-REFERENCE
+                    creates   a   file   containing    cross-reference
+                    information for each compilation.  The filename is
+                    that of the object file; the file  type  is  .CRF.
+                    Use  the  CREF  command to obtain a listing of the
+                    file.  (For COBOL files, this switch automatically
+                    produces  a  cross-reference  listing.)   See  the
+                    TOPS-20 User Utilities Guide for information about
+                    the CREF program.
+
+     /DDT           loads the DDT debugging program  along  with  your
+                    object file.
+
+     /DEBUG         produces  an  object  file  containing   debugging
+                    information beyond what is usually inserted during
+                    a compilation.  (For FORTRAN  programs  only,  and
+                    only if you have not given the /OPTIMIZE switch.)
+
+     /FAIL          compiles the file using the FAIL compiler.
+                         Default for files of type .FAI
+
+     /FLAG-NON-STANDARD
+                    indicates non-standard syntax in file.
+
+     /FORTRAN       compiles the file using the FORTRAN compiler
+                         Default  in the absence of a standard  source
+                                  file type and a language switch
+                         Default  for files of type .FOR
+
+     /LANGUAGE-SWITCHES:"/switch(es)"
+                    passes the specified switches to the compiler that
+                    will  process  the  file(s)  to  which this switch
+                    applies.  You must include the switches in  double
+                    quotation marks ("  ").
+
+     /LIBRARY       same as /SEARCH.
+
+     /LIST          prints a listing of the program in  ASCII  format;
+                    the  name  of  this listing is the filename of the
+                    object file.  The  /CREF  switch  overrides  /LIST
+                    when they both apply to the same file.
+
+     /MAC           same as /MACRO
+
+     /MACHINE-CODE  produces a file containing the  generated  machine
+                    code.   The  filename  is that of the object file;
+                    the file type is .LST.  For high-level languages.
+                         Default
+
+     /MACRO         assembles the file using the MACRO assembler.
+                         Default for files of type .MAC
+
+     /MAP           produces a loader map and stores it  in  the  file
+                    object.MAP, where object is the name of the module
+                    containing the start  address,  or  (if  no  start
+                    address) nnnLNK.MAP, where nnn is your job number.
+
+     /NOBINARY      prevents generation of an  object  (binary)  file.
+                    Use this switch along with /LIST or /CREF to allow
+                    these switches to take effect without producing  a
+                    new object file.
+
+     /NOCREF        same as /NOCROSS-REFERENCE.
+
+     /NOCOMPILE     prevents compilation if the associated object file
+                    is   current;  otherwise  it  forces  compilation.
+                    Cancels    /COMPILE    or    /RELOCATABLE.     See
+                    Characteristics - Compiling   New   Sources  Only,
+                    below.
+                         Default
+
+     /NOCROSS-REFERENCE
+                    prevents the creation of a cross-reference file.
+                         Default
+
+     /NODEBUG       excludes special debugging information  from  your
+                    object file.  (For FORTRAN programs only.)
+                         Default
+
+     /NOFLAG-NON-STANDARD
+                    prevents the flagging of nonstandard syntax in the
+                    file.
+                         Default
+
+     /NOLIBRARY     same as /NOSEARCH.
+
+     /NOLIST        prevents a line printer listing of the program.
+                         Default
+
+     /NOMACHINE-CODE
+                    prevents generation of a file  containing  machine
+                    code.
+                         Default
+
+     /NOOPTIMIZE    prevents the generation of  a  globally  optimized
+                    object file.  (For FORTRAN programs only.)
+                         Default
+
+     /NOSEARCH      requires all modules in the  object  file  library
+                    (the  file  accompanied  by  this  switch  in  the
+                    command line) to be loaded, even if they  are  not
+                    called  by  your  program.   Cancels  the  /SEARCH
+                    switch.
+                         Default
+
+     /NOSTAY        stops  the  compiler  from  being  placed   in   a
+                    background  fork.   Use  when  /STAY  is  set as a
+                    default for the compiler.
+
+     /NOSYMBOLS     prevents a symbol table from  being  loaded  along
+                    with the object file.
+
+     /NOWARNINGS    prevents display of warnings for nonfatal errors.
+
+     /OPTIMIZE      calls  for  generation  of  a  globally  optimized
+                    object  file, that is, one that runs as quickly as
+                    possible.  (For FORTRAN programs only, and only if
+                    you have not given the /DEBUG switch.)
+
+     /PASCAL        compiles the file using the PASCAL compiler.
+                         Default for files of type .PAS
+
+     /RELOCATABLE   identifies  the  input  file  as  an  object  file
+                    (regardless   of   its   extension)  and  prevents
+                    compilation of the source file, forcing use of  an
+                    existing  object  file  even if the object file is
+                    out of date.
+                         Default for files of type .REL
+
+     /SAIL          compiles the file using the SAIL compiler.
+                         Default for files of type .SAI
+
+     /SEARCH        requires that the object file  library  (the  file
+                    accompanied by this switch in the command line) be
+                    searched for modules called by your program or  by
+                    a  program  subroutine.   Only  these  modules are
+                    loaded, along with modules called from the  system
+                    libraries, which are always searched.
+
+     /SIMULA        compiles the file using the SIMULA compiler.
+                         Default for files of type .SIM
+
+     /SNOBOL        compiles the file using the SNOBOL compiler
+                         Default for files of type .SNO
+
+     /STAY          returns your terminal to TOPS-20 command level  so
+                    that  you  can perform other work while the system
+                    continues   to   compile   your   program.     You
+                    immediately  receive  the TOPS-20 prompt (@ or $),
+                    and can then issue any user command.   Be  careful
+                    not  to  send incorrect data to programs expecting
+                    terminal  input.   (See  the   CONTINUE   command,
+                    Restrictions:   Programs  Competing  for  Terminal
+                    Input.)
+
+                    This switch saves you from having to:  issue a  ^T
+                    to  make sure the compiler has begun; give a ^C to
+                    halt  compilation;  and  issue  a  CONTINUE  /STAY
+                    command   to   remain   at  command  level  during
+                    compilation.
+
+     /SYMBOLS       loads a symbol table along with the  object  file;
+                    helpful for debugging a program.
+                         Default
+
+     /WARNINGS      displays warnings for nonfatal errors.
+                         Default
+
+
+Characteristics
+
+     Compiling New Sources Only
+
+          The system usually compiles only  those  sources  for  which
+          there  are  no  current object files, that is, sources whose
+          write dates are more recent than those of the  object  files
+          of the same name.
+
+          However, sources for which you supply a new object  filename
+          are  compiled  even  if there are current object files.  You
+          can always force compilation with the /COMPILE switch.
+
+     Default Switches Not Passed to Compiler
+
+          Only switches specified in a LOAD-class command  are  passed
+          to  the compiler; default switches are not passed.  Instead,
+          the system assumes that the defaults for  the  compiler  are
+          the same as the defaults for the LOAD-class command.
+
+     Using Standard File Types
+
+          If you specify source files with standard types (.FOR, .MAC,
+          .CBL,   or   .ALG)   in   a   COMPILE  command,  the  system
+          automatically   calls   the   appropriate   compiler    when
+          compilation  is  necessary.   If you specify source files by
+          filename only, the system searches your connected  directory
+          in  the  above  order for a file of this name and a standard
+          type.   To  compile  programs   from   sources   that   have
+          nonstandard file types, give a switch to indicate the proper
+          compiler (/FORTRAN, /MACRO, /COBOL, or  /ALGOL).   A  switch
+          will  take  precedence  over  a  standard  file type if they
+          indicate different languages.  If no compiler  is  indicated
+          with  either  a  switch or a standard file type, the FORTRAN
+          compiler is used.
+
+
+Hints
+
+     Plus Signs Between Filespecs
+
+          If you give two or more filespecs separated  by  plus  signs
+          (+)  as  arguments to COMPILE, they are compiled together as
+          if they were a single file.  Their object module  is  stored
+          under  any  filename  given  as the "object" argument of the
+          command, or (if none) under the last filename in  the  group
+          and file type .REL.
+
+     Indirect Files as Arguments
+
+          You can store the arguments (source  and  object  filespecs,
+          switches)  of  a  COMPILE  command  in an indirect file, and
+          specify them by typing an at sign (@) and its filespec as  a
+          COMPILE command argument.
+
+     Establishing Default Arguments with the SET Command
+
+          You can issue the SET DEFAULT  COMPILE-SWITCHES  command  to
+          set  up  default  global  arguments  to the COMPILE command.
+          Insert this SET command in your COMAND.CMD  file  to  change
+          your own defaults permanently.
+
+     Wildcards Illegal with COMPILE
+
+          The COMPILE command does not accept wildcard  characters  (*
+          and %) in a file specification.
+
+
+Effect on Memory
+
+     The COMPILE command clears any unkept forks from memory and loads
+     the appropriate compiler.
+
+
+Related Commands
+
+     LOAD, EXECUTE, and DEBUG     other   LOAD-class   commands    for
+                                  performing related functions
+
+
+Examples
+
+     1.  Compile a FORTRAN program.
+
+              @COMPILE RSD2.FOR
+              FORTRAN: RSD2
+              MAIN.
+
+     2.  Do the same thing, using a  switch  to  indicate  the  proper
+         compiler.   Use  the  /STAY  switch  to return immediately to
+         TOPS-20 command level.
+
+              @COMPILE RSD2/FORTRAN/STAY
+              @PUSH
+
+               TOPS-20 Command processor 7(1015)
+              @EDIT LOGIN.CMD
+
+     3.  Create an indirect file using the EDIT  editor.   Use  it  to
+         compile  several  programs, forcing a compilation of the last
+         one and storing its object file under a new name.
+
+              @CREATE UPDATE.CMD
+              Input: UPDATE.CMD.1
+              00100   /COBOL FSTQ, SNDQ, THDQ, FTHQ/COMPILE ANNUAL
+              00200   $
+              *E
+
+              [UPDATE.CMD.1]
+              @COMPILE @UPDATE.CMD
+              COBOL:  DMN     [FSTQ.CBL]
+              COBOL:  DMN     [SNDQ.CBL]
+              COBOL:  DMN     [THDQ.CBL]
+              COBOL:  DMN     [FTHQ.CBL]
+
+              EXIT
+              @DIRECTORY,
+              @@CHRONOLOGICAL WRITE
+              @@REVERSE
+              @@
+                 PS:<LATTA>
+               ANNUAL.REL.1
+               THDQ.REL.1
+               SNDQ.REL.1
+               SNDQ.CBL
+               FSTQ.CBL
+
+              Total of 5 files
+
+     4.  Produce a cross-reference (.CRF) file for a  FORTRAN  program
+         although  you already have a current object file; prevent the
+         generation of a new object program.   Check  for  the  output
+         file.
+
+              @COMPILE /CREF/FORTRAN/COMPILE/NOBINARY RSD2
+              FORTRAN: RSD2
+              MAIN.
+              @DIRECTORY,
+              @@CHRONOLOGICAL WRITE
+              @@REVERSE
+              @@
+
+                 PS:<LATTA>
+               RSD2.CRF.1
+               017CRE.TMP.100017;T
+               RSD2.REL.1
+               RSD2.FOR
+
+              Total of 4 files
+

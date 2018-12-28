@@ -1,0 +1,125 @@
+
+PERUSE command
+
+The PERUSE command allows you to read a file  using  read-only  editor
+commands.
+
+
+Format
+
+     @PERUSE (FILE) /switch(es) filespec
+
+     where:
+
+     /switch(es)    are keywords that apply to the EDIT  editor.   For
+                    descriptions of these switches, see the /CREATE or
+                    EDIT commands.
+
+     filespec       is the name of the file you want to read.
+                         Default - the  last  file  specification  and
+                                   associated  switches  you gave in a
+                                   CREATE,  EDIT,  or  PERUSE  command
+                                   during the current terminal session
+
+Characteristics
+
+     The PERUSE command runs the  EDIT  system  program  in  read-only
+     mode.   (However,  see Special Cases - Using an Editor Other than
+     EDIT, below.) PERUSE is actually the same as the  EDIT  /READONLY
+     command.   In  EDIT  /READONLY mode you can use only EDIT program
+     switches and commands that do not modify the file.
+
+
+Hints
+
+     Avoid Accidental File Modification
+
+          Use PERUSE when  it  is  important  to  avoid  the  risk  of
+          accidentally modifying a file.
+
+
+     PERUSE Line in SWITCH.INI
+
+          Add a line to your SWITCH.INI file for use with  the  PERUSE
+          command.
+
+
+Special Cases
+
+     Using an Editor Other than EDIT
+
+          The CREATE, EDIT and PERUSE commands in this  manual  assume
+          that  these  commands call on the program EDIT.  If your job
+          uses another editing program, for example, EDT, the switches
+          and examples shown here will not be applicable.
+
+          The Editor used by the CREATE, EDIT and PERUSE  commands  is
+          specified by the logical name EDITOR:.  You can find out the
+          name of this program  by  giving  the  command,  INFORMATION
+          LOGICAL-NAMES  EDITOR:.   The  job-wide  definition (if any)
+          will be given first, followed by the system-wide definition;
+          the  job-wide  definition  prevails  if  both exist.  If the
+          definition of EDITOR:  is SYS:EDIT.EXE, the CREATE, EDIT and
+          PERUSE  commands  will function as described in this manual.
+          Otherwise, you must  consult  the  appropriate  manual  (for
+          example, the EDT-20 Reference Manual) for information.
+
+
+Restrictions
+
+     Listing Available EDIT Read-Only Switches and Commands
+
+          Many of the EDIT switches and commands that are displayed in
+          response  to  a  ?  modify the file and do not function with
+          PERUSE.  If you give a file-modifying switch, the switch  is
+          ignored  but  no  error message is displayed.  If you give a
+          file-modifying  EDIT  command,  you  receive   the   message
+          %ILLEGAL COMMAND.
+
+          For further information on these switches and  commands  see
+          the EDIT Reference Manual.
+
+
+Effect on Memory
+
+     The PERUSE command clears any  unkept  forks  from  memory,  then
+     loads your edit program.
+
+
+Related Commands
+
+     CREATE                        for creating new files
+
+     DIRECTORY-class commands      for getting lists of existing files
+
+     EDIT                          for modifying files
+
+     TYPE                          for printing files on your terminal
+
+
+Examples
+
+     1.  PERUSE a file
+
+         @PERUSE FILEX.FOR
+         Read: FILEX.FOR.1
+         *P
+         00100  !THIS IS FILEX.FOR
+
+     2.  PERUSE a file, ten lines at a time, and begin at line 100.
+
+         @PERUSE /PLINES:10 FIND.BAS
+         Read: FIND.BAS
+         *P 100
+         00100   !       ADD ROUTINE
+         00200   FOR X = 0 TO 400
+         00300   IF X$(X) = "XXX" THEN GOTO 2050
+         00400   NEXT X
+         00500   PRINT STRING$(10,10);"FILE FULL"\SLEEP 4\GOTO 199
+         00600   PRINT E$ \LINPUT"ENTER THE NAME ";M$
+         00700   IF M$ <> "" THEN LET X$(X) = M$ ELSE GOTO 199
+         00800   PRINT E$ \LINPUT"ENTER THE NUMBER ";O$
+         00900   IF O$ <> "" THEN LET Y$(X) = O$ ELSE GOTO 199
+         01000   PRINT E$\INPUT"MORE NAMES TO ENTER ";D$
+         *E
+

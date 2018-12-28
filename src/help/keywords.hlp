@@ -1,0 +1,27 @@
+
+Keywords
+
+Some command arguments are not introduced by special  characters  such
+as  slashes  or  double  at signs,  but still are particular words, or
+"keywords," having a special meaning to the system.  Give these on the
+same line as the command itself, leaving at least one space before and
+between arguments.  Certain of these (for example,  the  LOGICAL-NAMES
+argument  to  the  INFORMATION  command) are actually composed of more
+than one word, joined by hyphens so that the system will not interpret
+them  as more than one argument.  If the complete command will not all
+fit onto one line,  simply  keep  typing:   the  system  automatically
+begins  a  new line when necessary, but interprets the typing as if it
+had all appeared on one line.  Or you can end a command  line  at  any
+point  with  a  hyphen  (-)  and  a  carriage return, and continue the
+command on the next line; the hyphen will not be  considered  part  of
+your input.
+
+A few command arguments must be accompanied by special symbols  to  be
+interpreted correctly.  Enclose directory names in angle brackets when
+using them with the CONNECT or names (for DEFINE), device names  (used
+with  ASSIGN),  and  structures  and  tape  sets  (used  with MOUNT or
+DISMOUNT) all require a  colon  at  the  end.   (But  note  that  when
+supplying  what  look like structure and tape set names to the related
+CANCEL command, you are supplying jobnames, and must not  include  the
+colon.)  If  you  punctuate a command argument incorrectly, the system
+will usually print a message reminding you of this.

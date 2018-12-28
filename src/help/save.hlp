@@ -1,0 +1,98 @@
+
+SAVE command
+
+The SAVE command stores a copy of memory in an executable file.
+
+
+Format
+
+@SAVE (ON FILE) filespec  (PAGES FROM) loc1 (TO) loc2, loc3 loc4, ...
+
+     where:
+
+     filespec     is the file specification under which  you  want  to
+                  store the program.
+                       Default filespec - program name.EXE
+
+     loc1 loc2,   are pairs  of octal numbers  or symbolic expressions
+     loc3 loc4,   that specify the span(s) of memory pages you want to
+     ...          save.
+                       Default  loc1  loc2 - all  assigned  pages   of
+                                       memory  from  0  to the highest
+                                       page  number  of  the   highest
+                                       existing section
+
+
+Output
+
+     Status of Files
+
+          If you use recognition of the file specification, the system
+          prints !Old Generation!, !New Generation!, or !New File!, to
+          indicate its status on disk, or !OK!  if saved on a non-disk
+          device.
+
+
+Hints
+
+     Saving Programs Before Running Them
+
+          When you load a source or  object  program  using  the  LOAD
+          command, save it using SAVE before running it.  Then you can
+          run it in the future using RUN,  without  first  loading  it
+          using  a  LOAD-class command.  This is also true if you save
+          the program after running it, but  it  will  then  be  in  a
+          post-run state.
+
+     More Information
+
+          For more information about  saved  files,  see  the  TOPS-20
+          Monitor Calls Reference Manual.
+
+Restriction
+
+     Saving an Execute-only Compiler
+
+          It is illegal to use the SAVE command after using  the  LOAD
+          command  for an execute-only compiler.  An alternative is to
+          use LINK with the LOAD command and the /SAVE switch.
+
+
+Related Commands
+
+     GET       for putting a saved file into memory
+
+     LOAD      for putting a source or object file into memory
+
+     RUN       for running a saved program
+
+     START     for starting the program in memory
+
+
+Examples
+
+     1.  Save the program currently in memory.
+
+         @SAVE
+          TESTF1.EXE.6 Saved
+
+     2.  Mount a magnetic tape in write-enabled  mode.   Use  the  GET
+         command  to  put an executable program into memory, then save
+         it (specifying a new filename) on tape and on disk.  Finally,
+         start the program, which is still in memory.
+
+         @MOUNT TAPE LAT:/WRITE-ENABLED
+         [Mount request LAT: queued, request-ID 415]
+         [Tape set LAT, volume LAT mounted]
+         [LAT: defined as MT2:]
+         @GET TESTF1
+         @SAVE LAT:TAP.EXE
+          MT2:TAP.EXE Saved
+         @SAVE
+          TAP.EXE.1 Saved
+         @START
+
+         THIS IS A TEST.
+
+         CPU time: 0.04  Elapsed time: 0.17
+

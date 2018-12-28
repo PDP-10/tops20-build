@@ -1,0 +1,5 @@
+
+CTRL/U
+
+Erases the current command line.  On hard-copy terminals, cancels  the
+command and prints three Xs at the end of the command line.

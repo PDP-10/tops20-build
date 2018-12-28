@@ -1,0 +1,91 @@
+
+RUN command
+
+The RUN command places an executable program in memory and starts it.
+
+
+Format
+
+     @RUN (PROGRAM) filespec /switch
+
+     where:
+
+     filespec       is  the  file  specification  of  any   executable
+                    program.
+                         Default dev:<dir> - DSK:
+
+                         Default .typ - .EXE
+
+     /switch        is /USE-SECTION:n
+                         specifies the memory section (from  0  to  37
+                         octal)  in which your program is to run.  You
+                         can use this switch only if your program  can
+                         be contained in one section.
+
+
+Characteristics
+
+     Efficiency of RUN
+
+          The RUN command does the work of the pair  of  commands  GET
+          and  START.   It  is  a  faster  and less expensive means of
+          executing programs than EXECUTE, or  than  LOAD  and  START.
+          Therefore  you  should store frequently-run programs in .EXE
+          files and run them with this command.
+
+
+Hints
+
+     Alternative to RUN command
+
+          When you type only a program name, the system  looks  for  a
+          matching  system program.  When you precede the program name
+          with the RUN command, the system looks for  the  program  in
+          your connected directory.  The RUN command can be eliminated
+          by typing the directory name with the program  name.   These
+          two  commands  for  example,  each run SORTER located in the
+          connected directory:
+
+               @RUN SORTER.EXE
+
+               @<SMITH>SORTER.EXE
+
+
+Effect on Memory and Terminal
+
+     The RUN command clears any unkept  forks,  places  the  specified
+     program  in memory, starts it and leaves your terminal at command
+     level in the program (if any), or at TOPS-20 command level.
+
+
+Related Commands
+
+     ERUN        for running a system program without  disturbing  the
+                 program already in memory
+
+     EXECUTE     for running source or object programs
+
+     GET         for placing an executable program in memory
+
+     R           for running executable programs stored on SYS:
+
+     SAVE        for saving a program in executable (.EXE) format
+
+     START       for starting the program currently in memory
+
+
+Examples
+
+     1.  Run one of your executable programs.
+
+         @RUN TESTF1.EXE
+
+     2.  Mount a structure  and  access  a  user's  directory  on  the
+         structure.  Run one of his programs.
+
+         @MOUNT STRUCTURE SNARK:
+         Structure SNARK: mounted
+         @ACCESS SNARK:<ELDRIDGE>
+         Password:
+         @RUN SNARK:<ELDRIDGE>FT.EXE
+

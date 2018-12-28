@@ -1,0 +1,68 @@
+
+BACKSPACE command
+
+The BACKSPACE command moves  a  magnetic  tape  set  backward  over  a
+specified number of files or records.
+
+
+Format
+
+     @BACKSPACE (DEVICE) dev:  n units
+
+     where:
+
+     dev:      is the name of the tape set or magnetic tape drive that
+               you want to move backward.  The colon after the device
+               name is optional.
+
+     n         is the number of files or records over which you want
+               to backspace.
+
+               Default n - 1
+
+     units     is either FILES or RECORDS.
+               Default units - FILES
+
+
+Restrictions
+
+     BACKSPACE with Open Files
+
+     If you have given a CTRL/C to exit from a program that has opened
+     a magnetic tape drive and you then give the BACKSPACE command for
+     that tape drive, the system will first ask if you want  to  close
+     the  associated  file.   You must do so for BACKSPACE to succeed,
+     but you will probably be unable to continue the program from that
+     point because the file will now be closed.
+
+     RECORDS Argument Used for Unlabeled Tapes Only
+
+     You cannot give the RECORDS argument  to  the  BACKSPACE  command
+     when  using a labeled tape, because read and write operations for
+     labeled tapes always move the tape to the  beginning  of  a  file
+     first.
+
+
+Related Commands
+
+     SKIP
+
+          For moving a magnetic tape set forward.
+
+     REWIND
+
+          For backspacing a tape volume or tape  set  to  its  logical
+          beginning (the beginning of the first file).
+
+     UNLOAD
+
+          For completely rewinding a magnetic  tape  onto  the  source
+          reel.
+
+
+Examples
+
+     1.  Backspace your magnetic tape one file.
+
+         @BACKSPACE MTA0: 1 FILE
+

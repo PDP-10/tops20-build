@@ -1,0 +1,71 @@
+
+DEASSIGN command
+
+The DEASSIGN command releases a device from your job  and  places  the
+device back in the pool of available devices.
+
+
+Format
+
+     @DEASSIGN (DEVICE) dev:
+
+     where:
+
+     dev:                is  the  name  of  the  device  you  want  to
+                         deassign;   an  asterisk  (*)  deassigns  all
+                         devices   (except   your   log-in   terminal)
+                         assigned  to  your  job.  The colon after the
+                         device name is optional.
+
+
+Restrictions
+
+     Open Files
+
+          The DEASSIGN command will not  deassign  a  device  that  is
+          accessing  an  open  file.   An  error is generated, and the
+          device is not deassigned until that file is closed or  until
+          you log out.  When you log out, all devices are deassigned.
+
+
+Related Commands
+
+     ASSIGN                          for assigning a particular device
+                                     to your job
+
+     INFORMATION AVAILABLE DEVICES   for finding out which devices are
+                                     available,  and  which  ones have
+                                     already been assigned to your job
+
+     MOUNT                           for  mounting  a   structure   or
+                                     magnetic  tape  and assigning the
+                                     first  available  disk  drive  or
+                                     tape drive to your job
+
+
+Examples
+
+     1.  Deassign a device (in this case a card reader).
+
+         @DEASSIGN PCDR0:
+
+     2.  Find out  which  devices  are  assigned  to  your  job,  then
+         deassign  all  of  these.   Verify that this was done.  (Note
+         that  your  terminal,  in  this  case   TTY222:,   is   never
+         deassigned.)
+
+         @INFORMATION AVAILABLE DEVICES
+         Devices available to this job:
+          DSK, PS, SNARK, PACK, FTN20, MTA2, MT0, LPT, LPT0, LPT1
+          CDR, PCDR0, CDP, FE1-15, PTY15-61, NUL, PLT, PLT0, DCN
+          SRV
+         Devices assigned to/opened by this job: MTA2, MT0, PCDR0
+          TTY222, PTY15
+         @DEASSIGN *
+         @INFORMATION AVAILABLE DEVICES
+         Devices available to this job:
+          DSK, PS, SNARK, PACK, FNT20, MTA2, LPT, LPT0, LPT1
+          CDR, PCDR0, CDP, FE1-15, PTY15-61, NUL, PLT, PLT0
+          DCN, SRV
+         Devices assigned to/opened by this job: TTY222
+

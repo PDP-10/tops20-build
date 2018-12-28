@@ -1,0 +1,131 @@
+
+EXPUNGE command
+
+The EXPUNGE command permanently erases all the deleted  files  from  a
+directory.
+
+
+Format
+
+     @EXPUNGE (DIRECTORY) dev:<directory>,
+     @@subcommand
+
+     where:
+
+     dev:<directory>     is the name of  the  directory  you  wish  to
+                         expunge;  you  may use wildcard characters to
+                         expunge more than one directory.
+
+                              Default dev: - your connected structure
+
+                              Default <directory> - the directory  (on
+                                                    the      specified
+                                                    structure) of  the
+                                                    same  name as your
+                                                    connected
+                                                    directory
+
+                              Default (if no arguments - your
+                                       are given)        connected
+                                                         directory
+
+     @@subcommand        means that after a final comma you  can  give
+                         one   or   more   optional   subcommands   on
+                         successive lines.
+
+
+     DELETE      deletes and expunges temporary files (those with  the
+                 Temporary  (;T)  attribute)  created  by  some system
+                 programs to hold interim data.  Do  not  use  if  you
+                 will have any further need of these files.
+
+     PURGE       expunges all files which  you  have  opened  but  not
+                 closed.
+
+     REBUILD     rebuilds the symbol table of the directory named.
+
+
+Output
+
+     After a successful EXPUNGE command, the system reports the number
+     of disk pages freed with the message [n pages freed].  If deleted
+     files are mapped, they will not be  expunged,  and  so  will  not
+     contribute to the number of pages freed.  Occasionally the system
+     will report a negative number.  This can  mean  that  files  were
+     being written in the directory during the EXPUNGE, or (especially
+     if you include the REBUILD subcommand) that previous computations
+     of  directory  size  had not adequately accounted for some files,
+     for example, files written near the time of a  system  crash  and
+     reload.
+
+
+Hints
+
+     Using the REBUILD Subcommand
+
+          The REBUILD subcommand is not needed under usual conditions,
+          as  the  system  performs  this  action  automatically.  Use
+          REBUILD if a message is printed on  your  terminal  advising
+          you to rebuild the symbol table of a directory.
+
+     Using the PURGE Subcommand
+
+          The PURGE subcommand is  useful  chiefly  for  removing  the
+          remains  of  files  that were being created at the time of a
+          system crash or a structure dismount.  Do not give it  while
+          anyone  might  be  using  the directory, because that user's
+          program might be deprived of necessary files as a result.
+
+     Cannot CTRL/C
+
+          You cannot use <CTRL/C> to interrupt an EXPUNGE once  it  is
+          started.
+
+
+Special Cases
+
+     Files With the "Permanent" Attribute
+
+          The system erases only the contents of any files  that  have
+          the  Permanent  attribute,  for  example your MAIL.TXT file,
+          when you try to expunge them.  The  file  specifications  of
+          permanent  files remain among your deleted files, and cannot
+          be removed by TOPS-20 commands.
+
+
+Related Commands
+
+     DELETE                     for marking files to be later expunged
+
+     DIRECTORY-class commands   for   obtaining    lists    of    file
+                                specifications
+
+     INFORMATION DISK-USAGE     for  finding  out  the   size   of   a
+                                directory
+
+     UNDELETE                   for recovering deleted files
+
+
+Examples
+
+     1.  Expunge all deleted files from your directory.
+
+         @EXPUNGE
+          PS:<LATTA> [6 pages freed]
+
+     2.  Find out how much of your disk space is in use and  how  much
+         is  occupied  by  deleted  files.  Delete some of your backup
+         files, then give the EXPUNGE command to erase all of these.
+
+         @INFORMATION DISK-USAGE
+          PS:<LATTA>
+          154 Pages assigned, 101 in use, 53 deleted
+          590 Working pages, 590 Permanent pages allowed
+          33371 Pages free on PS:
+         @DELETE *.Q*
+          BLUE.QAR.1 [OK]
+          REMARK.QXT.1 [OK]
+          RIMOUSKI.QXT.1 [OK]
+         @EXPUNGE
+          PS:<LATTA> [56 pages freed]
+

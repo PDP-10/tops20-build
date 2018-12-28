@@ -1,0 +1,695 @@
+
+TERMINAL command
+
+The TERMINAL command sets the characteristics of your terminal.
+
+
+Format
+
+     @TERMINAL (FEATURE or TYPE) argument
+
+     where:
+
+     argument     is  a  keyword,  chosen   from   the   list   below,
+                  representing   your   choice   of  TERMINAL  command
+                  options; some arguments further  require  a  decimal
+                  number to complete their meaning.
+
+
+Summary of TERMINAL Command Arguments (defaults, where not explicitly
+given, are indicated by an asterisk)
+
+The TERMINAL  command  arguments  are  divided  into  two  categories,
+feature   and   type.    Feature  arguments  set  individual  terminal
+characteristics and type arguments set a group of characteristics that
+are defined for the model of your terminal.
+
+
+
+                          Feature Arguments
+
+          FLAG
+          FORMFEED
+          FULLDUPLEX
+          HALFDUPLEX
+          HELP
+          IMMEDIATE
+          INDICATE
+          INHIBIT
+          LENGTH n  Default n - 66
+          LINE-HALFDUPLEX
+          LOWERCASE
+                ---
+                | FLAG  *
+                | FORMFEED  *
+                | IMMEDIATE  *
+                | INDICATE
+                | INHIBIT
+          NO *  | LOWERCASE
+                | PAGE
+                |       ---
+                |       | CHARACTER x y  *
+                | PAUSE | COMMAND
+                |       | END-OF-PAGE
+                |       ---
+                | RAISE
+                | RECEIVE
+                |TABS  *
+                ---
+          PAGE
+          PAUSE
+          RAISE
+          RECEIVE
+                ---
+                |   50
+                |   75
+                |  110
+                |  134
+                |  150
+                |  100
+          SPEED |  300
+                |  600
+                | 1200
+                | 1800
+                | 2400
+                | 4800
+                | 9600
+                ---
+          TABS
+          TYPE 0-36
+          WIDTH n  Default n - 72
+
+
+
+                            Type Arguments
+
+          33
+          35
+          37
+          EXECUPORT
+          H19
+          LA120
+          LA30
+          LA36
+          LA38
+          SYSTEM-DEFAULT
+          TERMINET
+          TI
+          VK100
+          VT05
+          VT100
+          VT102
+          VT125
+          VT131
+          VT200-SERIES
+          VT300-SERIES
+          VT50
+          VT52
+
+
+                          Feature Arguments
+
+
+     FLAG                instructs  the  system  to  print  a   single
+                         quotation   mark  (')  before  it  prints  an
+                         uppercase character.  This takes effect  only
+                         if you set the NO LOWERCASE parameter.
+
+     FORMFEED            informs the system that your terminal  has  a
+                         form  feed  mechanism;  otherwise, the system
+                         simulates form feeds by printing the  correct
+                         number  of  line  feeds  (set by the TERMINAL
+                         LENGTH command) if you have set  TERMINAL  NO
+                         INDICATE,  or  by  printing an ^L if you have
+                         set TERMINAL INDICATE.
+
+     FULLDUPLEX          instructs the system to send to your terminal
+                         each character as the program reads it.  Your
+                         terminal does not print what you  type  until
+                         the  system  sends  the character back to the
+                         terminal.  See also IMMEDIATE.
+                              Default
+
+     HALFDUPLEX          inhibits the  system  from  sending  to  your
+                         terminal  each  character,  and  assumes that
+                         your terminal prints each  character  itself;
+                         causes  echoing  of format control characters
+                         (for example, TAB and line  feed).   Be  sure
+                         also   to   set   any   corresponding  switch
+                         physically located on your terminal.
+
+     HELP                prints   information   about   the   TERMINAL
+                         command.
+
+     IMMEDIATE           instructs the system to echo  each  character
+                         as  soon  as  you type it, instead of waiting
+                         until the  program  receives  the  character.
+                         Immediate  echoing  has  effect only when the
+                         FULLDUPLEX parameter is also set.
+
+     INDICATE            instructs the system to print a ^L instead of
+                         advancing the proper number of lines whenever
+                         encountering a form  feed  or  CTRL/L  (ASCII
+                         character 14).
+                              Default
+
+     INHIBIT             notifies the system that you are not  willing
+                         to  receive  links,  advice, system messages,
+                         and user messages.  Also stops beep  or  bell
+                         signals from users attempting to TALK to your
+                         terminal.  Only output from your own  job  is
+                         displayed  on  your  terminal.   This command
+                         disables the settings  established  with  the
+                         RECEIVE and REFUSE commands.  Reestablish the
+                         RECEIVE and REFUSE settings with NO INHIBIT.
+
+     LENGTH n            sets the number  of  lines  printed  on  each
+                         page.     (If   you   have   TERMINAL   PAUSE
+                         END-OF-PAGE set as  well,  the  system  stops
+                         after  printing  n  lines  and continues only
+                         when you type CTRL/Q.)  If you set  the  page
+                         length  to  0, the system stops printing only
+                         when you type CTRL/S  (as  long  as  TERMINAL
+                         PAUSE COMMAND is in effect also); it does not
+                         automatically stop at the end of a page.
+                              Default n - 66
+
+     LINE-HALFDUPLEX     inhibits the  system  from  sending  to  your
+                         terminal  each  character,  and  assumes that
+                         your terminal prints each  character  itself;
+                         does  not  cause  echoing  of  format control
+                         characters (for example, TAB and line feed).
+
+     LOWERCASE           tells the system that your  terminal  handles
+                         lowercase   output  characters  properly,  by
+                         printing either the  lowercase  character  or
+                         the  corresponding uppercase character.  When
+                         NO LOWERCASE  is  set,  the  system  converts
+                         lowercase    output    characters    to   the
+                         appropriate   uppercase   characters   before
+                         sending  them.   See  also the FLAG and RAISE
+                         parameters.
+                              Default
+
+     NO argument         reverses any of the arguments FLAG, FORMFEED,
+                         IMMEDIATE,   INDICATE,   INHIBIT,  LOWERCASE,
+                         PAGE, PAUSE, RAISE, RECEIVE, and TABS
+                             Defaults - NO  FLAG,  NO   FORMFEED,   NO
+                                        IMMEDIATE,   NO   INHIBIT,  NO
+                                        PAUSE END-OF-PAGE, NO TABS
+
+     PAGE n              instructs the system to stop printing when it
+                         reaches the end of a page, or when you type a
+                         CTRL/S.  Continue  the  output  by  typing  a
+                         CTRL/Q.   To  set  the  page length, give the
+                         number n or give a TERMINAL  LENGTH  command.
+                         If  you  set the page length to 0, the system
+                         stops printing only when you type a CTRL/S.
+                             Default  n - argument  of  any   TERMINAL
+                                          LENGTH  command given in the
+                                          current terminal session, or
+                                          the  default page length for
+                                          your terminal type
+
+            ---
+            | CHARACTER x y
+     PAUSE *| END-OF-PAGE
+            | COMMAND    instructs the system to stop sending   output
+             ---         whenever   it   has  sent  a   full      page
+                         (END-OF-PAGE),  or  whenever  you type CTRL/S
+                         (COMMAND) or x (CHARACTER).
+
+                         For argument END-OF-PAGE to stop your output,
+                         argument COMMAND must also be in effect.  You
+                         continue the output by typing CTRL/Q or the y
+                         parameter of the CHARACTER argument.
+
+                         For argument CHARACTER to stop  your  output,
+                         the COMMAND and END-OF-PAGE arguments must be
+                         in effect.  With the CHARACTER argument,  you
+                         continue  output  by  typing the y parameter.
+                         You can specify x and y in various ways:   as
+                         the  octal  ASCII  code  for any character or
+                         control key; as  any  printing  character  in
+                         double  quotes  (" ");  as the word "control"
+                         followed by the printing representation of  a
+                         control  character  in double quotation marks
+                         (for example, CONTROL "A"); and as  the  word
+                         "space"  to  specify  the  space bar.  If you
+                         specify x and y to be the  same,  or  if  you
+                         omit  y,  you  get  a toggle effect.  You can
+                         specify  CTRL/S  and  CTRL/Q  as  x   and   y
+                         parameters,   respectively,   only  on  local
+                         terminals.  (Network terminal connections  do
+                         not  allow  for CTRL/S and CTRL/Q.)  But even
+                         some local terminals require that you  select
+                         characters  other than CTRL/S and CTRL/Q, for
+                         example, the VT125 and  the  VT100  with  the
+                         printer port option.
+
+                         The default values for x and y are CTRL/S and
+                         CTRL/Q for local terminals, and CTRL/A/CTRL/A
+                         for  network  terminals.   You  can   achieve
+                         consistency   between   local   and   network
+                         terminals by placing the same TERMINAL  PAUSE
+                         CHARACTER  command in your LOGIN.CMD files on
+                         the various TOPS-20 systems.
+
+                         To set the  page  length,  use  the  TERMINAL
+                         LENGTH  command.   If you set the page length
+                         to 0, the system stops  sending  output  only
+                         when  you  type  CTRL/S or the x parameter of
+                         the CHARACTER argument.
+                              Default - COMMAND      (for all terminal
+                                                     types)
+                                      - END-OF-PAGE  (for      display
+                                                     terminals,    for
+                                                     example,    VT05,
+                                                     VT50,       VT52,
+                                                     VT100)
+                                      - CHARACTER    (for all terminal
+                                                     types)
+
+     RAISE               instructs  the  system   to   interpret   all
+                         lowercase terminal input as the corresponding
+                         upper characters.  (This setting converts the
+                         tilde  (~)  and  right brace (}) to the <ESC>
+                         key.)
+                              Default
+
+     RECEIVE             same as the RECEIVE command.  NO  RECEIVE  is
+                         the same as the REFUSE command.
+
+     SPEED n1 n2         sets the  baud  rate  at  which  the  TOPS-20
+                         monitor   receives   characters   from   your
+                         terminal (n1) and sends  characters  to  your
+                         terminal  (n2).   Be  sure  also  to  set any
+                         corresponding switch  physically  located  on
+                         your terminal.
+                              Default n1 - 300
+                                      n2 - n1
+
+     TABS                informs the system  that  your  terminal  has
+                         mechanical  tab stops.  Causes the TAB key to
+                         advance the cursor according to the tab stops
+                         on  your  terminal.   (Some terminals let you
+                         select tab stops while others have tab  stops
+                         every  eight spaces).  If NO TABS is set, the
+                         system simulates  a  tab  by  printing  eight
+                         spaces.
+
+     TYPE n              instructs the system to treat  your  terminal
+                         as  terminal  type  n, in accordance with the
+                         table below:
+
+                         Terminal
+                           Type    Characteristics
+
+                            0      Model 33
+                            1      Model 35
+                            2      Model 37
+                            3      EXECUPORT and TI
+                            4-7    reserved for customer use
+                            8      TERMINET
+                            9      IDEAL  (has  a  TAB  and   FORMFEED
+                                   mechanism,  prints  lower case, has
+                                   infinite line  width  and  infinite
+                                   page length)
+                            10     VT05
+                            11     VT50
+                            12     LA30
+                            13     VT52, except for not  having  tabs,
+                                   and  having  a  page  length of 30;
+                                   used  for   a   Digital   Equipment
+                                   Corporation GT40.
+                            14     LA36
+                            15     VT52
+                            16     VT100
+                            17     LA38
+                            18     LA120
+                            19-34  reserved for customer use
+                            35     VT125
+                            36     VK100
+                                        Default - 8
+
+     WIDTH n             tells the system  the  width,  in  number  of
+                         characters,  of your terminal line.  When the
+                         system  prints  a  line  longer   than   your
+                         terminal   width,   it  prints  the  first  n
+                         positions and advances a line  to  print  the
+                         rest.
+                              Default width - 72
+
+
+                            Type Arguments
+
+
+     33                  informs the system that your  terminal  is  a
+                         Teletype Model 33, which
+
+                          o  does  not  have  a  form  feed   or   tab
+                             mechanism
+
+                          o  prints lowercase letters as uppercase
+
+                          o  needs  extra  time  to  print  tabs   and
+                             certain   paper-moving  characters  (form
+                             feed and vertical tab)
+
+                          o  has a line width of 72
+
+                          o  has a page length of 66
+
+     35                  informs the system that your  terminal  is  a
+                         Teletype   Model   35,  which  has  the  same
+                         characteristics as a Model 33, except that it
+                         has a form feed and tab mechanism.
+
+     37                  informs the system that your  terminal  is  a
+                         Teletype   Model   37,  which  has  the  same
+                         characteristics as a Model 33, except that it
+                         prints lowercase letters.
+
+     EXECUPORT           informs the system that your terminal  is  an
+                         EXECUPORT, which
+
+                          o  does  not  have  a  form  feed   or   tab
+                             mechanism
+
+                          o  prints lowercase letters
+
+                          o  needs extra time to  perform  a  carriage
+                             return
+
+                          o  has a line width of 80
+
+                          o  has a page length of 66
+
+     H19                 informs the system that your  terminal  is  a
+                         Heath  Kit  H19 terminal.  The system assumes
+                         the same characteristics as for the VT52.
+
+     LA30                informs the system that your  terminal  is  a
+                         Digital Equipment Corporation LA30, which
+
+                          o  does  not  have  a  form  feed   or   tab
+                             mechanism
+
+                          o  prints lowercase letters as uppercase
+
+                          o  needs extra time to  perform  a  carriage
+                             return, line feed, tab, and form feed
+
+                          o  has a line width of 80
+
+                          o  has a page length of 66
+
+     LA36                informs the system that your  terminal  is  a
+                         Digital Equipment Corporation LA36, which
+
+                          o  does  not  have  a  form  feed   or   tab
+                             mechanism
+
+                          o  prints lowercase letters
+
+                          o  has a line width of 132
+
+                          o  has a page length of 66
+
+     LA38                informs the system that your  terminal  is  a
+                         Digital Equipment Corporation LA38, which
+
+                          o  does not have a form-feed mechanism
+
+                          o  prints lowercase letters
+
+                          o  has a line width of 132
+
+                          o  has a page length of 66
+
+     LA120               informs the system that your  terminal  is  a
+                         Digital Equipment Corporation LA120, which
+
+                          o  prints lowercase letters
+
+                          o  has a line width of 132
+
+                          o  has a page length of 66
+
+     SYSTEM-DEFAULT      informs the system  that  your  terminal  has
+                         these characteristics (ensuring an acceptable
+                         minimum level of performance for all terminal
+                         types):
+
+                          o  does  not  have  a  form  feed   or   tab
+                             mechanism prints lowercase letters
+
+                          o  needs extra time to  perform  a  carriage
+                             return, line feed, tab, and form feed
+
+                          o  has a line width of 72
+
+                          o  has a page length of 66
+                              Default for terminal type
+
+     TERMINET            informs the system that your  terminal  is  a
+                         TERMINET, which
+
+                          o  does  not  have  a  form  feed   or   tab
+                             mechanism
+
+                          o  prints lowercase letters
+
+                          o  needs extra time to  perform  a  carriage
+                             return, line feed, tab, and form feed
+
+                          o  has a line width of 72
+
+                          o  has a page length of 66
+
+     TI                  informs the system that your  terminal  is  a
+                         Texas  Instruments  terminal,  which  has the
+                         same characteristics as an EXECUPORT.
+
+     VK100               informs the system that your  terminal  is  a
+                         Digital   Equipment   VK100   with  the  same
+                         characteristics as the VT52 and  VT100,  plus
+                         graphics capability (both black-and-white and
+                         color).
+
+     VT05                informs the system that your  terminal  is  a
+                         Digital Equipment Corporation VT05, which
+
+                          o  does not have a form-feed mechanism
+
+                          o  has a tab mechanism
+
+                          o  prints lowercase letters as uppercase
+
+                          o  needs extra time to perform a linefeed or
+                             formfeed
+
+                          o  has a line width of 72
+
+                          o  has a page length of 20
+
+     VT50                informs the system that your  terminal  is  a
+                         Digital Equipment Corporation VT50, which
+
+                          o  does not have a form feed mechanism
+
+                          o  prints lowercase letters as uppercase
+
+                          o  has a line width of 80
+
+                          o  has a page length of 12
+
+     VT52                informs the system that your  terminal  is  a
+                         Digital   Equipment  Corporation  VT52.   The
+                         system assumes the  same  characteristics  as
+                         for  a  VT50  except that it prints lowercase
+                         letters, and has a page length  of  24  lines
+                         instead of 12.
+
+     VT100               informs the system that your  terminal  is  a
+                         Digital  Equipment  Corporation  VT100.   The
+                         system assumes the  same  characteristics  as
+                         for a VT52.
+
+     VT102               informs the system that your  terminal  is  a
+                         Digital  Equipment  Corporation  VT102.   The
+                         system assumes the  same  characteristics  as
+                         for a VT100.
+
+     VT125               informs the system that your  terminal  is  a
+                         Digital  Equipment  Corporation  VT125, which
+                         has full compatibility with the VT100 and the
+                         capability   of   business,  laboratory,  and
+                         scientific  graphics  in  black-and-white  or
+                         color.
+
+     VT131               informs the system that your  terminal  is  a
+                         Digital Equipment Corporation VT131.
+
+     VT200-SERIES        informs the system that your  terminal  is  a
+                         Digital  Equipment  Corporation VT220, VT240,
+                         or  VT241.   The  system  assumes  the   same
+                         characteristics as a VT100.
+
+     VT300-SERIES        informs the system that your  terminal  is  a
+                         Digital Equipment Corporation VT330 or VT340.
+                         The system assumes the  same  characteristics
+                         as a VT100.
+
+
+Characteristics
+
+     TERMINAL Commands Before Log-in
+
+          You can use TERMINAL commands, after an  initial  CTRL/C  or
+          RETURN  but  before  logging  in,  to adjust your terminal's
+          characteristics.
+
+
+Hints
+
+     Setting Your Terminal's Speed
+
+          If the initial speed setting of your terminal  line  is  not
+          what you want but your terminal will function at that speed,
+          you can give a TERMINAL SPEED command even before log-in  to
+          set the proper value.  If your terminal will not work at the
+          initial speed, ask the operator to set an appropriate value.
+
+     Using Split Speeds
+
+          If you have a terminal that allows split speeds, you can set
+          the  input and output speeds to different values.  This will
+          allow you to take advantage of  fast  system  response,  for
+          example,  without providing a needlessly fast input line.  A
+          setting of 150 2400 will accomplish  this.   Note  that  you
+          cannot  use  split  speeds  on  a terminal that is part of a
+          DECSYSTEM-2020 system.  Note also that using split speeds on
+          VT100,  VT125,  or  VK100  terminals  may  cause the "smooth
+          scrolling"  feature  to  function   improperly.    See   the
+          appropriate  terminal  manual, for example, the VT100 User's
+          Guide, for details.
+
+
+Special Cases
+
+     Terminal Types and Defaults Peculiar to Your System
+
+          The preceding  pages  describe  terminal  types  and  system
+          defaults  as  they  are  shipped  with TOPS-20.  However, by
+          making changes  to  the  monitor  and  the  TOPS-20  command
+          processor,  your  installation  can  add  different terminal
+          types and change the default characteristics associated with
+          terminals.   Check with your system manager to find out what
+          changes, if any, are in effect for your system.
+
+     Terminal Speed Retained from Last Session
+
+          Although most terminal  characteristics  revert  to  default
+          settings  when you log in, the terminal line will retain the
+          value for speed set by the last user of the line, even if he
+          was  using  a  different  kind of terminal.  However, if the
+          system failed and was restarted after the terminal line  was
+          last  used,  the  initial  speed  will  be determined by the
+          appropriate   TERMINAL   SPEED   command   in   the   system
+          configuration file.  Also, dial-up lines return to the speed
+          specified in this file after every use.
+
+
+Restrictions
+
+     CTRL/S and CTRL/Q Not Passed to Remote Nodes
+
+          CTRL/S and CTRL/Q are always processed by  your  host  node;
+          they are not sent to a remote node.  Therefore, when you are
+          connected to a remote node  with  the  SETHOST  program  and
+          TERMINAL  PAUSE  (ON) END-OF-PAGE is set on the remote node,
+          CTRL/Q will not continue scrolling.  CTRL/A is  the  default
+          control  character recognized by the remote node for pausing
+          and continuing scrolling.  You can use  the  TERMINAL  PAUSE
+          (ON)  CHARACTER  command  to  specify the pause and continue
+          characters of your choosing - except CTRL/S and CTRL/Q.   It
+          is  recommended  that you define the same pause and continue
+          scrolling characters on your host and the remote node.
+
+     Disabling CTRL/S and CTRL/Q on High Speed Terminals
+
+          Some terminal models, when set to a high receive baud  rate,
+          such  as  9600, require that the CTRL/S and CTRL/Q pause and
+          continue characters be enabled in order to correctly  format
+          terminal output.  If you must disable CTRL/S and CTRL/Q with
+          the TERMINAL NO PAUSE COMMAND, manually set the terminal  to
+          fast or "jump" scroll.  If the output is still not correctly
+          formatted, set a slower receive baud rate with the  TERMINAL
+          SPEED command.  Then, manually set the same baud rate on the
+          terminal.
+
+
+Warning
+
+     Setting an Improper Terminal Speed
+
+          If you  set  an  incorrect  speed  for  your  terminal,  for
+          example,  one that is too high, you will be unable to use it
+          further.  A TERMINAL SPEED command in the LOGIN.CMD file  in
+          your log-in directory can cause the same problem.  In such a
+          case, obtain your terminal  line  number  if  possible  (the
+          second  column  of  SYSTAT  command  output consists of line
+          numbers) and ask the operator to set an appropriate value.
+
+
+Related Commands
+
+     INFORMATION TERMINAL-MODE     for examining your current terminal
+                                   settings
+
+
+Examples
+
+     1.  Declare that your terminal is an VT100.
+
+         @TERMINAL VT100
+
+     2.  Do the same thing, using the corresponding numerical type.
+
+         @TERMINAL TYPE 16
+
+     3.  Prepare your LA36 terminal for you to type in some upper- and
+         lowercase text files on narrow paper.
+
+         @TERMINAL LA36
+         @TERMINAL NO RAISE
+         @terminal width 72
+
+     4.  Find out  your  terminal's  characteristics,  then  give  the
+         command  that  causes  it to print a full page of blank lines
+         when you type a CTRL/L (or when it encounters an ^L in a file
+         it is printing on your terminal).
+
+         @INFORMATION TERMINAL-MODE
+          TERMINAL LA36
+          TERMINAL SPEED 300
+          TERMINAL NO INHIBIT (NON-JOB OUTPUT)
+          RECEIVE LINKS
+          REFUSE ADVICE
+          RECEIVE SYSTEM-MESSAGES
+          RECEIVE USER-MESSAGES
+          TERMINAL PAUSE (ON) COMMAND
+          TERMINAL NO PAUSE (ON) END-OF-PAGE
+          TERMINAL LENGTH 66
+          TERMINAL WIDTH 132
+          TERMINAL LOWERCASE
+          TERMINAL RAISE
+          TERMINAL NO FLAG
+          TERMINAL INDICATE
+          TERMINAL NO FORMFEED
+          TERMINAL NO TABS
+          TERMINAL NO IMMEDIATE
+          TERMINAL FULLDUPLEX
+         @TERMINAL NO INDICATE
+

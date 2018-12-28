@@ -1,0 +1,57 @@
+
+DISABLE command
+
+The DISABLE command disables any special capabilities, such  as  those
+of WHEEL or OPERATOR, that you have enabled.
+
+
+Format
+
+     $DISABLE (CAPABILITIES)
+     @
+
+
+Characteristics
+
+     Resumption of Standard Prompt
+
+          The DISABLE command causes the system to resume the standard
+          at sign  prompt  (@) in place of the dollar sign prompt ($),
+          which indicated enabled capabilities.
+
+
+Warning
+
+     Disabling Promptly
+
+          Be sure to disable your capabilities as  soon  as  you  have
+          finished using them, so that you or a program you run cannot
+          accidentally damage the system.
+
+
+Related Commands
+
+     ENABLE     for  activating  any  capabilities  that  the   system
+                manager has given you
+
+
+Examples
+
+     1.  Disable your capabilities.
+
+         $DISABLE
+         @
+
+     2.  Try copying a file from a directory  to  which  you  have  no
+         access.   Then  enable  your  capabilities (assuming you have
+         been granted capabilities), copy the file, and give  up  your
+         capabilities with the DISABLE command.
+
+         @COPY <MON-SPCS>FFE.SPC
+         ?Directory access privileges required
+         @ENABLE
+         $COPY <MON-SPCS>FFE.SPC
+          <MON-SPCS>FFE.SPC.1 => FFE.SPC.2 [OK]
+         $DISABLE
+         @
+

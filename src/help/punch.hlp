@@ -1,0 +1,432 @@
+
+PUNCH command
+
+The PUNCH command places requests in a card punch or paper tape  punch
+output queue.
+
+
+Format
+
+     @PUNCH (ONTO) medium (FILES) /switch(es) filespec/switch(es),...
+
+     where:
+
+     medium         is the name of the medium on  which  you  want  to
+                    punch your file(s).  It can be either
+
+                            CARDS
+                         or
+                            PAPER-TAPE
+
+     switches       are  keywords,  chosen  from   the   list   below,
+                    indicating  your  choice of PUNCH command options.
+                    These switches are of two kinds:  job switches and
+                    file switches.
+
+                    Job switches apply to all files specified  in  the
+                    command, no matter where you give the switches.
+
+                    File switches have different effects depending  on
+                    their  positions  in  the  command  line:   placed
+                    before all files  in  the  command,  they  act  as
+                    defaults  for  all; otherwise they affect only the
+                    nearest preceding file.
+
+                         Defaults are shown in the list of switches
+
+     filespec       is the specification of a file you wish to  punch.
+                    You  can  use  wildcard  characters  (%  and *) to
+                    specify more than one file.
+
+
+       Summary of PUNCH Command Switches (defaults in boldface)
+
+
+                             Job Switches
+                    (affecting the entire command)
+
+   /ACCOUNT:account                     Default account - your current
+                                                          account
+   /AFTER:date and/or time
+   /DESTINATION-NODE:node-name
+   /FORMS:forms name                    Default forms name - NORMAL
+   /GENERIC
+   /JOBNAME:6-character name            Default - first six characters
+                                                  of first filename in
+                                                  request
+   /LIMIT:n                             Default  n - calculated   from
+                                                     length of files
+   /METERS:n (PAPER-TAPE only)          Default  n - calculated   from
+                                                     length of files
+   /NOTE:12-character message
+           YES
+   /NOTIFY:NO
+   /PRIORITY:n                          Default n - 10
+   /SEQUENCE:n
+   /UNIT:octal number
+   /USER:user name
+
+
+                            File Switches
+             (affecting only the nearest preceding file,
+                 unless placed before all filespecs)
+
+
+   /COPIES:n                            Default n - 1
+   /DELETE                              Default for files of type .LST
+   /HEADER
+         ASCII
+         BCD
+   /MODE:BINARY   (CARDS only)
+         IMAGE
+         ASCII
+         BINARY
+   /MODE:IMAGE   (PAPER-TAPE only)
+         IMAGE-BINARY
+   /NOHEADER
+   /PRESERVE                            Default for all  files  except
+                                                    those of type .LST
+
+
+                        PUNCH Command Switches
+
+                             Job Switches
+                      (affecting the entire job)
+
+     /ACCOUNT:account         specifies the account  of  39  or  fewer
+                              characters  to  charge for your punching
+                              request.  This account must be valid for
+                              your user name.
+                                    Default account - your     current
+                                                      account   (check
+                                                      with INFORMATION
+                                                      JOB-STATUS)
+
+     /AFTER:date and/or time or
+
+            day  of  week (or TODAY)
+            and/or time       ensures that the job will not be punched
+                              until   after   the   date  and/or  time
+                              specified.     NOV-12-79    and    18:00
+                              illustrate two arguments to this switch.
+                              If you give both date and time, separate
+                              them  with  a  space.  When given alone,
+                              the time may be preceded by a plus  sign
+                              (+),  which will delay processing by the
+                              indicated  length  of  time   from   the
+                              present.
+
+                              Alternatively, you can give a day of the
+                              week   (such  as  MONDAY)  or  TODAY  as
+                              argument;  then  the  job  will  not  be
+                              punched   until  the  beginning  of  the
+                              following  day.   If  you  follow   this
+                              argument  with  a  plus sign and a time,
+                              the job will be further delayed by  this
+                              amount.
+
+     /DESTINATION-NODE:node-name
+                              specifies the IBM remote node  on  whose
+                              card  punch  or  paper  tape  punch your
+                              request is to be satisfied.  Two  colons
+                              (::)   following   the   node  name  are
+                              optional.
+
+     /FORMS:forms name        specifies, in six or  fewer  characters,
+                              the  forms  (determining  the weight and
+                              color of card or paper stock,  the  size
+                              of banner, header, and trailer sections,
+                              etc.)  to  use  for  the  punching  job.
+                              Using  this  switch may delay processing
+                              until the operator can mount the  proper
+                              forms.   Note that your installation may
+                              provide a different default argument  to
+                              this switch.
+                                   Default forms name - NORMAL
+
+     /GENERIC                 allows any  card  punch  or  paper  tape
+                              punch  to  be  used  for  satisfying the
+                              request; use this switch to  override  a
+                              previous /UNIT switch.
+                                   Default
+
+     /JOBNAME:name            assigns  a  name  (of   six   or   fewer
+                              characters) to the punching job.
+                                   Default name - first six characters
+                                                   of  first  filename
+                                                   in the request
+
+     /LIMIT:n                 places a limit of n cards (or n feet  of
+                              paper   tape)   on  the  output  of  the
+                              punching job.
+                                   Default limits,  usually  adequate,
+                                           are   calculated  from  the
+                                           size of the files you  want
+                                           punched
+
+     /METERS:n                places a limit of n meters on the output
+                              of the punching job (PAPER-TAPE only).
+
+     /NOTE:message            labels the header section of output (the
+                              section  displaying  the jobname) with a
+                              message  or  notation  of   up   to   12
+                              characters.    The   message   must   be
+                              enclosed in double quotation marks if it
+                              contains   spaces   or  non-alphanumeric
+                              characters.
+
+             YES
+     /NOTIFY:NO               tells  the  system  whether  to  send  a
+                              message   to   your  terminal  when  the
+                              request has been satisfied.
+                                   Default argument - NO
+
+                                   Default argument  (if  switch   is
+                                           given)   - YES
+
+     /PRIORITY:n              assigns  a  number  n,  reflecting   the
+                              urgency  of  the  punch request.  This n
+                              must from 1 to 63, with  larger  numbers
+                              receiving  earlier treatment.  Note that
+                              for  non-privileged  users  the  maximum
+                              priority  that can be specified is lower
+                              (usually 20), and that your installation
+                              may  provide  a different value both for
+                              this  maximum  and   for   the   default
+                              priority.
+                                   Default n - 10
+
+     /SEQUENCE:n              specifies  sequence  number  n  for  the
+                              punch  request,  which  you can use when
+                              modifying or canceling the request.
+
+     /UNIT:octal number       directs your request to the  card  punch
+                              or  paper  tape  punch  of the specified
+                              octal unit number.
+
+     /USER:user name          specifies the user  who  is  to  be  the
+                              owner   of   the   punch  request.   For
+                              privileged users only.
+
+
+                           File Switches
+             (affecting only the nearest preceding file,
+            unless placed before all file specifications)
+
+
+     /COPIES:n                requests that n copies of  the  file  be
+                              punched; n must be less than or equal to
+                              62.
+                                   Default n - 1
+
+     /DELETE                  deletes   the   file   after   punching.
+                              Opposite of /PRESERVE.
+                                   Default for files of type .LST
+
+     /HEADER                  causes a header section  containing  the
+                              jobname  to  be  punched before the file
+                              itself is produced.
+                                   Default
+
+           ASCII
+           BCD
+     /MODE:BINARY (CARDS only)
+           IMAGE              designates the  mode  for  punching  the
+                              file onto cards.  One of the following:
+
+                               o  ASCII treats each  word  of  a  disk
+                                  file  as  five  seven-bit  bytes and
+                                  punches each byte into one column of
+                                  the    card,    using    the   ASCII
+                                  translation  table  for   conversion
+                                  into Hollerith code.
+
+                               o  BCD is the  same  as  ASCII,  except
+                                  that  it  uses  the  026 translation
+                                  table.
+
+                               o  BINARY treats each group of 26 words
+                                  as  78 12-bit bytes and punches each
+                                  byte into one column  of  the  card,
+                                  from  column  3  through  column 80;
+                                  column 1  contains  the  octal  word
+                                  count  in rows 12 through 3 and rows
+                                  7 and  9  punched,  while  column  2
+                                  contains a 12-bit folded checksum.
+
+                               o  IMAGE treats each group of 27  words
+                                  as  81 12-bit bytes and punches each
+                                  byte into one column  of  the  card,
+                                  ignoring the eighty-first byte.
+
+
+           ASCII
+           BINARY
+     /MODE:IMAGE   (PAPER-TAPE only)
+           IMAGE-BINARY       designates the  mode  for  punching  the
+                              file   onto  paper  tape.   One  of  the
+                              following:
+
+                               o  ASCII treats each  word  of  a  disk
+                                  file as five seven-bit bytes plus an
+                                  even parity bit for each  byte,  and
+                                  punches  each byte into one frame of
+                                  paper  tape;  if   a   vertical   or
+                                  horizontal  tab  is  punched,  it is
+                                  followed by a rubout character,  and
+                                  if  a  formfeed  is  punched,  it is
+                                  followed by 16 null characters.
+
+                               o  BINARY treats each group of 33 words
+                                  as  1  control  word  followed by 32
+                                  words of data, where each word (both
+                                  control  and  data)  consists of six
+                                  6-bit bytes, and punches  each  byte
+                                  into  one  frame of paper tape after
+                                  adding 200 (octal) to the byte;  the
+                                  control  word  consists  of a folded
+                                  checksum in the left  half  and  the
+                                  data word count in the right half.
+
+                               o  IMAGE treats each  word  of  a  disk
+                                  file  as  one 8-bit byte followed by
+                                  28 zeroes,  and  punches  each  byte
+                                  into one frame of paper tape.
+
+                               o  IMAGE BINARY treats each word as six
+                                  6-bit  bytes,  and punches each byte
+                                  into one frame of paper  tape  after
+                                  adding 200 (octal) to each byte.
+
+     /NOHEADER                prevents  the  punching  of   a   header
+                              section before the file
+
+     /PRESERVE                saves the file after punching.  Opposite
+                              of /DELETE.
+                                   Default for all files
+
+
+Output
+
+     Jobname, Request ID, Limit, Number of Input Files
+
+          As soon as you complete a valid PUNCH  command,  the  system
+          responds by printing, on your terminal, the jobname, request
+          ID number, the output limit in number of cards  or  feet  of
+          paper  tape assigned to the request, and the number of input
+          files in the request.
+
+
+Characteristics
+
+     Ordinary Operation - No Switches
+
+          For most purposes you can use the PUNCH  command  with  just
+          the medium and a series of filespecs for arguments.
+
+     Switch Defaults Set by System Managers
+
+          The defaults shown in the list of switches are  correct  for
+          most  user  sites.   However, your system manager can change
+          some of those default settings.  The switches most  commonly
+          affected  are:   /FORMS,  /HEADER and /NOHEADER, /LIMIT, and
+          /PRIORITY.
+
+
+Hints
+
+     Using the SET DEFAULT Commands
+
+          If there are switches that you always or usually supply when
+          using  PUNCH,  give  the  SET  DEFAULT  CARDS or SET DEFAULT
+          PAPER-TAPE command to establish them  as  defaults  (at  the
+          current  TOPS-20  command  level)  for the remainder of your
+          terminal session.  The switches will then behave as  if  you
+          had  typed  them  directly  after the command name.  You can
+          supersede  any  of  these  default  switches   by   actually
+          supplying  the switch, with another value, when you give the
+          PUNCH command.  Put SET DEFAULT  commands  into  a  file  of
+          specification  COMAND.CMD  in  your  log-in directory if you
+          want these default switches to be in effect for  all  levels
+          of future terminal sessions as well.
+
+
+Special Cases
+
+     /SPOOLED-OUTPUT Switch
+
+          You can give the special switch,  /SPOOLED-OUTPUT,  as  sole
+          argument  to  the  PUNCH  CARDS or PUNCH PAPER-TAPE command.
+          This causes any spooled output  accumulated  so  far  during
+          your  terminal session to be placed in a card punch or paper
+          tape punch queue immediately, rather than at  log-out  time.
+          The  /SPOOLED-OUTPUT  switch  is  useful  only  if  the  SET
+          SPOOLED-OUTPUT DEFERRED command is in effect.  Programs that
+          you  run  (especially  FORTRAN  programs) may create spooled
+          paper tape punch or card punch output.  Or you can create it
+          directly  by giving the command, COPY filespec PTP:, or COPY
+          filespec CDP:, respectively, or by giving a CREF command.
+
+
+Related Commands
+
+             CARDS
+     CANCEL  PAPER-TAPE      for withdrawing PUNCH requests
+
+     INFORMATION OUTPUT-REQUESTS
+                             for  examining  requests  in  the  output
+                             queues
+
+             CARDS
+     MODIFY  PAPER-TAPE      for  changing   PUNCH   requests   before
+                             processing has begun
+
+                  CARDS
+     SET DEFAULT  PAPER-TAPE for  establishing  default  switches  for
+                             subsequent PUNCH commands
+
+
+Examples
+
+     1.  Punch a file onto cards.
+
+         @PUNCH CARDS ESTMT.DAT
+         [Card-Punch job ESTMT queued, request-ID 146, limit 30]
+
+     2.  Punch a file onto paper tape.
+
+         @PUNCH PAPER-TAPE REAUMUR.LNS
+         [Papertape job REAUMU queued, request-ID 12, limit 55]
+
+     3.  Punch three files onto paper tape,  specifying  a  particular
+         paper tape punch for two of them and allowing the third to be
+         punched on any available device.
+
+         @PUNCH PAPER-TAPE /UNIT:2 INDX.LTG, PON.LG4/GENERIC, -
+         BENNETT.TXT
+         [Papertape job INDX queued, request-ID 149, limit 110, 3 files]
+
+     4.  Punch a file onto paper tape, specifying  that  the  job  not
+         begin  for  an  hour.   Check for your requests in the output
+         queues, then cancel both of your paper tape requests.
+
+         @PUNCH PAPER-TAPE FORUM.APR /AFTER:+1:00
+         [Papertape job FORUM queued, request-ID 150, limit 10]
+         @INFORMATION OUTPUT-REQUESTS/USER
+
+         Papertape Queue:
+         Job Name  Req#  Limit             User
+         --------  ----  -----  -------------------------------
+             INDX   149    110  SCARNY
+            FORUM   150     10  SCARNY /After:20-Jul-79 16:20
+         There are 2 jobs in the queue (none in progress)
+
+         Card-Punch Queue:
+         Job Name  Req#  Limit             User
+         --------  ----  -----  -------------------------------
+           ESTMT    146     30  SCARNY
+         There is 1 job in the queue (none in progress)
+
+         @CANCEL PAPER-TAPE *
+         [2 Jobs canceled]
+

@@ -1,0 +1,29 @@
+
+DAYTIME command
+
+The DAYTIME command displays the current day, date, and time  on  your
+terminal.
+
+
+Format
+
+     @DAYTIME
+
+
+Hints
+
+     Using DAYTIME
+
+          The DAYTIME command, which does not require you to be logged
+          in,  lets you check the system's clock against your own.  If
+          you are saving the output from  a  hard-copy  terminal,  use
+          this command to make a record of the date and time.
+
+
+Examples
+
+     1.  Give the DAYTIME command.
+
+         @DAYTIME
+         Friday, April 20, 1984 09:21:19
+

@@ -1,0 +1,122 @@
+
+EXAMINE command
+
+The EXAMINE command displays the contents of a memory location.
+
+
+Format
+
+     @EXAMINE (MEMORY LOCATION) octal or symbolic address
+
+
+Output
+
+     Contents of Memory Location or Message
+
+          When you complete an EXAMINE command, the system prints  the
+          memory  address  examined,  followed  by a slash (/) and its
+          contents.  If you  previously  used  the  SET  TYPEOUT  MODE
+          SYMBOLIC  command, this information is both in symbolic and,
+          in  parentheses,  numeric  (octal)  format.   (The   numeric
+          information  will  always  appear  for  this  setting of the
+          command; symbolic information  will  appear  if  the  system
+          finds that it is different from the numeric.)
+
+          Generally the numeric format shows two 6-digit octal numbers
+          separated  by a pair of commas (,,).  If you do not see this
+          pair of commas, only the right half of the  memory  location
+          is  being displayed; as the left half is 0.  However, if you
+          are not permitted  to  examine  this  location,  the  system
+          prints only a message telling you of the restriction.
+
+
+Hints
+
+     Using Symbols
+
+          For symbols that  are  defined  in  multiple  modules  of  a
+          program,  you  can  be  specific  by  giving the module name
+          followed by an ampersand (&) and the symbol name.
+
+     Abbreviating EXAMINE
+
+          The EXAMINE command can be abbreviated by the single  letter
+          E.
+
+     Default Argument for EXAMINE
+
+          The argument of your current EXAMINE command defaults  to  a
+          value  greater by 1 than the last address examined, allowing
+          you to inspect a section of memory with only  a  minimum  of
+          typing.   But if you gave a more recent DEPOSIT command, the
+          argument of your current EXAMINE command  defaults  to  that
+          address, allowing you to verify the deposit.
+
+     Using EXAMINE With Noncurrent and Inferior Forks
+
+          The EXAMINE command displays memory locations of the current
+          fork.   To  examine  the  memory  of  noncurrent or inferior
+          forks, make the fork the current fork  by  giving  the  FORK
+          command with the fork name or number as an argument.
+
+          To run an inferior fork after examining it, you must  ensure
+          that  all superior forks are running too.  Give the CONTINUE
+          command with the superior fork name or number as an argument
+          to let the superior fork continue its inferiors.
+
+
+Related Commands
+
+     DDT                          for  calling  a  debugging  program,
+                                  allowing  more efficient examination
+                                  of memory
+
+     DEPOSIT                      for  changing  the  contents  of   a
+                                  specific memory location
+
+     FORK                         for selecting the fork whose  memory
+                                  you want to examine
+
+     INFORMATION MEMORY-USAGE     for  displaying  a  list  of  memory
+                                  pages, their contents and status
+
+     SET TYPEOUT MODE             for   displaying   information    in
+                                  symbolic or numeric format
+
+
+Examples
+
+     1.  Examine location 550 of the current fork.
+
+              @EXAMINE 550
+              550/    74473,,414155
+
+     2.  Examine location 20, first in numeric typeout mode,  then  in
+         the symbolic mode.
+
+              @SET TYPEOUT MODE NUMERIC
+              @EXAMINE 20
+              20/ 104000,,56
+
+              @SET TYPEOUT MODE SYMBOLIC
+              @EXAMINE 20
+              P+1/ 104000,,.JBBLT+11   (20/ 104000,,56)
+
+     3.  Put a  program  into  memory  and  find  out  what  pages  it
+         occupies.   Examine a location on page 2, and then (using the
+         abbreviated form of the EXAMINE command) one on page 400.
+
+              @GET DMN
+              @INFORMATION MEMORY-USAGE
+
+               5. pages, Entry vector loc 400010 len 254000
+
+                Section 0    R, W, E,  Private
+              0-3      DMN.EXE.1  1-4   R, CW, E
+               400     DMN.EXE.1  5   R, CW, E
+
+              @EXAMINE 2550
+              2550/   600170
+              @E 400550
+              400550/ 0
+

@@ -1,0 +1,100 @@
+
+REWIND command
+
+The REWIND command returns a magnetic tape to its load point  (logical
+beginning, the beginning of the first file).
+
+
+Format
+
+     @REWIND (DEVICE) dev:  /switch
+
+     where:
+
+     dev:           is the name of the tape set or magnetic tape drive
+                    that  you  want  to  rewind.   The colon after the
+                    device name is optional.
+
+     /switch        is one of the following:
+
+                         /CURRENT-VOLUME-ONLY
+                                        rewinds tape set to  beginning
+                                        of currently mounted volume
+
+                         /ENTIRE-VOLUME-SET
+                                        rewinds tape set to  beginning
+                                        of first volume
+                                        Default - ENTIRE-VOLUME-SET
+
+                           Note:   these switches can be used only for
+                                   devices   of  the  form  MTn:,  not
+                                   MTAn:.
+
+
+Restrictions
+
+     REWIND with Open Files
+
+          If you have given a CTRL/C to exit from a program  that  has
+          opened  a  magnetic  tape  set  and you then give the REWIND
+          command for that tape set, the system will first ask if  you
+          want  to  close  the  associated  file.   You must do so for
+          REWIND to succeed, but will probably be unable  to  continue
+          the  program  from  that  point because the file will now be
+          closed.
+
+
+Related Commands
+
+     BACKSPACE     for moving a magnetic  tape  backward  a  specified
+                   number of files or records
+
+     DIRECTORY     (when  used  with  a  magnetic  tape  device)   for
+                   rewinding  a  tape set, printing a directory of its
+                   files, and again rewinding the tape set
+
+     SKIP          for moving a  magnetic  tape  forward  a  specified
+                   number of files or records
+
+     UNLOAD        for rewinding a magnetic tape completely  onto  the
+                   source reel
+
+
+Examples
+
+     1.  Rewind your magnetic tape.
+
+         @REWIND DAY:
+
+     2.  Mount a tape, and prepare to copy files onto  it.   (Use  the
+         REWIND  command  to be sure you are at the beginning.)  After
+         copying the files,  rewind  the  tape  and  (using  the  COPY
+         command)  read  the first one.  Then give TOPS-20 commands to
+         free the resources you have been using.
+
+         @MOUNT TAPE DAY:
+         [Mount Request DAY Queued, Request-ID 183]
+         [Tape set DAY, volume DAY mounted]
+         [DAY: defined as MT0:]
+         @MOUNT STRUCTURE SNARK:
+         Structure SNARK: mounted
+         @ACCESS SNARK:
+         @REWIND DAY:
+         @COPY SNARK:FIL-1.TAP DAY:
+          SNARK:FIL-1.TAP.1 => MT0:FIL-1 [OK]
+         @COPY SNARK:FIL-2.TAP DAY:
+          SNARK:FIL-2.TAP.1 => MT0:FIL-2 [OK]
+         @COPY SNARK:FIL-3.TAP DAY:
+          SNARK:FIL-3.TAP.1 => MT0:FIL-3 [OK]
+         @REWIND DAY:
+         @COPY DAY: TTY:
+          MT0: => TTY:
+
+         !THIS IS THE FIRST FILE.!
+         @DISMOUNT TAPE DAY:
+         [Tape dismounted, logical name DAY: deleted]
+         @END-ACCESS SNARK:
+         @DISMOUNT STRUCTURE SNARK:
+         Structure SNARK: dismounted
+         @
+

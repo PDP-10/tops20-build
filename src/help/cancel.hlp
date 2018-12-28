@@ -1,0 +1,362 @@
+
+CANCEL command
+
+The CANCEL command cancels requests made with a queue-class command.
+
+
+Format
+
+     @CANCEL (REQUEST TYPE) queue (ID) identifier/switch(es)
+
+     where:
+
+     queue          is  the  name  of  the  queue,  chosen  from   the
+                    following list:
+
+                    ARCHIVE         for  requests   made   using   the
+                                    ARCHIVE command.
+
+                    BATCH           for requests made using the SUBMIT
+                                    command.
+
+                    CARDS           for requests made using the  PUNCH
+                                    CARDS command.
+
+                    MOUNT           for requests made using the  MOUNT
+                                    STRUCTURE or MOUNT TAPE command.
+
+                    PAPER-TAPE      for requests made using the  PUNCH
+                                    PAPER-TAPE command.
+
+                    PLOT            for requests made using  the  PLOT
+                                    command.
+
+                    PRINT           for requests made using the  PRINT
+                                    command.
+
+                    RETRIEVE        for  requests   made   using   the
+                                    RETRIEVE command.
+
+     identifier     is one of the following:
+
+                    request ID number
+                                    the unique identifier assigned  by
+                                    the  system to your request.  This
+                                    is the number appearing under  the
+                                    heading  "Req#"  in  the  list  of
+                                    requests shown by the  appropriate
+                                    INFORMATION  command.   To  cancel
+                                    archival requests, use  "filespec"
+                                    argument instead.
+
+                    jobname         the  jobname   of   the   request,
+                                    either:
+
+                                     o  the first  six  characters  of
+                                        the   first  filename  in  the
+                                        request or  the  argument  you
+                                        supplied  to a /JOBNAME switch
+                                        when making the  request  (for
+                                        output and batch requests), or
+
+                                     o  the first  six  characters  of
+                                        each  filename  in the request
+                                        (for retrieval requests), or
+
+                                     o  the first  six  characters  of
+                                        the  structure  alias  or tape
+                                        set  n.   This  is  the   name
+                                        appearing  under  the  heading
+                                        "Name", "Req  Name",  or  "Job
+                                        Name"  in the list of requests
+                                        shown   by   the   appropriate
+                                        INFORMATION command.
+
+
+                    filespec        the specification of a file.   Use
+                                    this  argument  to cancel archival
+                                    requests.
+
+                    *               the  asterisk  identifier  cancels
+                                    all your requests in the specified
+                                    queue.
+
+     /switch        is one or more of the following switches:
+
+                    /DESTINATION-NODE:node
+                                    which  lets  you  cancel  a  print
+                                    request to a remote printer in the
+                                    same  TOPS-20   cluster   as   the
+                                    requesting   node.    This  switch
+                                    cancels only  the  print  requests
+                                    that  were  made  from  the  local
+                                    node.  Other print  requests  made
+                                    on   the   remote   node  are  not
+                                    affected.
+
+                    /JOBNAME:jobname
+                                    which gives  the  jobname  of  the
+                                    request you want to cancel.
+
+                    /SEQUENCE:n     which gives the sequence number of
+                                    the  batch  or  output request you
+                                    want to cancel.   The  INFORMATION
+                                    BATCH-REQUESTS    or   INFORMATION
+                                    OUTPUT-REQUESTS command  with  the
+                                    /ALL  switch  gives  the  sequence
+                                    number assigned to these requests.
+                                    Use this switch in CANCEL commands
+                                    placed within batch jobs; then you
+                                    can  cancel  requests made earlier
+                                    in the batch job even  though  you
+                                    do not know the request ID number.
+
+                    /USER:user name
+                                    which   cancels   the    specified
+                                    request  entered  under  the given
+                                    user name.  Use  an  asterisk  (*)
+                                    both  for request ID number and as
+                                    argument to this switch to  cancel
+                                    all  requests  of all users in the
+                                    specified queue.   For  privileged
+                                    users  only.  /USER is required to
+                                    modify  or  cancel  requests  from
+                                    users other than yourself.
+
+Output
+
+     When you complete a CANCEL command removing a request, the system
+     responds  with  "[1  Job  Canceled]"  and  makes  the appropriate
+     deletion  from  the  indicated  queue.   If  the  job  is   being
+     processed,   the   response   is  "[1  Job  Canceled  (1  was  in
+     progress)]", but if the job is already  finished,  it  is  simply
+     "[No Jobs Killed]".
+
+
+Characteristics
+
+     Request ID or Jobname as Argument to CANCEL
+
+     You  can  cancel  a  single  queue  request  (those   made   with
+     Queue-class  commands - MOUNT,  PLOT,  PRINT, PUNCH, RETRIEVE, or
+     SUBMIT) by giving either its request ID number or its jobname  as
+     the  second  argument  of  a  CANCEL  command.   This argument is
+     interpreted as a request ID number unless it includes one or more
+     non-numeric  characters.   If  the  argument includes non-numeric
+     characters it is interpreted as a jobname.  By giving  a  jobname
+     as  the  second argument of a CANCEL command, you cancel all your
+     requests of that jobname in the specified queue.
+
+
+Special Cases
+
+     /SPOOLED-OUTPUT Switch
+
+     You can give  the  special  switch,  /SPOOLED-OUTPUT,  after  the
+     CARDS, PAPER-TAPE, PLOT, or PRINT argument to the CANCEL command.
+     By doing so you cause any accumulated  requests  in  the  spooler
+     queue  for  the  appropriate  output device (CDP:, PTP:, PLT:, or
+     LPT:, respectively) to be canceled, rather than filled  when  you
+     log  out.   Do  not give any further arguments to a "CANCEL queue
+     /SPOOLED-OUTPUT" command.
+
+     If any spooled file print requests have been routed to  a  remote
+     node, use the /DESTINATION-NODE switch to cancel them.
+
+     /JOBNAME Switch
+
+     In the singular case  when  you  want  to  cancel  several  queue
+     requests  of  the  same  jobname using a single command, and that
+     jobname is purely numerical (for example, 5045), you must use the
+     /JOBNAME:jobname  switch  as  the  second  argument to the CANCEL
+     command.  Do not also give the request ID or jobname as a command
+     argument if you give the /JOBNAME:jobname switch.
+
+
+Restrictions
+
+     Cannot Cancel Filled Tape-mount Requests
+
+     You cannot use the  CANCEL  command  to  withdraw  a  MOUNT  TAPE
+     request  once the first volume of tape has been mounted (once you
+     have received a message of the form, [setname defined as  MTn:]).
+     Use  the  DISMOUNT  command to give up your tape resource in this
+     case.  Note  that  the  DEASSIGN  or  LOGOUT  command  will  also
+     dismount the tape set.
+
+     Cannot Cancel Certain Archival Requests
+
+     You cannot use the CANCEL command to withdraw an archival request
+     once  the operator has initiated archival procedures.  Thus, even
+     though files remain on disk  between  the  operator's  first  and
+     second  archive  runs,  you  cannot  cancel a request during this
+     time.  If you try to cancel a request after archiving has  begun,
+     you receive the error message:
+
+          ?File has archive status:  filename
+
+     Note that this  error  does  not  terminate  a  multifile  CANCEL
+     ARCHIVE  command  (for  example, CANCEL ARCHIVE *.*); the TOPS-20
+     command processor continues processing each remaining filename in
+     the  request.   Cancel  requests  for  these  remaining files are
+     judged individually.
+
+
+Related Commands
+
+     ARCHIVE
+
+          For requesting archival of a file.
+
+     INFORMATION ARCHIVE-STATUS
+
+          For finding out the archival status of files.
+
+     INFORMATION BATCH-REQUESTS
+
+          For examining requests in the batch input queue.
+
+     INFORMATION MOUNT-REQUESTS
+
+          For examining  requests  in  the  structure- and  tape-mount
+          queue.
+
+     INFORMATION OUTPUT-REQUESTS
+
+          For examining requests in the line  printer,  plotter,  card
+          punch, and paper tape punch queues.
+
+     INFORMATION RETRIEVAL-REQUESTS
+
+          For examining requests in the retrieval queue.
+
+     MODIFY
+
+          For changing requests without removing them.
+
+     MOUNT
+
+          For placing requests in the structure-  or tape-mount queue.
+
+     PLOT
+
+          For placing requests in a plotter queue.
+
+     PRINT
+
+          For placing requests in a line printer queue.
+
+     PUNCH
+
+          For placing requests in the card- or paper-tape-punch queue.
+
+     RETRIEVE
+
+          For placing requests in the retrieval queue.
+
+     SUBMIT
+
+          For placing requests in the batch input queue.
+
+
+Examples
+
+     1.  Cancel a specific print request.
+
+         @CANCEL PRINT REMAX
+         [1 Job canceled]
+
+     2.  Cancel all your batch requests.
+
+         @CANCEL BATCH *
+         [3 Jobs canceled]
+
+     3.  Find out what line  printer  requests  you  have  made,  then
+         cancel one of two jobs bearing the same jobname.
+
+         @INFORMATION OUTPUT-REQUESTS /USER
+
+         Printer Queue:
+         Job Name    Req#   Limit   User
+         --------    ----   -----   -------
+           MYCOPY     142      81   LATTA  /Lower  /After: 8-Nov-79 18:00
+           MYCOPY     143      81   LATTA  /After: 8-Nov-79 18:00
+           MYCOPY     144      81   LATTA  /After: 8-Nov-79 18:00
+           HOLMAX     141     200   LATTA  /After: 8-Nov-79 17:00
+           HOLMAX     140     200   LATTA  /After: 8-Nov-79 18:00
+         There are 5 Jobs in the Queue (None in Progress)
+
+         @CANCEL PRINT  141
+         [1 Job Canceled]
+
+     4.  Get a list of your printing jobs (and some  of  the  switches
+         you gave), then cancel three of them.
+
+         @INFORMATION OUTPUT-REQUESTS /ALL/USER
+
+         Printer Queue:
+         Job Name   Req#   Limit   User
+         --------   ----   -----   -------
+           MYCOPY    142      81   LATTA  /Lower  /After: 8-Nov-79 18:00
+                    /Prio:20   /Seq:1728
+           MYCOPY    143      81   LATTA  /After: 8-Nov-79 18:00
+                                       /Seq:1729
+           MYCOPY    144      81   LATTA  /After: 8-Nov-79 18:00
+                                       /Seq:1730
+           HOLMAX    140     200   LATTA  /After: 8-Nov-79 18:00
+                                       /Seq:1726
+         There are 4 Jobs in the Queue (None in Progress)
+
+         @CANCEL PRINT MYCOPY
+         [3 Jobs Canceled]
+
+     5.  Cancel a plotter request.
+
+         @CANCEL PLOT 94
+         [1 Job Canceled]
+
+     6.  Cancel a mount request for a structure or a tape set.
+
+         @CANCEL MOUNT 24
+         [1 mount request canceled]
+
+     7.  Find out what requests are in the mount queue.   Cancel  your
+         structure mount request.
+
+         @INFORMATION MOUNT-REQUESTS
+
+         Tape/Disk Mount Queue:
+         Volume    Status  Type   Write   Req Name  Req#  Job#  User
+         -------  -------  ----  -------  --------  ----  ----  ----------
+         MARK     MTA1     Tape  Enabled  MARK       126    60  HOVSEPIAN
+         TAPE     MTA3     Tape  Enabled  TAPE       148    13  WALLACE
+         LATB     Waiting  Disk           LATB       157    65  LATTA
+         There are 3 Requests in the Queue
+
+         @CANCEL MOUNT 157
+         [1 mount request canceled]
+
+     8.  Find out what requests are in  the  mount  queue.   Cancel  a
+         mount  request  that  has not yet been filled, and dismount a
+         tape that has been mounted.
+
+         @INFORMATION MOUNT-REQUESTS
+
+         Tape/Disk Mount Queue:
+         Volume    Status  Type   Write   Req Name  Req#  Job#  User
+         -------  -------  ----  -------  --------  ----  ----  ----------
+         MARK     MTA1     Tape  Enabled  MARK        29    15  HOVSEPIAN
+         DBL02    MTA0     Tape  Enabled  LAT         31    24  LATTA
+         NCV19    Waiting  Tape  Enabled  NCV         32    24  LATTA
+         There are 3 Requests in the Queue
+
+         @CANCEL MOUNT 32
+         [1 mount request canceled]
+         @DISMOUNT TAPE LAT:
+         [Tape dismounted, logical name LAT: deleted]
+
+     9.  Cancel a remote print request.
+
+         @CANCEL PRINT SUM7/DESTINATION-NODE::LEZAH
+         [1 print request canceled]
+

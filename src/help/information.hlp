@@ -1,0 +1,1319 @@
+
+INFORMATION command
+
+The INFORMATION command displays  information  about  system  and  job
+parameters.
+
+
+Format
+
+     @INFORMATION (ABOUT) argument
+
+     where:
+
+     argument     is a keyword, chosen from the list below, indicating
+                  your choice of INFORMATION command options.
+
+
+  Summary of INFORMATION Command Arguments (defaults in boldface)
+
+
+     ADDRESS-BREAK
+
+     ALERTS
+
+     ARCHIVE-STATUS filespecs
+
+                ---
+                | LINES
+     AVAILABLE  | DEVICES
+                ---
+
+                     ---
+                     | /ALL
+     BATCH-REQUESTS  | /FAST
+                     | /PROCESSING-NODE:node name
+                     | /USER:user name  Default user name - your user
+                     |                                 name
+                     ---
+
+     CLUSTER
+     COMMAND-LEVEL
+     DECNET node-name
+
+                ---
+                | ALL
+                | CARDS
+                | COMPILE-SWITCHES
+                | DECLARE
+                | PAPER-TAPE
+     DEFAULTS   | PLOT
+                | PRINT
+                | PROGRAM
+                | SUBMIT
+                | TAKE
+                ---
+
+     DIRECTORY dev:<directory>,         Default dev:<directory> - your
+       @@VERBOSE                                connected    directory
+       @@FAST
+       @@NAME-ONLY
+
+     DISK-USAGE dev:<directory>         Default dev:<directory> - your
+                                                connected    directory
+
+     FILE-STATUS  octal JFN             Default JFN - all JFNs in your
+                                                      job
+     FORK-STATUS
+     INTERNET STATUS
+     JOB-STATUS
+
+                    ---
+                    | SYSTEM
+     LOGICAL-NAMES  | JOB
+                    | ALL
+                    | logical name:
+                    ---
+
+           ---
+     MAIL  | user name                  Default user name - your user
+           | SYSTEM                                         name
+           ---
+
+     MEMORY-USAGE
+     MONITOR-STATISTICS
+
+                      ---
+                      | /ALL
+     MOUNT-REQUESTS   | /FAST
+                      | /USER:user name Default user name - your user
+                      |                                     name
+                      ---
+                      ---
+                      | /ALL
+                      | /DESTINATION-NODE:node name
+     OUTPUT-REQUESTS  | /FAST
+                      | /USER:user name Default user name - your user
+                      |                             name
+                      ---
+
+     PROGRAM-STATUS
+     PSI-STATUS
+     REMOTE-PRINTING
+
+                         ---
+                         | /ALL
+     RETRIEVAL-REQUESTS  | /FAST
+                         | /USER:user name Default user name - your
+                         |                           user name
+                         ---
+
+     SPOOLED-OUTPUT-ACTION
+     STRUCTURE dev:                     Default dev: - your connected
+                                                       structure
+     SUBSYSTEM-STATISTICS
+     SUPERIORS
+     SYSTEM-STATUS
+     TAPE-PARAMETERS
+     TERMINAL-MODE number               Default number - your terminal
+                                                         line number
+     VERSION
+     VOLUMES
+
+
+                    INFORMATION Command Arguments
+
+     ADDRESS-BREAK            gives  the  location  (in   numeric   or
+                              symbolic   format   -   depending   upon
+                              previous  specification   of   the   SET
+                              TYPEOUT  MODE  command)  and mode of any
+                              address breaks for the program currently
+                              in memory.  Set with SET ADDRESS-BREAK.
+
+     ALERTS                   lists  the  dates  and  times  that  the
+                              system is to signal you at the terminal.
+                              The last line of the  display  indicates
+                              whether    alerts   are   to   be   sent
+                              unconditionally   to    your    terminal
+                              (depending  upon  previous specification
+                              of the SET AUTOMATIC command).  Set with
+                              SET ALERT.
+
+     ARCHIVE-STATUS filespecs prints  the  archive   status   of   all
+                              specified  files  for which archival has
+                              been requested or  for  which  migration
+                              has been prohibited.
+                                    Default filespec - *.*.* in your
+                                                  connected directory
+
+                  ---
+                  | LINES
+     AVAILABLE    | DEVICES   lists the devices or terminal lines
+                  ---         available to you or already assigned  to
+                              your  job.  Use ASSIGN to obtain devices
+                              (use MOUNT for structures).
+                                   Default - DEVICES
+
+                     ---
+                     | /ALL
+     BATCH-REQUESTS  | /FAST
+                     | /PROCESSING-NODE:node name::
+                     | /USER:user name
+                     ---
+
+                              lists  the  jobs  being  processed   and
+                              waiting  to  be  processed  by the batch
+                              system.  The list includes:
+
+                              o  the jobname and request ID number  of
+                                 the  request (an asterisk (*) appears
+                                 before the  jobname  if  the  job  is
+                                 currently being processed)
+
+                              o  the scheduled run time of the request
+
+                              o  the name of the  user  who  initiated
+                                 the request
+
+                              o  the values of the switches /AFTER and
+                                 /DEPENDENCY-COUNT,   if  values  were
+                                 given  in  the  original  SUBMIT   or
+                                 subsequent MODIFY command
+
+                              Use SUBMIT, MODIFY, or CANCEL to  change
+                              this list.
+
+                              The  /ALL  switch  adds   the   switches
+                              /ASSISTANCE,  /PRIORITY,   /RESTARTABLE,
+                              /SEQUENCE, and  /UNIQUE  to  this  list,
+                              while  /FAST  eliminates  the display of
+                              all  switches   and   column   headings;
+                              /PROCESSING-NODE  specifies  the  DECnet
+                              network node about whose batch jobs  you
+                              want    information;   /USER   restricts
+                              descriptions to jobs of the user  named,
+                              and  can  be given with any of the other
+                              three switches.
+                                   Default user name - your user name
+
+     CLUSTER                  displays the names of the systems  in  a
+                              Common File System (CFS) cluster:
+
+                               o  local cluster node (the  system  you
+                                  are logged in on).
+
+                               o  accessible  CFS  nodes  (the   other
+                                  systems in the CFS cluster).
+
+                               o  accessible HSC  servers  (the  HSC50
+                                  device controllers in the cluster).
+
+
+     COMMAND-LEVEL            prints     the     status     of     the
+                              LATE-CLEAR-TYPEAHEAD   parameter,  which
+                              prevents you from giving another TOPS-20
+                              command    until   any   error   message
+                              resulting from a  previous  command  has
+                              been     printed.     Set    with    SET
+                              LATE-CLEAR-TYPEAHEAD.
+
+     DECNET node-name         tells  whether  the   specified   DECnet
+                              network   node  is  accessible  to  your
+                              system.  If you do not  specify  a  node
+                              name, the system prints the name of your
+                              host  system,  the   total   number   of
+                              reachable  nodes,  and  the names of all
+                              reachable nodes.
+                                   Default node-name - all accessible
+                                                       nodes
+
+               ---
+               | ALL
+               | CARDS
+               | COMPILE-SWITCHES
+               | PAPER-TAPE
+     DEFAULTS  | PLOT         displays,  in  a   format  suitable  for
+               | PROGRAM      entering   them,    default    arguments
+               | PRINT        established  at  the  current  level  of
+               | SUBMIT       TOPS-20  for  the   specified   command.
+               | TAKE         CARDS and PAPER-TAPE refer to the PUNCH
+               ---            CARDS  and  PUNCH  PAPER-TAPE  commands,
+                              respectively.   COMPILE-SWITCHES  refers
+                              to  LOAD-class  commands   and   PROGRAM
+                              refers  to the SET PROGRAM command.  The
+                              ALL argument displays the  defaults  for
+                              all  these  categories.   Set  with  SET
+                              DEFAULT.   This  argument  displays  the
+                              default  for  every  SET DEFAULT command
+                              given, even  if  duplicate  setting  are
+                              made.
+                                   Default - ALL
+
+     DIRECTORY dev:<directory>,
+
+     @@FAST                   lists  the current parameter values  set
+     @@VERBOSE                for  the indicated directory  (with  the
+     @@NAME-ONLY              exception of the directory password)  by
+                              the  SET DIRECTORY or BUILD commands, or
+                              by default.  The  subcommands  call  for
+                              either a short list of non-default (that
+                              is, user-determined) values only (FAST),
+                              or  a  complete  list including defaults
+                              (VERBOSE), or  a  listing  of  directory
+                              names  only  (NAME-ONLY).   If  you  use
+                              NAME-ONLY, specify a  directory  in  the
+                              form  <directory.*>,  <*directory*>,  or
+                              <*>.   The  categories  of   information
+                              include:
+
+                              o  the name of the directory
+
+                              o  working and permanent storage limits
+
+                              o  capabilities (assigned or withheld)
+
+                              o  whether you can establish  DECnet  or
+                                 INTERNET network connections
+
+                              o  whether  expired  files   should   be
+                                 automatically archived
+
+                              o  directory number
+
+                              o  default file protection
+
+                              o  default account for login
+
+                              o  directory protection
+
+                              o  default   number    of    generations
+                                 maintained for files
+
+                              o  maximum  number   of   subdirectories
+                                 allowed
+
+                              o  date and time that  you  started  the
+                                 current  terminal  session with LOGIN
+                                 (for log-in directory only)
+
+                              o  date and  time  of  last  interactive
+                                 login
+
+                              o  date and time of last non-interactive
+                                 login
+
+                              o  date and time password expires
+
+                              o  number of interactive login  failures
+                                 since last login
+
+                              o  number   of   non-interactive   login
+                                 failures since last login
+
+                              o  off-line   and   on-line   expiration
+                                 defaults
+
+                              o  group memberships
+
+                              o  user  group  numbers  assignable   to
+                                 subdirectories
+
+                              o  TOPS-10 project-programmer number
+
+                              Set   with   SET   DIRECTORY   or   (for
+                              subdirectories) BUILD.
+                                   Default dev:<directory> - your
+                                                             connected
+                                                             directory
+                                   Default subcommand - FAST
+
+     DISK-USAGE dev:<directory>
+
+                              prints, for the indicated directory, the
+                              following:
+
+                              o  the name of the directory
+
+                              o  the number of pages of assigned  disk
+                                 storage,  and  the  number of deleted
+                                 pages, if any
+
+                              o  working and permanent page limits
+
+                              o  total number of unused pages  on  the
+                                 file    structure    containing   the
+                                 directory
+
+                              The wildcard characters, * and % can  be
+                              included  in the <directory> field.  For
+                              example,       type       <%directory*>,
+                              <directory.*>, or <*> to get information
+                              about  all   matching   directories   or
+                              subdirectories.
+                                   Default dev:<directory> - your
+                                                             connected
+                                                             directory
+
+     FILE-STATUS octal JFN    gives,  for  the   specified   JFN   (an
+                              internal  number  identifying  each file
+                              opening), the following:
+
+                              o  the JFN
+
+                              o  the associated file specification
+
+                              o  the mode of access (Append,  Execute,
+                                 Read,  or Write) for which the JFN is
+                                 open (or  was  opened  last,  if  NOT
+                                 OPENED precedes the access mode)
+
+                              o  special  access  conditions,   namely
+                                 DATA  ERROR  if  an  error is made in
+                                 accessing the file,  or  EOF  if  the
+                                 file  pointer  is  at  the end of the
+                                 file
+
+                              o  if appropriate, byte pointer and byte
+                                 size,  which tell the number of bytes
+                                 transferred to or from the file,  and
+
+                              o  a list of devices currently  assigned
+                                 to  or  opened by this job.  But if a
+                                 file  has  been  opened  by   another
+                                 process  for  its  sole  use, you see
+                                 only the message, "Restricted JFN".
+                                   Default JFN - all JFNs for your job
+
+     FORK-STATUS              gives a summary of the  status  of  each
+                              fork  belonging  to your current copy of
+                              the TOPS-20 command processor, including
+                              Kept  status,  RUN status, and total CPU
+                              time  used  so  far.   An   arrow   (=>)
+                              indicates your current fork.
+
+     INTERNET STATUS          displays, if the  system  is  a  member,
+                              information   about  Internet  networks,
+                              including  INTERNET,  Milnet  and  Local
+                              Area Networks.  The display includes:
+
+                              o  the name of  the  local  host  system
+                                 followed by its Internet name and its
+                                 Internet address
+
+                              o  the status of the network interface
+
+                              o  whether network interface  output  is
+                                 enabled
+
+                              o  whether network service is enabled
+
+                              o  the date and time of the last network
+                                 interface  online transition, offline
+                                 transition, and cycle transition
+
+     JOB-STATUS               prints your
+
+                              o  host system (Displayed only  if  your
+                                 host  system  is  part of a DECnet or
+                                 INTERNET network.)
+
+                              o  job number
+
+                              o  user name
+
+                              o  connected  directory  (if  not   your
+                                 log-in directory)
+
+                              o  account; session remark (if any)
+
+                              o  terminal number
+
+                              o  terminal access descriptor
+
+                              o  network node  to  which  your  output
+                                 device,     requests     are    sent.
+                                 (Displayed  only  if  not  your  host
+                                 node.)  Set  with  the  command,  SET
+                                 LOCATION.
+
+                              You can set  some  of  these  parameters
+                              with CONNECT, SET ACCOUNT, SET LOCATION,
+                              and SET SESSION-REMARK.
+
+                    ---
+                    | ALL
+     LOGICAL-NAMES  | JOB
+                    | SYSTEM
+                    | logical name:
+                    ---
+                              prints the logical names and definitions
+                              which  have  been  established  for your
+                              job, for the system,  or  for  both;  or
+                              prints   the  job-wide  and  system-wide
+                              definitions  of  the  specified  logical
+                              name.   Establish  and  withdraw logical
+                              names with DEFINE.
+
+                              For   the   DEFINE    and    INFORMATION
+                              LOGICAL-NAMES    commands,    a    colon
+                              following the logical name is  optional.
+                              However,  in  INFORMATION  LOGICAL-NAMES
+                              the logical name SYS:   must  always  be
+                              followed  by  a  colon.   Otherwise, the
+                              system interprets SYS as an abbreviation
+                              for the SYSTEM argument.
+
+                              The wildcard characters, * and % can  be
+                              included   in  the  logical  name.   For
+                              example, type A*  to  list  all  logical
+                              names  that  begin  with the letter 'A'.
+                              See example 6.
+                                   Default - JOB
+
+          ---
+     MAIL | user name         tells whether there is unread  mail  for
+          | SYSTEM            the user, if you have read access to
+          ---                 the user's mailbox; otherwise,  you  see
+                              only  the  message, "Mailbox protected."
+                              Also, displays any system messages since
+                              your  last  login  when  you type SYSTEM
+                              instead of user-name.   Send  mail  with
+                              one  of  the two mail programs, MAIL and
+                              DECmail/MS.  Read mail with  the  RDMAIL
+                              or DECmail/MS program.
+                                   Default user name - your user name
+
+     MEMORY-USAGE             prints, for the current process of  your
+                              job, the following:
+
+                              o  the  number  of   pages   of   memory
+                                 assigned
+
+                              o  location  (in  numeric  or   symbolic
+                                 format - depending    upon   previous
+                                 specification of the SET TYPEOUT MODE
+                                 command)  and  length  of the current
+                                 program's entry vector (see with  SET
+                                 ENTRY-VECTOR)
+
+                              and on each succeeding line
+
+                              o  the page numbers of pages occupied by
+                                 a file or program
+
+                              o  the file specification if  the  pages
+                                 are    file    pages;   the   process
+                                 specification if the pages are mapped
+                                 from    another    process;   PRIVATE
+                                 otherwise.
+
+                              o  the page numbers  of  file  pages  or
+                                 process  pages.   If a page is mapped
+                                 by  indirect   pointers,   the   file
+                                 specification  is printed to which it
+                                 is mapped; "Fork n" means that  these
+                                 pages  are  mapped indirectly through
+                                 another process (process  n)  of  the
+                                 job;  "No page"  can  mean  either of
+                                 these    conditions,     when     the
+                                 destination page does not yet exist.
+
+                              o  the permitted accesses to  the  pages
+                                 (set with SET PAGE-ACCESS):
+
+                                    R - Read access
+
+                                    W - Write access
+
+                                   CW - Copy-on-Write access
+
+                                    E - Execute access
+
+                              See Example 4 at the end of this command
+                              description for obtaining information on
+                              pages assigned to extended  sections  of
+                              memory.
+
+     MONITOR-STATISTICS       gives you the following:
+
+                               o  the  length  of  time   (in   hours,
+                                  minutes,   and  seconds)  since  the
+                                  monitor was reloaded
+
+                               o  an  analysis  of  monitor   overhead
+                                  time, by percentages
+
+                               o  the   number   of   swap-reads   and
+                                  -writes, and file-reads and -writes
+
+                               o  the  number  of  pages   of   memory
+                                  available to user programs
+
+                               o  the  number  of  terminal   wake-ups
+                                  (occasions when a program "wakes up"
+                                  after waiting for terminal input  or
+                                  output  to  finish,  and of terminal
+                                  interrupts (occasions when a program
+                                  is  interrupted by a CTRL/C, CTRL/O,
+                                  or CTRL/T  (or  other,  user-enabled
+                                  control   characters)   typed  at  a
+                                  user's terminal)
+
+                               o  the average number of  processes  in
+                                  the  balance  set (NBAL, a subset of
+                                  the run  set - these  are  runnable,
+                                  and  each  receives a share of total
+                                  CPU time) and in  the  remainder  of
+                                  the   run   set   (NRUN - these  are
+                                  waiting to be run)
+
+                               o  the number of seconds  of  CPU  time
+                                  given   to  each  of  the  scheduler
+                                  queues (where the  leftmost  listing
+                                  describes   the   highest   priority
+                                  queue,  for  interactive  processes,
+                                  and  the  rightmost  listing  is for
+                                  CPU-bound processes)
+
+                               o  if class scheduling is enabled,  the
+                                  allotted share and actual use of the
+                                  system (expressed as a percentage of
+                                  total  CPU  time) by each class, and
+                                  the  1-,  5-,  and  15-minute   load
+                                  averages of each class
+
+                              All averages and totals are computed for
+                              the time since system start-up.
+
+                     ---
+                     | /ALL
+     MOUNT-REQUESTS  | /FAST
+                     | /USER:user name
+                     ---
+
+                              prints a  list,  at  your  terminal,  of
+                              pending  structure-mount  and tape-mount
+                              requests,  and  of  tape-mount  requests
+                              currently  being  satisfied.   The  list
+                              includes:
+
+                               o  the volid of  the  first  volume  of
+                                  tape  that  will  be mounted, or the
+                                  volid of the mounted  tape,  or  the
+                                  structure   identification  of  each
+                                  disk pack that will be mounted
+
+                               o  the status of each  volume  of  tape
+                                  (either   the  number  of  the  tape
+                                  drive, in the form, MTAn,  on  which
+                                  it is mounted, or Waiting)
+
+                               o  the type of request (either Disk  or
+                                  Tape)
+
+                               o  the tape density  specified  in  the
+                                  tape-mount request
+
+                               o  the mode  (either  Enabled,  if  the
+                                  /WRITE-ENABLED  switch was specified
+                                  or   assumed   in    the    original
+                                  MOUNT-TAPE  command,  or  Locked  if
+                                  /READ-ONLY applies)  in  which  each
+                                  volume of tape is to be mounted
+
+                               o  the request number (i.e., request ID
+                                  number) of each request
+
+                               o  the number of the job that made  the
+                                  request
+
+                               o  the user name of the  owner  of  the
+                                  job that made the request
+
+                              Use  the  MOUNT,  CANCEL  (for   pending
+                              requests),  and  DISMOUNT (for satisfied
+                              requests) commands to change this list.
+
+                              The /ALL switch adds  the  following  to
+                              the     display:     the    /ASSISTANCE,
+                              /PRIORITY,     /RESTARTABLE/,     /NOTE,
+                              /SEQUENCE,    /UNIQUE,    and    /REMARK
+                              switches, whether a tape  mount  request
+                              is  for  a  labeled  tape,  and the tape
+                              volume-set  name.   The   /FAST   switch
+                              eliminates  column  headings and the sum
+                              of  the  number   of   requests;   /USER
+                              restricts  descriptions  to  jobs of the
+                              user named, and can be given with either
+                              of the other two switches.
+                                   Default user name - your user  name
+
+                      ---
+                      | /ALL
+                      | /DESTINATION-NODE:node name
+     OUTPUT-REQUESTS  | /FAST
+                      | /USER:user name
+                      ---
+                              prints a listing, at your  terminal,  of
+                              the requests being sent or waiting to be
+                              sent to  an  output  device.   The  list
+                              includes:
+
+                               o  the name of  the  node  (for  remote
+                                  line printer requests)
+
+                               o  the name of the queue  (card  punch,
+                                  paper  tape  punch, plotter, or line
+                                  printer)
+
+                               o  the jobname and request ID number of
+                                  the request (an asterisk (*) appears
+                                  before the jobname if the request is
+                                  currently being processed
+
+                               o  the  output  limit,  in  appropriate
+                                  units  (number  of pages, minutes of
+                                  plotter time, feet of paper tape, or
+                                  number of cards)
+
+                               o  the name of the user  who  initiated
+                                  the request, and
+
+                               o  values  of  the   switches   /AFTER,
+                                  /FORMS,    and   /UNIT,   if   given
+                                  non-default values in  the  original
+                                  PRINT,  PLOT,  PUNCH,  or subsequent
+                                  MODIFY command.
+
+                              Use  PRINT,  PLOT,  PUNCH,  MODIFY,   or
+                              CANCEL to change this list.
+
+                              The  /ALL  switch  adds  the  /NOTE  and
+                              /SEQUENCE  switches  to this list, while
+                              the /FAST switch eliminates the  display
+                              of  all  switches  and  column headings;
+                              /USER restricts descriptions to jobs  of
+                              the  user  named,  and can be given with
+                              either of the other two  switches.   The
+                              /DESTINATION-NODE  switch  displays  the
+                              print requests on remote  nodes  in  the
+                              same TOPS-20 cluster as the local node.
+                                   Default user name - your user name
+
+     PROGRAM-STATUS           gives the following information for  the
+                              current  level  of  the  TOPS-20 command
+                              processor (EXEC):
+
+                               o  the amount  of  CPU  time  you  have
+                                  used,  and  total elapsed time since
+                                  you logged in
+
+                               o  the  amount   of   TOPS-20   command
+                                  processor time used
+
+                               o  SET  UUO-SIMULATION  (set  with  SET
+                                  UUO-SIMULATION)   if   the   TOPS-10
+                                  compatibility package is enabled  to
+                                  simulate   TOPS-10   monitor   calls
+                                  issued by a program you are running
+
+
+                               o  SET CONTROL-C-CAPABILITY  (set  with
+                                  SET  CONTROL-C-CAPABILITY)  if  your
+                                  program is allowed to handle  CTRL/C
+                                  interrupts itself
+
+                               o  the settings  established  with  the
+                                  SET TRAP and SET TYPEOUT commands
+
+                               o  the settings  established  with  the
+                                  SET DEFAULT PROGRAM command
+
+                               o  the settings  established  with  the
+                                  SET PROGRAM command
+
+                               o  a summary of the status of each fork
+                                  belonging to the current copy of the
+                                  TOPS-20 command processor, including
+                                  kept  status,  RUN status, and total
+                                  CPU time used so far
+
+                              An arrow  (=>)  indicates  your  current
+                              fork.
+
+     PSI-STATUS               tells you:
+
+                               o  whether    the    PSI    (Programmed
+                                  Software-Interrupt) system is in use
+                                  (ON) or not (OFF)
+
+                               o  the  memory  address  of  the  level
+                                  table  and  of the channel table - 0
+                                  if none was set
+
+                               o  the numbers of the  priority  levels
+                                  for  which  there  are interrupts in
+                                  progress  (1  and/or  2  and/or  3),
+                                  where 1 is the highest priority
+
+                               o  the  numbers  of  channels   enabled
+                                  (ready) to accept interrupts, and of
+                                  channels with pending interrupts
+
+                              For further discussion of the  interrupt
+                              system  see  the  TOPS-20  Monitor Calls
+                              Reference Manual.
+
+     REMOTE-PRINTING          displays    system    definitions    and
+                              characteristics    for    remote    line
+                              printers.
+
+
+                         ---
+                         | /ALL
+     RETRIEVAL-REQUESTS  | /FAST
+                         | /USER:user name
+                         ---
+
+                              prints a  list,  at  your  terminal,  of
+                              pending  retrieval  requests.  Each file
+                              for   which   you   request    retrieval
+                              constitutes  a separate request, even if
+                              specified  within  a   single   RETRIEVE
+                              command.  The list includes:
+
+                               o  the name of the request  (the  first
+                                  six characters of the filename)
+
+                               o  the request ID number
+
+                               o  the volids of each  tape  containing
+                                  the file
+
+                               o  the name of the user  who  made  the
+                                  request
+
+                              The /ALL switch  includes  the  complete
+                              specification  (up  to  49 characters of
+                              the  file,  while   the   /FAST   switch
+                              eliminates    column   headings;   /USER
+                              restricts descriptions  to  requests  of
+                              the  user  named  and  can  be used with
+                              either of the other two switches.
+
+                              Note  that  the  /ALL  switch  does  not
+                              display  the complete file specification
+                              unless  you  have  Wheel   or   Operator
+                              privileges.
+                                   Default user name - your user name
+
+     SPOOLED-OUTPUT-ACTION    tells you whether the  system  processes
+                              your     spooled     output     requests
+                              immediately, or defers  them  until  you
+                              log      out.       Set     with     SET
+                              SPOOLED-OUTPUT-ACTION.
+
+     STRUCTURE dev:           gives, for  each  structure  named,  the
+                              following:
+
+                               o  information as to whether the system
+                                  performs  checking  operations while
+                                  writing  to  the  data  or  swapping
+                                  areas  of the structure.  The system
+                                  would  perform  this   checking   by
+                                  immediately reading the data that it
+                                  has just  written.   If  the  system
+                                  manager has enabled these functions,
+                                  the following lines  appear  at  the
+                                  top    of   the   display:    "Write
+                                  verification for data",  and  "Write
+                                  verification for swapping".
+
+                               o  the number of users who have mounted
+                                  the  structure,  the  number of open
+                                  files  on  the  structure,  and  the
+                                  number of disks in the structure
+
+                               o  kind   of   structure - Public    or
+                                  Private,  Domestic  or  Foreign (see
+                                  the TOPS-20 User's Guide)
+
+                               o  names of users who have mounted  the
+                                  structure
+
+                               o  names of users who have accessed the
+                                  structure
+
+                               o  names of users who have connected to
+                                  the structure
+
+                               o  Whether  or  not  the  structure  is
+                                  offline
+
+                              The colon after the  structure  name  is
+                              optional.   Use an asterisk (*) for dev:
+                              to  specify  all   mounted   structures.
+                              Mount  and  dismount structures with the
+                              MOUNT and DISMOUNT commands.
+                                   Default dev: - your       connected
+                                                  structure
+
+     SUBSYSTEM-STATISTICS     gives,  for  each  subsystem  (any  name
+                              specified   by   the  SETSN  JSYS),  the
+                              following information:
+
+                               o  its name and total runtime since the
+                                  system last started - SNAMES, STIMES
+
+                               o  the average number  of  page  faults
+                                  per second it has caused - SPFLTS
+
+                               o  the number of long-term waits it has
+                                  caused - SNBLKS
+
+                               o  its average  working-set  size  (the
+                                  number   of  pages  it  occupies  in
+                                  memory)-SSIZE
+
+                               o  the number of times a SETSN JSYS has
+                                  been  executed for it (excluding the
+                                  EXEC subsystem)
+
+                              See the TOPS-20 Monitor Calls  Reference
+                              Manual for more information.
+
+     SUPERIORS                tells you the number of forks  that  are
+                              superior  to  the  current  EXEC  level.
+                              This number is equal to  the  number  of
+                              times  you gave the PUSH command without
+                              intervening POP commands.
+
+                              Note  that  many  programs   have   PUSH
+                              commands    and   that   some   programs
+                              automatically do a PUSH.   These  PUSHes
+                              also change the number of superior forks
+                              reported by this command.
+
+     SYSTEM-STATUS            tells you:
+
+                               o  whether the operator is present
+
+                               o  what kinds of logins are  allowed  -
+                                  local,    remote,   pseudo-terminal,
+                                  DECnet, INTERNET, or console
+
+                               o  whether  accounting  (assessing  and
+                                  recording charges for system use) is
+                                  being done
+
+                               o  whether account validation (checking
+                                  accounts against lists of authorized
+                                  users) is enabled
+
+                               o  whether working  set  preloading  is
+                                  enabled  (Working  set preloading is
+                                  discussed in  the  System  Manager's
+                                  Guide    and    in    the   Software
+                                  Installation Guide.)
+
+                               o  whether sending of level zero system
+                                  messages is enabled.  System level 0
+                                  messages inform users about resource
+                                  problems, such as:
+
+                                   -  [GIDNEY:    Caution,    Swapping
+                                      space low]
+
+                                   -  [CLOYD:  Caution, SPT space low]
+
+                                   -  [THEP:  Caution, Disk space  low
+                                      on system structure THEP:]
+
+                               o  whether sending of level one  system
+                                  messages is enabled.  System level 1
+                                  messages inform users of operational
+                                  type messages, such as:
+
+                                   -  [RONCO:  Deleted files  will  be
+                                      expunged  from  system structure
+                                      RONCO:  in 30 seconds]
+
+                                   -  [RONCO:   Expunge  of  structure
+                                      RONCO:  completed]
+
+                               o  whether sending of operator messages
+                                  (like  BUGCHK, BUGINF, and "RESOURCE
+                                  LOW") to the CTY (central  terminal)
+                                  is enabled
+
+                               o  whether    tape-drive     allocation
+                                  (automatic    assignment   of   tape
+                                  drives) is enabled
+
+                               o  whether        automatic        file
+                                  retrieval-waits  (the  delaying of a
+                                  command's execution until  specified
+                                  off-line  files  are [automatically]
+                                  retrieved) are enabled
+
+                               o  the system's expiration default date
+                                  for off-line files
+
+                               o  the current setting of the scheduler
+                                  bias control
+
+                               o  whether class scheduling is enabled,
+                                  and,  if  it is enabled, the special
+                                  class (if any) for batch  jobs,  and
+                                  the default class (if any)
+
+                               o  off-line structures timeout interval
+
+                               o  status of cluster information
+
+                               o  status of cluster sendalls
+
+                               o  minimum password length
+
+                               o  number  of  days  for  password   to
+                                  expire
+
+                               o  whether the password  dictionary  is
+                                  enabled
+
+     TAPE-PARAMETERS          gives  the  default  settings  of  these
+                              parameters for magnetic tapes:
+
+                               o  tape density, in bits per inch
+
+                               o  tape parity (ODD or EVEN)
+
+                               o  format    (ANSI-ASCII,    CORE-DUMP,
+                                  INDUSTRY-COMPATIBLE,              or
+                                  SYSTEM-DEFAULT), and
+
+                               o  tape record length, in bytes
+
+                              Set with SET TAPE.
+
+     TERMINAL-MODE number     gives the  following  information  about
+                              the specified terminal:
+
+                               o  its type (for example,  LA36,  VT52,
+                                  or SYSTEM-DEFAULT)
+
+                               o  its speed (baud rate), in  bits  per
+                                  second.     If   the   terminal   is
+                                  connected  to  the  system   through
+                                  another     node,    such    as    a
+                                  DECserver-100  or  another   TOPS-20
+                                  system, the terminal speed cannot be
+                                  determined by this command.  This is
+                                  indicated  in  the  display  by  the
+                                  message       !Terminal        speed
+                                  indeterminate!.
+
+                               o  whether all  output  that  does  not
+                                  originate   from  your  own  job  is
+                                  inhibited.
+
+                               o  whether it  is  set  to  receive  or
+                                  refuse  links,  advice,  and  system
+                                  messages
+
+                               o  whether  it  is  set  to  pause   in
+                                  printing  output  when  you type the
+                                  pause character, and/or at  the  end
+                                  of each full page of output
+
+                               o  the pause  and  continue  characters
+                                  that  you  may  have  set  with  the
+                                  TERMINAL  PAUSE  CHARACTER   command
+                                  (only  if TERMINAL PAUSE END-OF-PAGE
+                                  and TERMINAL PAUSE  COMMAND  are  in
+                                  effect,  and  if  CTRL/S  and CTRL/Q
+                                  were not the specified characters)
+
+                               o  the length (in number of lines)  and
+                                  width  (in  number of characters) of
+                                  its page
+
+                               o  whether it is  capable  of  printing
+                                  lowercase  characters, whether it is
+                                  set to raise lowercase  letters  you
+                                  type  to  uppercase,  and whether it
+                                  will  mark  (flag)  capital  letters
+                                  with a single quotation mark (')
+
+                               o  whether it has a formfeed mechanism,
+                                  and   whether  it  is  set  to  only
+                                  indicate  formfeeds  or  to  perform
+                                  them
+
+                               o  whether it has mechanical tab stops,
+                                  whether  it  is  set  to immediately
+                                  echo input you type
+
+                               o  whether   it   is    operating    in
+                                  FULLDUPLEX or HALFDUPLEX mode
+
+                              Set with TERMINAL.  The  SYSTAT  command
+                              displays terminal numbers.
+
+     VERSION                  tells you:
+
+                               o  the name of the host system
+
+                               o  the TOPS-20 operating system's  name
+                                  and octal version number
+
+                               o  the octal  version  of  the  TOPS-20
+                                  command processor (EXEC) in use
+
+                               o  the  name  (and  decimal  or   octal
+                                  version   number,  if  any)  of  the
+                                  program  in  the  current  fork  for
+                                  which  program  data  vectors (PDVs)
+                                  exist and that are  associated  with
+                                  the   current   process.   (See  the
+                                  TOPS-20  Monitor   Calls   Reference
+                                  Manual and to the description of the
+                                  /PVBLOCK switch in the TOPS-20  LINK
+                                  Reference  Manual for information on
+                                  PDVs.)  See Example 5.
+
+                              o  the  decimal  version  of   the   UUO
+                                 simulation   package  in  use  (if  a
+                                 TOPS-10 program is in memory)
+
+                              The format of a version number is:
+
+                                   a.b(c)-d
+
+                              where:  (1) a  and  b  are  respectively
+                              incremented  for major and minor changes
+                              in the software  (2)  c  gives  a  rough
+                              indication  of  the  number of times the
+                              software component has been  edited  (3)
+                              d,  a  holdover from earlier versions of
+                              TOPS-20  which  is  now   rarely   used,
+                              identifies the programmer(s) responsible
+                              for the software component.
+
+     VOLUMES setname:         gives the volids  of  currently  mounted
+                              and   newly   created   volumes  in  the
+                              specified tape set.  A colon  after  the
+                              tape set name is optional.
+
+
+Hints
+
+     Specifying the Current Fork of TOPS-20
+
+          Use the FORK command to specify the fork to be described  by
+          the  ADDRESS-BREAK,  FILE-STATUS,  MEMORY-USAGE  and VERSION
+          arguments.  Find out  your  current  fork  with  INFORMATION
+          FORK-STATUS.
+
+
+Restrictions
+
+     Using the INFORMATION OUTPUT-REQUESTS /DESTINATION-NODE switch
+
+          For non-privileged users, the local node's GALAXY must  know
+          if the remote node has printers.  If the user is privileged,
+          then the print  request  queue  of  the  node  specified  is
+          displayed,  regardless  of whether the local GALAXY knows if
+          the node has printers or not.  The user specified node  must
+          be a node in the cluster known to the local GALAXY.
+
+          If the node specified by the /DESTINATION-NODE switch is the
+          local  node,  then the print request queue of the local node
+          is displayed.
+
+          You cannot use an * as an argument in the  /DESTINATION-NODE
+          switch.
+
+
+Related Commands
+
+     SYSTAT         for printing information about the  current  state
+                    of the system.
+
+
+Examples
+
+     1.  Use an INFORMATION command to determine your current terminal
+         settings.
+
+         @INFORMATION TERMINAL-MODE
+          TERMINAL VT100
+          TERMINAL SPEED 9600
+               .
+               .
+               .
+          TERMINAL NO IMMEDIATE
+          TERMINAL FULLDUPLEX
+
+     2.  Mount a structure and access your directory on the structure.
+         Compare  the  disk  space  available in this directory and in
+         your connected directory.  (Note that  there  are  many  more
+         pages  free  on  your  connected structure (MISC:) as a whole
+         than on structure SNARK:; this is likely to make your use  of
+         the system more efficient if you work only within MISC:.)
+
+         @MOUNT STRUCTURE SNARK:
+         Structure SNARK: mounted
+         @ACCESS SNARK:
+         @INFORMATION DISK-USAGE SNARK:
+          SNARK:<LATTA>
+          198 Pages assigned
+          400 Working pages, 400 Permanent pages allowed
+          2836 Pages free on SNARK:
+         @INFORMATION DISK-USAGE
+          MISC:<LATTA>
+          119 Pages assigned
+          590 Working pages, 590 Permanent pages allowed
+          33172 Pages free on MISC:
+
+     3.  Print a file, ordering several copies and supplying a note to
+         be attached to it.  Use an INFORMATION command to verify that
+         your request is in the output  queue.   Modify  the  date  on
+         which  the  job  will  be  printed,  and  use the INFORMATION
+         command again to confirm this action.
+
+         @PRINT TESTF1.FOR /AFTER:17:00/COPIES:20/FORMS:NARROW/NO -
+         TE:"T-TH LAB"
+         [Printer job TESTF1 queued, request-ID 219, Limit 54]
+
+         @INFORMATION OUTPUT-REQUESTS /ALL/USER
+
+         Printer Queue:
+         Job Name  Req#  Limit            User
+         --------  ----  -----  ------------------------
+           TESTF1   219     54  LATTA                  /Forms:NARROW
+                   /After: 8-Nov-85 17:00  /Note:T-TH LAB  /Seq:1791
+         There is 1 job in the queue (none in progress)
+
+         @MODIFY PRINT 219 /AFTER:15-NOV-85 17:00
+         [1 Job modified]
+         @INFORMATION OUTPUT-REQUESTS /ALL/USER
+
+         Printer Queue:
+         Job Name  Req#  Limit             User
+         --------  ----  -----  ------------------------
+           TESTF1   219     54  LATTA                   /Forms:NARROW
+                   /After:15-Nov-85 17:00   /Note:T-TH LAB  /Seq:1791
+         There is 1 job in the queue (none in progress)
+
+     4.  Request to print a file  on  a  remote  node,  then  use  the
+         INFORMATION  command  to  verify  that your request is in the
+         remote output queue.
+
+         @PRINT VENUS.TXT/DESTINATION-NODE:HENSON
+         [Printer job VENUS queued  on  node  HENSON,  request-ID  39,
+         Limit 12]
+
+         @INFORMATION OUTPUT/DESTINATION-NODE:HENSON
+
+         Printer Queue:
+         Job Name  Req#  Limit             User
+         --------  ----  -----  ------------------------
+           VENUS   200     54   ANDERSON
+
+         There is 1 job in the queue (none in progress)
+
+     5.  Place  a  program  in  memory  section  17.   Then  give  the
+         INFORMATION  MEMORY-USAGE  command to verify that the program
+         was appropriately placed.  The  page  numbers,  beginning  at
+         17000,  indicate that section 17 is in use, because a section
+         comprises 1000 (octal) pages.  Also, the  left  half  of  the
+         entry vector location contains 17.
+
+         @GET GRADES.EXE.1 /USE-SECTION:17
+         @INFORMATION MEMORY-USAGE
+
+         64.  pages, Entry vector loc 17,,542 len 254000
+
+           Section 0     R, W, E,  Private
+           Section 17    R, W, E,  Private
+         17000-17002     GRADES.EXE.1  1-3   R, CW, E
+         17374-17425      GRADES.EXE.1  4-35   R, CW, E
+         17600-17637      GRADES.EXE.1  36-75   R, CW, E
+         17643-17645      GRADES.EXE.1  76-100   R, CW, E
+
+     6.  Issue the INFORMATION  VERSION  command  for  information  on
+         programs  in  your memory area that have program data vectors
+         associated with them.  Note that the merging of such programs
+         yields consolidated information.
+
+         @GET IOLIB
+         @INFORMATION VERSION
+          BOSTON TOPS-20 System, TOPS-20 Monitor 7(163)
+          TOPS-20 Command processor 7(10)
+          Program is IOLIB
+         PDVs:  Program name IOPAK, version 1.1(420)
+         @GET MATHLB
+         @INFORMATION VERSION
+          BOSTON TOPS-20 System, TOPS-20 Monitor 7(163)
+          TOPS-20 Command processor 7(10)
+          Program is MATHLB
+         PDVs:  Program name MATHLB, version 3.33(360)
+         @MERGE IOLIB
+         @INFORMATION VERSION
+          BOSTON TOPS-20 System, TOPS-20 Monitor 7(163))
+          TOPS-20 Command processor 7(10)
+          Program is MATHLB
+         PDVs:  Program name MATHLB, version 3.33(360)
+                Program name IOPAK, version 1.1(420)
+         @MERGE RPTGEN
+         @INFORMATION VERSION
+          BOSTON TOPS-20 System, TOPS-20 Monitor 7(163)
+          TOPS-20 Command processor 7(10)
+          Program is MATHLB
+         PDVs:  Program name REPORT, version 3.1(156)
+                Program name MATHLB, version 3.33(360)
+                Program name IOPAK, version 1.1(420)
+
+     7.  Use the INFORMATION LOGICAL-NAMES command with the * wildcard
+         to  list  all the job-wide and system-wide logical names that
+         begin with the letter 'P'.
+
+         @INFORMATION LOGICAL-NAMES P*
+         Job-wide:
+
+         PAS: => PUB:<DBONIN.PASCAL>
+         PB: => PUB:PHONE.BOOK
+         PUB: => PUBLIC:<DBONIN>
+
+         System-wide:
+
+         PCL: => RANDOM:<PCL>
+         POBOX: = PUBLIC:
+         POST-OFFICE: => PUBLIC:<OPERATOR>
+         PS: => GIDNEY:
+
+     8.  Use the INFORMATION INTERNET STATUS command  to  display  the
+         status of INTERNET nodes.
+
+         @ INFORMATION INTERNET STATUS
+
+         Local dec-internet host name is gidney.tops20.dec.com
+          Network interface type is IPNI, Internet address is 16.34.0.2
+          Network interface is up, output is enabled
+          Network service is enabled
+          Last network interface up transition: 4-May-90 23:16:04
+
+         Local dec-mrnet host name is gidney.mrnet.dec.com
+          Network interface type is IPNIA, Internet address is 192.5.5.4
+          Network interface is up, output is enabled
+          Network service is enabled
+          Last network interface up transition: 4-May-90 23:16:02
+
+         Local dec-mrrad host name is mrdale.mrrad.dec.com
+          Network interface type is IPCI, Internet address is 192.5.6.12
+          Network interface is up, output is enabled
+          Network service is enabled
+          Last network interface up transition: 4-May-90 23:16:02
+
+

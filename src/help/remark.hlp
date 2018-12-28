@@ -1,0 +1,63 @@
+
+REMARK command
+
+The REMARK command tells the system to regard the terminal input  that
+follows as comment only.
+
+
+Format
+
+     @REMARK (MODE)
+     Type remark.  End with CTRL/Z.
+
+
+Characteristics
+
+     Ending Remarks
+
+          Until you give a CTRL/Z, the system merely displays what you
+          type, instead of trying to interpret it as commands.
+
+
+Hints
+
+     Useful During TALK or ADVISE Session
+
+          If you have already established contact with another user by
+          a  TALK or ADVISE command before giving REMARK, his terminal
+          will also display what you type.  Give  the  REMARK  command
+          before  sending  lengthy  comments or demonstrating commands
+          that you don't want to take effect.
+
+
+Related Commands
+
+     ADVISE     for sending commands to another user's job
+
+     TALK       for sending comments to another user
+
+
+Examples
+
+     1.  Give the REMARK command.
+
+         @REMARK
+         Type remark.  End with CTRL/Z.
+
+     2.  Receive a communication link from  another  user.   Give  the
+         REMARK  command  to speak with him.  Give a CTRL/Z afterwards
+         to end the remarks.
+
+         @
+         LINK FROM P.SPECCINI, TTY 127
+         @;WHERE ARE THE NOTES FROM THE LAB DEMO THIS A.M.?
+         @REMARK
+         Type remark. End with CTRL/Z.
+         HI, PAUL.  THEY'RE IN THE LAB'S LIBRARY AREA.
+         THAT'S CHEM:<P-CHEM.20.NOTES>.  I DON'T KNOW
+         THE TITLE BUT LOOK AT THE DATES WITH A
+         TDIRECTORY COMMAND.  OKAY?
+         ;YES, THANKS.  BYE
+         @BREAK
+         ^Z
+

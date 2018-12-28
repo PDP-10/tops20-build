@@ -1,0 +1,99 @@
+
+R command
+
+The R command places an executable system program in memory and starts
+it.
+
+
+Format
+
+     @R (PROGRAM) filespec /switch
+
+     where:
+
+     filespec       is  the  file  specification  of  any   executable
+                    program.
+                         Default dev:<directory> - SYS:
+
+                         Default .typ - .EXE
+
+     /switch        is   /USE-SECTION:n
+                         specifies the memory section (from  0  to  37
+                         octal)  in which your program is to run.  You
+                         can use this switch only if your program  can
+                         be contained in one section.
+
+
+Characteristics
+
+     Need for R Command
+
+          Although in most cases you can run system programs by simply
+          typing  the  program name in place of an EXEC command, the R
+          command is necessary for running a program whose name is the
+          same  as  an  EXEC  command  or  an abbreviation for an EXEC
+          command.  For example, if your site  has  a  system  program
+          named CONNECT, it must be run with the R command in order to
+          distinguish it from the EXEC's CONNECT command.  If you have
+          a system program named GE, it must be run with the R command
+          to distinguish it from  the  GE  abbreviation  for  the  GET
+          command.
+
+     Cancels the Ephemeral Attribute
+
+          If a system program has been set  ephemeral  by  the  system
+          manager  or, you have given a SET PROGRAM EPHEMERAL command,
+          you can  cancel  the  ephemeral  attribute  by  running  the
+          program  with  the  R  command instead of typing the program
+          name as an EXEC command.
+
+          For more information on the  ephemeral  attribute,  see  the
+          ERUN help file.
+
+
+Hints
+
+     Defining SYS:
+
+          If you redefine logical name SYS:  to be different from  the
+          system-wide  definition,  you  should  include  SYS:  in the
+          search list if you want to use the R command to  run  system
+          programs.   For  further information, see the section titled
+          Redefining System Logical Names in the DEFINE help file.
+
+
+Effect on Memory
+
+     The R command clears any  unkept  forks,  places  in  memory  and
+     starts the specified program.
+
+
+Related Commands
+
+     INFORMATION LOGICAL-NAMES     for  examining  the  definition  of
+                                   SYS:
+
+     RUN                           for   running    executable    user
+                                   programs
+
+
+Examples
+
+     1.  Run the FILCOM system program.
+
+         @R FILCOM
+         *
+
+     2.  Find out what APL programs  are  available  in  logical  name
+         SYS:.  Run one of them.
+
+         @DIRECTORY SYS:*APL*.EXE
+
+            PS:<FIELD-IMAGE>
+          APL.EXE.1
+          APLSF.EXE.1
+          MAPLFL.EXE.1
+
+          Total of 3 files
+         @R APL.EXE
+

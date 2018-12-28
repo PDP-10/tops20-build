@@ -1,0 +1,629 @@
+
+SUBMIT command
+
+The SUBMIT command enters a  command  procedure  into  the  batch  job
+queue.
+
+
+Format
+
+     @SUBMIT (BATCH JOB) /switch(es) filespec/switch(es),...
+
+     where:
+
+     switches     are keywords, chosen from the list below, indicating
+                  your   choice  of  SUBMIT  command  options.   These
+                  switches have different effects according  to  their
+                  position  in  the  command  line:  placed before all
+                  files in the command, they act as defaults for  all;
+                  otherwise  they  affect  only  the nearest preceding
+                  file.
+                       Defaults are shown in the list of switches
+
+     filespec     is the specification of a batch  control  file  (see
+                  the TOPS-20 User's Guide), containing batch commands
+                  and the commands with which you would have done  the
+                  job as a timesharing user instead of as a batch user
+                       Default file type - .CTL
+
+
+      Summary of SUBMIT Command Switches (defaults in boldface)
+
+
+     /ACCOUNT:account              Default account - your current
+                                                     account
+     /AFTER:date and/or time
+                 YES
+     /ASSISTANCE:NO
+                APPEND
+     /BATCH-LOG:SUPERSEDE
+                SPOOL
+     /BEGIN:n                      Default n - 0
+     /CARDS:n                      Default n - 1000
+     /CONNECTED-DIRECTORY:dev:<directory>
+     /DELETE
+     /DEPENDENCY-COUNT:n           Default n - 0
+     /DESTINATION-NODE:node name
+     /FEET:n                       Default n - 200
+     /JOBNAME:6-character name     Default name - first six characters
+                                                  of control filename
+                     KEEP
+     /LOGDISPOSITION:DELETE
+     /LOGNAME:filespec             Default filespec - control
+                                                      filename,   file
+                                                      type .LOG
+
+             YES
+     /NOTIFY:NO
+             ALWAYS
+     /OUTPUT:ERRORS
+             NOLOG
+     /PAGES:n                      Default n - 200
+     /PRIORITY:n                   Default n - 10
+     /PROCESSING-NODE:node name
+     /READER
+                  NO
+     /RESTARTABLE:YES              Default argument (if switch is
+                                                      given) - YES
+
+     /SEQUENCE:n
+     /TAG:6-character label
+     /TIME:hh:mm:ss                Default time limit  (if  switch  is
+                                           omitted) - 00:05:00
+                                   Default hh:mm:ss  (if   switch   is
+                                           given   without   colon  or
+                                           argument) - 60 (minutes)
+     /TPLOT:n                      Default n - 200
+             NO or  0
+     /UNIQUE:YES or 1
+     /USER:user name
+
+
+                       SUBMIT Command Switches
+
+
+     /ACCOUNT:account            specifies the account of 39 or  fewer
+                                 characters  to  charge for your batch
+                                 request.  This account must be  valid
+                                 for your user name.
+                                      Default  account - your  current
+                                                        account (check
+                                                        with
+                                                        INFORMATION
+                                                        JOB-STATUS)
+
+     /AFTER:date and/or time, or
+
+            day of week (or TODAY)
+            and/or time          ensures that  the  job  will  not  be
+                                 started  until  after the date and/or
+                                 time   specified.    NOV-12-79,   and
+                                 18:00:00  illustrate two arguments to
+                                 this switch.  If you give  both  date
+                                 and time, separate them with a space.
+                                 When given alone,  the  time  may  be
+                                 preceded  with a plus sign (+), which
+                                 will   delay   processing   by    the
+                                 indicated  length  of  time  from the
+                                 present.
+
+                                 Alternatively, you may give a day  of
+                                 the week (such as MONDAY) or TODAY as
+                                 argument; then the batch job will not
+                                 be started until the beginning of the
+                                 following day.  If  you  follow  this
+                                 argument with a plus sign and a time,
+                                 the job will be  further  delayed  by
+                                 this amount.
+
+                 YES
+     /ASSISTANCE:NO              tells the  system  whether  your  job
+                                 will  require  the  assistance of the
+                                 operator (for  example,  to  mount  a
+                                 structure  or  magnetic tape) when it
+                                 is run
+                                      Default - YES
+
+                APPEND
+     /BATCH-LOG:SUPERSEDE        tells  the system  either  to  append
+                SPOOL            the log file of the batch job to  any
+                                 existing  log  file of the same name,
+                                 or to write a new generation  of  the
+                                 log  file, or to send the log file to
+                                 the spool area only.
+                                      Default - APPEND
+
+     /BEGIN:n                    starts processing the control file at
+                                 line  n of the file.  Use this switch
+                                 for  a  control  file  that  can  fit
+                                 different  applications  depending on
+                                 where processing begins.   (See  also
+                                 the /TAG switch.)
+                                      Default n - 0
+
+     /CARDS:n                    limits to n  the  maximum  number  of
+                                 cards to be punched by the job.
+                                      Default n - 1000
+
+     /CONNECTED-DIRECTORY:dev:<directory>
+                                 specifies the connected directory for
+                                 the  batch job.  For privileged users
+                                 only.
+
+     /DELETE                     tells  the  system  to   delete   the
+                                 control  file after the batch job has
+                                 run.
+
+     /DEPENDENCY-COUNT:n         sets the job's dependency count to n.
+                                 Because  a  batch  job  does  not get
+                                 processed until its dependency  count
+                                 is   0,   you  can  delay  a  job  by
+                                 assigning it  a  positive  dependency
+                                 count   and  then  using  the  MODIFY
+                                 command to bring the count  to  0  at
+                                 the proper time.
+                                      Default n - 0
+
+     /DESTINATION-NODE:node-name
+                                 specifies the IBM  remote  job  entry
+                                 station on whose line printer the log
+                                 file of  your  batch  job  is  to  be
+                                 printed.   Two  colons (::) following
+                                 the node name are optional.
+
+     /FEET:n                     limits to n  the  maximum  number  of
+                                 feet  of  paper tape to be punched by
+                                 the job.
+                                      Default n - 200
+
+     /JOBNAME:name               assigns  a  name  (of  six  or  fewer
+                                 characters) to the batch job.
+                                      Default name - first         six
+                                                     characters     of
+                                                     control filename
+
+                     KEEP
+     /LOGDISPOSITION:DELETE      tells the system  whether  to  delete
+                                 the   log  file  after  it  has  been
+                                 printed.
+                                      Default - KEEP
+
+     /LOGNAME:filespec           specifies where to place the log file
+                                 of the batch job.
+                                      Default dev:<directory> - your
+                                              connected  directory  at
+                                              the  time  of the SUBMIT
+                                              command
+
+                                      Default filename - control
+                                                         filename
+
+                                      Default type - .LOG
+             YES
+     /NOTIFY:NO                  tells the system whether  to  send  a
+                                 message  to  your  terminal  when the
+                                 batch job has been completed.
+                                      Default argument - NO
+
+                                      Default argument   (if switch is
+                                                         given) - YES
+
+             ALWAYS
+     /OUTPUT:ERRORS              says whether you want the log file to
+             NOLOG               be printed always,  or  only  in  the
+                                 case  of  unhandled  errors occurring
+                                 within the job, or never.  No  matter
+                                 which option you choose, the log file
+                                 is always written.
+                                      Default - ALWAYS
+
+     /PAGES:n                    limits to n  the  maximum  number  of
+                                 pages  of  line  printer output to be
+                                 printed by the job.
+                                      Default n - 200
+
+     /PRIORITY:n                 assigns a decimal  number  n  to  the
+                                 job,  reflecting  the  urgency of the
+                                 batch request.  This n must be from 0
+                                 to  63, with larger numbers receiving
+                                 earlier   treatment.    The    system
+                                 acknowledges     this    switch    by
+                                 displaying the message [Priority  has
+                                 been modified].
+                                      Default n - 10
+
+     /PROCESSING-NODE:node name::
+                                 specifies  the  IBM  host  system  on
+                                 whose  CPU the JCL batch job is to be
+                                 run.  Two colons (::)  following  the
+                                 node name are optional.
+
+     /READER                     tells the system  that  your  control
+                                 file  is  composed  of  card  images,
+                                 including  control  cards,  on  disk.
+                                 For  details  see the TOPS-10/TOPS-20
+                                 Batch Reference Manual.
+
+                  NO
+     /RESTARTABLE:YES            decides whether  the  job  should  be
+                                 started  again  if the system crashes
+                                 and is restarted.
+                                      Default argument - NO
+
+                                      Default argument (if  switch  is
+                                              given)   - YES
+
+     /SEQUENCE:n                 specifies that n, instead of a number
+                                 supplied  by the system, is to be the
+                                 sequence number of the job.
+
+     /TAG:label                  starts processing the control file at
+                                 the   line  beginning  with  label::,
+                                 where label is an  alphanumeric  name
+                                 of six or fewer characters.  Use this
+                                 switch for a control  file  that  can
+                                 fit  different applications depending
+                                 on where processing begins.
+
+     /TIME:hh:mm:ss              limits the maximum amount of CPU time
+                                 available to the job; given in hours,
+                                 minutes, and seconds.
+                                      Default time limit (if switch is
+                                              omitted) - five minutes
+
+                                      Default hh:mm:ss (if  switch  is
+                                              given  without  colon or
+                                              argument) - 60 (minutes)
+
+     /TPLOT:n                    limits to n  the  maximum  number  of
+                                 minutes  of  plotter time allowed for
+                                 plotter time allowed for the job.
+                                      Default n - 200
+
+             NO  (or 0)
+     /UNIQUE:YES (or 1)          when submitting multiple batch  jobs,
+                                 tells  the  system whether to run the
+                                 jobs  concurrently  or  at   separate
+                                 times.   The  control  files  must be
+                                 submitted while connected to the same
+                                 directory;  the  control files can be
+                                 located  in  any   directory.    This
+                                 switch    applies   to   batch   jobs
+                                 submitted with a single  or  multiple
+                                 SUBMIT commands.  See Example 5.
+                                      Default - YES
+
+     /USER:user name             specifies the user who is to  be  the
+                                 owner  of  the  batch  request.   For
+                                 privileged users only.
+
+
+Output
+
+     Jobname, Request ID, and Time Limit
+
+          As soon as you complete a valid SUBMIT command,  the  system
+          responds by printing, on your terminal, the jobname, request
+          ID, and time limit for  the  job.   Each  control  file  you
+          submit  is  a  separate batch request, and is described on a
+          separate line.
+
+
+Characteristics
+
+     Switch Defaults Set by System Manager
+
+          The defaults shown in the list of switches are  correct  for
+          most  user  sites.   However, your system manager can change
+          some of these default settings.  The changes go into  effect
+          during  system  installation.   The  switches  most commonly
+          affected are:  /CARDS, /FEET,  /OUTPUT,  /PAGES,  /PRIORITY,
+          /TIME, and /TPLOT.
+
+     Disposition of Log Files
+
+          The    three    SUBMIT    command    switches    /BATCH-LOG,
+          /LOGDISPOSITION,  and  /OUTPUT,  control what happens to the
+          log file of your batch job.
+
+     Where Written
+
+          The log file is always written as the job  runs,  either  to
+          the  batch  job's  connected  directory,  or  to a directory
+          specified as argument to the  /LOGNAME  switch,  or  to  the
+          system's output spooling area (it is written to the spooling
+          area only if you give the /BATCH-LOG:SPOOL switch).  If  the
+          /DESTINATION-NODE switch is also given, the log file will be
+          written into a directory or spooling area at  the  specified
+          node.   Remember  that  a batch job's connected directory is
+          ordinarily defined to be your  connected  directory  at  the
+          time  of  the SUBMIT command; privileged users may specify a
+          batch   job's   connected    directory    by    using    the
+          /CONNECTED-DIRECTORY switch.
+
+     How Written, When Printed
+
+          The  /BATCH-LOG  switch's  APPEND  and  SUPERSEDE  arguments
+          describe  the manner in which the log file is to be written:
+          either it is appended to any existing file of the same  name
+          (usually produced by a previous running of the batch job) or
+          it is  written  as  a  new  generation  of  the  file.   The
+          /LOGDISPOSITION switch tells the system whether to keep this
+          file,  wherever  it  is  written,  once  the  batch  job  is
+          finished.   The  /OUTPUT  switch  specifies  when you want a
+          listing of the log file to be printed:   either  always,  or
+          never,  or  only  if errors occur when the batch job is run.
+          By using combinations of these switches you  can  cause  any
+          desirable   action.    Giving   /OUTPUT:ALWAYS   along  with
+          /LOGDISPOSITION:DELETE allows a record  of  your  batch  job
+          with only a temporary use of your disk area, and permits you
+          to monitor the progress of the job while it is running (give
+          TYPE  commands  to  view the file at your terminal).  Giving
+          just the /BATCH-LOG:SPOOL switch allows a record without any
+          use  of  your disk area, although then you must wait for the
+          printed output to see this record.
+
+     Execution of Command Files
+
+          As soon as one of  your  batch  jobs  logs  in,  the  system
+          processes  your  login  directory's  command  files  and the
+          system's command files.  The files  are  processed  in  this
+          order:
+
+
+               1.  SYSTEM:BATCH.CMD
+
+               2.  BATCH.CMD
+
+               3.  SYSTEM:COMAND.CMD
+
+               4.  COMAND.CMD
+
+          If a LOGOUT command is included in the batch  control  file,
+          the  system processes your login directory's LOGOUT.CMD file
+          followed by  the  system's  SYSTEM:LOGOUT.CMD  file.   These
+          files  are  not  processed  if  the  batch job is logged out
+          automatically.
+
+     Automatic Logout
+
+          If the batch control file is  not  terminated  by  a  LOGOUT
+          command,  the  batch job is logged-out automatically and the
+          message "KILLED BY OPERATOR TTYnn" is  printed  in  the  log
+          file.
+
+
+Hints
+
+     Using SET DEFAULT SUBMIT
+
+          If there are switches that you always or usually supply when
+          using  SUBMIT,  give  the  SET  DEFAULT  SUBMIT  command  to
+          establish  them  as  defaults  for  the  remainder  of  your
+          terminal  session.   The switches will then behave as if you
+          had typed them directly after  the  word  SUBMIT.   You  can
+          supersede   any   of  these  default  switches  by  actually
+          supplying the switch, with another value, when you give  the
+          SUBMIT command.
+
+               For Future Terminal Sessions
+
+                    Put SET DEFAULT SUBMIT commands into a file  named
+                    COMAND.CMD  or  LOGIN.CMD in your log-in directory
+                    if you want these default switches to be in effect
+                    for  batch  jobs you submit during future terminal
+                    sessions as well.  If both files exist, the system
+                    reads LOGIN.CMD first.
+
+               For Nested Batch Jobs Only
+
+                    Put SET DEFAULT SUBMIT commands into a file  named
+                    BATCH.CMD  in  your  log-in  directory if you want
+                    them to be in effect  at  the  log-in  time  of  a
+                    "nested"  batch  job  only,  that  is, a batch job
+                    started by a SUBMIT  command  within  the  control
+                    file   of  another  of  your  batch  jobs.   Note,
+                    however, that the system also reads COMAND.CMD  at
+                    the  log-in time of a batch job if the file exists
+                    in your log-in  directory.   It  reads  this  file
+                    after BATCH.CMD.
+
+          Monitoring the Progress of a Batch Job
+
+               You can include the SEND command or the  commands  that
+               run  the MAIL or DECmail/MS mail programs in your batch
+               control file.  Use these commands to send  messages  to
+               your terminal informing you of the status of your batch
+               job.  Since a batch job creates a job  in  addition  to
+               your  timesharing  job,  use  the  terminal line number
+               argument instead of the user name argument in the  SEND
+               command.
+
+     More Information
+
+          For more information about batch jobs,  see  the  TOPS-10/20
+          Batch Reference Manual.
+
+
+Restrictions
+
+     Access Rights for Batch Jobs
+
+          For Specifying Control Files and Log Files
+
+               You cannot use the ACCESS command to obtain  the  right
+               to submit control files from another directory, because
+               your batch jobs are logged in with rights only to  your
+               connected  directory  and  to  directories to which you
+               (through your login directory name) have  access  as  a
+               group  member.   The  control  file,  if  not  in  your
+               connected directory, must be in one to which  you  have
+               read   access   as   a   group  member;  the  log  file
+               specification, if  you  give  one,  must  be  for  your
+               connected  directory or for one to which you have write
+               access as a group member.
+
+          For Use Within the Batch Job
+
+               Although it is possible  to  give  CONNECT  and  ACCESS
+               commands  within  a  batch  job to obtain rights beyond
+               those mentioned above, you may  then  have  to  include
+               passwords  in  the  job's  control  file.  Because this
+               practice  could  endanger  system   security,   it   is
+               generally  best  to  establish  and rely on appropriate
+               group rights when preparing batch jobs for submission.
+
+     PUSH During Batch Job Execution
+
+          Note  that  a  PUSH  command  reads  the  COMAND.CMD   file.
+          Therefore,  if  your  batch  control  file  contains  a PUSH
+          command, only the defaults set in COMAND.CMD are  in  effect
+          while in the inferior EXEC.
+
+     Editing a Queued Control File
+
+          The batch system processes the exact version of the  control
+          file  specified  in  your SUBMIT command.  Therefore, if you
+          edit a file while it is in the batch queue, the new  version
+          of the file will not be processed.
+
+          To change the request to process the latest version  of  the
+          control file, CANCEL the request and resubmit the job.
+
+
+Related Commands
+
+     CANCEL                         for withdrawing SUBMIT requests
+
+     INFORMATION BATCH-REQUESTS     for examining in the  batch  input
+                                    queue
+
+     MODIFY                         for   changing   SUBMIT   requests
+                                    before processing has begun
+
+     SET DEFAULT SUBMIT             for establishing default  switches
+                                    for subsequent SUBMIT commands
+
+
+Examples
+
+     1.  Submit a control file to begin a batch job.
+
+         @SUBMIT DIFS.CTL
+         [Batch job DIFS queued, request-ID 461, limit 0:05:00]
+
+     2.  Submit two control files (specifying only the  filenames)  in
+         the  same  command.   Then use the information batch-requests
+         command (with the /USER switch) to examine  your  entries  in
+         the batch input queue.
+
+         @SUBMIT SUMS, DIFS
+         [Batch job SUMS queued, request-ID 629, limit 0:05:00]
+         [Batch job DIFS queued, request-ID 630, limit 0:05:00]
+         @INFORMATION BATCH-REQUESTS /USER
+
+         Batch Queue:
+         Job Name  Req#  Run Time  User
+         --------  ----  --------  --------
+         * SUMS     629  00:05:00  C.BURKE In Stream:2
+            Started at 15:21:01
+           DIFS     630  00:05:00  C.BURKE
+         There are 2 jobs in the queue (1 in progress)
+
+     3.  Connect to another user's directory, then submit two  of  his
+         control  files.   Prevent  the printing of a log file for one
+         job, and allow the second job's to be printed only if  errors
+         occur within the job; make both jobs restartable.  Request an
+         inclusive listing of your entries in the batch queue - notice
+         that  the  jobs  are  logged  in  under  your  own user name,
+         although the log files  will  be  stored  in  user  Holland's
+         directory.   Note  also  that an asterisk (*) indicates a job
+         currently in progress.
+
+         Connect back to your directory and submit  one  of  your  own
+         control files, specifying a particular jobname, then check on
+         it.
+
+         @CONNECT <HOLLAND>
+         Password:___
+         @SUBMIT /RESTARTABLE:YES FLDTST.CTL/OUTPUT:NOLOG, LODT.CTL -
+         /OUTPUT:ERRORS
+         [Batch job FLDTST queued, request-ID 464, limit 0:05:00]
+         [Batch job LODTST queued, request-ID 465, limit 0:05:00]
+         @INFORMATION BATCH-REQUESTS /ALL/USER
+
+         Batch Queue:
+         Job Name  Req#  Run Time             User
+         --------  ----  --------  --------------------------------
+         * FLDTST   464  00:05:00  C.BURKE In Stream:2  /Uniq:Yes
+                   /Restart:Yes  /Assist:Yes  /Seq:1993
+            Started at  8:40:38
+           LODTST   465  00:05:00  C.BURKE /Uniq:Yes  /Restart:Yes
+                   /Assist:Yes  /Seq:1994
+         There are 2 Jobs in the Queue (1 in Progress)
+
+         @CONNECT MISC:<C.BURKE>
+         @SUBMIT SUMS/JOBNAME:1-SUMS
+         [Batch job 1-SUMS queued, request-ID 466, limit 0:05:00]
+         @INFORMATION BATCH-REQUESTS /ALL/USER
+
+         Batch Queue:
+         Job Name  Req#  Run Time             User
+         --------  ----  --------  --------------------------------
+         * 1-SUMS   466  00:05:00  C.BURKE In Stream:2  /Uniq:Yes
+                   /Restart:No  /Assist:Yes  /Seq:1995
+            Started at 8:41:29
+         There is 1 job in the queue (1 in progress)
+
+     4.  Give a SET DEFAULT command to ensure  that  your  batch  jobs
+         will  be  run  after 5:00 P.M.  unless you specify otherwise.
+         Submit a batch job and check that this default is in  effect.
+         Then  use a MODIFY command to delay the starting time of this
+         job till 11:00 P.M.  Finally,  give  the  CANCEL  command  to
+         withdraw the batch request entirely.
+
+         @SET DEFAULT SUBMIT /AFTER:17:00
+         @SUBMIT SUMS
+         [Batch job SUMS queued, request-ID 467, limit 0:05:00]
+         @INFORMATION BATCH-REQUESTS /USER
+
+         Batch Queue:
+         Job Name  Req#  Run Time             User
+         --------  ----  --------  --------------------------------
+           SUMS     467  00:05:00  C.BURKE /After: 9-Nov-85 17:00
+         There is 1 Job in the Queue (None in Progress)
+         @MODIFY BATCH 467 /AFTER:23:00
+         [1 Job modified]
+         @INFORMATION BATCH-REQUESTS /USER
+
+         Batch Queue:
+         Job Name  Req#  Run Time             User
+         --------  ----  --------  --------------------------------
+           SUMS     467  00:05:00  C.BURKE /After: 9-Nov-85 23:00
+         There is 1 Job in the Queue (None in Progress)
+
+         @CANCEL BATCH 467
+         [1 Job canceled]
+
+     5.  Submit two control  files,  one  located  in  your  connected
+         directory  and  the  other  in a directory you are accessing.
+         Use  the  /UNIQUE:NO  switch  to  allow  the  jobs   to   run
+         simultaneously.   Display  the  status of the batch queue and
+         note that both jobs are running.
+
+         @SUBMIT NETCOM.CTL, RANDOM:[LOWELL]CLEAN.CTL /UNIQUE:NO
+         [Batch job CLEAN queued, request  58, limit 0:05:00]
+         [Batch job NETCOM queued, request  59, limit 0:05:00]
+         @INFORMATION BATCH-REQUESTS
+
+         Batch Queue:
+         Job Name   Req#   Run Time            User
+         --------  ------  --------  -------------------------
+         * CLEAN       58  00:05:00  DBONIN                In Stream:0
+              Job# 156 Running EXEC Runtime 0:00:16
+         * NETCOM      59  00:05:00  DBONIN                In Stream:1
+              Job# 156 Running EXEC Runtime 0:00:08
+            GTSTK       2  00:15:00  PURRETTA
+            CIGIDN      3  01:00:00  CSSE.WAIBLE
+         There are 4 jobs in the queue (2 in progress)
+

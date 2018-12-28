@@ -1,0 +1,107 @@
+
+END-ACCESS command
+
+The END-ACCESS command terminates your ownership rights to an accessed
+directory, as well as group rights borrowed from its owner.
+
+
+Format
+
+     @END-ACCESS (TO DIRECTORY) dev:<directory>
+
+     where:
+
+     dev:<directory>     is the directory to which  you  want  to  end
+                         access.
+
+                              Default dev: - your connected structure
+
+                              Default <directory> - the directory  (on
+                                                    the      specified
+                                                    structure) of  the
+                                                    same  name as your
+                                                    connected
+                                                    directory
+
+
+Hints
+
+     Implicit END-ACCESS
+
+          You can access only one directory at a time on each  mounted
+          structure.   Each ACCESS command ends access obtained by any
+          previous ACCESS command for a  directory  on  the  specified
+          structure.  Therefore you do not need to give the END-ACCESS
+          command if you access another directory on the structure, or
+          if the structure is dismounted.
+
+     Restoring Previous Rights
+
+          END-ACCESS does not restore owner and group rights  obtained
+          by  a  previous  ACCESS command for the specified structure.
+          Give another ACCESS command to regain these.  (Note that you
+          must  access  your  log-in  directory to regain group rights
+          obtained by the LOGIN command,  lost  by  accessing  another
+          directory on the public structure.
+
+
+Related Commands
+
+     ACCESS        for obtaining ownership rights to a  directory  and
+                   the group rights of the owner
+
+     DISMOUNT      for decrementing the mount count  of  a  previously
+                   accessed structure
+
+     INFORMATION STRUCTURE
+                   for finding out who is accessing a structure
+
+
+Examples
+
+     1.  Give up your access rights to another user's directory.
+
+         @END-ACCESS <HOLLAND>
+
+     2.  Access another user's directory, copy a  file  from  it,  and
+         give  up your rights to it.  Then give a command that depends
+         on your own  group  rights.   (It  fails.)  Access  your  own
+         directory   to  establish  these,  and  repeat  the  command,
+         successfully this time.
+
+         @ACCESS <HOLLAND>
+         Password:___
+         @COPY <HOLLAND>DIST.LST
+          <HOLLAND>DIST.LST.2 => DIST.LST.2 [OK]
+         @END-ACCESS <HOLLAND>
+         @INFORMATION DIRECTORY <LATTA.*>,
+         ?No such directory
+         @ACCESS <LATTA>
+         @INFORMATION DIRECTORY <LATTA.*>,
+         @@NAME-ONLY
+         @@
+          Name PS:<LATTA.A>
+          Name PS:<LATTA.A.F-O>
+
+     3.  Mount a structure, and access a user's directory there.   Get
+         a  listing  of  his  files  of type .TXT.  End the access and
+         dismount the structure.
+
+         @MOUNT STRUCTURE SNARK:
+         Structure SNARK: mounted
+         @ACCESS SNARK:<HOLLAND>
+         Password:___
+         @DIRECTORY SNARK:<HOLLAND>*.TXT
+
+            SNARK:<HOLLAND>
+          ACCT.TXT.1
+          MAIL.TXT.2
+          REMARKS.TXT.1
+          SYSTEM.TXT.1
+
+
+          Total of 4 files
+         @END-ACCESS SNARK:<HOLLAND>
+         @DISMOUNT STRUCTURE SNARK:
+         Structure SNARK: dismounted
+

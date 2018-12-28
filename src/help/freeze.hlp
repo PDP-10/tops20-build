@@ -1,0 +1,72 @@
+
+FREEZE command
+
+The FREEZE command halts execution of a fork.
+
+
+Format
+
+     @FREEZE (FORK) fork
+
+     where:
+
+     fork is one of the following:  Fork name
+                                    Fork number
+                                         Default - the current fork
+
+
+Characteristics
+
+     Same Function as CTRL/C
+
+          The FREEZE command stops running background forks while  you
+          are at EXEC command level.  The effect is the same as if you
+          typed two CTRL/Cs while at the fork's program level.
+
+
+Hints
+
+     More Information
+
+          The FREEZE command is one of the TOPS-20  multiforking-class
+          commands.   For more information about multiforking, see the
+          section Running Multiple  Programs  in  the  TOPS-20  User's
+          Guide.
+
+
+Related Commands
+
+     CONTINUE/BACKGROUND      for continuing  a  halted  fork  in  the
+                              background
+
+     INFORMATION FORK-STATUS  for displaying the fork status
+
+     FORK,                    other multiforking-class commands
+     INFORMATION PROGRAM-STATUS
+     KEEP, RESET, SET NAME,
+     SET PROGRAM, and UNKEEP
+
+
+Examples
+
+     1.  Give  the  FREEZE  command  to  stop  the   current   running
+         background  fork.   Then, display the fork status.  The arrow
+         points to the current fork.
+
+         @FREEZE
+         @INFORMATION FORK-STATUS
+          => BLISS (1): ^C from RUNNING at 500000, 0:00:13.1
+             EDIT (2): Kept, HALT at 6254, 0:00:00.5
+
+     2.  Display the fork status and give the FREEZE command to stop a
+         running  background fork.  Then, redisplay the fork status to
+         check the result.
+
+         @INFORMATION FORK-STATUS
+             BLISS (1): Background, RUNNING at 500000, 0:00:13.1
+          => EDIT (2): Kept, HALT at 6254, 0:00:00.5
+         @FREEZE BLISS
+         @INFORMATION FORK-STATUS
+             BLISS (1): ^C from RUNNING at 500000, 0:00:13.1
+          => EDIT (2): Kept, HALT at 6254, 0:00:00.5
+

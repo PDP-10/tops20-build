@@ -1,0 +1,184 @@
+
+DEPOSIT command
+
+The DEPOSIT  command  modifies  the  contents  of  a  specific  memory
+location.
+
+
+Format
+
+     @DEPOSIT (MEMORY LOCATION) address (CONTENTS) data
+
+     where:
+
+     address     is an octal number or a symbol.
+
+     data        is a symbolic or numerical expression.
+
+
+Output
+
+     Status of Pages
+
+          When you complete a DEPOSIT command, the system gives you  a
+          message  indicating the status of the page you are trying to
+          change:    "[New]"   for   previously   nonexistent   pages,
+          "[Shared]" for those having Copy-on-Write status, or "?Can't
+          write that page" for other pages.  (See also Hints - Setting
+          the  Page-access  of  Memory  Pages,  below.)   However,  no
+          message is printed for deposits made to private pages.
+
+
+Hints
+
+     Using Symbols
+
+          For symbols that  are  defined  in  multiple  modules  of  a
+          program,  you  can  be  specific  by  giving the module name
+          followed by an ampersand (&) and the symbol name.
+
+     Using DDT Instead
+
+          Usually the DEPOSIT  command  is  unnecessary,  as  the  DDT
+          program  provides  more  powerful  methods for modifying the
+          contents of memory.
+
+     Abbreviating DEPOSIT Arguments
+
+          The contents of each memory location are represented as  two
+          6-digit  octal  numbers.   By  inserting  a  pair  of commas
+          between these two numbers, you  can  abbreviate  them.   For
+          example,   to  deposit  000004000050  into  memory  location
+          151003, use the command
+
+               @DEPOSIT 151003 4,,50
+
+          This is the same as
+
+               @DEPOSIT 151003 4000050
+
+          Note that you can also insert  commas  between  expressions.
+          For example, the command
+
+               @DEPOSIT 1 1+3,, 5+7
+
+          deposits 000004000014 into memory location 1.   (Expressions
+          are  considered to be octal unless they contain an 8 or a 9,
+          in which case they are considered  to  be  decimal  and  are
+          translated to octal.)
+
+          The DEPOSIT command itself can be abbreviated by the  single
+          letter D.
+
+     Deposit Address Defaults to the One Examined, and Vice Versa
+
+          The first argument of a  DEPOSIT  command  defaults  to  the
+          address  examined by your most recent EXAMINE command.  (You
+          must press the  ESCAPE  key  to  take  this  default.)   The
+          argument of an EXAMINE command defaults to the address whose
+          contents were modified by your most recent DEPOSIT  command.
+          Therefore  you  can examine a memory location, deposit a new
+          value in it, and verify your action,  while  specifying  the
+          location  only  once.   If you give DEPOSIT commands without
+          intervening EXAMINE commands (or vice  versa),  the  default
+          address increases by 1 for each subsequent command.
+
+     Setting the Page-access of Memory Pages
+
+          If the system responds to a DEPOSIT command  with  an  error
+          message  of the form, "?Can't write that page", give the SET
+          PAGE-ACCESS COPY-ON-WRITE command for the page.   Then  give
+          DEPOSIT  again.   If the system allows it, you will be given
+          your own copy of the page to modify.
+
+     Using DEPOSIT With Inferior Processes
+
+          To  modify  memory  for  a  process  inferior  to  the   one
+          immediately  below  the  TOPS-20 command processor, you must
+          give the FORK command to specify this process  before  using
+          DEPOSIT.   Remember that for an inferior process to run, all
+          superior  processes  must  be  running   too.    INFORMATION
+          PROGRAM-STATUS tells you which processes these are.
+
+
+Effect on Memory
+
+     The DEPOSIT command changes one location in memory.
+
+
+Related Commands
+
+     DDT                          for  calling  a  debugging  program,
+                                  allowing more efficient modification
+                                  of memory
+
+     EXAMINE                      for displaying  the  contents  of  a
+                                  specific memory location
+
+     FORK                         for  selecting  the  process   whose
+                                  memory you want to modify
+
+     INFORMATION MEMORY-USAGE     for  displaying  a  list  of  memory
+                                  pages, their contents and status
+
+     SET PAGE-ACCESS              for making it possible to  write  to
+                                  specified pages
+
+
+Examples
+
+     1.  Deposit a value in a memory location.
+
+         @DEPOSIT 1500 21
+
+     2.  Modify a memory location, using symbols.   Then  examine  the
+         location.
+
+         @DEPOSIT T3+1 P+2
+         @EXAMINE T3+1
+         T3+1/ P+2   (4/ 21)
+
+     3.  Try to deposit a number into a page of memory that  does  not
+         allow  it.   Examine  memory,  set  the page to Copy-on-Write
+         status, and try again (succeeding this time).
+
+         @DEPOSIT 716505 0
+         ?Can't write that page
+         @INFORMATION MEMORY-USAGE
+
+          216. pages, Entry vector loc 462207 len 254000
+
+           Section 0          R, W, E, Private
+         0-11          Private   R, W, E
+         20            Private   R, W, E
+         400-401       Private   R, W, E
+         402-660       <FIELD-IMAGE>FORTRA.EXE.3   13-271   R, CW, E
+         700-730       <NEXT-RELEASE>PA1050.EXE.4   1-31   R, E
+         731-733       Private   R, W, E
+
+         @SET PAGE-ACCESS 716 COPY-ON-WRITE
+         @DEPOSIT 716505 0
+          [Shared]
+         @EXAMINE 716505
+         716505/  0
+
+     4.  Check your program status  (the  arrow  [=>]  indicates  your
+         current process [fork]).  Select an inferior process, deposit
+         a value into a memory location, and verify  that  memory  for
+         the superior process is not changed to this.
+
+         @INFORMATION PROGRAM-STATUS
+          Used 0:00:05 in 0:10:11
+          TOPS-20: 0:00:03.5
+          SET UUO-SIMULATION (FOR PROGRAM)
+          SET CONTROL-C-CAPABILITY (OF PROGRAM)
+          => MACRO (1): ^C from IO wait at 775701, 0:00:00.3
+               Fork 2: HALT at 472052, 0:00:00.1
+         @FORK 2
+         @DEPOSIT 3500 12
+         @EXAMINE 3500
+         3500/   12
+         @FORK 1
+         @EXAMINE 3500
+         3500/   202200,,1136
+

@@ -1,0 +1,22 @@
+
+BLANK command
+
+The BLANK command clears your video terminal screen.
+
+
+Format
+
+     @BLANK (SCREEN)
+
+
+Characteristics
+
+     This command moves the cursor to line 1 of the screen,  providing
+     you  with  a  clean area for typing commands and receiving system
+     output.
+
+
+Restriction
+
+     The BLANK command functions only if you have  set  your  terminal
+     type with the TERMINAL command or the unsupported TTYINI program.

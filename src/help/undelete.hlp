@@ -1,0 +1,75 @@
+
+UNDELETE command
+
+The UNDELETE command restores deleted files.
+
+
+Format
+
+     @UNDELETE (FILES) filespec,...
+
+     where:
+
+     filespec     is  the  specification  of  the  file  you  want  to
+                  restore.
+                       Default .gen - all generations of the specified
+                                      files
+
+
+Restrictions
+
+     Erasure of Deleted Files
+
+          Ordinarily  an  UNDELETE  command  given  during  the   same
+          terminal  session  as  an original deletion will recover the
+          deleted files, unless you included the EXPUNGE subcommand to
+          DELETE  or  gave  a subsequent EXPUNGE command.  However, if
+          any user or a batch job  logs  out  while  connect  to  your
+          directory,  all deleted files are permanently erased.  Also,
+          if available disk space is low on the system,  the  operator
+          or  the  system  itself  may  expunge  all deleted files.  A
+          system warning message is usually sent before this happens.
+
+
+Special Cases
+
+     Restoring Files Deleted With CONTENTS-ONLY Subcommand.
+
+          Any files deleted by a DELETE command with  a  CONTENTS-ONLY
+          subcommand  are  immediately  expunged.   You  must  use the
+          RETRIEVE command to restore these to disk.
+
+
+Related Commands
+
+     DELETE                       for deleting files
+
+     DIRECTORY-CLASS commands,    For obtaining lists of deleted files
+     with the DELETED subcommand
+
+     EXPUNGE                      for  permanently   erasing   deleted
+                                  files
+
+     RETRIEVE                     for restoring off-line files to disk
+
+
+Examples
+
+     1.  Undelete a file.
+
+         @UNDELETE TEST.FIL
+          TEST.FIL.1 [OK]
+          TEST.FIL.2 [OK]
+
+     2.  Access another user's directory, then restore all his deleted
+         files of type .FIL.
+
+         @ACCESS <CARSON>
+         Password:___
+         @UNDELETE <CARSON>*.FIL
+          <CARSON>MEMO.FIL.1 [OK]
+          <CARSON>SEARCH.FIL.1 [OK]
+          <CARSON>TEST.FIL.1 [OK]
+          <CARSON>VERFY.FIL.1 [OK]
+         @END-ACCESS <CARSON>
+

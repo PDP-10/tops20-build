@@ -1,0 +1,95 @@
+
+CLOSE command
+
+The CLOSE command closes open files in your  job  and  releases  their
+JFNs.
+
+
+Format
+
+     @CLOSE (JFN) n
+
+     where:
+
+     n         is the JFN (Job File Number) of a file.
+                    Default n - all JFNs for open and closed files
+
+
+Output
+
+     When the CLOSE command is completed, the system prints a  message
+     on  your terminal for each JFN that it has closed or attempted to
+     close.
+
+
+Characteristics
+
+     CLOSE Usually Unnecessary
+
+          The CLOSE command is used to preserve the contents of a file
+          after  the  abnormal  termination of the program that opened
+          it.  Under ordinary conditions you do not need  to  use  the
+          CLOSE command.
+
+
+Special Cases
+
+     CLOSE For Closed Files
+
+          If you give the CLOSE command for  an  existing  but  closed
+          JFN, the JFN is released.
+
+
+Restrictions
+
+     Closing Mapped Files
+
+          You cannot close files that are mapped into memory; in  this
+          case  you  may  give the RESET command, which clears memory.
+          (Note, however, that RESET will delete and expunge a  mapped
+          file if the file is new, rather than save it as CLOSE would.
+          To save a new mapped file, give the  SET  PAGE-ACCESS  0:777
+          NONEXISTENT  command, and follow this with CLOSE.)  If RESET
+          by itself does not close the file, you  may  first  have  to
+          give  the  POP  command  to  return to a higher level of the
+          TOPS-20 command processor; then give the RESET command.
+
+     Once memory has been cleared, all files are closed for  processes
+     at the current and lower levels of TOPS-20.
+
+
+Related Commands
+
+     INFORMATION FILE-STATUS     for determining which files are  open
+                                 in your job
+
+     INFORMATION MEMORY-USAGE    for  determining  which   files   are
+                                 mapped
+
+     RESET                       for closing mapped files and clearing
+                                 memory
+
+     SET PAGE NONEXISTENT        for  removing  specified  pages  from
+                                 memory
+
+
+Examples
+
+     1.  Close an open file.
+
+         @CLOSE 4
+          4  EDIT-BUFFER.OUT.100036   [OK]
+
+     2.  Try to close all your open files.  Give the RESET command  to
+         close  those  that are mapped.  (Note that the file EXEC.EXE,
+         containing the TOPS-20 command processor, cannot be closed.)
+
+         @CLOSE
+          3  TEST1.CBL.1   [OK]
+          2  PS:<TEST>EDIT.EXE.4  Can't close file - File still mapped
+          1  PS:<SYSTEM>EXEC.EXE.3  Can't close file - File still
+         mapped
+         @RESET
+         @CLOSE
+          1  PS:<SYSTEM>EXEC.EXE.3  Can't close file - File still
+         mapped

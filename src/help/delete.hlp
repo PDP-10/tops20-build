@@ -1,0 +1,267 @@
+
+DELETE command
+
+The DELETE command marks a file(s) for eventual erasure.
+
+
+Format
+
+     @DELETE (FILES) filespec,...,
+     @@subcommand
+
+     where:
+
+     filespec                      is the specification of a file that
+                                   you want to delete.
+                                           Default    .gen    -    all
+                                                       generations  of
+                                                       the   specified
+                                                       files
+
+     @@subcommand                  means that after a final comma  you
+                                   can   give  one  of  the  following
+                                   subcommands:
+
+
+                          DELETE Subcommands
+
+
+     ARCHIVE                       both deletes the disk copy (if any)
+                                   and  gives  up  the  tape  copy  of
+                                   specified archived files.
+
+     BEFORE                        deletes the  specified  files  that
+                                   were  created prior to the time and
+                                   date indicated.
+
+     CONTENTS-ONLY                 deletes  and  immediately  expunges
+                                   only  the  disk  copy of files that
+                                   also have a tape copy.   Note  that
+                                   you  must use the RETRIEVE command,
+                                   not UNDELETE, to restore such files
+                                   to disk.
+
+     DIRECTORY                     deletes and immediately expunges  a
+                                   subdirectory   without  making  the
+                                   disk space available to  the  files
+                                   of   other  users.   Subdirectories
+                                   appear  as  files  with  the   type
+                                   .DIRECTORY   in   the   immediately
+                                   superior directory.  For users with
+                                   enabled     WHEEL    or    OPERATOR
+                                   capabilities only.
+
+     EXPUNGE                       immediately and permanently  erases
+                                   the   specified   files   from  the
+                                   directory.
+
+     FORGET                        deletes  and  immediately  expunges
+                                   the  specified files without making
+                                   their disk space available  to  the
+                                   files  of  other  users;  for users
+                                   with  enabled  WHEEL  or   OPERATOR
+                                   capabilities only.
+
+     KEEP n                        saves the n most recent generations
+                                   of   the   specified   files  while
+                                   deleting the rest.
+                                        Default n - 1
+
+     LARGER n                      deletes the  specified  files  that
+                                   are larger than n number of pages.
+
+     SINCE                         deletes the  specified  files  that
+                                   were  created  since  the  time and
+                                   date indicated.
+
+     SMALLER n                     deletes the  specified  files  that
+                                   are smaller than n number of pages.
+
+
+Output
+
+     Notice of Deleted Archived Files
+
+          Whenever an archived file is completely expunged as a result
+          of  your  DELETE  command  (that  is, when you also give the
+          ARCHIVE subcommand),  the  operator  sends  a  mail  message
+          notifying the owner of the directory from which the file was
+          taken.
+
+
+Characteristics
+
+     Privileged Subcommands to DELETE
+
+          The DIRECTORY and FORGET subcommands to the  DELETE  command
+          are  intended  for privileged users only, and only as a last
+          resort, because they withhold freed disk space  from  system
+          use.   Users with enabled WHEEL or OPERATOR capabilities can
+          run the CHECKD program to recover this disk space.
+
+          DIRECTORY should not be used unless the KILL subcommand to a
+          BUILD  command fails to delete the directory.  FORGET is for
+          removing damaged files from directories, and should  not  be
+          used  unless  DELETE without subcommands fails to delete the
+          file.
+
+
+Hints
+
+     Removing Open Files
+
+          If DELETE with the EXPUNGE subcommand fails to erase a file,
+          it  may  be  that some job in the system has opened it.  The
+          INFORMATION FILE-STATUS command tells whether your  own  job
+          has  done  so.  If it has, give the CLOSE or (if the file is
+          mapped) RESET command before repeating DELETE and EXPUNGE.
+
+     Recovering Deleted Archived Files
+
+          If you have  given  the  DELETE  command  with  the  ARCHIVE
+          subcommand to delete an archived file, and the disk copy has
+          already been expunged, you may still be able to recover  the
+          tape  copy.   The  operator  will  send  a MAIL message (see
+          Output, above) concerning the discarded  tape  copy  of  the
+          deleted    file.    Use   this   information,   along   with
+          Hints - Undoing DISCARD, in the DISCARD command description,
+          to attempt recovery of the deleted file.
+
+
+Special Cases
+
+     Files With the "Permanent" Attribute
+
+          The system erases only the contents of any files  that  have
+          the  Permanent  attribute  (for  example,  MAIL.TXT  in your
+          log-in directory) when you include them in a DELETE command.
+          Their  file  specifications remain among your deleted files,
+          and cannot be removed by TOPS-20 commands.
+
+
+Restrictions
+
+     Using Logical Names When Specifying Files for Deletion
+
+          If you include a logical name when specifying arguments to a
+          DELETE  command,  the  system  will search for the specified
+          file in only the  first  directory  of  the  logical  name's
+          definition.    This   restriction  prevents  the  accidental
+          deletion of another file if the file you intended to  delete
+          has already been deleted.
+
+     Using the LARGER/SMALLER and BEFORE/SINCE Subcommands Together
+
+          You  can  use  size-related  and  time-related   subcommands
+          together.   However, error messages are displayed if you use
+          the LARGER/SMALLER pairing and the SMALLER number  of  pages
+          exceeds  the  LARGER  number,  or  you  use the BEFORE/SINCE
+          pairing and the SINCE date is later than the BEFORE date.
+
+
+Warning
+
+     Erasure of Deleted Files
+
+          Ordinarily  an  UNDELETE  command  given  during  the   same
+          terminal  session  as  an original deletion will recover the
+          deleted files, unless you included the EXPUNGE subcommand to
+          DELETE  or  gave  a subsequent EXPUNGE command.  However, if
+          any user or a batch job logs out  while  connected  to  your
+          directory,  all deleted files are permanently erased.  Also,
+          if available disk space is low on the system,  the  operator
+          or  the  system  itself may expunge all deleted files from a
+          structure even though you have not logged  out.   A  warning
+          message is usually sent before this happens.
+
+
+Related Commands
+
+     DIRECTORY, with the          for displaying  a  list  of  deleted
+     DELETED subcommand           files
+
+     DISCARD                      for giving up only the tape copy  of
+                                  on-line files
+
+     EXPUNGE                      for  permanently  removing   deleted
+                                  files
+
+     INFORMATION DISK-USAGE       for finding out how much disk  space
+                                  is   available,   and  how  much  is
+                                  associated with deleted files
+
+     UNDELETE                     for recovering deleted files
+
+
+Examples
+
+     1.  Delete two of your files.
+
+         @DELETE TTY.SCM, VERCBL.BAT
+          TTY.SCM.1 [OK]
+          VERCBL.BAT.2 [OK]
+
+     2.  Delete all your  object  files  and  all  your  backup  files
+         produced  by  the  EDIT  program.   Then  log  out (this will
+         expunge them).
+
+         @DELETE *.REL, *.Q*
+          TESTA1.REL.1 [OK]
+          TESTF1.REL.1 [OK]
+          TESTC1.QBL.2 [OK]
+          TESTF1.QOR.4 [OK]
+         @LOGOUT
+         Killed Job 32, User J.L.PAGE, Account 341, TTy 41
+           at 25-Apr-84 10:15:51, Used 0:1:46 in 1:23:59
+
+     3.  Delete some files, and check what files are currently deleted
+         in  your  connected directory.  Give the UNDELETE command for
+         two of these, then expunge the remaining  deleted  files  and
+         verify that they are gone.
+
+         @DELETE *.QXT
+          4-UPED.QXT.7 [OK]
+          MAIL.QXT.1 [OK]
+          REMARK.QXT.3 [OK]
+         @DIRECTORY,
+         @@DELETED
+         @@
+
+            PS:<J.L.PAGE>
+          4-UPED.QXT.1,2,3,4,5,6,7
+            .TXT.7,8,9
+          MAIL.QXT.1
+          MEMO.QMD.1
+          REMARK.QXT.1,2,3
+          TTY.SCM.1
+          VERCBL.BAT.2
+
+         Total of 17 files
+         @UNDELETE TTY.SCM, VERCBL.BAT
+          TTY.SCM.1 [OK]
+          VERCBL.BAT.2 [OK]
+         @EXPUNGE
+          PS:<J.L.PAGE> [8 pages freed]
+         @DIRECTORY,
+         @@DELETED
+         @@
+         @
+
+     4.  Delete the files with the .MAC extension  that  were  created
+         between 2-Feb-87 and 3-Mar-87.
+
+         @DELETE *.MAC,
+         @@BEFORE 3-MAR-87 11:00:04
+         @@SINCE 2-FEB-87 23:30
+         @@
+         @
+
+     5.  Delete the files named MYFILE.MEM that are between 50 and 150
+         pages.
+
+         @DELETE MYFILE.MEM,
+         @@LARGER 50
+         @@SMALLER 150
+         @@
+         @
+

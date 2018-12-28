@@ -1,0 +1,63 @@
+
+UNLOAD command
+
+The UNLOAD command rewinds  a  magnetic  tape  until  it  is  returned
+completely  to  the  source  reel,  and puts the associated tape drive
+offline.  Use UNLOAD only for tapes mounted on  drives  having  device
+names of the form MTAn:.
+
+
+Format
+
+     @UNLOAD (DEVICE) dev:
+
+     where:
+
+     dev:     is the name of the magnetic tape drive that you want  to
+              unload.
+
+
+Restrictions
+
+     UNLOAD With Open Files
+
+          If you have given a CTRL/C to exit from a program  that  has
+          opened  a  magnetic  tape drive and you then gave the UNLOAD
+          command for that tape drive, the system will  first  ask  if
+          you  want  to close the associated file.  You must do so for
+          UNLOAD to succeed,  but  you  will  probably  be  unable  to
+          continue  the  program from that point because the file will
+          now be closed.
+
+     UNLOAD Not for MOUNTed Drives
+
+          Use the UNLOAD command for tape  drives  obtained  with  the
+          ASSIGN command.  Use DISMOUNT for a tape drive obtained with
+          MOUNT.
+
+
+Warning
+
+     Cannot Access Tape Again
+
+          The UNLOAD command makes it impossible to access  your  tape
+          again unless it is reloaded by the operator.
+
+
+Related Commands
+
+     ASSIGN     for assigning a tape drive to your job
+
+     DISMOUNT   for unloading tapes mounted on  devices  of  the  form
+                MTn:
+
+     REWIND     for rewinding a magnetic tape volume or  tape  set  to
+                its load point (logical beginning)
+
+
+Examples
+
+     1.  Unload your magnetic tape from drive MTA0:.
+
+         @UNLOAD MTA0:
+

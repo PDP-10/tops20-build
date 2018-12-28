@@ -1,0 +1,110 @@
+
+RECEIVE command
+
+The RECEIVE command notifies the system that you are willing to accept
+communication links, advice, user messages, and system messages.
+
+
+Format
+
+     @RECEIVE argument
+
+     where:
+
+     argument            is a keyword, chosen  from  the  list  below,
+                         naming  the  kind  of  communication  you are
+                         willing to accept.
+
+
+                      RECEIVE Command Arguments
+
+
+     ADVICE              allows  both  assistance  and   communication
+                         links  initiated  by another user's ADVISE or
+                         TALK command.
+
+     LINK                allows  communication  links  established  by
+                         another user's TALK command.
+
+     SYSTEM-MESSAGES     allows notices of new mail  and  messages  of
+                         interest to all users sent by the operator or
+                         other privileged users.
+
+     USER-MESSAGES       allows messages sent by another  user's  SEND
+                         command.
+                              Default - LINKS, SYSTEM-MESSAGES, and
+                                        USER-MESSAGES
+
+
+Hint
+
+     Typing RECEIVE During Attempted TALK
+
+          If your terminal has been set to refuse  links  and  another
+          user  tries  to  talk to you by using the TALK command, both
+          terminals will give a  series  of  CTRL/G  signals  (ringing
+          bells or beeps) indicating the refused attempt.  If you give
+          the RECEIVE LINKS command before these signals are finished,
+          the TALK command will succeed.
+
+
+Related Commands
+
+     ADVISE                        for  sending  commands  to  another
+                                   user's job
+
+     INFORMATION TERMINAL-MODE     for examining your current terminal
+                                   settings
+
+     REFUSE                        for refusing  communication  links,
+                                   advice,   and   system   and   user
+                                   messages
+
+     SEND                          for sending a  message  to  another
+                                   user's terminal
+
+     TALK                          for  linking   your   terminal   to
+                                   another user's terminal
+
+     TERMINAL INHIBIT              for refusing all types of  terminal
+                                   communication    including   links,
+                                   advice,   system   messages,   user
+                                   messages, and notices of new mail.
+
+
+Examples
+
+     1.  Give the RECEIVE command to accept communication  links  from
+         other users.
+
+         @RECEIVE LINKS
+
+     2.  Set your terminal to receive links, at the request (sent  via
+         the  MAIL  program, not shown here) of another user.  Begin a
+         communication session with this user, during which  you  give
+         the  RECEIVE ADVICE command also, to allow a demonstration of
+         the UDP program.  Afterwards,  set  your  terminal  again  to
+         refuse advice.
+
+         @RECEIVE
+         @
+         LINK FROM RENQUIST, TTY 127
+         @;THANKS, BUT IF YOU LET ME DO AN "ADVISE" I CAN SHOW YOU
+         @;HOW TO RUN THE PROGRAM BY ACTUALLY DOING IT.  OKAY?
+         @;SURE, I'LL FIX MY SETTING.
+         @RECEIVE ADVICE
+         @ADVISE LATTA
+          Escape character is <CTRL>E, type <CTRL>^? for help
+          LATTA, MISC:<LATTA> Job 33 EXEC
+          [Advising]
+         UDP
+         UDP>LIST/DOCUMENTATION:/CREATED-SINCE:1-1-78 0:0
+         UDP>EXIT
+         @;YOU'LL GET A PRINTED LISTING TOMORROW.
+         @;DO YOU SEE HOW I DID IT?
+         @;YES, THANKS.  GOODBYE.
+         @
+          [Advice terminated]
+
+         @REFUSE ADVICE
+

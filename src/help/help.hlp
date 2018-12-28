@@ -1,0 +1,85 @@
+
+HELP command
+
+The HELP command displays explanatory text  for  many  TOPS-20  system
+features.
+
+
+Format
+
+     @HELP (ON SUBJECT) name
+
+     where:
+
+     name     is the name of a topic chosen from  the  list  given  in
+              response to the command HELP ?
+                   Default name - HELP
+
+
+                   Sample of HELP Command Arguments
+
+
+ACCT20   ACCTPR   ACTGEN  APL      APLSF    BLIS10   CHECKD   CHKPNT
+COBDDT   COBOL    CONV20  CREF     DAEMDB   DBINFO   DBMEND   DIRTST
+DLUSER   DUMPER   EDIT    FE       FILCOM   FORDDT   FORDML   FORMAT
+FORTRA   HELP     ISAM    LIBARY   LINK     LPTSPL   MACRO    MAIL
+MAKLIB   MAKRAM   MAKVFU  OPLEAS   PLEASE   PTYCON   QUEUE    RDMAIL
+RERUN    RSXFMT   RUNINP  RUNOFF   SCHEMA   SORT     SYSERR   SYSJOB
+TRANSL   ULIST    USAG20  USAH20   WATCH
+
+
+Characteristics
+
+     Other HELP Command Arguments
+
+          Note that some of the HELP command arguments shown here  may
+          be  omitted  if  the  associated topics are not available at
+          your site.  The list may include  other  texts  inserted  by
+          your  system  administrator  to describe features special to
+          your system.  Also,  this  list  is  revised  frequently  to
+          reflect  improvements  and  additions  to  standard  TOPS-20
+          programs.
+
+
+Hints
+
+     Printing HELP Files on the Line Printer
+
+          The texts displayed by the HELP command are stored in system
+          logical name HLP:  under the name of the topic and file type
+          .HLP.  Use the PRINT command to request your own copy.
+
+
+Examples
+
+     1.  Ask for information about the FILCOM program.
+
+         @HELP FILCOM
+         FILCOM V21B(60)
+
+         FILCOM compares two files in either ASCII mode or binary depending
+         upon switches or file name extensions.  All standard binary extensions
+         are recognized as binary by  default.
+         Switches are :-
+         /A compare in ASCII mode
+                 .
+                 .
+                 .
+         /W compare the Word mode but don't expand files
+         /X expand files before word mode compare
+
+     2.  Use the DIRECTORY command to search system logical name  HLP:
+         for  any  text  involving  mail.   (Note  the use of wildcard
+         characters here.) Then, print a  copy  of  one  of  the  help
+         files.
+
+         @DIRECTORY HLP:*MAIL*.HLP
+
+            PS:<HELP>
+          MAIL.HLP.2
+          RDMAIL.HLP.2
+
+          Total of 2 files
+         @PRINT /AFTER:1700 HLP:MAIL.HLP
+         [Printer job APLSF queued, request #131, limit 174]
+

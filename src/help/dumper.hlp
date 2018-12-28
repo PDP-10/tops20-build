@@ -1,0 +1,555 @@
+
+The DUMPER Program
+
+DUMPER is a TOPS-20 utility program used to  save  files  on  magnetic
+tape,  and  later  to restore any or all of these files to a specified
+directory on disk.  DUMPER is  available  to  both  nonprivileged  and
+privileged  users.   (Throughout  this chapter, the term "operator" is
+occasionally used instead of  privileged  user.)  As  a  nonprivileged
+user,  you can use DUMPER to save your own files or any files to which
+you have access, by transferring them  from  the  disk  to  a  9-track
+magnetic  tape  (DUMPER  does  not function on a 7-track magnetic tape
+drive), and later restoring them to disk.  As a privileged  user,  you
+can use DUMPER to:
+
+      o  save other users' files and directory information on tape
+
+      o  back up the system files (copy all files  onto  tape  for  an
+         indefinite period of time)
+
+      o  archive users' files (copy files marked for storage onto tape
+         and delete them from disk)
+
+      o  migrate users' files (copy files onto tape  and  delete  them
+         from the disk) to create added disk space
+
+      o  restore other users' files
+
+      o  retrieve previously archived or migrated files.
+
+If your installation is  using  a  Version  6-based  TOPS-20  monitor,
+DUMPER  supports  encrypted  passwords  and project-programmer numbers
+(PPN).  Earlier versions  of  DUMPER,  however,  do  not  support  the
+password  encryption and PPN features.  Therefore, use extreme caution
+when changing versions of DUMPER and the TOPS-20 monitor.
+
+The length of  time  files  remain  on  tape  is  determined  by  each
+installation.   In  general,  however,  archived files are kept longer
+than backup  files.   Archiving  is  voluntary  on  the  part  of  the
+nonprivileged user; migrating is not.
+
+Note:  To understand DUMPER, you should be particularly familiar  with
+the  following  commands:   MOUNT TAPE, DISMOUNT TAPE, DEFINE, ASSIGN,
+and INFORMATION.  (See the TOPS-20 Commands Reference Manual.)
+
+
+Features
+
+The following is a list of DUMPER's most useful features.
+
+      o  With  DUMPER,  you  can  specify  particular  files   to   be
+         transferred  between  disk  and  tape.   For example, you can
+         specify files using the standard TOPS-20  file  specification
+         format  of  dev:<dir>name.typ.gen and/or you can select files
+         based on the dates and times that  the  files  were  created,
+         modified,  or accessed.  Other conditions can also be set; if
+         the file meets all conditions, it is transferred.
+
+      o  You can save a set of files that exceeds one reel of magnetic
+         tape.   If all files specified cannot fit on one tape, DUMPER
+         continues  the  operation  on  subsequent  tapes  (except  in
+         INTERCHANGE mode, which allows only one tape).
+
+      o  As a privileged user,  you  can  transfer  files  marked  for
+         archival  by another user.  This ensures that those files are
+         saved for a period of time (determined by each  installation)
+         for future use or reference.
+
+      o  As a privileged user, you can migrate files from disk to tape
+         that  have  not  been referenced within a specified period of
+         time (as defined by each installation).
+
+      o  As a means of verification, you can request that file  names,
+         directory names, and saveset names be printed during save and
+         restore operations.
+
+      o  DUMPER can read and write tapes written under older  versions
+         of DUMPER.
+
+
+DUMPER COMMANDS
+
+All of the DUMPER commands are listed below.  Each command includes  a
+brief   description,   command   type   (status-setting,   action,  or
+tape-positioning),  and  description  of  optional  arguments.   Where
+applicable,  there is an indication that the command is for privileged
+users only.
+
+
+
+[NO] ABEFORE (DATE AND TIME) date time                  Status-Setting
+
+     Saves or restores only files that were typed,  printed,  or  read
+     (as maintained by .FBREF) before the specified date and time.
+     Default:  Date - none; Time - 00:00:01
+
+
+ABORT                                                   Action
+
+     Cancels  an  interrupted  CHECK,  RESTORE,  SAVE,   RETRIEVE   or
+     tape-positioning  command  and  allows  you to issue a new action
+     command.  ABORT can  be  used  only  after  you  have  typed  the
+     <CTRL/E>  command.   The  ABORT  command  does not reposition the
+     tape.
+
+
+ACCOUNT (OF RESTORED FILES FROM) argument               Status-Setting
+
+     Restores files with either the system (SYSTEM-DEFAULT) account or
+     the account stored with the file (TAPE).
+     Default:  TAPE
+
+
+ARCHIVE (DISK FILES)                                    Action
+
+     Saves files that have been marked for offline storage.  Archiving
+     is voluntary on the part of the user.
+
+     (Privileged User Only)
+
+
+[NO] ASINCE (DATE AND TIME) date time                   Status-Setting
+
+     Saves or restores only files that were typed,  printed,  or  read
+     (as maintained by .FBREF) since the specified date and time.
+     Default:  Date - none; Time - 00:00:01
+
+
+[NO] BEFORE (DATE AND TIME) date time                   Status-Setting
+
+     Saves or restores only files that were created  or  modified  (as
+     maintained  by  .FBCRV  and .FBWRT) before the specified date and
+     time.
+     Default:  Date - none; Time - 00:00:01
+
+
+CHECK (ALL TAPE FILES)                                  Action
+
+     Checks every File Descriptor Block (FDB) in the  current  saveset
+     against   the   FDBs   of   the   corresponding  files  on  disk.
+     Corresponding  files  must  have  the   same   name,   structure,
+     directory,  type, and generation number for the check to be made.
+     The CHECK command cannot be used with the date and time commands.
+
+
+[NO] CHECKSUM (FILES) type                              Status-Setting
+
+     Activates or suppresses checksumming during  the  PRINT  command.
+     Two types may be specified:  SEQUENTIAL (for INTERCHANGE mode) or
+     BY-PAGES (that checks every word of every page).
+     Default:  NO CHECKSUM
+
+
+CONTINUE                                                Action
+
+     Continues a CHECK, RESTORE, RETRIEVE, or  SAVE,  after  you  have
+     interrupted the command with <CTRL/E>.
+
+
+[NO] CREATE (DIRECTORIES FROM TAPE DATA)                Status-Setting
+
+     Creates or  does  not  create  user  directories  from  directory
+     information on the tape.
+     Default:  NO CREATE.
+
+     (Privileged User Only)
+
+
+<CTRL/A>                                                Action
+
+     Prints one line of status information.  The information  includes
+     the command in process, and, for certain operations, the file and
+     disk pages DUMPER is currently processing.
+
+
+<CTRL/E>                                                Action
+
+     Halts  the  action  of  a  CHECK,  RESTORE,  RETRIEVE,  SAVE,  or
+     tape-positioning  command.   DUMPER responds with INTERRUPTING...
+     and its prompt.  You then  issue  the  ABORT,  CONTINUE,  or  any
+     status-setting command.
+
+
+DENSITY (OF MAGTAPE) n                                  Status-Setting
+
+     Sets the tape density to  the  given  number  of  bits  per  inch
+     (bits/in):  200, 556, 800, 1600, 6250, or JOB-DEFAULT (set by the
+     system command SET TAPE  DENSITY).   If  no  DENSITY  command  is
+     given,  DUMPER  uses  the  job default density on the first tape.
+     This command has no effect on Labeled tapes.
+     Default:  The density listed in the TOPS-20  command  INFORMATION
+     (ABOUT) TAPE-PARAMETERS.
+
+
+[NO] DIRECTORIES                                        Status-Setting
+
+     Reactivates or suppresses printing, on your  terminal,  directory
+     names as DUMPER saves or restores each directory.
+     Default:  DIRECTORIES
+
+
+EOT                                                   Tape-positioning
+
+     Positions the mounted tape at the end of the last saveset written
+     on  the  tape.   DUMPER prints all existing saveset names and the
+     message:
+
+          End of Tape
+
+
+[NO] EXACT                                              Action
+
+     Saves or restores files without translating  logical  names  into
+     actual structure names.
+     Default:  NO EXACT
+
+
+EXIT                                                    Action
+
+     Exits to TOPS-20 command level.  (Same as the QUIT command.)
+[NO] FILES                                              Status-Setting
+
+     Reactivates or suppresses printing file specs on  your  terminal,
+     as DUMPER saves or restores each file.
+     Default:  NO FILES
+
+
+FORMAT (VERSION NUMBER IS) n                            Status-Setting
+
+     Allows DUMPER to read tapes written  with  previous  versions  of
+     DUMPER.
+     Default:  Version 6
+
+
+HELP                                                    Action
+
+     Prints a list of all valid DUMPER commands on your terminal.
+
+
+INITIAL (FILESPEC) file spec                            Status-Setting
+
+     Begins a SAVE with the specified file.
+
+
+[NO] INTERCHANGE (FORMAT)                               Status-Setting
+
+     Allows or does not allow DUMPER to read tapes  written  with  the
+     TOPS-10  BACKUP  program  or  to  write  tapes  to be read by the
+     TOPS-10 BACKUP program.  (INTERCHANGE should  not  be  used  when
+     writing tapes to be read by another TOPS-20 system.)
+     Default:  DUMPER format
+
+
+[NO] LIST (LOG INFORMATION ON FILE) file spec           Status-Setting
+
+     Prints or does not print a list, in the specified  file,  of  all
+     files as DUMPER saves them.
+     Default:  NO LIST
+     Default file spec:  LPT:DUMPER.LOG
+
+     The LIST/MAIL command creates a DUMPER-MAIL.TXT file that is used
+     with the MAIL command to notify users that you have completed the
+     SAVE or RESTORE operation.
+
+     (Privileged User Only)
+
+     Default:  /NOMAIL
+
+
+MAIL file spec                                          Action
+
+     Sends mail notifying a user that  a  SAVE,  ARCHIVE,  MIGRATE  or
+     RETRIEVE has been completed.
+
+     Default:  Last file name used in the LIST/MAIL command.
+
+     (Privileged User Only)
+
+
+[NO] MBEFORE (DATE AND TIME) date time                  Status-Setting
+
+     Transfers only files modified  (changed,  created,  appended,  or
+     renamed  as  maintained  by .FBCRE) before the specified date and
+     time.
+     Default:  Time=00:00:01
+
+
+MIGRATE                                                 Action
+
+     Saves files that have been marked for involuntary offline storage
+     by the REAPER program.
+
+     (Privileged User Only)
+
+
+[NO] MSINCE (DATE AND TIME) date time                   Status-Setting
+
+     Transfers only files modified (as maintained by .FBCRE) since the
+     specified date and time.
+     Default:  Time=00:00:01
+
+
+NO DATES                                                Status-Setting
+
+     Disables all the date and time commands at once.   The  date  and
+     time  commands  are ABEFORE, ASINCE, BEFORE, MBEFORE, MSINCE, and
+     SINCE.
+
+
+PARITY (OF MAGNETIC TAPE) parity                        Status-Setting
+
+     Sets the parity of the mounted tape to EVEN or ODD.
+     Default:  The parity listed in the  TOPS-20  command  INFORMATION
+     (ABOUT) TAPE-PARAMETERS
+
+
+PRINT (DIRECTORY OF TAPE ONTO FILE) destination         Action
+
+     Records a printed list of file names in the specified file.   The
+     list  contains  file  specifications of all existing files on the
+     entire tape beginning at the current saveset.
+     Default:  Prints on your terminal
+
+
+PROTECTION (OF RESTORED FILES FROM) argument            Status-Setting
+
+     Restores files with SYSTEM-DEFAULT protection or protection taken
+     from TAPE.
+     Default:  TAPE (if the PROTECTION command is omitted).
+     Argument Default:  None; you must specify one or the other.
+
+
+QUIT                                                    Action
+
+     Exits to TOPS-20 command level.  (Same as the EXIT command.)
+
+
+RESTORE (TAPE FILES) source (TO) destination            Action
+
+     Restores the magnetic tape source file(s) to disk with the  given
+     destination file specifications.  If you are restoring files from
+     a directory other than your connected directory, you must specify
+     that  directory in the source file specification.  If files exist
+     in the destination directory with the same names and types as the
+     files  on  tape,  DUMPER  restores  the  files  according  to the
+     specification of the SUPERSEDE command:  ALWAYS, NEVER, OLDER
+     Default:  Source file spec = all files  in  the  current  saveset
+     that  were  saved under the connected structure and directory; if
+     you  are  privileged,  all  files  in  all  directories  on  your
+     connected structure.
+     Destination file spec = same names and  types  as  the  files  on
+     tape.
+
+     (Privileged User Only):
+
+     The FDB of each file contains information that reflects whether a
+     file  is archived or migrated, and, if so, the volume identifiers
+     of the DUMPER tapes that contain the file.  The /TAPE-INFORMATION
+     switch  instructs  DUMPER to restore this information to the FDBs
+     of  the  files  that  are  being  restored.   /NOTAPE-INFORMATION
+     requests that this information not be restored.
+     Default:  /TAPE-INFORMATION
+
+
+RETRIEVE (FILES) file spec                              Action
+
+     Instructs DUMPER to process the requests  in  the  system's  file
+     retrieval queue.
+     Default:  Process all files in the queue
+
+     (Privileged User Only)
+
+
+REWIND argument                                       Tape-Positioning
+
+     Positions the specified tape at the beginning of  the  tape.   If
+     the  argument  is  CURRENT-VOLUME,  DUMPER  rewinds the currently
+     mounted tape to the beginning.  If the argument is SWITCHING  (TO
+     VOLUME  NUMBER)  n,  DUMPER  releases the currently mounted tape,
+     requests volume n of the multi-reel tape set, and rewinds  it  to
+     the beginning.
+     Default:  CURRENT-VOLUME
+
+
+SAVE (DISK FILES) source (AS) destination               Action
+
+     Saves the disk source file(s) onto magnetic tape.  If  all  files
+     cannot  fit  on one tape, DUMPER requests that the next volume in
+     the set be mounted.
+     Default:   Source  file  spec  =  all  files  in  your  connected
+     directory; if you are privileged, all files in all directories on
+     your connected structure.
+     Destination file spec = same names and  types  as  the  files  on
+     disk.  (Privileged User Only):
+
+     The following switches can be appended to the SAVE command:
+
+          /FULL-INCREMENTAL for a system backup of all  files.   (This
+          also marks all files as having been saved.)
+
+          /INCREMENTAL:n for a daily backup of files that either  have
+          not  been  saved  on at least n tapes, or have been modified
+          since the last INCREMENTAL or FULL-INCREMENTAL run.
+          Default:  /INCREMENTAL:1
+
+          /NOINCREMENTAL for a backup of  all  files.   /NOINCREMENTAL
+          overrides the CREATE command.
+
+          /UNLOAD to request that DUMPER unload  the  tape  after  the
+          SAVE is complete.
+
+     Default:  /NOINCREMENTAL
+
+                                   NOTE
+
+             Unless one of these switches is  used,  directory
+             information is not saved on the tape.
+
+
+
+SET BLOCKING-FACTOR (TO) n (RECORDS)                    Status-Setting
+
+     Sets the number of logical records per physical record written on
+     tape by DUMPER.  The range must be between 1 and 15.
+     Default:  1 record
+
+
+SET TAPE-NUMBER (DECIMAL NUMBER) n                      Status-Setting
+
+     Assigns a number to a new tape when you continue a restore  after
+     a  crash,  or  when  you  restore  a  file nonsequentially from a
+     multi-reel saveset.
+
+
+[NO] SILENCE                                            Status-Setting
+
+     Activates or suppresses the printing of directory names and  file
+     specifications  on your terminal, as files are saved or restored.
+     NO SILENCE is equivalent to FILES and DIRECTORIES.
+     Default:  NO FILES, DIRECTORIES
+
+
+[NO] SINCE (DATE AND TIME) date time                    Status-Setting
+
+     Transfers only files created or whose contents were changed since
+     the specified date and time.
+     Default:  Time = 00:00:01
+
+
+SKIP (NUMBER OF SAVESETS) n                           Tape-Positioning
+
+     Skips over n savesets.  The skip can  be  directed  forward  (n),
+     backwards  (-n),  or to the beginning of the current saveset (0).
+     Labeled tapes do not support zero or backward (-n) skips.
+
+
+SSNAME name                                             Status-Setting
+
+     Specifies the name to be written in the  saveset  header  on  the
+     tape.  The name can be any string of up to 200 characters.  It is
+     printed on your terminal whenever you save or restore files.
+     Default:  Existing saveset name, if any.
+
+
+SUPERSEDE condition                                     Status-Setting
+
+     Sets the condition under which DUMPER rewrites a disk file with a
+     magnetic  tape  file  of  the  same name and file type.  You must
+     specify one of three conditions:
+
+     1.  ALWAYS - to supersede the file on disk regardless of the last
+         write date or generation number of that file.
+
+     2.  NEVER - to never supersede the disk file; the specified  file
+         is  written  to  disk  only if there is no existing disk file
+         with the same name and file type.
+
+     3.  OLDER - to supersede the disk file only when the file on tape
+         is  newer  (i.e.,  has  a  later  write  date and/or a higher
+         generation number than the file on disk).
+
+     Default:  SUPERSEDE OLDER (if the SUPERSEDE command is omitted)
+
+
+TAKE (COMMANDS FROM FILE) file spec                     Action
+
+     Instructs DUMPER to execute commands from the  specified  command
+     file.  Commands are executed until the end of the command file is
+     reached or until DUMPER encounters an error.   Commands  are  not
+     echoed on the terminal as they are processed.
+
+
+TAPE (DEVICE) name:                                     Status-Setting
+
+     Specifies the tape device to be used  for  file  transfers.   The
+     name  can  be  either  a physical device (MT1:) or a logical name
+     (TAPE1:).
+
+                                 NOTE
+
+        If you define the mounted tape as MTA-DUMPER:, you can
+        omit the DUMPER command TAPE.  If you use the RETRIEVE
+        command you do not need to use the TAPE command.
+
+
+TRANSFER                                                Action
+
+     Restores files from tape to disk.  The TRANSFER command  defaults
+     to  DSK*:<*>*.*.*  for  an  input  file  specification  and  your
+     connected directory for a destination specification.
+
+
+UNLOAD
+
+     Used to rewind a tape onto the source reel if  your  installation
+     does not have tape drive allocation enabled.
+
+
+Dumper Messages
+
+The messages printed by DUMPER fall  into  three  general  categories:
+warning  messages,  fatal  errors,  and  those  requiring some action.
+Warning messages are preceded by a percent sign (%) and indicate  that
+something  unexpected  occurred,  but that DUMPER was able to recover.
+In this case, verify that the process in progress at the time  of  the
+warning is correct.  Fatal errors are preceded by a question mark (?),
+and indicate an occurrence that DUMPER  could  not  handle.   In  this
+case, DUMPER aborts the operation, and you must fix the problem before
+reissuing your command string.
+
+In cases where an internal or  system  problem  results  in  an  error
+message,  the  best  (and  usually only) way to deal with the internal
+problem is to contact your Software Specialist or  submit  a  Software
+Performance Report (SPR) to DIGITAL.
+
+Some of the messages contain information  that  is  dependent  on  the
+exact  command  string or file you specified.  These message variables
+are as follows:
+
+     <action>    A suggested course of action.
+
+     <cmd>       A DUMPER command.
+
+     <dev>       A device name.
+
+     <dir>       The name of a directory.
+
+     <file>      A file specification.
+
+     <n> or <m>  The number of a page or record, or other integer.
+
+     <reason>    The reason for the error.
+
+For a listing and description of the messages generated by DUMPER, see
+the TOPS-20 User Utilities Manual.
+

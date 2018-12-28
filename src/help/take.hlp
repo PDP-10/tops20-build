@@ -1,0 +1,151 @@
+
+TAKE command
+
+The TAKE command processes a TOPS-20 command file.
+
+
+Format
+
+     @TAKE (COMMANDS FROM) filespec,
+     @@subcommand
+
+     where:
+
+     filespec       is the specification of the  file  containing  the
+                    commands to be processed.
+                         Default file type - .CMD
+
+     @@subcommand   means that after a comma you can type one  of  the
+                    following subcommands:
+
+                    ALLOW      tells the current level of TOPS-20, for
+                               the  remainder  of the terminal session
+                               (not merely the  current  command),  to
+                               continue  processing  a command file if
+                               it encounters errors.
+
+                    DISALLOW   tells the current level of TOPS-20, for
+                               the  remainder  of the terminal session
+                               (not merely the  current  command),  to
+                               ignore  any  remaining  commands  in  a
+                               command file  after  it  encounters  an
+                               error in the file.
+                                    Default
+
+                    ECHO       tells the  system  to  print  (on  your
+                               terminal  or in the specified file) the
+                               commands  that  it  carries  out  while
+                               executing  the  current  TAKE  command.
+                               Ordinarily only  the  output,  if  any,
+                               produced by the commands is printed.
+
+                    NO ECHO    tells  the  system  not  to  print  the
+                               commands  that  it  carries  out  while
+                               executing the current TAKE command.   A
+                               final   message   is   sent,   however,
+                               indicating  whether  all  the  commands
+                               were      executed.       See      also
+                               Hints - Suppressing the Final  Message,
+                               below.
+                                    Default
+
+                    LOG-FILE filespec
+                               tells the system  to  save  the  output
+                               from  the  current  TAKE command in the
+                               specified file.
+
+
+Output
+
+     The output from a TAKE command consists of the  output  for  each
+     command  in the command file you specify as argument, followed by
+     the message, End of filespec, that indicates successful execution
+     of all the commands in this file.
+
+
+Characteristics
+
+     Running Programs From a Command File
+
+          If you put commands that run programs  (including  the  PUSH
+          command)  into  a  command  file, and these programs ask for
+          arguments, you must be ready to type in these  arguments  at
+          your  terminal.  Only TOPS-20 commands and command arguments
+          can be put into a command file executed by the TAKE command.
+
+
+Hints
+
+     Suppressing the Final Message
+
+          If you want to suppress the final message (of the form,  End
+          of  filespec)  that  indicates  successful  execution  of  a
+          command file by TAKE, give a TAKE command with no  arguments
+          as the last line of your command file.
+
+
+Special Cases
+
+     Nested TAKE Commands
+
+          In the case of nested TAKE commands (those given as commands
+          within   command  files),  the  destination  for  output  of
+          commands given in an inner command file will default to that
+          specified or assumed for the output of commands given in the
+          nearest surrounding command file.
+
+
+Effect on Memory and Terminal
+
+     The TAKE command affects memory and your  terminal  according  to
+     the commands stored in the command file you specify as argument.
+
+
+Related Commands
+
+     INFORMATION commands     (when  put  into  a  command  file)  for
+                              tracing the progress of TAKE
+
+     LOGIN                    for logging  in;  reads  LOGIN.CMD  then
+                              COMAND.CMD, in your log-in directory.
+
+     PUSH                     for obtaining a new  level  of  TOPS-20;
+                              reads    COMAND.CMD   in   your   log-in
+                              directory.
+
+     SUBMIT                   for processing command  files  that  run
+                              programs and contain program commands as
+                              well   as   TOPS-20   commands;    reads
+                              BATCH.CMD,   then  COMAND.CMD,  in  your
+                              log-in directory.
+
+
+Examples
+
+     1.  Process a command file.
+
+         @TAKE BACKUP.CMD
+          End of BACKUP.CMD.1
+
+     2.  Type a command file that reports system statistics, then give
+         the  TAKE  command  with  this filename as argument; send the
+         output to the line printer.  Check for this listing as it  is
+         being printed.
+
+         @TYPE STATUS.CMD
+         INFORMATION DISK-USAGE
+         INFORMATION MONITOR-STATISTICS
+         INFORMATION SYSTEM-STATUS
+         INFORMATION MEMORY-USAGE
+         SYSTAT ALL
+
+         @TAKE STATUS LPT:
+          End of STATUS.CMD.1
+         @INFORMATION OUTPUT-REQUESTS /USER
+
+         Printer Queue:
+         Job Name  Req#  Limit  User
+         --------  ----  -----  -----------------------
+           EXEC     507     27  LATTA
+         There is 1 Job in the Queue (None in Progress)
+

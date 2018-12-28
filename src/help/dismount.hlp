@@ -1,0 +1,281 @@
+
+DISMOUNT command
+
+The DISMOUNT command gives up access to  the  specified  structure  or
+tape set.
+
+
+Format
+
+     @DISMOUNT medium (NAME) dev:  /switch(es)
+
+     where:
+
+     medium                   is  one  of   the   following   optional
+                              arguments:
+
+                              STRUCTURE - for     dismounting     file
+                                          structures (disk packs)
+
+                                   TAPE - for   dismounting   magnetic
+                                          tapes
+
+     dev:                     is either the  structure  identification
+                              (or  alias), or a logical name referring
+                              to  the  tape  set  (the  tape   setname
+                              specified   in   your   previous   MOUNT
+                              command), or a logical  device  name  of
+                              the  form  MTn:.   The  colon  after the
+                              device name is optional.
+
+     /switches                are  keywords,  chosen  from  the   list
+                              below,   indicating   your   choice   of
+                              DISMOUNT command options.
+
+
+                      DISMOUNT Command Switches
+                (for use with argument STRUCTURE only)
+
+
+     /NOWAIT                            tells  the  system  to  return
+                                        your   terminal   to   TOPS-20
+                                        command level as soon  as  you
+                                        give the DISMOUNT command, and
+                                        to  send  a  message  to  your
+                                        terminal  when the request has
+                                        been  processed.    Otherwise,
+                                        your  terminal  waits  for the
+                                        message.
+
+
+     /REMARK:"remark"
+                                        sends the specified remark (of
+                                        119 or fewer characters, which
+                                        must be enclosed in  quotation
+                                        marks  ["  "]) to the operator
+                                        when he is  notified  of  your
+                                        request.   The  remark is sent
+                                        only if you also  include  the
+                                        /REMOVE switch.
+
+     /REMOVE                            tells the  operator  that  you
+                                        want    him    to   physically
+                                        dismount  the  structure  from
+                                        the drive; makes the structure
+                                        unavailable for further  mount
+                                        requests.        See      also
+                                        Hints - Action   of   DISMOUNT
+                                        Command    Including   /REMOVE
+                                        Switch, below.
+
+     /STRUCTURE-ID:structure identification
+
+                                        gives   the   name   of    the
+                                        structure  as  recorded in the
+                                        disk(s); used  when  you  give
+                                        some  alias  as argument dev:,
+                                        above.  See Hints - Using  the
+                                        /STRUCTURE-ID Switch, below.
+
+
+Characteristics
+
+     Action of DISMOUNT STRUCTURE Command
+
+          Ordinary DISMOUNT STRUCTURE
+
+               The DISMOUNT STRUCTURE command reduces by 1  the  mount
+               count  of  the specified structure (the number of users
+               who have given a MOUNT but not a DISMOUNT  command  for
+               the  structure)  if  you  had  given  a  previous MOUNT
+               command for it.  An ordinary DISMOUNT STRUCTURE command
+               does not withdraw the structure from system use.
+
+          Including /REMOVE Switch
+
+               If you include  the  /REMOVE  switch  when  giving  the
+               DISMOUNT  STRUCTURE command, the specified structure is
+               made  unavailable  for  further  mount  requests.   The
+               operator  is informed of your dismount request, and any
+               further action depends  on  him.   If  he  denies  your
+               request, the structure is again made available to other
+               users; if he grants your request, the structure remains
+               unavailable  for  further  mount requests, and is taken
+               off  line  and  physically  removed.    Under   extreme
+               conditions  the  operator may take a structure off line
+               and physically remove it even though  some  users  have
+               not dismounted the structure.  Before doing so, he will
+               usually send a message to such users to allow  them  to
+               close their files.
+
+     Action of DISMOUNT TAPE Command
+
+          The DISMOUNT TAPE  command  unloads  the  currently  mounted
+          volume   of   the  specified  tape  set  (i.e.,  rewinds  it
+          completely  onto  its  source  reel)  so  that  it  can   be
+          physically  removed  by  the  operator, and returns the tape
+          drive to the pool of available resources.  (Note that if the
+          /NOUNLOAD  switch  was given in your original MOUNT command,
+          no volumes are unloaded by the  system  or  removed  by  the
+          operator,  even  after your DISMOUNT command is completed.)
+          If a logical name (such as the setname of the tape  set)  is
+          used  in  the  DISMOUNT command to specify the tape set, the
+          system also withdraws the definition of  the  logical  name.
+          Use  DISMOUNT  TAPE only for tape drives having device names
+          of the form MTn:; drives obtained using the  MOUNT  command.
+          Use  UNLOAD  to unload tapes from drives having device names
+          of the form MTAn:.
+
+
+Hints
+
+     Omitting "medium" Argument
+
+          If the dev:  argument  of  your  DISMOUNT  command  will  be
+          unambiguous  (for  example, you do not have both a structure
+          and a tape set mounted using the same device name), you need
+          not  specify  the  medium.   The shortened command, DISMOUNT
+          dev:/switch(es), is sufficient.
+
+     Using the /STRUCTURE-ID Switch
+
+          The /STRUCTURE-ID switch gives the name of the structure  as
+          recorded in the disk(s) of the pack itself, where it is used
+          by the system for identification.  You may use  this  switch
+          to dismount a structure that had been mounted using an alias
+          different from its structure identification.  (See  Hints  -
+          Using   the  /STRUCTURE-ID  Switch,  in  the  MOUNT  command
+          description.)
+
+     Using INFORMATION VOLUMES before DISMOUNT TAPE
+
+          If  you  give  the  INFORMATION   VOLUMES   command   before
+          dismounting  a tape set, the system will respond with a list
+          of the volids for mounted volumes, including volids for  any
+          volumes  newly  added  to  the  set.   You  should  keep  an
+          up-to-date record  of  these  for  use  with  further  MOUNT
+          commands.
+
+
+Effect on Terminal
+
+     The  DISMOUNT  command  with  the  /NOWAIT  switch,  leaves  your
+     terminal  at  TOPS-20  command  level.  If you have not given the
+     /NOWAIT  switch,  your  terminal  waits  until  the  system   has
+     processed  your  request, or until you give a CTRL/C to return to
+     TOPS-20 command level.  This CTRL/C does not cancel your request.
+
+
+Related Commands
+
+     CANCEL         for withdrawing mount  requests  before  they  are
+                    processed
+
+     INFORMATION AVAILABLE DEVICES
+                    for finding which tape devices (if any) have  been
+                    assigned to your job
+
+     INFORMATION MOUNT-REQUESTS
+                    for finding out information  about  pending  mount
+                    requests   for   structures  and  tape  sets,  and
+                    currently mounted tape sets
+
+     INFORMATION STRUCTURE
+                    for finding out information  about  the  specified
+                    mounted  structure,  including its mount count and
+                    the names of  users  who  have  given  the  MOUNT,
+                    CONNECT, and ACCESS commands for the structure
+
+     INFORMATION VOLUMES
+                    for finding out the volids of all mounted  volumes
+                    (including newly created volumes) of a tape set
+
+
+Examples
+
+     1.  Dismount a magnetic tape set you have been using.
+
+         @DISMOUNT TAPE MT3:
+         [Tape dismounted]
+
+     2.  Dismount the same tape set, referring to it by its setname.
+
+         @DISMOUNT TAPE LAT:
+         [Tape dismounted, logical name LAT: deleted]
+
+     3.  Find out the volids of your tape set before  dismounting  it,
+         in case the tape set has been extended to another volume.
+
+         @INFORMATION VOLUMES MT3:
+         Volumes of tape set LAT: LAT,00J16
+         @DISMOUNT MT3
+         [Tape dismounted]
+
+     4.  Find out if you  have  any  mount  requests  pending  or  any
+         currently  mounted  tape  sets.  Dismount a currently mounted
+         tape set (these display the actual device name  (here,  MTA0)
+         in the column headed, Status).
+
+         @INFORMATION MOUNT-REQUEST/USER
+
+         Tape/Disk Mount Queue:
+         Volume    Status  Type   Write   Req Name  Req#  Job#  User
+         -------  -------  ----  -------  --------  ----  ----  ------
+         UNLBLD     MTA0  Tape   Locked   UNLBLD    128    55   LATTA
+         There is 1 Request in the Queue
+         @DISMOUNT TAPE UNLBLD:
+         [Tape dismounted, logical name UNLBLD: deleted]
+
+     5.  Dismount a structure you have mounted named SNARK.
+
+         @DISMOUNT SNARK
+         Structure SNARK: dismounted
+
+     6.  Find out whether your mount request for a structure has  been
+         satisfied  yet  (it  has  not).   Use  the  CANCEL command to
+         withdraw this request.
+
+         @INFORMATION MOUNT-REQUESTS
+
+         Tape/Disk Mount Queue:
+         Volume    Status  Type   Write   Req Name  Req#  Job#  User
+         -------  -------  ----  -------  --------  ----  ----  ----------
+         MARK     MTA1     Tape  Enabled  MARK       126    60  HOVSEPIAN
+         TAPE     MTA3     Tape  Enabled  TAPE       148    13  WALLACE
+         LATB     Waiting  Disk           LATB       157    65  LATTA
+         There are 3 Requests in the Queue
+
+         @CANCEL MOUNT 157
+         [1 mount request canceled]
+
+     7.  Find out  whether  you  can  safely  dismount  and  remove  a
+         structure  you  have  mounted.   Use  the SEND command to ask
+         another user to dismount  the  structure;  then  enable  your
+         capabilities and give a DISMOUNT command that will physically
+         remove it.
+
+         @INFORMATION STRUCTURE LATB:
+         Status of structure LATB:
+         Mount count: 2, open file count: 0, units in structure: 1
+         Foreign
+         Users who have MOUNTed LATB: LATTA, GBLAINE
+         Users ACCESSing LATB: LATTA, GBLAINE
+         No users CONNECTed to LATB:
+         @SEND GBLAINE PLEASE DISMOUNT LATB: AS SOON AS CONVENIENT. -
+         I MUST REMOVE THE STRUCTURE.  THANKS.
+         @INFORMATION STRUCTURE LATB:
+         Status of structure LATB:
+         Mount count: 1, open file count: 0, units in structure: 1
+         Foreign
+         Users who have MOUNTed LATB: LATTA
+         Users ACCESSing LATB: LATTA
+         No users CONNECTed to LATB:
+         @END-ACCESS LATB:<OPERATOR>
+         @ENABLE
+         $DISMOUNT STRUCTURE LATB: /REMOVE/REMARK:"PLEASE LEAVE LATB: -
+         ON RP06 CABINET"
+         [Mount Request LATB Queued, Request-ID 164]
+         Structure LATB: removed
+         $DISABLE
+         @
+

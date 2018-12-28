@@ -1,0 +1,291 @@
+
+LOGIN command
+
+The LOGIN command begins your timesharing job and connects you to your
+log-in directory.
+
+
+Format
+
+     @LOGIN /FAST (USER) name (PASSWORD) password (ACCOUNT)account -
+     (SESSION REMARK) remark
+
+     where:
+
+     name         is your user name.
+
+     pwd          is your secret password (which  is  not  printed  on
+                  your terminal)
+
+     acc          is an account name or number that you are authorized
+                  to use.
+
+     remark       is an optional remark of up to  39  characters  that
+                  identifies   the  terminal  session  for  accounting
+                  purposes.   Check   with   INFORMATION   JOB-STATUS.
+                  Change with SET SESSION-REMARK.
+
+     /FAST        is an optional switch that prevents  the  following:
+                  processing  of  your  LOGIN.CMD and COMAND.CMD files
+                  and the system's  LOGIN.CMD  and  COMAND.CMD  files,
+                  printing  of system mail, and printing of the notice
+                  of new mail.  (Your system manager may  remove  this
+                  switch from your system.)
+
+
+Output
+
+     Acknowledgement of Valid Login
+
+          The system acknowledges a valid LOGIN  command  by  printing
+          your  job  number, terminal number, and the current date and
+          time.  In addition, it prints the date and time of your last
+          login.  You can use this information to determine if another
+          user has learned your password and logged in to your account
+          since the last time you logged out.
+
+          Note that a batch job automatically logs in and logs out  of
+          your  account.   The  batch  login sets the date and time of
+          your last login and should  not  be  confused  with  illegal
+          access to your account.
+
+     Notice of User Mail and System Mail
+
+          When you log in, the system notifies you if another user has
+          sent  you  a  message  with one of the system mail programs.
+          The  system  then  lists  any  system  mail  (mail  sent  by
+          privileged  users  to  all users) that has accumulated since
+          your last login.  Note that this mail  appears  in  the  log
+          file if a batch job is run for you between the time the mail
+          was sent and the time you logged in.
+
+     Output from Command Files
+
+          After a successful LOGIN, the system processes the LOGIN.CMD
+          and  COMAND.CMD  files  in  the directory defined by logical
+          name SYSTEM:  and the command files in your login directory.
+          The files are processed in this order:
+
+
+               1.  SYSTEM:LOGIN.CMD
+
+               2.  LOGIN.CMD
+
+               3.  SYSTEM:COMAND.CMD
+
+               4.  COMAND.CMD
+
+          The system displays any output from the  commands  in  these
+          files  on  your  terminal.   After execution of each command
+          file,   the   system   displays   the   message   "End    of
+          file-name.CMD".   If the last command in the command file is
+          a TAKE command  with  no  arguments,  this  message  is  not
+          displayed.
+
+
+Characteristics
+
+     Getting the Attention of the System
+
+          Before logging in, you may have to press any alphanumeric or
+          special  character  to display the system herald or greeting
+          and the @ prompt necessary for typing the LOGIN command.
+
+          If you are dialing  in  by  telephone  to  a  line  declared
+          autobaud  by  the  system  manager,  this  initial character
+          enables  the  system  to  determine  your  terminal's  speed
+          setting,  as  long  as  the  speed is 300, 1200, 1800, 2400,
+          4800, or 9600.  Type a second character  if  the  terminal's
+          speed  is 110 or 150.  If your initial character(s) fails to
+          get the system identification message, press the  BREAK  key
+          twice, followed by another character(s).
+
+     Rights, Capabilities, and Charges
+
+          The LOGIN command gives you ownership rights to your  log-in
+          directory,  and  any group rights established for you on the
+          public structure (usually named PS:).  In addition, you  are
+          granted  whatever  capabilities  (for  example, Maintenance,
+          Wheel)  have been awarded to you, and can be sure  that  any
+          charges  you  incur for the use of system resources, such as
+          CPU time or the batch and printing systems, will be recorded
+          to your user name.
+
+
+Hints
+
+     Commands in Files Executed at Log-in Time
+
+          For Affecting Entire Session or Current Level Only
+
+               Commands that affect  your  entire  job,  for  example,
+               TERMINAL  and  DEFINE,  belong  in LOGIN.CMD.  Commands
+               that affect only the  current  level  of  TOPS-20,  for
+               example, many SET commands, must be put into COMAND.CMD
+               if you want them to  be  executed  automatically  after
+               every PUSH command as well as after LOGIN.
+
+          For Affecting Batch Jobs
+
+               As soon as one of your batch jobs logs in,  the  system
+               processes the command files in the directory defined by
+               logical name SYSTEM:  and the  command  files  in  your
+               login  directory.   The  files  are  processed  in this
+               order:
+
+
+                    1.  SYSTEM:BATCH.CMD
+
+                    2.  BATCH.CMD
+
+                    3.  SYSTEM:COMAND.CMD
+
+                    4.  COMAND.CMD
+
+               Note that certain parameters  of  the  batch  job,  for
+               example,  its  time limit and the name of its log file,
+               have  already  been  set  before  these  commands   are
+               executed.   Such  parameters  are  set either to values
+               specified by switches in the SUBMIT command that starts
+               the  batch  job, or to default values in effect for the
+               job issuing this SUBMIT command.  See also  Hints - For
+               Affecting Nested Batch Jobs, below.
+
+          Avoiding Duplicate Commands in Command Files
+
+               After executing a SYSTEM:   command  file,  the  system
+               executes  the  file  of  the  same  name  in your login
+               directory.  The  SYSTEM:   command  files  may  contain
+               commands  that  you  already  have  in your own command
+               files.  To avoid executing  the  same  commands  twice,
+               remove  duplicate commands from your command files.  To
+               display a SYSTEM:  command file, give the command  TYPE
+               SYSTEM:file-name.CMD.
+
+          For Affecting Nested Batch Jobs
+
+               By  placing  a  SET  DEFAULT  SUBMIT  command  in  your
+               BATCH.CMD  file,  you  cause  these  defaults  to be in
+               effect for a nested batch job, (a batch job started  by
+               a  SUBMIT command within the control file of another of
+               your batch jobs).
+
+          A Final TAKE Command
+
+               To  suppress  the  display  of  the  message  "End   of
+               file-name.CMD"  after execution of a command file, make
+               the last command in the file a  TAKE  command  with  no
+               arguments.
+
+          Simplifying Log-ins
+
+               By using the SET DIRECTORY ACCOUNT-DEFAULT command  you
+               cause  subsequent  LOGIN  commands to require just your
+               user name and password.
+
+
+Special Cases
+
+     Commands You Can Issue Before Log-in
+
+          You can give these commands and arguments before logging in:
+
+          Command                  Arguments
+
+          ATTACH
+          BREAK
+          DAYTIME
+          INFORMATION         AVAILABLE
+                              COMMAND-LEVEL
+                              MAIL
+                              TERMINAL-MODE
+                              VERSION
+          LOGOUT
+          SET                 LATE-CLEAR-TYPEAHEAD
+                              TIME-LIMIT
+          SYSTAT              (except with subcommands LPT or OUTPUT)
+          TERMINAL
+          UNATTACH
+
+     Logging in to PTYs
+
+          You do not need to give a password  when  logging  in  under
+          your own user name to a PTY (pseudo-terminal).
+
+     Must Log In Within Five Minutes
+
+          If you do not log in within five  minutes  of  your  initial
+          CTRL/C,  your  job  will be logged out automatically and you
+          will have to type CTRL/C again.
+
+     Logging in to Last Available Job Slot
+
+          If you attempt to log in to the last available job slot, the
+          system  will  not  log  you  in  but  will send you an error
+          message instead.  This job slot is intended  for  users  who
+          wish  to  attach detached jobs using the ATTACH command.  To
+          log in a new job you must wait until  a  current  user  logs
+          out.
+
+
+Related Commands
+
+     ATTACH                            for joining to your terminal  a
+                                       job   that   has  already  been
+                                       logged in
+
+     INFORMATION DIRECTORY             for  displaying  the  date  and
+                                       time   that   you  started  the
+                                       current terminal  session  with
+                                       LOGIN.
+
+     LOGOUT                            for ending your timesharing job
+
+     SET ACCOUNT                       for   changing   your   account
+                                       during a terminal session
+
+     SET DIRECTORY ACCOUNT-DEFAULT     for   specifying   a    default
+                                       account for subsequent log-ins
+
+     SET SESSION-REMARK                for  making  or  changing  your
+                                       session    remark    during   a
+                                       terminal session
+
+
+Examples
+
+     1.  Log in, using account 341  and  automatically  executing  the
+         system LOGIN.CMD file and your LOGIN.CMD file.
+
+         @LOGIN C.RYDER ___ 341
+          Job 39 on TTY41 GIDNEY:: C.RYDER (CTM) 8-Mar-89 11:04:21,
+         Last interactive login 7-Mar-89 08:32:15
+         Last non-interactive login 7-Mar-89 08:32:15
+          End of SYSTEM:LOGIN.CMD.1
+          End of LOGIN.CMD.1
+
+     2.  Log in using the default account number and the /FAST switch.
+
+         @LOGIN /FAST C.RIDER ___
+          Job 39 on TTY41 LAT1:LAT127(LAT) 8-AUG-88 11:10:34
+          Last interactive login 8-Aug-88 11:04:21
+          Last non-interactive login 8-Aug-88 11:04:21
+
+     3.  Type a character to get the  TOPS-20  herald,  then  log  in,
+         using  account  341  and  inserting  a  session remark.  Give
+         INFORMATION JOB-STATUS as your first  command,  to  see  this
+         session remark.
+
+              Unauthorized Access is Prohibited
+
+          BOSTON (KL2871), Development System, TOPS-20 Monitor 7(10)
+         @LOGIN URQUHART ___ 341 DEBUG ACCOUNT.PAS
+          Job 42 on TTY29 LAT64:242(LAT) 8-Mar-90 09:15:15
+          Last interactive login 7-Mar-90 09:20:32
+          Last non-interactive login Never
+         @INFORMATION JOB-STATUS
+          Host AURORA, Job 42, TTY29 LAT64:242(LAT)
+          User URQUHART, FTN:<URQUHART>
+          Account 341 Session Remark:DEBUG ACCOUNT.PAS
+
+

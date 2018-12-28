@@ -1,0 +1,340 @@
+
+PLOT command
+
+The PLOT command places requests in a plotter output queue.
+
+
+Format
+
+     @PLOT (FILES) /switch(es) filespec/switch(es),...
+
+     where:
+
+     switches       are  keywords,  chosen  from   the   list   below,
+                    indicating  your  choice  of PLOT command options.
+                    These switches are of two kinds:  job switches and
+                    file switches.
+
+                    Job switches apply to all files specified  in  the
+                    command, no matter where you give the switches.
+
+                    File switches have different effects depending  on
+                    their  positions  in  the  command  line:   placed
+                    before all files  in  the  command,  they  act  as
+                    defaults  for  all; otherwise they affect only the
+                    nearest preceding file.
+                         Defaults are shown in the list of switches
+
+     filespec       is the specification of a file you wish  to  plot.
+                    You  can  use  wildcard  characters  (%  and *) to
+                    specify more than one file.
+
+      Summary of PLOT Command Switches (defaults in boldface)
+
+
+                                       Job Switches
+                              (affecting the entire command)
+
+     /ACCOUNT:account              Default account - your current
+                                                     account
+     /AFTER:date and/or time
+     /DESTINATION-NODE:node name
+     /FORMS:forms name             Default forms name - NORMAL
+     /GENERIC
+     /JOBNAME:6-character name     Default name - first six
+                                                  characters of first
+                                                  filename in request
+
+     /LIMIT:n                      Default n - calculated from length
+                                               of files
+     /NOTE:12-character message
+             YES
+     /NOTIFY:NO
+     /PRIORITY:n                   Default n - 10
+     /SEQUENCE:n
+     /UNIT:octal number
+     /USER:user name
+
+
+                            File Switches
+             (affecting only the nearest preceding file,
+                 unless placed before all filespecs)
+
+
+     /COPIES:n                     Default n - 1
+     /DELETE                       Default for files of type .LST
+     /HEADER
+           ASCII
+     /MODE:BINARY
+           IMAGE
+     /NOHEADER
+     /PRESERVE                     Default for all files except those
+                                           of type .LST
+
+
+
+                           PLOT Command Switches
+
+
+                               Job Switches
+                      (affecting the entire command)
+
+
+     /ACCOUNT:account              specifies  the  account  of  39  or
+                                   fewer characters to charge for your
+                                   plotting  request.   This   account
+                                   must be valid for your user name.
+                                        Default account - your current
+                                                          account.
+                                                          Check with
+                                                          INFORMATION
+                                                          JOB-STATUS.
+
+     /AFTER:date and/or time, or   ensures  that  the job  will not be
+                                   plotted   until  after   the   date
+      of week (or TODAY)           and/or  time  specified.  NOV-12-79
+            and/or time            and  18:00 illustrate two arguments
+                                   to  this  switch.  If you give both
+                                   date and time, separate them with a
+                                   space.   When given alone, the time
+                                   may be preceded by a plus sign (+),
+                                   which  will delay processing by the
+                                   indicated length of time  from  the
+                                   present.
+
+                                   Alternatively, you can give  a  day
+                                   of  the  week  (such  as MONDAY) or
+                                   TODAY as  argument;  then  the  job
+                                   will   not  be  plotted  until  the
+                                   beginning of the following day.  If
+                                   you  follow  this  argument  with a
+                                   plus sign and a time, the job  will
+                                   be further delayed by this amount.
+
+     /DESTINATION-NODE:node-name   specifies the remote node on  whose
+                                   plotter   your  request  is  to  be
+                                   satisfied.    Two    colons    (::)
+                                   following   the   node   name   are
+                                   optional.
+
+     /FORMS:forms name             specifies,   in   six   or    fewer
+                                   characters,  the forms (determining
+                                   the size  of  banner,  header,  and
+                                   trailer  sections; the paper color,
+                                   width, and weight;  the  number  of
+                                   plotter steps per inch, location of
+                                   the origin for plotted data, and so
+                                   on)  to  use  for the plotting job.
+                                   Using   this   switch   may   delay
+                                   processing  until  the operator can
+                                   mount the proper forms.  Note  that
+                                   your  installation  may  provide  a
+                                   different default argument to  this
+                                   switch.
+                                        Default forms name - NORMAL
+
+     /GENERIC                      allows any plotter to be  used  for
+                                   filling   the   request;  use  this
+                                   switch to override a previous /UNIT
+                                   switch.
+                                        Default
+
+     /JOBNAME:name                 assigns a name  (of  six  or  fewer
+                                   characters) to the plotting job.
+                                        Default name - first      six
+                                                       characters  of
+                                                       first filename
+                                                       in the request
+
+     /LIMIT:n                      places a  limit  of  n  minutes  of
+                                   plotter  time  on the output of the
+                                   plotting job.
+                                        Default limits,        usually
+                                                adequate, are computed
+                                                from  the  size of the
+                                                files you want plotted
+
+     /NOTE:message                 labels the header section of output
+                                   (the    section    displaying   the
+                                   jobname) with a message or notation
+                                   of   up   to  12  characters.   The
+                                   message must be enclosed in  double
+                                   quotation   marks  if  it  contains
+                                   spaces     or      non-alphanumeric
+                                   characters.
+
+             YES
+     /NOTIFY:NO                    tells the system whether to send  a
+                                   message  to  your terminal when the
+                                   request has been satisfied.
+                                        Default argument - NO
+                                        Default argument (if switch is
+                                                given) - YES
+
+     /PRIORITY:n                   assigns a number n, reflecting  the
+                                   urgency  of the plot request.  This
+                                   n must be from 1 to 63, with larger
+                                   numbers      receiving      earlier
+                                   treatment.     Note    that     for
+                                   non-privileged  users  the  maximum
+                                   priority that can be  specified  is
+                                   lower  (usually  20), and that your
+                                   installation    may    provide    a
+                                   different   value   both  for  this
+                                   maximum   and   for   the   default
+                                   priority.
+                                        Default n - 10
+
+     /SEQUENCE:n                   specifies sequence number n for the
+                                   printing request, which you can use
+                                   when  modifying  or  canceling  the
+                                   request.
+
+     /UNIT:octal number            directs your request to the plotter
+                                   of the specified octal unit number.
+
+     /USER:user name               specifies the user who is to be the
+                                   owner  of  the  plot  request.  For
+                                   privileged users only.
+
+
+                            File Switches
+             (affecting only the nearest preceding file,
+            unless placed before all file specifications)
+
+
+     /BEGIN:n                      starts the plotting at  page  n  of
+                                   the file.
+                                        Default n - 0
+
+     /COPIES:n                     requests that n copies of the  file
+                                   be  plotted; n must be less than or
+                                   equal to 62.
+                                        Default n - 1
+
+     /DELETE                       deletes the file after plotting.
+                                        Default for files of type .LST
+
+     /HEADER                       causes a header section  containing
+                                   the  jobname  to be produced before
+                                   the file itself is plotted.
+                                        Default
+
+           ASCII
+     /MODE:BINARY                  designates the  mode  for  plotting
+           IMAGE                   the file.  ASCII treats  each  word
+                                   of  a  disk  file as five seven-bit
+                                   bytes, and truncates each  byte  to
+                                   six   bits   before   plotting  it.
+                                   BINARY  treats  each  word  as  six
+                                   six-bit  bytes,  each  of  which is
+                                   plotted    without    modification.
+                                   IMAGE is the same as BINARY.
+
+     /NOHEADER                     prevents the production of a header
+                                   section before the file.
+
+     /PRESERVE                     saves the file after plotting.
+                                        Default for all  files  except
+                                                those of type .LST
+
+
+Output
+
+     Jobname, Request ID, Limit, Number of Input Files
+
+          As soon as you complete a valid  PLOT  command,  the  system
+          responds by printing, on your terminal, the jobname, request
+          ID number, the limit in minutes of plotter time assigned  to
+          the request, and the number of input files in the request.
+
+
+Characteristics
+
+     Ordinary Operation - No Switches
+
+          For most purposes you can use the PLOT command with  just  a
+          series of filespecs for arguments.
+
+     Switch Defaults Set by System Manager
+
+          The defaults shown in the list of switches are  correct  for
+          most  user  sites.   However, your system manager can change
+          some of those default settings.  The switches most  commonly
+          affected  are:   /FORMS,  /HEADER and /NOHEADER, /LIMIT, and
+          /PRIORITY.
+
+
+Hints
+
+     Using SET DEFAULT PLOT
+
+          If there are switches that you always or usually supply when
+          using  PLOT,  give the SET DEFAULT PLOT command to establish
+          them as defaults (at the current TOPS-20 command level)  for
+          the  remainder  of your terminal session.  The switches will
+          then behave as if you had  typed  them  directly  after  the
+          command  name.   You  can  supersede  any  of  these default
+          switches by actually  supplying  the  switch,  with  another
+          value, when you give the PLOT command.  Put SET DEFAULT PLOT
+          into a file  of  specification  COMAND.CMD  in  your  log-in
+          directory if you want these default switches to be in effect
+          for all levels of future terminal sessions as well.
+
+
+Special Cases
+
+     /SPOOLED-OUTPUT Switch
+
+          You can give the special switch,  /SPOOLED-OUTPUT,  as  sole
+          argument  to  the  PLOT  command.   This  causes any spooled
+          output accumulated so far during your terminal session to be
+          placed  in  a  plotter  queue  immediately,  rather  than at
+          log-out time.  The/SPOOLED-OUTPUT switch is useful  only  if
+          the  SET  SPOOLED-OUTPUT  DEFERRED  command  is  in  effect.
+          Programs that you  run  (especially  FORTRAN  programs)  may
+          create  spooled output for the plotter, or you can create it
+          directly by giving the command, COPY filespec PLT:.
+
+
+Related Commands
+
+     CANCEL                             for withdrawing PLOT requests
+
+     INFORMATION OUTPUT-REQUESTS        for examining requests in  the
+                                        output queues
+
+     MODIFY                             for  changing  PLOT   requests
+                                        before processing has begun
+
+     SET DEFAULT PLOT                   for    establishing    default
+                                        switches  for  subsequent PLOT
+                                        commands.
+
+
+Examples
+
+     1.  Plot a file.
+
+         @PLOT CNTR.MED
+         [Plotter job CNTR queued, request-ID 91, limit 2]
+
+     2.  Send all files having a four-character file  type  ending  in
+         "CTH"  to  the plotter.  Assign a jobname to the request, and
+         ensure they are not plotted until tomorrow.   Check  for  the
+         request in the output queues, and then cancel it.
+
+         @PLOT *.CTH /JOBNAME:HATCH/AFTER:TODAY
+         [Job HATCH Queued, Request-ID 94, Limit 3, 3 Files]
+         @INFORMATION OUTPUT-REQUESTS
+
+         Plotter Queue:
+         Job Name  Req#  Limit  User
+         --------  ----  -----  -----------
+           CNTR      91      2  LAUDERDALE
+           HATCH     94      3  ASHLEY /After:21-Jul-79 00:00
+         There are 2 jobs in the queue (none in progress)
+
+         @CANCEL PLOT 94
+         [1 Job canceled]
+

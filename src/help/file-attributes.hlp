@@ -1,0 +1,55 @@
+
+The attributes listed here are those that can be included  in  a  file
+specification.   The DECnet-related attributes are described in detail
+in the DECnet documentation.  Information on file attributes  is  also
+contained  in  the  TOPS-20  User's  Guide,  the TOPS-20 Monitor Calls
+Reference Manual, and the TOPS-20 Tape Processing Manual.
+
+;A:account               System manager defined account string
+
+;BDATA:user data         DECnet optional binary data
+
+;BLOCK-LENGTH:n          Maximum size of a physical block on a labeled
+                         tape.
+
+;BPASSWORD:password      DECnet binary password
+
+;CHARGE:account          DECnet account string
+
+;DATA:user data          DECnet optional data
+
+;EXPIRATION-DATE:date    Date  the   magnetic   tape   file   can   be
+                         overwritten
+
+;FORMAT:F,D,S, or U      Magnetic labeled tape record format:
+
+                         F=fixed-length
+                         D=variable-length
+                         S=spanned
+                         U=undefined
+
+;OFF-LINE                Designation  for  a  file  that  is  off-line
+                         because of migration or archiving
+
+;P:n                     File protection value
+
+;PASSWORD:password       DECnet password
+
+;POSITION:n              File  sequence  number  for   magnetic   tape
+                         positioning
+
+;RECORD-LENGTH:n         Maximum  size  of  a  magnetic  labeled  tape
+                         record
+
+;T                       Designation for a file that is to be  deleted
+                         at log-out time (a temporary file).  Only for
+                         files in log-in and/or connected directories.
+
+;USERID:id               DECnet user ID string
+
+Note that  you  can  issue  TOPS-20  commands  as  an  alternative  to
+specifying  many  of  the  file  attributes.   For  example,  SET FILE
+PROTECTION, rather than the P attribute, can be used to set  the  file
+protection.   Also,  such  commands  as  INFORMATION  FILE-STATUS  and
+DIRECTORY (with the EVERYTHING subcommand) display your file attribute
+settings.

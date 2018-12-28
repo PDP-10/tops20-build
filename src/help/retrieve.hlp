@@ -1,0 +1,242 @@
+
+RETRIEVE command
+
+The RETRIEVE command returns an off-line file (magnetic tape copy of a
+file) to disk.
+
+
+Format
+
+     @RETRIEVE (FILES) filespec,...
+
+     where:
+
+     filespec              is the specification of any  off-line  file
+                           (archived  or not, visible or invisible) to
+                           which you  have  access;  you  may  include
+                           wildcard characters (% and *).
+
+
+Output
+
+     Acknowledgment of Request
+
+          As soon as you complete a valid RETRIEVE command, the system
+          responds by printing, on your terminal, the specification of
+          each  off-line  file  for  which  you  requested  retrieval,
+          followed by [OK].
+
+     Notice of Retrieval Sent to Requestor
+
+          Depending on the procedures at your site, when the files for
+          which  you  have  requested  retrieval have been restored to
+          their directory on disk, you may receive a mail message that
+          contains  the  names of each retrieved file.  Remember that,
+          depending on how frequently your  site  processes  retrieval
+          requests,  this  message  may  not be sent until one or more
+          days after your request.
+
+
+Characteristics
+
+     Invisibility of Retrieved Files
+
+          If you retrieve invisible files, they will remain  invisible
+          (whether  archived  or  not) when restored to disk.  Use the
+          SET FILE VISIBLE command to make  invisible  files  visible.
+          Until  you  do so, they will be inaccessible to most TOPS-20
+          commands.
+
+
+Hints
+
+     Using Retrieved Archived Files
+
+          As long as a retrieved archived file  is  visible,  you  can
+          inspect  it  using  the  TYPE  or PRINT command, or list its
+          specifications using DIRECTORY-class commands.  However, you
+          cannot  add  to  it  or  change  it  (for  example, by using
+          APPEND).  To make changes to a copy of a retrieved  archived
+          file,  first  use  the  COPY  command  to  copy  it to a new
+          specification.  If you wish, you can then  request  archival
+          for this new file (using the ARCHIVE command) and delete the
+          old  one  (using  the  DELETE  command  with  the   ARCHIVED
+          subcommand).  You can return an (unchanged) on-line archived
+          file to off-line status by using the DELETE command with the
+          CONTENTS-ONLY  subcommand,  or  withdraw archive status from
+          the file (make it  an  ordinary  disk  file)  by  using  the
+          DISCARD command.
+
+     Using Retrieved Non-archived Files
+
+          As long as a retrieved non-archived file is visible, you can
+          use  TOPS-20  commands  with it as with any other disk file.
+          The only difference is  that  after  any  command  that  has
+          changed  the  file,  the  tape copy of the file is no longer
+          valid.  This means that you cannot give the  DELETE  command
+          with  the  CONTENTS-ONLY  subcommand  to  return the file to
+          off-line status.
+
+
+Special Cases
+
+     Implied Retrieval Requests
+
+          If your system has enabled  the  "automatic  retrieval-wait"
+          feature  (give the INFORMATION SYSTEM-STATUS command to find
+          out whether it has) and the SET RETRIEVAL-WAIT command is in
+          effect  for  your  job,  any command that attempts to use an
+          off-line file will create an automatic retrieval request for
+          that file.  Under these conditions, commands such as TYPE or
+          COPY for which  you  specify  off-line  files  will  not  be
+          executed until those files are retrieved.  Implied retrieval
+          requests are most useful in batch jobs.
+
+
+Related Commands
+
+     ARCHIVE                                 for  requesting  archival
+                                             of specified files
+
+     CANCEL RETRIEVE                         for  canceling  retrieval
+                                             requests  before they are
+                                             filled
+
+     DELETE (with CONTENTS-ONLY subcommand)
+                                             for  deleting  the   disk
+                                             contents      only     of
+                                             retrieved (on-line) files
+
+     DIRECTORY (with OFFLINE subcommand)     for      listing      the
+                                             specifications of visible
+                                             off-line files
+
+     DIRECTORY (with OFFLINE and INVISIBLE subcommands)
+                                             for      listing      the
+                                             specifications         of
+                                             invisible off-line files
+
+     DIRECTORY (with TIMES TAPE-WRITE subcommand)
+                                             for finding out the write
+                                             date  of the tape copy of
+                                             files
+
+     DISCARD                                 for giving  up  the  tape
+                                             copy of retrieved files
+
+     INFORMATION RETRIEVAL-REQUESTS          for   finding   out   the
+                                             status    of    retrieval
+                                             requests
+
+
+Examples
+
+     1.  Retrieve an off-line file.
+
+         @RETRIEVE BRCHIVE.TXT
+          BRCHIVE.TXT.1 [OK]
+
+     2.  Attempt to use a file.  Upon discovering that it is off-line,
+         retrieve  the  file.   When  it  has  been  restored  to your
+         directory, discard the tape copy of the file, and  then  have
+         it printed on your terminal.
+
+         @TYPE FILBRK.HLP
+         ?File is off-line: FILBRK.HLP.1
+         @RETRIEVE FILBRK.HLP
+          FILBRK.HLP.1 [OK]
+              .
+              .
+              .
+         @DISCARD FILBRK.HLP
+          FILBRK.HLP.1 [OK]
+         @TYPE FILBRK.HLP
+         !THIS IS JUST A TEXT FILE TESTER.
+
+     3.  Get a listing of your archived files.  Retrieve one  that  is
+         off line, examine it, and return it to off-line status.
+
+         @DIRECTORY,
+         @@ARCHIVE
+         @@
+
+            MISC:<GOLDEN>
+          ARCHEK.FIL.1
+          ARCHIVE.ALSO.1;OFFLINE
+            .NOT.1;OFFLINE
+            .TOO.1;OFFLINE
+          MOOBE.TXT.1;OFFLINE
+          TESTY.BBN.1,2
+
+          Total of 6 files
+         @RETRIEVE BRCHIVE.TXT
+          BRCHIVE.TXT.1 [OK]
+              .
+              .
+              .
+         @TYPE BRCHIVE.TXT
+         !A TEXT FILE TESTER
+         @DELETE BRCHIVE.TXT,
+         @@CONTENTS-ONLY
+         @@
+         MISC:<GOLDEN>BRCHIVE.TXT.1 [OK]
+         MISC:<GOLDEN> [1 page freed]
+
+     4.  Get an inclusive listing of your  off-line  files,  including
+         the  date the tape copy was written.  Retrieve three of them,
+         and check the requests in the retrieval queue.  Cancel one of
+         the requests.
+
+         @DIRECTORY,
+         @@OFFLINE
+
+         @@TIMES TAPE-WRITE
+         @@
+
+
+            MISC:<GOLDEN>
+                         Tape-write
+
+          ARCHIVE.ALSO.1;OFFLINE  8-Jun-85 07:59:08
+            .NOT.1;OFFLINE  8-Jun-85 07:59:09
+          DUMPER.MAC.1;OFFLINE  7-Mar-85 05:19:10
+
+          PRODUK.EXE.4;OFFLINE  7-Mar-85 05:19:13
+          SQUARE.EXE.1;OFFLINE  7-Mar-85 05:19:14
+
+          Total of 5 files
+         @DIRECTORY,
+         @@OFFLINE
+         @@INVISIBLE
+         @@TIMES TAPE-WRITE
+         @@
+            MISC:<GOLDEN>
+                         Tape-write
+
+          ARCHIVE.TOO.1;OFFLINE  8-Jun-79 07:59:10
+          BRCHIVE.TXT.1;OFFLINE 27-Jun-79 04:04:58
+          ERCHIVE.TXT.1;OFFLINE  8-Jun-79 07:59:11
+          FRCHIVE.TXT.1;OFFLINE 12-Jul-79 03:23:03
+          MOOBE.TXT.1;OFFLINE  8-Jun-79 07:59:12
+
+          Total of 5 files
+         @RETRIEVE PRODUK.EXE, FRCHIVE.TXT, MOOBE.TXT
+          PRODUK.EXE.4 [OK]
+          FRCHIVE.TXT.1 [OK]
+          MOOBE.TXT.1 [OK]
+         @INFORMATION RETRIEVAL-REQUESTS
+
+         Retrieval Queue:
+          Name   Req#    Tape 1  Tape 2  User
+         ------  ----    ------  ------  -------
+         MOOBE    507      5329    5520  GOLDEN
+         PRODUK   505      5538    5583  GOLDEN
+         FOOBAR   407      5845    5856  TOMCZAK
+         EE155    442      6279    5883  WRIGHT
+         BRCHIV   504      5543    7138  GOLDEN
+         FRCHIV   506      7138    7559  GOLDEN
+         There are 6 jobs in the queue (none in progress)
+
+         @CANCEL RETRIEVE 507
+         [1 Job canceled]
+

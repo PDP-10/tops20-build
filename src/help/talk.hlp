@@ -1,0 +1,197 @@
+
+TALK command
+
+The TALK command allows you to  converse  with  other  users  on  your
+system by linking terminals.
+
+
+Format
+
+     @TALK (TO) argument
+
+     where:
+
+     argument     is a user name or terminal line number.
+
+
+Characteristics
+
+     Typing TALK Conversation
+
+          During a TALK session, you must tell the  system  to  regard
+          your   conversation  as  comments.   Otherwise,  the  system
+          interprets your input as attempts to give EXEC commands  and
+          responds  with the message ?Unrecognized command.  To signal
+          your input as comments, begin each line with the exclamation
+          point  (!)  or semicolon (;) comment character.  Or, if your
+          comment is several lines long, use the REMARK command.
+
+     Other Job Not Affected
+
+          As  soon  as  you  give  a  successful  TALK  command,  both
+          terminals  begin  printing  both users' input as well as the
+          system's responses to that input.  Each job,  however,  will
+          receive input from its own terminal only.
+
+     Ending TALK
+
+          To end a conversation link between  terminals,  either  user
+          can give the BREAK command.
+
+     Refused TALK
+
+          Terminals can be set to refuse links  with  other  terminals
+          with  the  REFUSE LINKS or TERMINAL INHIBIT command.  If you
+          attempt to TALK to a user who has refused links from another
+          terminal,  the  system rings the bells on both terminals six
+          times, and then prints the message, ?Refused, Send  mail  to
+          user   instead.   If  the  user  has  refused  all  terminal
+          communication with the TERMINAL INHIBIT command, the  system
+          does not ring the bell on his terminal.
+
+          If you have Wheel or Operator capabilities enabled, you  can
+          TALK to any user who has given the REFUSE LINKS command, but
+          not the TERMINAL INHIBIT command.
+
+     Maximum of Four Terminals
+
+          By using TALK commands, you can link up to four terminals at
+          once.   For  all  terminals  to share the same display, each
+          pair of terminals must establish a link.   For  example,  if
+          terminal  A  is  linked  to  B and C, terminals B and C will
+          display only A's input.  B and C must establish  a  link  to
+          display each other's input.
+
+
+Hints
+
+     Signaling a Linked User
+
+          Once you have established links with another user's terminal
+          via  the TALK command, you can get his attention by typing a
+          series of CTRL/Gs.  Depending on the  kind  of  terminal  he
+          has,   these   will   be  reproduced  as  ringing  bells  or
+          high-pitched beeps.  This action can  be  especially  useful
+          when   establishing  links  with  the  owner  of  a  display
+          terminal,  as  display  terminals  are  silent  in  ordinary
+          operation.
+
+
+Special Cases
+
+     User Has More Than One Job
+
+          If more than one job is logged in under the  user  name  you
+          specify,  the  system  responds  with  a list of that user's
+          terminal line numbers and the programs being run.  Type your
+          choice  of  terminal  line  number  (if  available,  the one
+          running the EXEC) after the TTY:  prompt.
+
+     Talking to a Batch Job or PTYCON Job
+
+          When you link to a PTY  (pseudo-terminal)  to  talk  to  the
+          owner  of  a batch job or PTYCON job, the system informs you
+          of this with a message, to  which  you  must  reply  with  a
+          carriage  return  to confirm the link.  To decline the link,
+          give a CTRL/C.  See also Warning, Talking to  a  Batch  Job,
+          below.
+
+
+Warning
+
+     Talking to a Batch Job
+
+          Use   caution   when    communicating    through    a    PTY
+          (pseudo-terminal)  that  is controlling a batch job:  do not
+          send a question mark (?) or percent sign (%), because  these
+          characters  can be attributed to errors occurring within the
+          job.  Also, if an error actually does occur in the batch job
+          and  the  batch system's question mark is displaced (by your
+          remarks) from the beginning of a line, the  system  may  not
+          recognize it as an error.
+
+     Talking Between a VT100 and a VT52
+
+          If links between VT100 and VT52  terminals  are  established
+          using  a  TALK  (or  ADVISE)  command, the VT52 may function
+          improperly during or after the linked interval (such  as  by
+          requiring  frequent  CTRL/Q commands to print multiple lines
+          of output).  Turning the terminal  off  and  then  on  again
+          (after the linked interval) will correct this problem.
+
+
+Related Commands
+
+     ADVISE              for sending commands to another user's job
+
+     BREAK               for  ending  communications  links  involving
+                         your terminal
+
+     RECEIVE LINKS       for allowing other users to talk to you
+
+     REFUSE LINKS        for preventing other users  from  talking  to
+                         you
+
+     REMARK              for  telling  the  system  to   regard   your
+                         terminal input as comment only
+
+     SEND                for  sending  a  message  to  another  user's
+                         terminal
+
+     TERMINAL INHIBIT    for   refusing   all   types   of    terminal
+                         communication including advice, links, system
+                         messages, user messages, and notices  of  new
+                         mail.
+
+
+Examples
+
+     1.  Give the TALK command to establish links to another user.
+
+         @TALK H.DAVIES
+
+         [Link from LATTA, TTY 230]
+
+     2.  Try to talk to a user who has given the REFUSE LINKS command,
+         then use the MAIL program to send your message.
+
+         @TALK GEBHARDT
+         ?Refused, send mail to user instead
+         @MAIL
+         To: GEBHARDT
+         CC: LATTA
+         Subject: HUNCH
+              .
+              .
+              .
+
+     3.  Talk to another user, giving the REMARK  command  immediately
+         after  TALK.   (The other user's reply must still be preceded
+         by semicolons (;) or exclamation marks (!).)  Give  a  CTRL/Z
+         to  end  REMARK  before  typing  the BREAK command to end the
+         conversation.
+
+         @TALK CARNAVON
+
+         [Link from LATTA, TTY 230]
+         @REMARK
+         Type remark. End with CTRL/Z.
+         WHERE DO I PUT "REQMD" RECORDS AFTER EXTRACTING THE ID'S?
+         @;in <accts>deft-77.cbl
+         @;you should have group access there...
+         THANKS
+         ^Z
+         @BREAK
+
+     4.  Give the TALK command to establish links to a user who has  3
+         jobs   on  three  different  terminals;  choose  one  of  the
+         terminals running the TOPS-20 command processor.
+
+         @TALK MCKAY
+          TTY19, DUMPER
+          TTY26, EXEC
+          TTY27, EXEC
+         TTY: 27
+
+         [Link from LATTA, TTY 230]
+

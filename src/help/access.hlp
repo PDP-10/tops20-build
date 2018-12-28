@@ -1,0 +1,127 @@
+
+ACCESS command
+
+Obtains ownership rights to a directory and the group  rights  of  its
+user-group list.
+
+
+Format
+
+     @ACCESS (TO DIRECTORY) dev:<directory>
+     Password:password
+
+     where:
+
+     dev:<directory>     is the directory that you want to access.
+
+                         Default dev:  is your connected structure.
+
+                         Default <directory> is the directory (on the
+                         specified structure) of the same name as your
+                         connected directory.
+
+     password            is the password of the directory (not
+                         requested for your log-in directory or a
+                         directory of the same name as your log-in
+                         directory on a domestic structure).
+
+
+Characteristics
+
+     Capabilities
+
+     Your capabilities (such as  WHEEL,  OPERATOR,  CONFIDENTIAL)  are
+     associated  with  your  log-in  user  name only.  If you give the
+     ACCESS command for a directory whose owner has for example  Wheel
+     capabilities, you do not gain these capabilities.
+
+
+Restrictions
+
+     One Directory Per Structure
+
+     You can access only one directory  at  a  time  on  each  mounted
+     structure.   Each ACCESS command ends any previous ACCESS command
+     for that structure (including the implicit access obtained by the
+     LOGIN  command).   If  you access another directory on the public
+     structure you give  up  your  own  group  rights  on  the  public
+     structure.   These  are  restored when you give an ACCESS command
+     for your log-in directory.
+
+Not For Files-only Directories
+
+     Because a files-only directory does not have  an  owner  or  user
+     group  rights,  you  cannot  give  an ACCESS command for it.  Use
+     CONNECT instead.
+
+
+Related Commands
+
+     CONNECT
+
+          For making a directory your connected directory.
+
+     END-ACCESS
+
+          For surrendering rights to an accessed directory.
+
+     MOUNT STRUCTURE
+
+          For making a structure available for  access,  and  ensuring
+          the continued availability of an accessed structure.
+
+
+Examples
+
+     1.  Access another user's directory.
+
+         @ACCESS <HOLLAND>
+         Password:___
+
+     2.  Access another user's directory so you can copy a  file  from
+         it to your connected directory.
+
+         @ACCESS <HOLLAND>
+         Password:___
+         @COPY <HOLLAND>MAX.MEM HOLMAX.MEM
+          <HOLLAND>MAX.MEM.1 => HOLMAX.MEM.1 [OK]
+         @END-ACCESS <HOLLAND>
+
+     3.  Access the login directory of a user whose group  rights  you
+         want to borrow.
+
+         @COPY <MANUALS>CHKCRF.MAC CHKCRF.MAC
+         ?Directory access privileges required - "<MANUALS>CHKCRF.MAC"
+         @ACCESS <HOLLAND>
+         Password:___
+         @COPY <MANUALS>CHKCRF.MAC CHKCRF.MAC
+          <MANUALS>CHKCRF.MAC.4 => CHKCRF.MAC.1 [OK]
+         @END-ACCESS <HOLLAND>
+
+     4.  Access the directory of a user on  another  structure.   Then
+         examine the directory and copy a file from it.
+
+         @MOUNT STRUCTURE SNARK:
+         Structure SNARK: Mounted
+         @ACCESS SNARK:<HOLLAND>
+         Password:___
+         @DIRECTORY SNARK:<HOLLAND>
+
+            SNARK:<HOLLAND>
+          ACCT.MEM.1
+          ACTGEN..1
+          COMP.FOR.1
+          COMPUT.CBL.1
+            .REL.1
+          DIFFER.FOR.1
+            .QOR.1
+          MAIL.TXT.2
+          OVERVIEW.MEM.1
+
+          Total of 9 files
+         @COPY SNARK:<HOLLAND>COMP.FOR
+          SNARK:<HOLLAND>COMP.FOR.1 => COMP.FOR.1 [OK]
+         @END-ACCESS SNARK:<HOLLAND>
+         @DISMOUNT STRUCTURE SNARK:
+         Structure SNARK: Dismounted
+

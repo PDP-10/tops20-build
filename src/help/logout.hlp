@@ -1,0 +1,136 @@
+
+LOGOUT command
+
+The LOGOUT command ends a timesharing job.
+
+
+Format
+
+     @LOGOUT /FAST n
+
+     where:
+
+     /FAST is an optional switch  that  prevents  processing  of  your
+           LOGOUT.CMD and the system's LOGOUT.CMD files.
+
+     n     is an optional job number.  Specify n only when logging out
+           a job other than your attached job.
+
+
+Output
+
+     System Use Under Current Account
+
+          The system acknowledges a valid LOGOUT command  by  printing
+          your  job  number,  user  name,  current  account,  terminal
+          number, and the current date and time.  Then  it  shows  the
+          total  amount  of  CPU  time  you  used  during the terminal
+          session and the total length of time  you  were  logged  in,
+          followed  by  the account of CPU time used under the current
+          account and the length of time you were logged in under this
+          account.
+
+     LOGOUT.CMD Output
+
+          Before logging you out, the system processes the commands in
+          your  login  directory's  LOGOUT.CMD  file  and the system's
+          LOGOUT.CMD file and displays any output from these commands.
+          Then,  after execution of each file, the system displays the
+          message "End of LOGOUT.CMD", unless the last command in  the
+          file is a TAKE command.
+
+
+Characteristics
+
+     Expunging Your Log-in and Connected Directories
+
+          Before logging you out,  the  system  expunges  any  deleted
+          files from your log-in and connected directories, and prints
+          a  message  if  either  directory  is  still  exceeding  its
+          assigned permanent disk quota.
+
+     Logging Out Other Jobs
+
+          By specifying a job number you can log  out  any  other  job
+          logged  in under the same user name as your attached job.  A
+          user with Wheel or Operator capabilities enabled can log out
+          any  job  on  the system.  Whenever you log out another job,
+          the system prints the job's user name, terminal number,  and
+          current  program.   You must then confirm the LOGOUT command
+          with an extra RETURN.
+
+          When a job is logged out by another job, the logout  command
+          files are not processed.
+
+
+Hints
+
+     A Final TAKE Command
+
+          To suppress the display of the message "End  of  LOGOUT.CMD"
+          after  execution  of  your  LOGOUT.CMD  file,  make the last
+          command in the file a TAKE command with  no  arguments.   Be
+          sure  the  file  contains  only  one  RETURN  after the TAKE
+          command.
+
+     Errors in LOGOUT.CMD
+
+          If there is an error in a command in your  LOGOUT.CMD  file,
+          the system processes the commands up to the one in error and
+          cancels the LOGOUT command.  To log out, correct  the  error
+          in  the  command  file  or  give the LOGOUT command with the
+          /FAST switch.
+
+
+Effect on Memory and Terminal
+
+     The LOGOUT command clears memory and leaves your terminal in  the
+     state  before log-in.  LOGOUT n does not affect memory and leaves
+     your terminal at TOPS-20 command level.
+
+
+Related Commands
+
+     DETACH       for disengaging a job  from  your  terminal  without
+                  ending the job
+
+     LOGIN        for beginning your timesharing job
+
+     UNATTACH     for disengaging a job from another terminal  without
+                  ending the job
+
+
+Examples
+
+     1.  Log out your job.
+
+         @LOGOUT
+          End of SYSTEM:LOGOUT.CMD.2
+          End of LOGOUT.CMD.5
+         Killed Job 18, User C.RYDER, Account 341, TTY 233,
+          at 8-Mar-84 16:25:46, Used 0:0:5 in 1:2:16
+
+     2.  Log out your job,  receiving  a  warning  message  that  your
+         directory is over its storage quota.
+
+         @LOGOUT
+          <URQUHART> Over permanent storage allocation by 8 page(s).
+         Killed Job 39, User URQUHART, Account 341, TTY 41
+           at  8-Mar-84 16:33:12,  Used 0:0:1 in 0:1:5
+
+     3.  Check what jobs are logged in under your user name.  Log  out
+         a  detached job and verify that it is gone, then log out your
+         attached job.
+
+         @SYSTAT WALKER
+           18   DET  EXEC    WALKER
+           21*   31  SYSTAT  WALKER
+         @LOGOUT  18
+         User WALKER, Detached, running EXEC
+         [Confirm]
+         @SYS WALKER
+           21*   31  SYSTAT  WALKER
+         @LOGOUT
+         Killed Job 43, User WALKER, Account 341, TTY 226,
+           at  8-Mar-84 16:35:16,  Used 0:0:1 in 0:1:1
+

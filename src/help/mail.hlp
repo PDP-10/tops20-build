@@ -1,0 +1,160 @@
+
+The MAIL Program
+
+Introduction
+
+You can use the MAIL program to send messages to other  users  of  the
+system.  You can send mail to a single user or to a group of users who
+are either logged in or not logged in.
+
+Running MAIL
+
+To run MAIL, type MAIL after the TOPS-20 prompt @ and press the RETURN
+key.  The program responds with the To:  prompt as follows:
+
+     @MAIL<RET>
+     To:
+
+Type the name of the user to whom you are  sending  the  message,  and
+press RETURN.
+
+If you are sending a message to a group  of  users,  type  the  names,
+separating them with commas, and press RETURN.  For example:
+
+     To: Adley,Sartini,McElmoyle<RET>
+
+The program then prompts:
+
+     CC:
+
+Now list any secondary recipients of your message.  Type the  name  or
+names  (separated  by commas) and press RETURN.  If you do not want to
+send a copy to others, simply press RETURN after the CC:  prompt.
+
+If you type an invalid (nonexistent) user name, the  program  responds
+with:
+
+     ?Invalid user name
+
+MAIL returns with either the To:  prompt or  the  CC:   prompt.   Type
+CTRL/H  after  either prompt.  This retrieves only the names up to the
+error, and you can type any additional valid names.
+
+You cannot send more than one copy of a mail message to  a  user.   If
+you  type  a user name more than once after either the To:  or the CC:
+prompt, the program prints a warning message.  For example:
+
+     To: Adley<RET>
+     CC: Adley<RET>
+     %Duplicate name purged - ADLEY
+
+The MAIL program  continues  after  it  prints  the  warning  message;
+however,  the  program  removes  the  duplicate  name from the list of
+users.
+
+The program then prompts with:
+
+     Subject:
+
+Type a description of the message and press RETURN.  For example:
+
+     Subject: Location of weekly writers meeting<RET>
+
+If  your  description  exceeds  one  line,  you  cannot  continue  the
+description  on a second line; you must continue typing when you reach
+the  end  of  a  line.   The  system  automatically   continues   your
+description  on  the  second line by responding with a carriage return
+line feed sequence.  When you have completed typing your  description,
+press RETURN.  For example:
+
+     Subject: Location  of  weekly  meeting  and  change  in  software
+     release date.<RET>
+
+Note:  The system may interpret a  character  in  the  Subject:   line
+(such  as  a  question  mark)  as a special character.  To avoid this,
+precede the character with a CTRL/V.
+
+MAIL then prompts with:
+
+     Message (Terminate with ESC or CTRL/Z):
+
+and waits for you to enter your message.   Once  you  have  terminated
+your  message by typing ESC or CTRL/Z, the program informs you that it
+has processed your message:
+
+     Processing mail...
+
+
+     No errors.
+     -DONE-
+
+and returns you to TOPS-20 command level.
+
+If you send a message to a user who is logged in and  accepting  links
+and system messages, that user is informed immediately as follows:
+
+     [You have a message from SENDER]
+
+If you send a message to a user who is not logged  in,  that  user  is
+informed the next time he logs in:
+
+     @LOGIN (USER) ADLEY (PASSWORD) (ACCOUNT) 341<RET>
+      Job 54 on TTY33 23-Apr-79 09:46:05
+      You have a message
+     @
+
+If you make an error in sending mail to a user, you receive one of the
+following messages:
+
+     [USER NAME] not sent BECAUSE:
+     Invalid directory number
+
+or
+
+     Invalid simultaneous access
+
+or
+
+     No such file type (or  some  other  reason  related  to  why  the
+     recipient's MAIL.TXT file could not be found)
+
+or
+
+     [USER NAME] not sent BECAUSE:
+     Disk quota exceeded
+
+You can use a recovery procedure to resend mail after  receiving  some
+of  the  MAIL  error  messages.  This recovery is particularly helpful
+when your message is long and you do  not  want  to  retype  it.   The
+procedure is as follows:
+
+     1.  Undelete the MAIL.CPY file in your logged-in directory.  This
+         file contains the message that could not be sent.
+
+     2.  Rename the  MAIL.CPY  file;  for  example,  ERROR.TXT.   This
+         prevents  MAIL  from  deleting  the file a second time during
+         message processing.
+
+     3.  After the TOPS-20 prompt @, type:
+
+              @GET SYS:MAIL<RET>
+
+     4.  The system gives the TOPS-20 prompt once again, and you type:
+
+              @REENTER<RET>
+
+     5.  After you press RETURN, the system prompts:
+
+         File name of message file:
+
+         Now type the new file spec of the renamed MAIL.CPY file,  and
+         press RETURN:
+
+         File name of message file:  (file spec)<RET>
+
+         The MAIL program now proceeds as though you  had  just  typed
+         ESC or CTRL/Z after the message.
+
+See the TOPS-20 User Utilities Manual for options to  the  basic  MAIL
+procedure, and the most common MAIL messages.
+

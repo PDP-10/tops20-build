@@ -1,0 +1,379 @@
+
+EDIT command
+
+The EDIT command invokes your defined editor to modify a file.
+
+                                 NOTE
+
+        This manual  assumes  that  you  are  using  the  EDIT
+        program  to edit.  See the Special Cases section below
+        for information relating to other editors.
+
+
+
+Format
+
+     @EDIT (FILE) /switch(es) input filespec (OUTPUT AS) output filespec
+
+     where:
+
+     switches            are keywords, chosen  from  the  list  below,
+                         indicating   your   choice  of  EDIT  command
+                         options.
+                              Defaults  are  shown  in  the  list   of
+                              switches
+
+     input filespec      is the specification of the file you want  to
+                         edit.
+                              Default - last  file  specification  and
+                                        associated  switches  you gave
+                                        in a CREATE  or  EDIT  command
+                                        during  the  current  terminal
+                                        session
+
+     output filespec     is the specification with which you  want  to
+                         name the edited file.
+                              Default - the input file  specification,
+                                        but with a generation number 1
+                                        higher   than   the    highest
+                                        existing generation number
+
+
+       Summary of EDIT Command Switches (Defaults in boldface)
+
+                                 NOTE
+
+        These switches are applicable only if  you  are  using
+        the EDIT editor.
+
+          /BAK
+          /C128
+          /C64
+          /DECIDE
+          /DPY
+          /EXPERT
+          /INCREMENT:n        Default n - 100
+          /ISAVE:n
+          /LOWER
+          /M33
+          /M37
+          /NOBAK
+          /NODECIDE
+          /NONSEPARATORS
+          /NONUMBER
+          /NOVICE
+          /NUMBER
+          /OLD
+          /OPTION:name
+          /PLINES:n           Default n - 16
+          /R
+          /READONLY
+          /RONLY
+          /RUN:filespec       Default file type - .EXE
+          /SAVE:n
+          /SEPARATORS
+          /SEQUENCE
+          /START:n            Default n - argument of INCREMENT switch
+          /STEP:n             Default n - 100
+          /UNSEQUENCE
+          /UPPER
+          /WINDOW:n           Default n - 10
+
+
+                        EDIT Command Switches
+
+
+     /BAK               causes an unedited copy  of  the  file  to  be
+                        saved  at  the end of an editing session under
+                        the specification name.Qyp, where name.typ  is
+                        the file's original specification.
+                             Default
+
+     /C128              specifies a 128-character  alphabet,  allowing
+                        insertion   of   control   characters   in  an
+                        alternate  format.   See  the   TOPS-20   EDIT
+                        Reference Manual for details.
+
+     /C64               specifies a 64-character alphabet, disallowing
+                        use  of  an  alternate format for insertion of
+                        control characters.
+                             Default
+
+     /DECIDE            lets you decide whether to  accept  or  reject
+                        each  change  caused by the operation of the S
+                        (substitute) command of the EDIT program.
+
+     /DPY               has no effect in the current monitor.
+
+     /EXPERT            tells the EDIT  program  that  you  need  only
+                        abbreviated error messages, and fewer warnings
+                        and reminders.
+
+     /INCREMENT:n       specifies the value that will be added to each
+                        line  number  of  the  file to obtain the next
+                        line number.
+                             Default n - 100
+
+     /ISAVE:n           instructs  the  EDIT  program  to  update  the
+                        backup  file  of  specification name.Qyp after
+                        every n lines you insert, instead of  only  at
+                        the end of the EDIT session.
+
+     /LOWER             specifies that all alphabetic  characters  you
+                        type    should    be    considered   lowercase
+                        characters;  give  uppercase   characters   by
+                        preceding    the    corresponding    lowercase
+                        character with a single quotation mark (').
+
+     /M33               has no effect in the current monitor.
+
+     /M37               has no effect in the current monitor.
+
+     /NOBAK             prevents an unedited copy  of  the  file  from
+                        being  saved  at the end of an editing session
+                        under specification name.Qyp,  where  name.typ
+                        is the file's original specification.
+
+     /NODECIDE          ensures  the  automatic  operation  of  the  S
+                        (substitute) command of the EDIT program.
+                             Default
+
+     /NONSEPARATORS     notifies the EDIT program that the  characters
+                        .  (period),  $  (dollar sign), and % (percent
+                        sign) are to be regarded as  ordinary  textual
+                        characters   and   not   as  field  delimiters
+                        (separators) in the file being edited.
+                             Default
+
+     /NONUMBER          suppresses the printing of line  numbers  with
+                        each line of a file.
+
+     /NOVICE            tells the EDIT program that you  want  to  see
+                        complete  error  messages  and all appropriate
+                        warnings and reminders;  opposite  of  /EXPERT
+                        switch.
+                             Default
+
+     /NUMBER            prints a line number  for  each  line  of  the
+                        file.
+                             Default
+
+     /OLD               causes the first backup file to be saved under
+                        the  specification name.Zyp, where name.typ is
+                        the file's original specification.
+
+     /OPTION:name       sets any EDIT switches contained in  lines  of
+                        your SWITCH.INI file labeled with name (of six
+                        or fewer characters).  The system expects this
+                        file to be in your log-in directory.
+
+     /PLINES:n          specifies how many lines to print in  response
+                        to each P (print) command of the EDIT program.
+                             Default n - 16
+
+     /R                 same as /READONLY.
+
+     /READONLY          prevents any changes to the  file  during  the
+                        current  session of the EDIT program, that is,
+                        makes it a  read-only  session.   This  switch
+                        cannot be given in the SWITCH.INI file.
+
+     /RONLY             same as /READONLY.
+
+     /RUN:filespec      specifies the program to be run when  you  end
+                        the  current  session of the EDIT program with
+                        the G command.
+                             Default file type - .EXE
+
+     /SAVE:n            instructs  the  EDIT  program  to  update  the
+                        backup  file  of  specification name.Qyp after
+                        every n EDIT program commands that modify  the
+                        file.
+
+     /SEPARATORS        notifies the EDIT program that the  characters
+                        .  (period),  $  (dollar sign), and % (percent
+                        sign) are not ordinary textual characters  but
+                        are field separators in the accompanying file.
+
+     /SEQUENCE          tells the EDIT program not to strip  the  line
+                        numbers  from  the  file when the EDIT session
+                        ends.
+                             Default
+
+     /START:n           specifies the first line number for  the  EDIT
+                        program to use when numbering the file.
+                             Default n - argument of /INCREMENT switch
+
+     /STEP:n            same as /INCREMENT.
+
+     /UNSEQUENCE        tells the  EDIT  program  to  strip  the  line
+                        numbers  from  the  file when the EDIT session
+                        ends.
+
+     /UPPER             specifies that all alphabetic  characters  you
+                        type    should    be    considered   uppercase
+                        characters;  give  lowercase   characters   by
+                        preceding    the    corresponding    lowercase
+                        character with a single quotation mark (').
+                             Default
+
+     /WINDOW:n          specifies the number n (between 10 and 99)  of
+                        pages  to  be  held  in memory during the EDIT
+                        session.
+                             Default n - 10
+
+
+Characteristics
+
+     Edit Mode or Input Mode
+
+          The EDIT command runs the EDIT system program in Edit  mode,
+          which  uses  an  asterisk  prompt  (*).   (However, see also
+          Special Cases - Using an Editor Other than EDIT, below.)  In
+          Edit  mode  you  can use any EDIT program commands to modify
+          the specified file.  If the EDIT program starts by  printing
+          the  word Input instead of Edit, the specified file does not
+          yet exist.  You are then in Input mode, just as if  you  had
+          used  the  CREATE  command  instead of EDIT.  See the CREATE
+          command description for details.
+
+     Saving Backup Files Periodically
+
+          Whenever you use EDIT, be sure to keep an extra copy of  the
+          file  you  are  modifying,  in case of a system failure.  By
+          default the system renames the unedited copy of your file to
+          name.Qyp  at  the  end  of an editing session.  By using the
+          /SAVE:n  switch  you  can  have  this  backup  file  updated
+          periodically  during  the  editing  session  to reflect your
+          edits.
+
+     SWITCH.INI File
+
+          If there is a group of EDIT command switches that you always
+          or  often  use with EDIT or CREATE commands, put them into a
+          file named SWITCH.INI in your log-in directory, in a line of
+          that file beginning with "EDIT:abc", where abc is any set of
+          characters you choose to identify the  line.   Then  if  you
+          include  the single switch /OPTION:abc when you give an EDIT
+          or CREATE command, all these switches will be in effect.
+
+
+Hints
+
+     Debugging Your Programs and Editing the Sources
+
+          You can use EDIT to modify files containing source  programs
+          written  in  a  programming  language.   The  DDT  and DEBUG
+          commands run system programs that offer more  efficient  and
+          powerful  techniques  for  testing  temporary corrections to
+          your programs, but you should use the EDIT command  to  make
+          final changes to the source files.
+
+     Further Information
+
+          For more information about the EDIT program, see the TOPS-20
+          EDIT Reference Manual.
+
+
+Special Cases
+
+     Using an Editor Other than EDIT
+
+          The CREATE, EDIT, and PERUSE command  descriptions  in  this
+          manual  assume  that these commands call on the EDIT program
+          for their action.  If your job uses another editing program,
+          for  example  EDT, the switches and examples shown here will
+          not be applicable.
+
+          The editor used by CREATE, EDIT, and PERUSE is specified  by
+          logical  name  EDITOR:, so you can find out the name of this
+          program by giving  the  command,  INFORMATION  LOGICAL-NAMES
+          EDITOR:.   The  job-wide  definition  (if any) will be given
+          first, followed by the system-wide definition; the  job-wide
+          definition  prevails  if  both  exist.  If the definition of
+          EDITOR:  is SYS:EDIT.EXE, the CREATE and EDIT commands  will
+          function  as  described in this manual.  Otherwise, you must
+          consult the appropriate  manual  (for  example,  the  EDT-20
+          Reference Manual) for information.
+
+          You can use  the  DEFINE  command  to  define  logical  name
+          EDITOR:   to  be  any  editing  program  available  at  your
+          installation.  Then this program will be in effect when  you
+          give the CREATE or EDIT command.
+
+     Attempting to Edit Archived Files
+
+          If you attempt to edit an on-line archived file, the  system
+          will let you produce an edited version of the archived file,
+          but will retain the original (archived) file unchanged under
+          the  specification name.Qyp (or name.Zyp if you included the
+          /OLD switch in the EDIT  command),  where  name.typ  is  the
+          file's  original  specification.   See  also Hints - Editing
+          Files of Type .Qyp, below.
+
+     Editing Files of Type .Qyp
+
+          If you edit a file of type .Qyp (any file whose type  begins
+          with  the  letter  Q),  the  EDIT  program does not save the
+          unedited copy as a backup file.  In  such  cases,  give  the
+          /OLD  switch  to  retain  the  unedited copy under file type
+          .Zyp.  If the file of type .Qyp is  an  archived  file,  you
+          will  not be allowed to produce an altered version using the
+          EDIT command unless you include the /OLD switch.
+
+
+Effect on Memory
+
+     The EDIT command clears any unkept forks from memory, then  loads
+     the editor program defined by the logical name EDITOR:.
+
+
+Related Commands
+
+     CREATE                       for creating new files
+
+     DIRECTORY-class commands     for getting lists of existing files
+
+     PERUSE                       for editing files in read-only mode
+
+
+Examples
+
+     1.  Edit a file.
+
+         @EDIT FILE.FOR
+         Edit:  FILE.FOR.1
+         *
+
+     2.  Edit a file using the EDIT editor, requesting that an updated
+         copy  of  the  file  be  saved after every three EDIT program
+         commands; ask that the first such backup file be saved  under
+         specification FILE.ZOR.  @EDIT /SAVE:3/OLD FILE.FOR
+         Edit:  FILE.FOR.1
+         *
+
+     3.  Edit a  large  text  file,  adjusting  several  EDIT  program
+         parameters  as you begin, and give new specifications for the
+         output file.
+
+     @EDIT /EXPERT/DECIDE/PLINES:50/WINDOW:99 REMARK.TXT REVISION.TXT
+     Edit: REMARK.TXT.18
+     *
+
+
+     4.  Use the EDIT editor to create a SWITCH.INI file with one line
+         for the switches used in Example 2, and one line for those in
+         Example 3.  Use this file to repeat Example 3.
+
+         @CREATE SWITCH.INI
+         Input: SWITCH.INI.1
+         00100   EDIT:ABC/SAVE:3/OLD
+         00200   EDIT:DEF/EXPERT/DECIDE/PLINES:50/WINDOW:99
+         00300
+         *E
+
+         [SWITCH.INI.1]
+         @EDIT /OPTION:DEF REMARK.TXT REVISION.TXT
+         Edit: REMARK.TXT.18
+         *
+

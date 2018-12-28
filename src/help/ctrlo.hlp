@@ -1,0 +1,10 @@
+
+CTRL/O
+
+Stops output to the terminal while the program or command continues to
+execute.
+
+Output resumes when:
+                  another CTRL/O is typed
+                  the program or command finishes
+                  the program prompts for input

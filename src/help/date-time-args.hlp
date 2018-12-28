@@ -1,0 +1,111 @@
+
+Date-Time Arguments
+
+You can specify date  and  time  arguments  to  many  of  the  TOPS-20
+commands.
+
+
+Date
+
+The examples below show the various formats that  are  acceptable  for
+the date argument:
+
+     Jun 30 1981         30 Jun 1981
+     May 1, 82           1/May/1982
+     January 000005 75   0005-January-000075
+     F/13-83             5/17/83
+
+If the month and day are both numeric, the first number of the two, if
+less  than  13,  is considered to be the month.  Otherwise, the second
+number is considered to be the month.  For example:
+
+     2/15/83             is February 15th
+     15/2/83             is February 15th
+
+You can abbreviate the month to as few characters as possible  without
+causing it to be confused with another month.  Thus,
+
+     O
+     Jun
+     Jul
+     Ja
+
+are acceptable abbreviations for October, June, July, and January.
+
+Many commands allow you to give the day of the week or "today" for the
+date.
+
+If you specify the time along with the date, you must separate the two
+arguments by at least one space and/or no more than one tab.
+
+For the time argument you can specify:
+
+     o  time according to a 24-hour clock:
+
+             /AFTER:17:00:00
+
+     o  AM and PM:
+
+             @SET ALERT 5:00PM
+
+     o  the following time zones:
+
+                                                       Hour Offset
+         Arguments             Zone                    from Greenwich
+
+        GST, GDT, GMT   Greenwich                            0
+        AST, ADT        Atlantic                             4
+        EST, EDT        Eastern                              5
+        CST, CDT        Central                              6
+        MST, MDT        Mountain                             7
+        PST, PDT        Pacific                              8
+        YST, YDT        Yukon                                9
+        HST, HDT        Hawaii/Alaska                        10
+        BST, BDT        Bering                               11
+        DAYLIGHT        Daylight time for your zone
+        STANDARD        Standard time for your zone
+
+
+Examples
+
+     6:00PM-EDT     is 5:00PM EST
+     6:00PM-PST     is 9:00PM EST
+     6:00PM-GMT     is 1:00PM EST
+
+Note that a hyphen (-) is required before the zone.
+
+The basic time format is:
+
+     hh:mm:ss
+
+where:
+
+     hh      is hours, must be less than 24, and is optional
+     mm      is minutes, must be less than 60, and is required
+     ss      is seconds, must be less than 60, and is optional
+
+The colon between hours and minutes is optional.
+
+
+Examples (based on a 24-hour clock):
+
+     3       is 00:03:00AM
+     125     is 1:25AM
+     14:30   is 2:30PM
+     25:33   is 00:25:33AM
+
+
+Relative Date-Time Arguments
+
+Many commands accept relative dates and times.  You can  specify  that
+an  event  is  to  occur  at a certain amount of time from the current
+time, from today, or from a certain day of the  week.   Likewise,  you
+can specify relative times in the past.
+
+
+Examples
+
+     @SET ALERT +30      sets an alert for 30 minutes from now
+
+     @DIRECTORY,         produces a listing of files that
+     @@BEFORE TODAY      were created before today's date

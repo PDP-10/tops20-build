@@ -1,0 +1,60 @@
+
+Switches
+
+Switches are arguments used with LOAD-class (COMPILE,  LOAD,  EXECUTE,
+and  DEBUG) and EDIT-class (CREATE and EDIT) commands, as well as with
+Queue-class commands - that is, those affecting entries in  processing
+queues  (CANCEL,  DISMOUNT,  MODIFY,  MOUNT,  PLOT,  PRINT, PUNCH, and
+SUBMIT).
+
+Switches can also be used with the following program-control commands:
+DDT,  GET,  MERGE,  R,  and  RUN.   The  REWIND command also accepts a
+switch.
+
+Switches allow you to quickly give many options chosen  from  a  large
+list, and let you specify to which files they apply when you give more
+than one filespec in a single command.
+
+Give switches on the same line as the  command,  typing  a  slash  (/)
+before  each  switch.   If  your  command requires more than one line,
+simply keep typing without giving a carriage return.  The system  will
+begin  a  new  line automatically and will read your command as if you
+had typed it on a single line.  Or you can end your  command  line  at
+any  point  with  a  hyphen  (-) and carriage return, and continue the
+command on the next line; the hyphen will not be  considered  part  of
+your input.
+
+Keep in mind  the  way  each  class  of  command  considers  switches.
+EDIT-class  commands  operate  on  only  one  file  at a time, and the
+switches must  be  given  before  the  input  filespec - this  is  the
+simplest case.
+
+Queue-class and LOAD-class commands treat switches according to  their
+position  in the command line.  If you give them before any filespecs,
+they act as default switches for all filespecs in  the  command  (they
+will  be  in  effect  unless  you  override  them  with later switches
+applying to individual files only).  If you give them after the  first
+filespec,  they  apply only to the preceding file.  In addition, there
+are a few switches of a different sort for the PLOT, PRINT, and  PUNCH
+commands - these apply to all files no matter where they appear in the
+command line.  These are called job switches (because they affect  the
+entire  printing  job)  and  are presented in a separate list in those
+command descriptions.
+
+A switch is a default if the system  assumes  it  in  the  absence  of
+others.  For example, for LOAD-class commands, /FORTRAN is the default
+for all switches that specify which  compiler  to  use  (like  /MACRO,
+/COBOL,  and  /PASCAL).   The  /NOCOMPILE  switch  is  the default for
+/COMPILE, /NOCOMPILE,  and  /RELOCATABLE.   Most  defaults  for  these
+commands  apply  to  only  a  pair  of switches; however, the /BINARY,
+/NOSEARCH, and /NOOPTIMIZE switches are assumed, for  example,  unless
+you specify /NOBINARY, /SEARCH, and /OPTIMIZE.
+
+Default switches for the other classes of command  operate  similarly.
+Some  are  in  effect unless you specify their opposite; others are in
+effect with a default argument unless you  specify  another  argument;
+still  others must be specified to be in effect, but are supplied with
+a default argument.  The list of switches presented with each  command
+description  distinguishes  these  cases.   When  you give two or more
+switches of the same kind (for example, /BINARY  and  /NOBINARY),  the
+last switch given usually prevails.

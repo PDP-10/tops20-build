@@ -1,0 +1,497 @@
+
+DIRECTORY command
+
+The DIRECTORY command  displays  information  about  the  files  in  a
+directory.
+
+
+Format
+
+     @DIRECTORY (OF FILES) filespec,...,
+     @@subcommand
+
+     where:
+
+     filespec                 is the specification  of  a  file  about
+                              which you want information.
+                                   Default filespec - *.*.*
+
+     @@subcommand             means that, after a final comma, you can
+                              give   one   or   more   subcommands  on
+                              successive lines.
+
+
+       Summary of DIRECTORY Subcommands (defaults in boldface)
+
+     ACCOUNT
+     ALPHABETICALLY
+     ARCHIVED
+     BEFORE date and/or time
+
+                        ---
+                        | BY-PAGES
+     CHECKSUM           | SEQUENTIALLY
+                        ---
+
+                          ---
+                          | WRITE
+     CHRONOLOGICAL        | CREATION
+                          | READ
+                          | TAPE-WRITE
+                          ---
+
+     COMPLETE
+     CRAM
+                  ---
+                  | WRITE
+                  | CREATION
+     DATES        | OFFLINE-EXPIRATION
+                  | ONLINE-EXPIRATION
+                  | READ
+                  | TAPE-WRITE
+                  ---
+     DELETED
+     DOUBLESPACE
+     EVERYTHING
+     FIND number of generations     Default number - 1
+     GENERATION-RETENTION-COUNT
+     HEADING
+     INVISIBLE
+     LARGER number of pages
+     LENGTH
+     LPT
+
+           ---
+           | ACCOUNT
+           | CHECKSUM
+           | CRAM
+           | DATES
+           | DOUBLESPACE
+           | FILE-LINES
+           | GENERATION-RETENTION-COUNT
+           | HEADING
+     NO    | LENGTH
+           | LPT
+           | PROTECTION
+           | REVERSE
+           | SEPARATE
+           | SIZE
+           | SUMMARY-LINES
+           | TIMES
+           | USER
+           ---
+
+     OFFLINE
+     ONLINE
+     OUTPUT filespec                Default filespec - DIR.DIR
+     PROHIBIT-MIGRATION
+     PROTECTION
+     RESIST-MIGRATION
+     REVERSE
+     SEPARATE
+     SINCE date and/or time
+     SIZE
+     SMALLER number of pages
+
+             ---
+             | WRITE
+             | CREATION
+     TIMES   | OFFLINE-EXPIRATION
+             | ONLINE-EXPIRATION
+             | READ
+             | TAPE-WRITE
+             ---
+
+            ---
+     USER   | WROTE
+            | CREATED
+            ---
+
+
+
+                        DIRECTORY Subcommands
+
+
+     ACCOUNT                        prints  the   account   to   which
+                                    storage  fees  for  the  files are
+                                    charged.
+
+     ALPHABETICALLY                 lists the  files  in  alphabetical
+                                    order.
+                                         Default
+
+     ARCHIVED                       restricts the listing to  archived
+                                    files only, visible and invisible,
+                                    offline and online.
+
+     BEFORE date and time or        restricts listing  to  files  last
+            day of week (or         written before the  date  and time
+            TODAY) and time         given.
+
+               ---
+               | SEQUENTIALLY
+     CHECKSUM  | BY-PAGES           computes and prints 6-digit octal
+               ---                  checksums for the files, either
+
+                                       sequentially and without  going
+                                       beyond  the  EOF  (end-of-file)
+                                       mark, or
+
+                                       by pages  on  disk,  accounting
+                                       for  holes  in  files and pages
+                                       beyond  the  EOF  mark;  output
+                                       will be followed by letter P in
+                                       this case.
+                                            Default - BY-PAGES
+
+                    ---
+                    | CREATION
+     CHRONOLOGICAL  | WRITE         lists  files  in   order   (oldest
+                    | READ          first) according to
+                    | TAPE-WRITE
+                    ---
+
+                                    o  date of creation, or
+
+                                    o  date they were last changed, or
+
+                                    o  date they were last read, or
+
+                                    o  date  their   tape   copy   was
+                                       created,
+                                            Default - WRITE
+
+     COMPLETE                       prints    the    complete     file
+                                    specification,  which includes the
+                                    structure and directory names.
+
+     CRAM                           compresses   formats   to   reduce
+                                    printing space and time.
+
+            ---
+            | CREATION
+            | WRITE
+     DATES  | READ                  lists for the specified files, the
+            | TAPE-WRITE            following:
+            | OFFLINE-EXPIRATION    o  date of creation, or
+            | ONLINE-EXPIRATION     o  date they were last changed, or
+            ---                     o  date they were last read, or
+                                    o  date the tape copy was created,
+                                       or
+                                    o  date of expiration
+                                            Default - WRITE
+
+     DELETED                        limits  descriptions  to   deleted
+                                    files   that  have  not  yet  been
+                                    expunged.
+
+     DOUBLESPACE                    double-spaces    the     DIRECTORY
+                                    command output.
+
+     EVERYTHING                     prints,   in   this   order,   the
+                                    following  information  about  the
+                                    files:
+
+                                     o  file specification
+
+                                     o  protection
+
+                                     o  account number
+
+                                     o  size in  pages  and  in  bytes
+                                        (and associated byte size)
+
+                                     o  generation retention count
+
+                                     o  date and time of creation,  of
+                                        last change (Write), last time
+                                        read, and of the  creation  of
+                                        any tape copy
+
+                                     o  the  name  of  the  user   who
+                                        created  the  file, and of the
+                                        user who  last  wrote  in  the
+                                        file.
+
+
+     FIND n                         prints the specifications  of  all
+                                    but  the n most recent generations
+                                    of the files, omitting  any  files
+                                    having n or fewer generations.
+                                         Default n - 1
+
+     GENERATION-RETENTION-COUNT     tells the number of generations of
+                                    each  file  the system will retain
+                                    in the given directory.
+
+     HEADING                        prints a  headline  labeling  each
+                                    category  of  information supplied
+                                    by the command.
+                                         Default
+
+     INVISIBLE                      restricts the listing to invisible
+                                    files   only,   both  on-line  and
+                                    off-line.
+
+     LARGER n                       lists only files of  size  greater
+                                    than n pages.
+
+     LENGTH                         gives the file length in bytes and
+                                    the associated byte size.
+
+     LPT                            directs the command output to LPT:
+                                    instead of to your terminal.
+
+          ---
+          | ACCOUNT
+          | CHECKSUM
+          | CRAM
+          | DATES
+          | DOUBLESPACE
+          | FILE-LINES
+          | GENERATION-RETENTION-COUNT
+          | HEADING                 suppresses    the    action     or
+     NO   | LENGTH                  information  associated  with  the
+          | LPT                     specified   subcommand.     (FILE-
+          | PROTECTION              LINES  refers  to the  information
+          | REVERSE                 pertaining   to   the   individual
+          | SEPARATE                files,  which is   the   bulk   of
+          | SIZE                    the   DIRECTORY  command   output.
+          | SUMMARY-LINES           SUMMARY-LINES   refers    to   the
+          | TIMES                   information   following  the  file
+          | USER                    lines, giving a total  file-count,
+          ---                       and  total  page-count  and  total
+                                    checksum     if     required    by
+                                    subcommands.)
+                                         Default - HEADING
+
+     OFFLINE                        restricts the listing to (visible)
+                                    off-line files only, both archived
+                                    and not archived.
+
+     ONLINE                         restricts the listing  to  on-line
+                                    files.
+
+     OUTPUT filespec                directs the command output to  the
+                                    specified file rather than to your
+                                    terminal.
+                                         Default filespec - DIR.DIR
+
+     PROHIBIT-MIGRATION             restricts  the  listing  to  files
+                                    that  are  never migrated, because
+                                    they were specified in a SET  FILE
+                                    PROHIBIT command.
+
+     PROTECTION                     prints   the    protection    code
+                                    (protection number) of the file.
+
+     RESIST-MIGRATION               restricts  the  listing  to  files
+                                    that the system considers last for
+                                    migration.    These   files   were
+                                    specified  in  a  SET  FILE RESIST
+                                    command.
+
+     REVERSE                        causes  an  ordering   subcommand,
+                                    such    as    ALPHABETICALLY    or
+                                    CHRONOLOGICAL,  to   arrange   its
+                                    output in reverse.
+
+     SEPARATE                       lists the  complete  specification
+                                    for  each  file on a separate line
+                                    (instead  of  listing   successive
+                                    generation  numbers of the file on
+                                    the  same   line,   separated   by
+                                    commas;  and  instead  of  listing
+                                    files  of  the   same   name   and
+                                    different  type by file type only,
+                                    indented under the first  complete
+                                    file specification).
+
+     SINCE date and time or         limits  listing  to   files   last
+           day of week (or          written  after  the date  (or  day
+           TODAY) and time          of week) and time given.
+
+     SIZE                           prints the size of  the  files  in
+                                    pages.
+
+     SMALLER n                      lists only files of size less than
+                                    n pages.
+
+            ---
+            | CREATION
+     TIMES  | WRITE                 lists, for  the  specified  files,
+            | READ                  the following:
+            | TAPE-WRITE
+            | OFFLINE-EXPIRATION    o  time and date of creation, or
+            | ONLINE-EXPIRATION     o  time and date they were last
+            ---                        changed, or
+                                    o  time and date  they  were  last
+                                       read, or
+                                    o  time and date the tape copy was
+                                       created, or
+                                    o  time and date of expiration
+                                            Default - WRITE
+
+          ---
+          | CREATED
+     USER | WROTE                   gives the name of the user who
+          ---                       created the file,  or  changed the
+                                    file last.
+                                         Default - WRITE
+
+
+Hints
+
+     Listing Unneeded Files
+
+          In preparation for deleting files  so  that  your  directory
+          will  fall  within  disk  quotas, you can get a list of your
+          largest files by using the LARGER and/or  SIZE  subcommands,
+          and  of  your  oldest or least-used files with DATES, TIMES,
+          and BEFORE.  With FIND you can discover extra generations of
+          files.
+
+     Finding Files of a Particular Age or Size
+
+          To examine only files of a certain age  or  size,  give  the
+          pair of subcommands BEFORE and SINCE, or LARGER and SMALLER,
+          with appropriate arguments.
+
+     Comparing Checksums of Files
+
+          You can use the numbers reported by the CHECKSUM  subcommand
+          to  compare two files:  if they have differing contents they
+          will almost certainly yield different values; and  identical
+          files will have the same checksums.  The CHECKSUM subcommand
+          causes a checksum of checksums as well.
+
+
+Special Cases
+
+     Asterisks Appearing Before Filespecs
+
+          An asterisk (*) appearing before a filename in the  response
+          to a DIRECTORY command indicates a possible hardware-related
+          error, one caused  by  a  read  operation  at  a  marginally
+          functional  area of disk.  To test whether there actually is
+          an error in the file, use the COPY command to copy the  file
+          to a new specification.  If the COPY command succeeds, there
+          is no error in the file, and no asterisk  will  precede  the
+          new  file  specification.   If  the  COPY command fails, you
+          should move  the  disk  to  another  drive  and  repeat  the
+          command.   If it still fails, you may have to write your own
+          program to recover everything but the missing  part  of  the
+          file (usually, just one page).
+
+     DIRECTORY-class Commands for Labeled Magnetic Tapes
+
+          The FDIRECTORY,  TDIRECTORY,  and  VDIRECTORY  commands  for
+          labeled  magnetic  tapes  are  equivalent  to  the DIRECTORY
+          command for labeled  magnetic  tapes.   All  these  commands
+          rewind  the  tape  set to the beginning of the first volume,
+          print a directory of files, then rewind the set again.   You
+          can  give  only these subcommands when using DIRECTORY-class
+          commands  with  labeled  magnetic  tapes:    ALPHABETICALLY,
+          DOUBLESPACE,   HEADING,   LPT,   NO,  OUTPUT,  REVERSE,  and
+          SEPARATE.
+
+
+Related Commands
+
+                                       ---
+     FDIRECTORY (Full DIRECTORY)         |   other     DIRECTORY-class
+                                         |
+     TDIRECTORY (Time-ordered DIRECTORY) |   commands  for  performing
+                                         |   related functions
+     VDIRECTORY (Verbose DIRECTORY)      |
+                                       ---
+
+
+Examples
+
+     1.  Obtain a listing of your files.
+
+         @DIRECTORY
+
+            PS:<HERRICK>
+          4-UPED.TXT.13
+          ACCT20.FOR.1
+          DUMPER.MAC.1
+          F-O.DIRECTORY.1
+          FORD.CTL.2,3,4,5,6
+          MEMO.CMD.1
+            .FIL.1
+            .FRM.2
+          MULTIP.FOR.2
+
+          Total of 13 files
+
+     2.  Use  a  DIRECTORY  command  with  a  filespec  consisting  of
+         wildcard  characters  and  the account attribute (;A) to find
+         out which files' storage fees are being  charged  to  account
+         MONITOR.
+
+         @DIRECTORY *.*;AMONITOR
+
+            PS:<HERRICK>
+          FORD.CTL.2
+          MEMO.FRM.2
+
+          Total of 2 files
+
+     3.  Find out what files of type .TXT there are in your  connected
+         directory and in one to which you have group rights.
+
+         @DIRECTORY *.TXT, <SARTINI>*.TXT
+
+            PS:<HERRICK>
+          4-UPED.TXT.13
+          MAIL.TXT.1
+          REMARK.TXT.4
+
+          Total of 3 files
+
+            PS:<SARTINI>
+          CHAP21.TXT.33
+          CHAPT2.TXT.16
+          CHAPT3.TXT.8
+          PRIVATE.TXT.1
+          TEST.TXT.1
+
+          Total of 5 files
+
+          Grand total of 8 files
+
+     4.  Give  a  DIRECTORY  command  with  the   BEFORE   and   SINCE
+         subcommands  to  find out which files were changed during the
+         week of March 6, 1985.
+
+         @DIRECTORY,
+         @@BEFORE 3-12-85
+         @@SINCE 3-5-85
+         @@
+
+
+            PS:<HERRICK>
+          DIVIDE.FOR.4
+          MULTIP.FOR.2
+          QUOTNT.EXE.1
+          SQUARE.EXE.1
+
+          Total of 4 files
+
+     5.  Give the DIRECTORY  command  to  list  all  the  files  in  a
+         directory that you have access to.
+
+         @DIR WORK:<HERRICK>
+
+           WORK:<HERRICK>
+         CALENDAR.TXT.26
+         COMAND.MIC.3
+         QUERY.DAVE.1
+              .GENE.2
+         RESULT.SCM.1
+         WEEKLY.STA.15
+
+         Total of 6 files
+

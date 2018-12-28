@@ -1,0 +1,64 @@
+
+EOF command
+
+The EOF command writes an end-of-file mark on the  specified  magnetic
+tape.  Use this command for unlabeled tapes only.
+
+
+Format
+
+     @EOF (DEVICE) dev:
+
+     where:
+
+     dev:      is the name of the magnetic tape  drive  on  which  you
+               want to write an end-of-file mark.  The colon after the
+               device name is optional.
+
+Hints
+
+     EOF Seldom Needed
+
+          Because tape-writing  programs  and  commands  automatically
+          write  end-of-file  marks  in the appropriate places, you do
+          not ordinarily need the EOF command.  But it can  be  useful
+          if  such  a  program  is interrupted (by your CTRL/C or by a
+          system failure and restart) and you  want  to  preserve  the
+          information already written.  Also, you can shorten files on
+          an existing tape by giving an EOF  command  at  the  desired
+          point.
+
+
+Restrictions
+
+     EOF With Open Files
+
+          If you have given a CTRL/C to exit from a program  that  has
+          opened  a  magnetic  tape  drive  and  you then give the EOF
+          command for that tape drive, the system will first allow you
+          to  close  the  associated file.  You must do so for the EOF
+          command to succeed, but  you  will  probably  be  unable  to
+          continue  the program from that point, because the file will
+          now be closed.
+
+
+Related Commands
+
+             ---
+     BACKSPACE |
+               |
+     REWIND    |
+               |   other TOPS-20 commands for controlling magnetic
+               |   tape drives
+     SKIP      |
+               |
+     UNLOAD    |
+             ---
+
+
+Examples
+
+     1.  Put an end-of-file mark (EOF) on your magnetic tape.
+
+         @EOF MTA0:
+

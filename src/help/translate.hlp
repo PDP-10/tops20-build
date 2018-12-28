@@ -1,0 +1,86 @@
+
+TRANSLATE command
+
+The  TRANSLATE  command   displays   the   project-programmer   number
+corresponding to a directory name, or the directory name corresponding
+to a project-programmer number.
+
+
+Format
+
+     @TRANSLATE (DIRECTORY) dev:<directory>
+
+                       or
+
+     @TRANSLATE (DIRECTORY) dev:[project-programmer number]
+
+     where:
+
+     dev:<directory>                     is the name of the directory,
+                                         enclosed  in  angle brackets,
+                                         that you want translated.
+                                              Default dev: - your
+                                                             connected
+                                                             structure
+
+     dev:[project-programmer number]     is   the   project-programmer
+                                         number,  enclosed  in  square
+                                         brackets,   that   you   want
+                                         translated.
+                                              Default dev: - your
+                                                             connected
+                                                             structure
+
+
+Hints
+
+     Using Project-programmer Numbers
+
+          Use project-programmer numbers instead  of  directory  names
+          when  giving file specifications to programs written for the
+          TOPS-10  operating  system.   These  include  the  assembler
+          MACRO;  the FORTRAN, COBOL, and ALGOL compilers; the linking
+          loader  LINK;   and   utility   programs   CREF   (providing
+          cross-reference   information)  and  FILCOM  (for  comparing
+          files).
+
+          If  you  are  unsure  whether  a  system  program   requires
+          project-programmer numbers, load it into memory (using the R
+          command), give a CTRL/C to return to TOPS-20 command  level,
+          and  then  examine  memory with the INFORMATION MEMORY-USAGE
+          command.  If the file PA1050.EXE (the TOPS-10  compatibility
+          package)   is  present  in  memory,  then  the  program  was
+          originally  written  for   TOPS-10   and   may   require   a
+          project-programmer  number where you would ordinarily give a
+          directory name.
+
+     Avoiding Project-programmer Numbers
+
+          To avoid project-programmer numbers, define a  logical  name
+          (of  6  or  fewer  characters) as the directory in question.
+          Then use this logical name in place of  the  directory  when
+          giving  file specifications.  The system program will accept
+          the logical name as a device name, and will  then  be  using
+          the correct directory.
+
+
+Related Commands
+
+     DEFINE     for defining a logical name as a directory,  to  avoid
+                using a project-programmer number
+
+
+Examples
+
+     1.  Find out the project-programmer number associated  with  your
+         connected directory.
+
+         @TRANSLATE <LATTA>
+         PS:<LATTA> (IS) PS:[4,261]
+
+     2.  Verify that the project-programmer number reported in Example
+         1 does correspond to your directory on PS:.
+
+         @TRANSLATE PS:[4,261]
+         PS:[4,261] (IS) PS:<LATTA>
+

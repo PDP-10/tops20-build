@@ -1,0 +1,139 @@
+
+ATTACH command
+
+The ATTACH command attaches a job to your terminal.
+
+
+Format
+
+     @ATTACH (USER) name (JOB #) number
+     PASSWORD:  password
+
+     where:
+
+     name                     is the user name of the job's owner.
+
+     number                   is the job number
+
+                              Default the only job, or only detached
+                              job, or only job other than your current
+                              job, logged in under the user name you
+                              give.
+
+     password                 is the associated password.  A password
+                              is not requested if you are currently
+                              logged in under the same user name as
+                              the job that you are attaching.
+
+
+Characteristics
+
+     Current Job Detached
+
+     If you give the ATTACH command while logged in, your current  job
+     is  detached.   You  can use the LOGOUT n command to log out this
+     detached job.
+
+
+Hint
+
+     Using ATTACH to Restore Phoned-in Jobs
+
+     If you log in to the system by telephone  lines  and  service  is
+     interrupted for any reason, use the ATTACH command to restore the
+     connection.  If you do not do this within the time limit  set  by
+     the  system  manager  (usually  five  minutes),  your job will be
+     logged out automatically and you will have to log in again.
+
+
+Warning
+
+     Attaching Attached Jobs
+
+     The system will ask you to confirm your choice  with  a  carriage
+     return  before  attaching to your terminal a job that is attached
+     elsewhere.  If you attach an  attached  job  that  is  running  a
+     program,  that program may be sent one or more CTRL/Cs, which can
+     affect programs that handle CTRL/C  themselves.   To  avoid  this
+     possibility  you  must give a DETACH command from the terminal to
+     which the program's job is attached, then attach this job to your
+     terminal with an ATTACH command.
+
+
+Effect on Memory, Terminal, and Job
+
+     The ATTACH command affects neither memory nor the  job  that  you
+     are  attaching (but see Warning, above), and leaves your terminal
+     at TOPS-20 command level unless a program is  being  run  by  the
+     job.  If a program is being run, your terminal is left at command
+     level, if any, in the job.  Your terminal's characteristics  will
+     be  those  established  in the job from which you gave the ATTACH
+     command; if you were not logged in, they will be reset to  system
+     default characteristics.
+
+
+Related Commands
+
+     SYSTAT
+
+          For finding out the user name and job number associated with
+          any job.
+
+     DETACH
+
+          For disengaging a job from your own terminal.
+
+     UNATTACH
+
+          For disengaging a job from any other terminal.
+
+
+Examples
+
+     1.  Attach your only job, which is presently detached.
+
+         @ATTACH LATTA
+         Password:___
+
+     2.  Attach one of several detached jobs.
+
+         @ATTACH LATTA
+           Job 37, Detached, Running DETACH
+           Job 54, Detached, Running EXEC
+         Job:37
+         Password:___
+
+     3.  Check your jobs (your current job is marked with an  asterisk
+         [*]), then attach the only detached job.  Verify the system's
+         action.
+
+         @SYSTAT LATTA
+           37    26  NEWRUN  LATTA
+           58   DET  EXEC    LATTA
+           59*  231  EXEC    LATTA
+         @ATTACH LATTA
+          Detaching job # 59
+         @INFORMATION JOB-STATUS
+          Host AURORA  Job 58, TTY314 kilpa.TOPS20.dec.com(TCP)
+          User LATTA, PS:<LATTA>, Account 341
+
+     4.  Start a program in one job.  Then detach and continue it, and
+         attach another of your jobs.
+
+         @INFORMATION JOB-STATUS
+          Host AURORA  Job 9, TTY26 kilpa.TOPS20.dec.com(TCP)
+          User LATTA, PS:<LATTA>, Account 341
+         @RUN FFACTOR
+
+         ^C
+         @DETACH CONTINUE
+          Detaching job # 9
+         ^C  !Not displayed on terminal
+          TEDDY, Controller Dept. TOPS-20 Monitor 6.1(7)
+         @SYSTAT LATTA
+          9     DET   FFACTO    LATTA
+         45*     41   SYSTAT    LATTA
+         @ATTACH LATTA 45
+          [Attached to TTY41, confirm]
+         Password:___
+

@@ -1,0 +1,8 @@
+
+CTRL/Q
+
+Continues scrolling terminal output that was paused  by  CTRL/S  or  a
+pause  on  an  end  of  page.   Use  the TERMINAL PAUSE (ON) CHARACTER
+command to define alternate pause and continue  characters.   Use  the
+TERMINAL  NO PAUSE (ON) END-OF-PAGE command to stop pause on an end of
+page.  Use the TERMINAL LENGTH command to set the page length.

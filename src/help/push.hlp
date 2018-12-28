@@ -1,0 +1,177 @@
+
+PUSH command
+
+The PUSH command creates a new level of TOPS-20 inferior  to  the  one
+from which you give the PUSH command.
+
+
+Format
+
+     @PUSH (COMMAND LEVEL)
+
+
+Characteristics
+
+     A New Level of TOPS-20
+
+          The PUSH command creates an inferior level  of  the  TOPS-20
+          command  processor  (EXEC).   The system's SYSTEM:COMAND.CMD
+          file and your login directory's COMAND.CMD file are executed
+          again,  you have a fresh copy of memory and can begin giving
+          commands as if you had just logged  in.   However,  job-wide
+          parameters (for example, connected and accessed directories,
+          logical name definitions, most  parameters  altered  by  SET
+          commands)  are  unaffected  by  the  PUSH command and retain
+          their values.
+
+
+Hints
+
+     Creating a Different Copy of an EXEC
+
+          You can use the PUSH command to create an inferior level  of
+          an  EXEC  of  your  choice.  Normally, PUSH creates the EXEC
+          defined by the system logical name, DEFAULT-EXEC:.  Use  the
+          DEFINE  command to define a job logical name, DEFAULT-EXEC:,
+          with the name of the EXEC you want to create each  time  you
+          PUSH.
+
+          Note  that  many  TOPS-20  programs  have  their  own   PUSH
+          commands.   However,  only  the  EXEC  and OPR PUSH commands
+          refer to the job's definition of DEFAULT-EXEC:.
+
+     Using CONTINUE STAY With PUSH
+
+          You can use the PUSH command to run two programs at once  or
+          to do other work that requires more than one copy of memory.
+          Simply  use  the  CONTINUE  /STAY  or  CONTINUE  /BACKGROUND
+          command to continue execution of your current program before
+          using PUSH.  After PUSH  you  can  run  another  program  or
+          otherwise  alter  memory  without  affecting  memory for the
+          first program.  See Example 2.  But see also Warning, below.
+
+     Use of Multiforking Instead of PUSH
+
+          The PUSH command allows you to run several programs at  once
+          by  running  the  programs  at  different  EXEC levels.  The
+          EXEC's multiforking  feature  allows  you  to  run  multiple
+          programs at the same EXEC level.  Working from a single EXEC
+          makes multiprogramming easier to monitor  and  manage.   For
+          information  on  multiforking  see  the  KEEP command or the
+          TOPS-20 User's Guide.
+
+
+Restrictions
+
+     Number of Successive PUSH commands
+
+          You can give as many pairs  of  PUSH  and  POP  commands  as
+          necessary  to complete your task.  Although there is a limit
+          to the number of times you  can  give  PUSH  without  giving
+          intervening   POP  commands,  this  limit  is  large  enough
+          (approximately 24, although smaller  for  a  heavily  loaded
+          system) not to interfere with most applications.  There is a
+          smaller limit (usually 5) on the number of  EXECs  that  can
+          give Queue-class commands.
+
+          Use the INFORMATION SUPERIORS  command  to  learn  how  many
+          superior EXEC levels you have created.
+
+     Invalid Definition of DEFAULT-EXEC:
+
+          If you define DEFAULT-EXEC:  with the name of a  nonexistent
+          EXEC,  (if,  for  example, you make a spelling error in your
+          DEFINE  command),  the  PUSH  command  ignores   the   job's
+          definition of DEFAULT-EXEC:  and creates the EXEC defined by
+          the system definition.
+
+     Withheld Log-out Capability
+
+          You can usually log out from a lower level of  TOPS-20  than
+          the   one  to  which  you  logged  in.   By  doing  so,  you
+          simultaneously conclude all processes of your job.  However,
+          if  a program  (such as, PTYCON)  has initialized a level of
+          the TOPS-20  command  processor  but  has  withheld  log-out
+          capability  from it, you must use the POP command, followed,
+          if necessary, by a program command to exit from the  program
+          and  return to a higher level of TOPS-20, before you can log
+          out.
+
+
+Warning
+
+     Competition Between Processes
+
+          If you  have  two  programs  running  at  once  after  using
+          CONTINUE  /STAY  or  CONTINUE  /BACKGROUND and PUSH commands
+          (see Hints, above) they may try to access the same files  at
+          the  same  time.   Or,  TOPS-20  commands given at the lower
+          level may be intercepted by a program running at the  higher
+          level.   For  a  discussion  of these possibilities, see the
+          Restrictions section of the CONTINUE command description.
+
+
+Effect on Memory and Terminal
+
+     The PUSH command preserves your present memory, gives you a fresh
+     copy of memory, and leaves your terminal at a new TOPS-20 command
+     level.
+
+
+Related Commands
+
+     CONTINUE /STAY           for beginning  execution  of  a  program
+                              before giving the PUSH command
+
+     INFORMATION SUPERIORS    for displaying the  number  of  superior
+                              EXEC levels.
+
+     POP                      for returning to  a  previous  level  of
+                              TOPS-20
+
+
+Examples
+
+     1.  Give the PUSH command.
+
+         @PUSH
+
+          TOPS-20 Command processor 7(28)
+
+     2.  Run a program, and give a CTRL/C to return to TOPS-20 command
+         level.    Give  a  CONTINUE  /STAY  command  to  resume  this
+         program's execution, and then a PUSH command for a  new  copy
+         of  the TOPS-20 command language.  Repeat this process twice;
+         now you have three programs running at once.  In  the  lowest
+         (fourth)  level  of  your  job, begin editing a file.  (Note:
+         when running more than one program in this way, be sure  that
+         they  do  not  use  the  same compiler or the same data base;
+         otherwise, competition among them could  cause  unpredictable
+         situations to develop.)
+
+         @RUN TESTF1
+         ^C
+         @CONTINUE /STAY
+         @PUSH
+          TOPS-20 Command processor 7(28)
+         @RUN DMN
+         ^C
+         @CONTINUE /STAY
+         @PUSH
+          TOPS-20 Command processor 7(28)
+         @RUN PRODUK
+         ^C
+         @CONTINUE /STAY
+         @PUSH
+
+          TOPS-20 Command processor 7(28)
+         @EDIT ARTIFI.CTL
+
+     3.  Define  logical  name  DEFAULT-EXEC:   with  the  name  of  a
+         specialized EXEC.  Then, run that EXEC with the PUSH command.
+
+         @DEFINE DEFAULT-EXEC: SYSTEM:EXTENDED-EXEC.EXE.7
+         @PUSH
+
+          TOPS-20 Command processor 7(6530)
+

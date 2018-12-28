@@ -1,0 +1,61 @@
+
+ASSIGN command
+
+The ASSIGN command reserves a specific input-output  device  for  your
+job.
+
+
+Format
+
+     @ASSIGN (DEVICE) dev:
+
+     where:
+
+     dev:      is the name of the device you want to assign.  The
+               colon after the device name is optional.
+
+
+Restrictions
+
+     Assigning Magnetic Tape Drives
+
+     You can use the ASSIGN command to assign tape drives only if they
+     are of the form MTAn:.  Tape device names of the form MTn:  are
+     logical device names only, and are assigned automatically at the
+     time of MOUNT TAPE commands.
+
+
+Related Commands
+
+     DEASSIGN
+
+          For releasing a previously assigned device.
+
+     MOUNT
+
+          For mounting a structure or magnetic tape set without
+          assigning a specific drive.
+
+     INFORMATION AVAILABLE DEVICES
+
+          For finding out which devices can be assigned or have been
+          assigned to your job.
+
+
+Examples
+
+     1.  Assign a tape drive to your job.
+
+         @ASSIGN MTA0:
+
+     2.  Find out which devices are  available  for  timesharing  use,
+         then assign one to your job.
+
+         @INFORMATION AVAILABLE DEVICES
+         Devices available to this job:
+          DSK, PS, SNARK, MISC, LANG, MTA1, LPT, LPT0, LPT1
+          CDR, PCDR0, CDP FE1-15, PTY20-61, NUL, PLT, PLT0
+          DCN, SRV
+         Devices assigned to/opened by this job: TTY41
+         @ASSIGN PCDR0:
+

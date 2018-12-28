@@ -1,0 +1,93 @@
+
+UNATTACH command
+
+The UNATTACH command disengages another job from its terminal.
+
+
+Format
+
+     @UNATTACH (USER) name (JOB #) number
+     PASSWORD:password
+
+     where:
+
+     name         is the user name of the job's owner.
+
+     number       is the job number.
+                       Default number - the  only  job,  or  only  job
+                                        besides      your      current
+                                        (attached)  job,   logged   in
+                                        under the user name you give.
+
+     password     is the associated password (not requested if you are
+                  currently  logged in under the same user name as the
+                  job that you are disengaging).
+
+
+Characteristics
+
+     Log-in Not Necessary
+
+          You do not have  to  be  logged  in  to  give  the  UNATTACH
+          command.
+
+
+Hints
+
+     Freeing Hung Terminals
+
+          The UNATTACH command is useful for freeing a terminal  that,
+          because  of  program  or hardware errors, is no longer under
+          control of the user.  The command UNATTACH  n  can  be  more
+          effective than LOGOUT n for this purpose.
+
+
+Effect on Memory and Terminal
+
+     The UNATTACH command does not affect memory and leaves  your  own
+     terminal  at TOPS-20 command level.  The other job is left in its
+     current state (usually suspended) and the disengaged terminal  is
+     left in the state before log-in.
+
+
+Related Commands
+
+     ADVISE     for sending commands to another job
+
+     ATTACH     for joining another job to your terminal
+
+     DETACH     for disengaging your own job from its terminal
+
+
+Examples
+
+     1.  Disengage another user's job from its terminal.
+
+         @UNATTACH KANE
+         Password:___
+
+     2.  From a terminal on which you have not yet logged in, give the
+         UNATTACH  command  to  disengage your only logged-in job from
+         its terminal.
+
+          BOSTON (KL2871) Development system, TOPS-20 Monitor 7(7)
+         @UNATTACH LATTA
+         Password:___
+
+     3.  Give a SYSTAT command to find out what jobs you have running.
+         Give the UNATTACH command for two of them (you must specify a
+         job number for the first one so the system  will  know  which
+         one you mean), and check them with another SYSTAT command.
+
+         @SYSTAT LATTA
+           28    26  EXEC     LATTA
+           36*  230  EXEC     LATTA
+           40    27  EXEC     LATTA
+         @UNATTACH LATTA 28
+          [Attached to TTY26, confirm]
+         @UNATTACH LATTA
+         @SYSTAT LATTA
+           28   DET  EXEC     LATTA
+           36*  230  EXEC     LATTA
+           40   DET  EXEC     LATTA
+

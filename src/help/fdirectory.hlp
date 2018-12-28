@@ -1,0 +1,37 @@
+
+FDIRECTORY command
+
+The FDIRECTORY (Full DIRECTORY) command is equivalent to the DIRECTORY
+command with the subcommands CRAM, EVERYTHING, and NOHEADING.  Use the
+same format and subcommands with FDIRECTORY as  with  DIRECTORY.   For
+further information, see the DIRECTORY command description.
+
+When used with magnetic tapes, the FDIRECTORY command is equivalent to
+DIRECTORY for magnetic tapes.
+
+
+Examples
+
+     1.  Get a "Full DIRECTORY" listing, on your terminal, for one  of
+         your files.
+
+         @FDIRECTORY TESTF1.FOR
+            MISC:<LATTA>
+          TESTF1.FOR.17;P777700;A341   1 162(7) 1 25-Oct-85 11:17:46
+         25-Oct-85 11:17:46 Never Never LATTA LATTA
+
+     2.  Give the FDIRECTORY command for a file, this time  requesting
+         the  only  piece  of  information  about  current  files  not
+         ordinarily supplied by the command.  Ask for a heading also.
+
+         @FDIRECTORY TESTF1.FOR,
+         @@HEADING
+         @@CHECKSUM
+         @@
+            MISC:<LATTA>
+                                 PGS Bytes(SZ)  Ret   Creation
+         Write            Read     Tape-write   Creator Writer
+         Checksum
+          TESTF1.FOR.17;P777700;A341   1 162(7) 1 25-Oct-85 11:17:46
+         25-Oct-85 11:17:46 Never   Never       LATTA LATTA 566101P
+

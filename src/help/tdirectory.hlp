@@ -1,0 +1,47 @@
+
+TDIRECTORY command
+
+The TDIRECTORY (Time-ordered DIRECTORY) command is equivalent  to  the
+DIRECTORY  command  with the subcommands CHRONOLOGICAL WRITE, REVERSE,
+and TIMES (AND DATES OF) WRITE.  Use the same format  and  subcommands
+with  TDIRECTORY  as with DIRECTORY.  For further information, see the
+DIRECTORY command help file.
+
+When used with magnetic tapes, the TDIRECTORY command is equivalent to
+DIRECTORY for magnetic tapes.
+
+
+Examples
+
+     1.  Give a TDIRECTORY command, cancel the command with  a  CTRL/C
+         after the first few (most recent) files are displayed.
+
+         @TDIRECTORY
+
+                         Write
+
+
+            MISC:<LATTA>
+          TBATCH.CMD.1   10-May-79 13:11:57
+          B.DIRECTORY.1   9-May-79 12:54:00
+          A.DIRECTORY.1   2-May-79 13:14:52
+         T.CMD.1 ^C
+
+     2.  Access another user's directory, and request  a  time-ordered
+         directory listing of all his files of a certain name.
+
+         @ACCESS <DEVRIES>
+         Password:___
+         @TDIRECTORY <DEVRIES>SYSTEM.*
+
+                         Write
+
+
+            MISC:<DEVRIES>
+          SYSTEM.MEM.1    19-May-79 09:03:48
+            .TXT.1        19-May-79 09:02:08
+            .RNO.1        19-May-79 09:02:00
+
+          Total of 3 files
+         @END-ACCESS <DEVRIES>
+

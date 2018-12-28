@@ -1,0 +1,143 @@
+
+RENAME command
+
+The RENAME command changes the name of a file.
+
+
+Format
+
+     @RENAME (EXISTING FILE) old filespec(s) (TO BE) new filespec
+
+     where:
+
+     old filespec(s)     is a single file specification, or  a  series
+                         of  them separated by commas and/or indicated
+                         by wildcard characters (% and *).
+
+     new filespec        is the new specification under which you want
+                         to  store  the file(s); the new specification
+                         must  be  on  the  same  structure;  you  may
+                         include an asterisk (*) if you gave more than
+                         one old filespec.
+                              Default new filespec - old filespec, but
+                                      with  a generation number higher
+                                      by 1 than the  highest  existing
+                                      generation number
+
+
+Output
+
+     Status of Files
+
+          If you use recognition on the new  file  specification,  the
+          system  prints  !Old  Generation!, !New Generation!, or !New
+          File!, to describe its status.
+
+     Confirmation of Action
+
+          As each file is renamed, the system prints its old  and  new
+          specification, and the word [Superseding] if it is replacing
+          previous contents, and finally the  word  [OK].   The  delay
+          before  you  see  this  [OK]  indicates  how long it took to
+          rename the file.
+
+
+Characteristics
+
+
+Hints
+
+     Specifying a New Account and Protection Number
+
+          You can specify the new file's  protection  number  and  the
+          account  to  which its storage fees will be charged.  Follow
+          the new filespec with a  semicolon  (;)  and  the  letter  P
+          before  giving  a  new 6-digit protection number, and with a
+          semicolon and the letter A  before  giving  a  new  account.
+          Ordinarily   these  values  are  set  to  the  default  file
+          protection  and  current  account.    However,   non-default
+          protection numbers will be maintained for higher generations
+          of existing files,  unless  you  specify  otherwise  in  the
+          RENAME command that creates that higher generation.
+
+     RENAME Faster Than COPY for Transferring Files
+
+          For moving a set of files from one directory to  another  on
+          the  same structure, the RENAME command is a faster and more
+          efficient means than COPY.   This  is  because  RENAME  only
+          changes  the  file  specifications;  it  does  not  copy the
+          contents of the files.   Also,  a  file  transfer  with  the
+          RENAME  command  leaves  only  one  set  of  files,  while a
+          transfer  with  the  COPY  command  leaves  two  sets:   the
+          original  copies  and  the destination copies.  The original
+          copies are often unnecessary and must be deleted.
+
+
+Restrictions
+
+     Renaming Between Structures
+
+          You cannot rename a file from one structure to another,  but
+          must  use  the COPY command to reproduce its contents on the
+          new structure, then the DELETE command to remove it from the
+          old structure.
+
+     Renaming Open or Mapped Files
+
+          You cannot rename a file that is open or mapped into memory.
+          First  give  the RESET command, or POP followed by RESET, if
+          this is the case.
+
+     Renaming Archived Files
+
+          You can rename an archived file  by  specifying  it  as  the
+          first  (or  old) argument of a RENAME command.  It will then
+          have the second (or new) argument as its  specification  and
+          will  remain an archived file.  However, you cannot give the
+          specification of an archived file as the second argument  of
+          a RENAME command, as this would replace the file's contents.
+          If you attempt to do so, the file you specify as  the  first
+          argument  will  be  renamed to a generation higher by 1 than
+          the  highest  existing  generation  of  the  archived  file,
+          leaving the archived file intact.
+
+
+Warning
+
+     Replacing Previous Contents of Files
+
+          If  you  rename  a  file  into  a  specification  (including
+          generation   number)   that  already  exists,  the  previous
+          contents  of  the  new  file  are  replaced  and  cannot  be
+          recovered.   But see Restrictions - Renaming Archived Files,
+          above.
+
+
+Related Commands
+
+     COPY     for making copies of files
+
+
+Examples
+
+     1.  Rename a file.
+
+         @RENAME ATM-50.SPC ATM-50.PRL
+          ATM-50.SPC.1 => ATM-50.PRL.1 [OK]
+
+     2.  Use a wildcard character to rename all files of a given name.
+
+         @RENAME ATM-50.* 1-ATM-50.*
+          ATM-50.BAK.1 => 1-ATM-50.BAK.1 [OK]
+          ATM-50.PRL.1 => 1-ATM-50.PRL.1 [OK]
+
+     3.  Access another user directory and transfer to  it  the  files
+         renamed in Example 2.
+
+         @ACCESS <ORBEN>
+         Password:___
+         @RENAME 1-ATM-50.* <ORBEN>
+          1-ATM-50.BAK.1 => <ORBEN>1-ATM-50.BAK.1 [OK]
+          1-ATM-50.PRL.1 => <ORBEN>1-ATM-50.PRL.1 [OK]
+         @END-ACCESS <ORBEN>
+

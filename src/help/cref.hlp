@@ -1,0 +1,184 @@
+
+CREF command
+
+The CREF command runs the CREF program, which produces cross-reference
+listings from files of type .CRF.
+
+
+Format
+
+     @CREF destination-filespec=source-filespec /switch(es)
+
+     where:
+
+     destination-filespec     is the name of the  file  or  device  to
+                              which  you  want  to  send the processed
+                              contents of the .CRF file.
+                                   Default - LPT:
+
+     source-filespec          is the name of the .CRF file you want to
+                              process.
+                                   Default - the names of all files of
+                                             type .CRF produced during
+                                             the   current    terminal
+                                             session
+
+     /switch        is one or more keywords from the following list.
+
+
+                        CREF Program Switches
+
+
+     /A             Advances magnetic tape reel by one file.  You  can
+                    type  this  switch  more  than once in the command
+                    string.
+
+     /B             Backspaces magnetic tape reel by  one  file.   You
+                    can type this switch more than once in the command
+                    string.
+
+     /C             Cancels the processing of  any  switches  in  your
+                    SWITCH.INI file.
+
+     /D             Restores the processing of any default switches in
+                    your SWITCH.INI file.
+
+     /H             Types the CREF help file.   /H  is  illegal  in  a
+                    SWITCH.INI file.
+
+     /K             Suppresses  Regular  Symbol  Table  in  the   CREF
+                    listing.
+
+     /M             Suppresses OPDEF/Macro Table in the CREF listing.
+
+     /O             Includes the Op Code Table in the CREF listing.
+
+     /P             Preserves an input file with the file type .CRF or
+                    .LST.   These  types  of  input files are normally
+                    deleted.
+
+     /R             Requests the line number at which the CREF listing
+                    is  to  start.  CREF types out "RESTART LISTING AT
+                    LINE:", after which you type the line  number  and
+                    press  RETURN.   If you use an indirect file, CREF
+                    looks for the number in the indirect file.  /R  is
+                    most   useful   for  physical  (non-spooled)  line
+                    printers, and is illegal in a SWITCH.INI file.
+
+     /S             Suppresses the program listing and lists only  the
+                    tables you select.
+
+     /T             Skips to the logical end of the magnetic tape.
+
+     /W             Rewinds the magnetic tape.
+
+     /Z             Zeroes  the  DECtape   directory.    This   is   a
+                    historical switch, and is illegal.
+
+
+Characteristics
+
+     Current .CRF Files
+
+          If you have  files  of  type  .CRF  produced  by  LOAD-class
+          commands during the current terminal session, the unmodified
+          command CREF produces  listings  of  them  and  deletes  the
+          files.   By  supplying  an argument of the form shown in the
+          Format section above, you can copy the listing for a current
+          .CRF  file  to  another  file  or  device.   To run the CREF
+          program yourself when you have current .CRF files, give  the
+          command R CREF instead.
+
+     .CRF Files From a Previous Session
+
+          If your only files of type .CRF (created by the CREF program
+          or  one  of  the LOAD-class commands) were produced during a
+          previous  terminal  session,  the  command  CREF  puts  your
+          terminal at command level in the CREF program, symbolized by
+          an asterisk (*).  Thus it is equivalent  to  the  command  R
+          CREF  in this case.  See Hints - Further Information, below,
+          for advice on how to proceed.
+
+
+Hints
+
+     Producing .CRF Files
+
+          You can produce cross-reference files by including the /CREF
+          switch  in  any  LOAD-class  command  that actually causes a
+          compilation (i.e., is not  prevented  from  doing  so  by  a
+          /RELOCATABLE  switch  or  by the existence of current object
+          files).
+
+     Preserving .CRF Files After Processing
+
+          Give the /P switch immediately after  the  CREF  command  to
+          preserve  .CRF  files.   Ordinarily  they  are deleted after
+          being sent to an output device or copied into another file.
+
+     Further Information
+
+          For  more  detailed  information,  see  the   TOPS-20   User
+          Utilities Guide.
+
+
+Effect on Memory and Terminal
+
+     The CREF command replaces the contents of  any  unkept  forks  in
+     memory  with the CREF program and leaves your terminal at TOPS-20
+     command level, or at command level within  CREF  (denoted  by  an
+     asterisk prompt [*]).
+
+
+Related Commands
+
+     LOAD-class commands     for producing .CRF files
+
+
+Examples
+
+     1.  Give the CREF command to obtain a listing of your .CRF file.
+
+         @CREF
+         CREF:   TESTF1
+
+     2.  Compile two FORTRAN  programs,  using  the  /CREF  switch  to
+         produce  .CRF  files.   Then  give the CREF command to obtain
+         listings of these, and use the /P switch to preserve the .CRF
+         files.
+
+         @COMPILE /CREF TESTF1.FOR, TESTF2.FOR
+         FORTRAN: TESTF1
+         MAIN.
+         FORTRAN: TESTF2
+         MAIN.
+         @CREF/P
+         CREF:   TESTF1
+         CREF:   TESTF2
+
+     3.  Determine what .CRF files you have, then mount a tape.   Give
+         the  CREF command, and once within the CREF program, have the
+         cross-reference listing produced  from  one  of  these  files
+         copied   onto  tape.   (The  .CRF  files  are  not  processed
+         automatically when you give the  CREF  command  because  they
+         were produced during a previous terminal session.)
+
+         @DIRECTORY *.CRF
+
+            PS:<LATTA>
+          TESTM1.CRF.2
+          TESTM2.CRF.1
+
+          Total of 2 files
+         @MOUNT TAPE CRFMAC:/WRITE-ENABLED
+         [Mount Request CRFMAC Queued, Request-ID 128]
+         [Tape set CRFMAC, volume CRFMAC mounted]
+         [CRFMAC defined as MT3:]
+         @CREF
+
+         *MT3:=TESTM2
+         [CRFXKC 4K core]
+         *^C
+         @DISMOUNT TAPE CRFMAC:
+         [Tape dismounted, logical name CRFMAC: deleted]
+

@@ -1,0 +1,48 @@
+
+VDIRECTORY command
+
+The VDIRECTORY  (Verbose  DIRECTORY)  command  is  equivalent  to  the
+DIRECTORY command with the subcommands LENGTH, NO HEADING, PROTECTION,
+SIZE, and TIMES (AND  DATES  OF)  WRITE.   Use  the  same  format  and
+subcommands   with   VDIRECTORY   as   with  DIRECTORY.   For  further
+information see the DIRECTORY command help file.
+
+When used with magnetic tapes, the VDIRECTORY command is equivalent to
+the DIRECTORY command for magnetic tapes.
+
+
+Examples
+
+     1.  Give the VDIRECTORY command, then cut off the output  with  a
+         CTRL/C.
+
+         @VDIRECTORY
+
+            MISC:<LATTA>
+          4-UPED.TXT.14;P777700     0 0(7)         25-Apr-85 09:58:21
+          A.DIRECTORY.1;P20200      1 0(0)          2-May-85 13:14:52
+          ARTIFI.CTL.7;P777700      1 215(7)       24-Apr-85 10:10:10
+          B.DIRECTORY.1;P20200      1 0(0)          9-May-85 12:54:00
+          C.EXE.1;P777700           3 1536(36)     13-Apr-85 04:27:59
+          CONFAB.CTL.1;P777700      1 115(7)        3-May-85 13:34:37
+          DIVIDE.FOR.4;P777700      1 260(7)        8-Mar-85 15:47:41
+          DUMPER.MAC.1;P777700     53 134442(7)     8-Nov-85 10:47:04
+          MAGNIF.CTL.2;P777700      1^C
+
+     2.  Ask for a VDIRECTORY listing of certain files; include a line
+         of headings.
+
+         @VDIRECTORY TEST*.FOR,
+         @@HEADING
+         @@
+
+                                    PGS Bytes(SZ)    Write
+
+
+            MISC:<LATTA>
+          TESTF1.FOR.8;P777700      1 115(7)       25-Apr-85 09:44:50
+          TESTF2.FOR.1;P777700      1 115(7)       20-Apr-85 10:01:56
+          TESTF3.FOR.1;P777700      1 115(7)       20-Apr-85 10:02:19
+
+          Total of 3 pages in 3 file
+

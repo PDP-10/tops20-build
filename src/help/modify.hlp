@@ -1,0 +1,601 @@
+
+MODIFY command
+
+The MODIFY command adds or changes switches for a request placed in  a
+batch or output queue.
+
+
+Format
+
+     @MODIFY (REQUEST TYPE) queue (ID) identifier /switch(es)
+
+     where:
+
+     queue      is the waiting list in which you placed  the  original
+                request, chosen from the following list:
+
+                    BATCH          for requests made using the  SUBMIT
+                                   command
+
+                    CARDS          for requests made using  the  PUNCH
+                                   CARDS command
+
+                    PAPER-TAPE     for requests made using  the  PUNCH
+                                   PAPER-TAPE command
+
+                    PLOT           for requests made  using  the  PLOT
+                                   command
+
+                    PRINT          for requests made using  the  PRINT
+                                   command
+
+                In the  switch  summary  and  descriptions,  the  word
+                Output  in  the  column headed Applicable Queues means
+                all queues except the batch queue.
+
+
+
+     identifier   is one of the following:
+
+               request ID number   the unique identifier  assigned  by
+                                   the  system  to your request.  This
+                                   is the number appearing  under  the
+                                   heading   "Req#"  in  the  list  of
+                                   requests shown by  the  INFORMATION
+                                   BATCH-REQUESTS    or    INFORMATION
+                                   OUTPUT-REQUESTS command.
+
+               jobname             the jobname of the request,  either
+                                   the  first  six  characters  of the
+                                   first filename in the  request,  or
+                                   the  argument  you  supplied  to  a
+                                   /JOBNAME  switch  when  making  the
+                                   original request.  This is the name
+                                   appearing under  the  heading  "Job
+                                   Name" in the list of requests shown
+                                   by the  INFORMATION  BATCH-REQUESTS
+                                   or    INFORMATION   OUTPUT-REQUESTS
+                                   command.
+
+               /JOBNAME:jobname    switch showing the jobname  of  the
+                                   request to modify.  You can specify
+                                   a particular  jobname  when  making
+                                   the  original request.  See Special
+                                   Cases - /JOBNAME Switch, below.
+
+               /SEQUENCE:sequence number
+                                   switch showing the sequence  number
+                                   of  the request to modify.  You can
+                                   specify   a   particular   sequence
+                                   number  when  making  the  original
+                                   request.
+
+          Use an  asterisk  (*)  as  identifier  to  modify  all  your
+          requests in the specified queue.
+
+     /switches                are  keywords,  chosen  from  the   list
+                              below, specifying the parameter you want
+                              to change (and,  where  applicable,  the
+                              new value of this parameter)
+
+
+                  Summary of MODIFY Command Switches
+
+
+        Switch                          Applicable Queues
+
+     /AFTER:date and/or time                              All
+     /BEGIN:n                                             All
+     /CARDS:n                                   BATCH
+     /COPIES:n                                         Output
+     /DELETE                            PRINT   BATCH
+     /DEPENDENCY-COUNT:n                        BATCH
+     /DESTINATION-NODE:node name::                        All
+     /FEET:n                                    BATCH
+           ASCII                        PRINT
+           COBOL                        PRINT
+     /FILE:ELEVEN                       PRINT
+           FORTRAN                      PRINT
+     /FORMS:forms name                                 Output
+     /GENERIC                                          Output
+     /HEADER                                           Output
+     /JOBNAME:jobname                                     All
+     /LIMIT:n                           PRINT
+     /LOWERCASE                         PRINT
+     /MODE:output mode                                 Output
+     /NOHEADER                                         Output
+     /NOTE:12-character message                        Output
+              ALWAYS                            BATCH
+     /OUTPUT  ERRORS                            BATCH
+              NOLOG                             BATCH
+     /PAGES:n                                   BATCH
+     /PRIORITY:n                                          All
+     /PRESERVE                                            All
+     /PROCESSING-NODE:node name                 BATCH
+     /REMOTE-PRINTER:                           PRINT
+     /REPORT:title                      PRINT
+                   NO
+     /RESTARTABLE:YES                           BATCH
+
+
+             Switch                     Applicable Queues
+
+     /SEQUENCE:n                                          All
+              SINGLE
+     /SPACING:DOUBLE                    PRINT
+              TRIPLE
+     /TIME:hh:mm:ss                                       All
+     /TPLOT:n                                   BATCH
+             0 or NO
+     /UNIQUE:1 or YES                           BATCH
+     /UNIT:octal number                                Output
+     /UPPERCASE                         PRINT
+     /USER:user name                                      All
+
+
+                       MODIFY Command Switches
+
+
+                             Applicable Queues
+
+
+     /AFTER:date and/or time, or
+                                         All  ensures that the request
+            day of week (or TODAY)            will   not  be processed
+            and/or time                       until after the  revised
+                                              date     and/or     time
+                                              specified.    NOV-12-79,
+                                              and 18:00 illustrate two
+                                              arguments    to     this
+                                              switch.    If  you  give
+                                              both  date   and   time,
+                                              separate   them  with  a
+                                              space.     When    given
+                                              alone,  the  time may be
+                                              preceded by a plus  sign
+                                              (+),  which  will  delay
+                                              processing    by     the
+                                              indicated length of time
+                                              from the present.
+
+                                              Alternatively,  you  can
+                                              give  a  day of the week
+                                              (for example, MONDAY) or
+                                              TODAY  as argument; then
+                                              the  job  will  not   be
+                                              printed     until    the
+                                              beginning     of     the
+                                              following  day.   If you
+                                              follow   this   argument
+                                              with  a  plus sign and a
+                                              time, the  job  will  be
+                                              further  delayed by this
+                                              amount.
+
+     /BEGIN:n                            All  gives the  decimal  line
+                                              number  of  the  control
+                                              file at which processing
+                                              is to begin (for BATCH),
+                                              or  the   decimal   page
+                                              number  of  the  file at
+                                              which the output  is  to
+                                              begin     (for    CARDS,
+                                              PAPER-TAPE,  PLOT,   and
+                                              PRINT)
+
+     /CARDS:n                  BATCH          specifies  the   decimal
+                                              number  of spooled cards
+                                              the job  is  allowed  to
+                                              punch
+
+     /COPIES:n                        Output  tells how many copies of
+                                              the file to produce
+
+     /DELETE                             All  deletes the  file  after
+                                              processing.  Opposite of
+                                              /PRESERVE.
+
+     /DEPENDENCY-COUNT:n       BATCH          sets    the    request's
+                                              dependency  count to the
+                                              new   value   n.    This
+                                              switch   can   also   be
+                                              followed  by  a   signed
+                                              value, such as +n or -n,
+                                              which will  increase  or
+                                              decrease  the  old value
+                                              by the specified amount.
+                                              A  batch  request is not
+                                              processed   until    its
+                                              dependency  count  is 0.
+                                              See the TOPS-10/20 Batch
+                                              Reference   Manual   for
+                                              more  information  about
+                                              dependency counts.
+
+     /DESTINATION-NODE:node-name
+                                         All  specifies  the  node  on
+                                              whose  line  printer the
+                                              log file of  your  batch
+                                              job  is  to  be  printed
+                                              (for BATCH), or the node
+                                              on whose line printer or
+                                              other output device your
+                                              request    is    to   be
+                                              processed        (CARDS,
+                                              PAPER-TAPE,   PLOT,  and
+                                              PRINT).  Two colons (::)
+                                              following  the node name
+                                              are optional.
+
+     /FEET:n                   BATCH          specifies  the   decimal
+                                              number    of   feet   of
+                                              spooled paper  tape  the
+                                              job is allowed to punch.
+
+           ASCII
+           COBOL
+     /FILE:ELEVEN              PRINT          specifies that the  file
+           FORTRAN                            consists of ASCII  text,
+                                              or COBOL SIXBIT text; or
+                                              (ELEVEN)  contains  four
+                                              eight-bit  bytes in each
+                                              36-bit   word;   or   is
+                                              FORTRAN    ASCII   text,
+                                              where column 1  of  each
+                                              line is interpreted as a
+                                              carriage         control
+                                              character.
+
+     /FORMS:forms name                Output  specifies,  in  six   or
+                                              fewer   characters,  new
+                                              forms  (determining  the
+                                              size  of banner, header,
+                                              and  trailer   sections;
+                                              the  paper color, width,
+                                              and   weight;   vertical
+                                              format, carriage control
+                                              tape,  the   number   of
+                                              plotter  steps per inch,
+                                              etc.) to  use  with  the
+                                              job
+
+     /GENERIC                         Output  allows the output to  be
+                                              produced      on     any
+                                              available  device.   Use
+                                              along    with   argument
+                                              PRINT  to   cancel   the
+                                              /LOWERCASE or /UPPERCASE
+                                              switch,  or  with  PLOT,
+                                              PRINT,     CARDS,     or
+                                              PAPER-TAPE to cancel the
+                                              /UNIT switch.
+
+     /HEADER                          Output  causes a header  section
+                                              containing  the  jobname
+                                              to be plotted,  printed,
+                                              or  punched  before  the
+                                              file itself is produced.
+
+     /JOBNAME:jobname                    All  does  not   change   the
+                                              jobname,  but  specifies
+                                              which  job  to   modify.
+                                              Same   as   jobname   in
+                                              "identifier" argument.
+
+     /LIMIT:n                         Output  places a new limit of  n
+                                              cards, feet, or pages on
+                                              the output of the job.
+
+     /LOWERCASE                PRINT          specifies that the  file
+                                              is  to  be produced on a
+                                              line printer capable  of
+                                              printing       lowercase
+                                              characters.
+
+           ASCII
+           BCD
+     /MODE:BINARY              CARDS          designates the mode  for
+           IMAGE                              punching the  file  onto
+                                              cards.   See  the  /MODE
+                                              switch  in   the   PUNCH
+                                              command  description for
+                                              details.
+
+           ASCII
+           BINARY
+     /MODE:IMAGE               PAPER-TAPE     designates the mode  for
+           IMAGE-BINARY                       punching the  file  onto
+                                              paper   tape.   See  the
+                                              /MODE  switch   in   the
+                                              PUNCH            command
+                                              description for details.
+
+           ASCII
+     /MODE:BINARY              PLOT           designates the mode  for
+           IMAGE                              plotting the file.   See
+                                              the  /MODE switch in the
+                                              PLOT command description
+                                              for details.
+
+           ARROW
+           ASCII
+     /MODE:OCTAL               PRINT          designates the mode  for
+           SUPPRESS                           printing the file.   See
+                                              the  /MODE switch in the
+                                              PRINT            command
+                                              description for details.
+
+     /NOHEADER                        Output  prevents    a     header
+                                              section  containing  the
+                                              jobname    from    being
+                                              produced before the file
+                                              is produced.
+
+     /NOTE:message                    Output  labels    the     header
+                                              section  of  output (the
+                                              section  displaying  the
+                                              jobname)  with a message
+                                              or notation of up to  12
+                                              characters.  The message
+                                              must  be   enclosed   in
+                                              double  quotation  marks
+                                              if it contains spaces or
+                                              punctuation characters.
+
+             ALWAYS
+     /OUTPUT:ERRORS            BATCH          says  whether  you  want
+             NOLOG                            the  log  file   to   be
+                                              printed  always, or only
+                                              in the case of unhandled
+                                              errors  occurring within
+                                              the job, or  never.   No
+                                              matter  which option you
+                                              choose, the log file  is
+                                              always created.
+
+     /PAGES:n                  BATCH          specifies  the   decimal
+                                              number  of  spooled line
+                                              printer pages the job is
+                                              allowed to print.
+
+     /PRESERVE                           All  saves the file after  it
+                                              is  processed.  Opposite
+                                              of /DELETE.
+
+     /PRIORITY:n                         All  assigns a new  number  n
+                                              reflecting  the  urgency
+                                              of the request.  This  n
+                                              must  be  from  1 to 63,
+                                              with   larger    numbers
+                                              receiving        earlier
+                                              treatment.
+
+     /PROCESSING-NODE:node name::
+                               BATCH          specifies the  IBM  host
+                                              system  on whose CPU the
+                                              JCL batch job is  to  be
+                                              run.  The node name must
+                                              be  of  six   or   fewer
+                                              characters  and  must be
+                                              followed by  two  colons
+                                              (::).
+
+     /REMOTE-PRINTER:  n       PRINT          specifies the name of  a
+                                              remote  print  queue  to
+                                              print the file.
+
+     /REPORT:title             PRINT          scans  your  files   and
+                                              processes   only   those
+                                              lines    whose     first
+                                              characters are the title
+                                              you  give.   This  title
+                                              can  contain  up  to  12
+                                              characters    (including
+                                              the quotation marks that
+                                              must enclose  the  title
+                                              if  it contains spaces).
+                                              The switch is used along
+                                              with  the  COBOL  report
+                                              writer.
+
+                  NO
+     /RESTARTABLE:YES          BATCH          specifies  whether   the
+                                              job  should  be  started
+                                              again  if   the   system
+                                              crashes and restarts.
+
+     /SEQUENCE:n                         All  does  not   change   the
+                                              sequence  number  of the
+                                              job but rather specifies
+                                              which   job  to  modify.
+                                              Giving this switch is an
+                                              alternative to supplying
+                                              a  request  ID  as   the
+                                              request  identifier when
+                                              you  have  several  jobs
+                                              with  the  same  jobname
+                                              (if you supply only  the
+                                              jobname  to identify the
+                                              job, the MODIFY  command
+                                              affects all of them).
+
+              DOUBLE
+     /SPACING:SINGLE           PRINT          determines  the  spacing
+              TRIPLE                          between printed lines.
+
+     /TIME:hh:mm:ss            BATCH          revises  the  limit  for
+                                              the  maximum  amount  of
+                                              CPU  time  available  to
+                                              the job; given in hours,
+                                              minutes, and seconds.
+
+     /TPLOT:n                  BATCH          limits to n the  maximum
+                                              number   of  minutes  of
+                                              spooled   plotter   time
+                                              allowed for the job.
+
+             NO or 0
+     /UNIQUE:YES or 1          BATCH          changes             your
+                                              declaration,  if  two or
+                                              more jobs are  submitted
+                                              from  the same connected
+                                              directory, whether  they
+                                              must   run  at  separate
+                                              times.
+
+     /UNIT:octal number               Output  directs your request  to
+                                              the  line printer of the
+                                              specified   octal   unit
+                                              number.
+
+     /UPPERCASE                PRINT          specifies that the  file
+                                              is  to  be produced on a
+                                              line printer  that  uses
+                                              uppercase     characters
+                                              only.
+
+     /USER:user name           PRINT, BATCH   specifies the user whose
+                                              request    is    to   be
+                                              modified; for privileged
+                                              users only.  This switch
+                                              is required to modify  a
+                                              request   from   a  user
+                                              other than yourself.
+
+
+Characteristics
+
+     MODIFY Effective Only Before Processing
+
+          The MODIFY command affects a batch or  output  request  only
+          before  processing  has  begun.  After processing has begun,
+          you can only cancel the request with the CANCEL command, and
+          then make a new request.
+
+
+Hints
+
+     Using the /DEPENDENCY-COUNT Switch
+
+          You can use the  /DEPENDENCY-COUNT  switch  to  specify  the
+          order  in  which  your  batch  jobs  are processed.  Set the
+          dependency count of all but the first job to  some  positive
+          value  when  you submit them, and include MODIFY commands in
+          each job's control file to bring the next  job's  dependency
+          count to 0 at the appropriate time.  See Example 4.
+
+
+Special Cases
+
+     /JOBNAME Switch
+
+          In the singular case when you want to modify  several  queue
+          requests  of  the  same  jobname using only one command, and
+          that jobname is purely numerical (for  example,  5045),  you
+          must  use  the /JOBNAME:jobname switch as second argument to
+          the MODIFY command.  Do not also  give  the  request  ID  or
+          jobname   as   a   command   argument   if   you   give  the
+          /JOBNAME:jobname switch.
+
+
+Related Commands
+
+     CANCEL                          for  removing  batch  and  output
+                                     requests
+
+     INFORMATION BATCH-REQUESTS      for  examining  entries  in   the
+                                     batch queue
+
+     INFORMATION OUTPUT-REQUESTS     for  examining  entries  in   the
+                                     output queues
+
+     PLOT                            for placing requests in a plotter
+                                     output queue
+
+     PRINT                           for placing requests  in  a  line
+                                     printer output queue
+
+     PUNCH                           for placing requests  in  a  card
+                                     punch  or paper tape punch output
+                                     queue
+
+     SUBMIT                          for placing requests in the batch
+                                     input queue
+
+
+Examples
+
+     1.  Modify a batch request (of jobname ARTIFI) to make  it  start
+         more quickly.
+
+         @MODIFY BATCH ARTIFI /PRIORITY:63
+         [1 Job modified]
+
+     2.  Modify a print request (of jobname PHIAL) to include  a  note
+         on the header page.
+
+         @MODIFY PRINT PHIAL /NOTE:"DUE: 11/4"
+         [1 Job modified]
+
+     3.  Modify one job of several having the same jobname.
+
+         @INFORMATION OUTPUT-REQUESTS /USER
+
+         Printer Queue:
+         Job Name  Req#  Limit            User
+         --------  ----  -----  ------------------------
+           PRTSK    226   27    LATTA /After: 8-Nov-84 17:00
+           PRTSK    236   27    LATTA /After: 8-Nov-84 17:00
+           PRTSK    237   27    LATTA /After: 8-Nov-84 17:00
+           PRTSK    238   27    LATTA /After: 8-Nov-84 17:00
+           TESTF1   219   54    LATTA /Forms:NARROW
+                     /After:8-Nov-84 17:00
+         There are 5 jobs in the queue (none in progress)
+
+         @MODIFY PRINT 237 /AFTER:18:00
+         [1 Job modified]
+         /new.pg
+
+     4.  Use the TYPE command to examine some of your  control  files.
+         (Notice  the  use of the MODIFY command within these files to
+         ensure that they  are  processed  in  a  certain  order  when
+         submitted  together.)   Submit  these three control files and
+         verify their placement in the batch input queue.
+
+         @TYPE ARVM%.CTL
+          ARVM1.CTL.2
+
+         @RUN TESTF1
+         @PRINT TESTF1.RSM
+         @MODIFY BATCH ARVM2 /DEPENDENCY-COUNT:0
+
+          ARVM2.CTL.2
+
+         @RUN TESTF2
+         @PRINT TESTF2.RSM
+         @MODIFY BATCH ARVM3 /DEPENDENCY-COUNT:0
+
+          ARVM3.CTL.2
+
+         @RUN TESTF3
+         @PRINT TESTF3.RSM
+         @PRINT SUMJOB.RSM
+         @SUBMIT /AFTER:17:00 ARVM1
+         [Batch job ARVM1 queued, request-ID 240, limit 0:05:00]
+         @SUBMIT /DEPENDENCY-COUNT:1 ARVM2
+         [Batch job ARVM2 queued, request-ID 241, limit 0:05:00]
+         @SUBMIT /DEPENDENCY-COUNT:1 ARVM3
+         [Batch job ARVM3 queued, request-ID 242, limit 0:05:00]
+         @INFORMATION BATCH-REQUESTS /ALL/USER
+
+         Batch Queue:
+         Job Name  Req#  Run Time            User
+         --------  ----  --------  ------------------------
+           ARVM1    240  00:05:00  LATTA /After: 8-Nov-84 17:00
+                   /Uniq:Yes  /Restart:No   /Assist:Yes  /Seq:1804
+           ARVM2    241  00:05:00  LATTA /Dep:1  /Uniq:Yes  /Restart:No
+                   /Assist:Yes  /Seq:1805
+           ARVM3    242  00:30:00  LATTA /Dep:1  /Uniq:Yes  /Restart:No
+                   /Assist:Yes  /Seq:1806
+         There are 3 jobs in the queue (none in progress)
+

@@ -1,0 +1,146 @@
+
+DEFINE command
+
+The DEFINE command establishes or cancels logical names for your job.
+
+
+Format
+
+     @DEFINE (LOGICAL NAME) name:  list
+
+     where:
+
+     name:        is  any  combination  of  up  to   39   alphanumeric
+                  characters  that  you want to use as a logical name.
+                  Use an asterisk (*) for this  argument  to  withdraw
+                  all logical names.  The colon after the logical name
+                  is optional.
+
+     list         is   a   series   of   devices,   file   structures,
+                  directories,   file   specifications,  and/or  other
+                  logical names; each item should  be  separated  from
+                  the others by commas.
+                       Default - not specifying a list  withdraws  the
+                                 logical name definition
+
+
+Characteristics
+
+     Colon Designates a Logical Name
+
+          Normally, when you give a logical name to an EXEC command in
+          the  place  of a file specification, structure, or directory
+          name, a colon must follow the logical  name.   However,  for
+          the DEFINE and INFORMATION LOGICAL-NAMES commands, where the
+          argument can only be a  logical  name,  a  colon  after  the
+          logical name is optional.
+
+
+Hints
+
+     DEFINE in LOGIN.CMD File
+
+          Your DEFINE  command  is  valid  for  the  current  terminal
+          session  only.   If  there are logical names that you always
+          want to use, put DEFINE commands into a LOGIN.CMD  (or,  for
+          batch  jobs  started  by  SUBMIT commands within the control
+          files of other batch jobs, a BATCH.CMD) file in your  log-in
+          directory.
+
+     Redefining System Logical Names
+
+          You can use  the  DEFINE  command  to  redefine  any  system
+          logical  name  for  your  own  job.   By  repeating a system
+          logical  name  in  its  own  search  list  you  expand   its
+          definition  to  include  the  other  items, in the order you
+          specify.  Consider the system logical name  SYS:,  which  is
+          searched  whenever  you  give  a  program name in place of a
+          TOPS-20   command.    If   you   redefine   SYS:    to    be
+          str:<directory>,    SYS:    you    can   run   programs   in
+          str:<directory> by typing just their names.  This will  work
+          as  long  as  the  program names are not the same as TOPS-20
+          commands.
+
+     Logical Names as Dummy File Specifications
+
+          You can use logical names as dummies for file specifications
+          or devices when writing programs.  Then, just before running
+          such a program, use the DEFINE command to  define  these  as
+          real  file  specifications  or devices, without changing the
+          program itself.
+
+     More Information
+
+          For more information about  using  logical  names,  see  the
+          TOPS-20 User's Guide.
+
+
+Special Cases
+
+     Using Recognition in the File Specifications
+
+          Normally,  when  you  attempt  to  use  recognition   in   a
+          nonexistent  filename,  the  system rings the terminal bell.
+          However, for the DEFINE  command,  instead  of  ringing  the
+          terminal  bell, the system may append part(s) of the default
+          file  specification,  .0  or  ..0,  to  the   logical   name
+          definition.   This  is because DEFINE allows you to define a
+          directory or file specifications that may not yet exist.
+
+          Note that a logical name definition that includes .0 or  ..0
+          may  not  work  for  your  use  of  the  logical name; it is
+          recommended that you specify the complete directory name  or
+          file specifications.
+
+
+Restriction
+
+     Adding Comments to a DEFINE Command Line
+
+          You can add a comment to the end of any TOPS-20  command  by
+          preceding  the  comment  with one of the comment characters:
+          an exclamation point (!) or a semicolon (;).  However,  only
+          the exclamation point can be used with the DEFINE command.
+
+     Using Short Logical Names Only
+
+          Although logical names can be up to 39 characters  long  and
+          can  include  dollar  signs ($), hyphens (-), and underlines
+          (_), some commands and programs (such as programs originally
+          written  for  the  TOPS-10  operating  system) accept a more
+          limited set of logical names.  These can be no more  than  6
+          characters  long and cannot include any special symbols.  If
+          all your logical names  are  of  this  kind,  they  will  be
+          acceptable to any TOPS-20 programs and commands.
+
+
+Related Commands
+
+     INFORMATION LOGICAL-NAMES     for   finding   out   the   current
+                                   definitions of logical names
+
+
+Examples
+
+     1.  Define a logical name for your job.
+
+         @DEFINE LGN:  <MANUALS>, <SARTINI>
+
+     2.  Withdraw the logical name.
+
+         @DEFINE LGN:
+
+     3.  Define a logical name to be a set of directories to which you
+         have  access.   Then use the logical name to copy a file from
+         one of them into your connected directory.
+
+         @DEFINE MSM: <MANUALS>, <SARTINI>, <MCELMOYLE>
+         @COPY MSM:4-UPED.TXT
+          <MCELMOYLE>4-UPED.TXT.1 => 4-UPED.TXT.1 [OK]
+
+     4.  Add one of your own directories to the definition of SYS:  so
+         that  you can run .EXE files in that directory by typing just
+         the program name.
+
+         @DEFINE SYS: SYS:,AURORA:<WHITING.TOOLS>
+

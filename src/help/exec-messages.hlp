@@ -1,0 +1,48 @@
+
+Exec Messages
+
+The TOPS-20 Command Processor, or EXEC, displays messages in  response
+to  errors  or  other  conditions  that  arise  when using the TOPS-20
+Command Language.  There are three kinds  of  EXEC  messages:   error,
+warning, and information.
+
+Error messages begin with a  question  mark  (?).   An  error  message
+indicates  that a failure has occurred and execution of the command or
+program has stopped.  If, for example, you type the wrong password  in
+a LOGIN or CONNECT command, you receive the message:
+
+     ?Incorrect password
+
+and the command is not executed.
+
+Warning messages begin with percent sign (%).  A warning message  also
+indicates that a failure has occurred, but execution of the command or
+program usually continues.  For example, suppose you type the command
+
+     DIRECTORY *.PAS, *.REL
+
+to list all the files with the extensions .PAS  and  .REL,  and,  your
+connected  directory  does not contain any .REL files.  The EXEC lists
+all the files with the .PAS extensions and  then  prints  the  warning
+message:
+
+     %No such file type *.REL.
+
+The third type of message you can get from  the  EXEC  (and  sometimes
+from  the system) is an information message.  Information messages are
+enclosed in square brackets [ ] and inform you about the status of the
+system or the result of an EXEC command.  For example, the message
+
+     [DECSYSTEM-20 continued]
+
+indicates that a temporary pause in service has ended.  The message
+
+     [n pages freed]
+
+indicates that your EXPUNGE command  freed  n  disk  pages.   Usually,
+information messages require no response from you.
+
+When you need more information than is provided by  an  EXEC  message,
+see   the   EXEC   Message  Manual.   This  manual  contains  detailed
+descriptions of all EXEC messages, plus actions to take for correcting
+errors.

@@ -1,0 +1,8 @@
+
+CTRL/R
+
+Reprints the current command line, incorporating the corrections  made
+with  the  DELETE  key  or  CTRL/W.   Use  on hard-copy terminals when
+backslashes and underscores caused by editing with DELETE  and  CTRL/W
+make  the command line difficult to read.  Use on video terminals when
+a system message covers the command line.

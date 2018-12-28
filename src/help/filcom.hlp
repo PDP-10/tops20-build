@@ -1,0 +1,395 @@
+
+The FILCOM Program
+
+The FILCOM program compares two files  and  prints  any  differences
+between them.  With FILCOM, you can compare either ASCII files (text
+files and source programs) or binary files (relocatable binary files
+and  save  files).   The comparison is line by line for ASCII files,
+and word by word for binary files.
+
+
+RUNNING FILCOM To run FILCOM, type FILCOM, and press the RETURN key.
+The program prompts you for input with an asterisk:
+
+     @FILCOM<RET>
+
+     *
+
+After the prompt, enter a FILCOM command  string  in  the  following
+format:
+
+     Destination file spec=Source file spec1,Source file spec2/Switches
+
+where:
+
+     Destination file spec  is  the  output  file  that  contains  the
+     differences between the two Source files.
+
+If you do not specify a Destination filename, FILCOM uses the name  of
+the  file  in  Source file spec2.  If you omit the name in Source file
+spec2, the program uses the filename from  Source  file  spec  1.   If
+there  is  no filename in Source file spec 1, then the filename FILCOM
+is used.  The default for the Destination file type is .SCM for  ASCII
+files  and  .BCM  for  binary  files.   If  you  completely  omit  the
+Destination file spec, FILCOM writes the output to the device TTY:.
+
+     Source file spec1 is the first input file you wish to compare.
+
+You must completely specify this file spec in the command string.
+
+     Source file spec2 is the second input file you wish to compare.
+
+If you omit the  filename  in  Source  file  spec2,  FILCOM  uses  the
+filename  in  Source  file spec1.  If you omit the file type in Source
+file spec2, FILCOM uses the  file  type  in  Source  file  spec1.   To
+indicate  a null file type, simply type a period (.) at the end of the
+filename in either Source file spec1 or Source file spec2.
+
+                                 NOTE
+
+        FILCOM does not accept file generation  numbers.   You
+        can  compare two files with the same name and type but
+        different generation numbers (for  example,  FOO.BAR.1
+        and  FOO.BAR.2)  by  defining  logical names for these
+        files.   For  more  information  on  defining  logical
+        names, see the TOPS-20 User's Guide.
+
+        FILCOM accepts six characters for  a  name  and  three
+        characters for type.  If more than nine characters are
+        used, FILCOM truncates to nine characters.
+
+You can enter switches after the two input file specs.  These switches
+tell  FILCOM  how  to compare the specified files.  However, you don't
+always need to give switches, because FILCOM often determines the type
+of  comparison  by the file types.  If either of the input files is of
+the type  listed  below,  the  files  are  compared  in  binary  mode;
+otherwise they are compared in ASCII mode.
+
+______________________________________________________________________
+
+  Special File Types Recognized by FILCOM
+______________________________________________________________________
+
+                                   .APL         .DMP         .RIM
+                                   .ATR         .MSB         .RMT
+                                   .BAC         .OVL         .RTB
+                                   .BIN         .OVR         .SCH
+  Binary Files:                    .BUG         .QUC         .SFD
+                                   .CAL         .QUD         .SYM
+                                   .CHN         .QUE         .SYS
+                                   .DAE         .QUF         .UFD
+                                   .DBS         .REL         .UNV
+                                   .DCR                      .XPN
+
+  Sharable Save Files:             .EXE
+
+  Nonsharable Save Files:          .LOW         .SAV         .SVE
+
+  Offset Address Files;
+  word 0 of the file
+  treated as if it was
+  word 400000.                     .HGH         .SHR
+______________________________________________________________________
+
+
+                                 NOTE
+
+        If FILCOM cannot determine  the  mode  for  comparison
+        from  the input file type or switches, it compares the
+        files in ASCII mode.
+
+For more information on sharable and nonsharable save  files  and  the
+control  words  used  in  them,  refer  to  the  TOPS-20 Monitor Calls
+Reference Manual.
+
+After you enter the command string specifying the mode for comparison,
+the  two  input files, and any necessary switches, press RETURN.  When
+FILCOM has finished the comparison, it notifies you of the status:
+
+          %files are different
+     or
+          No differences encountered
+
+The program then prints a second asterisk for  you  to  enter  another
+command string.  For example:
+
+     @FILCOM<RET>
+
+     *COMPAR.FIL=EXFILE.1,EXFILE.2<RET>
+     %files are different
+
+
+     *
+
+If you wish to stop the program, type  CTRL/C  to  return  to  TOPS-20
+command level.
+
+
+Comparing ASCII Files
+
+In ASCII mode, FILCOM compares the characters in each line of the  two
+files, always ignoring nulls.  Comments and spacing can be selectively
+ignored, based on the switches you type.
+
+FILCOM contains the following switches that you  use  in  the  command
+string to compare ASCII files.
+
+/A        Instructs FILCOM to compare the two  input  files  in  ASCII
+          mode.   It  treats  both  files  as  if  they  contain ASCII
+          characters, searches the files  for  text  differences,  and
+          ignores similar lines.
+
+/B        Considers blank lines in the  comparison.   If  you  do  not
+          specify  /B  in  the command string, FILCOM normally ignores
+          blank lines in the two files.
+
+/C        Instructs FILCOM to  ignore  comments  and  spacing  in  the
+          files.   Comments  are defined as text on a line following a
+          semicolon.  Spacing is defined as spaces and  tabs.   FILCOM
+          normally  considers  comments  and spaces in the comparison.
+          This switch is useful when  you  compare  assembly  language
+          source files (MACRO Assembler source files).
+
+/H        Prints a FILCOM help text, which contains a  description  of
+          the  program  and  all  switches, on your terminal.  You can
+          type /H by itself immediately after the FILCOM prompt, or in
+          a command string.
+
+                                      NOTE
+
+              /H overrides all other switches that you may combine
+              with  it.   The  system  ignores all other specified
+              switches in the combination,  and  prints  the  full
+              FILCOM help text.
+
+/nL       Defines the number of lines that end a match.   When  FILCOM
+          finds  that  number of successive lines that are the same in
+          both input files, it prints all differences found up to  the
+          time  of  the  match.   The FILCOM output includes the first
+          line of the match for easy reference.  FILCOM normally  uses
+          the value "3" for the number of lines (the value of n).
+
+/O        Instructs FILCOM to  include  a  label  and  offset  in  the
+          differences  listing for ASCII files.  There are three types
+          of messages:
+
+          [;At top of  file  +  nL]  where  nL  is  a  decimal  number
+          representing the number of lines between the top of the file
+          and the line where the difference occurs.  If  a  difference
+          occurs at the top of the file, nL is not listed.
+
+          [;At  Label + nL]  where  Label  is  the  MACRO-style  label
+          immediately  preceding  the difference and nL represents the
+          decimal number  of  lines  away  from  the  label  that  the
+          difference  occurs.   If the difference occurs at the label,
+          nL is not listed.
+
+          [;At Label + nL following  label  name]  for  PDP-11  files,
+          where  label  is  the  local  label name in the form nn$, nL
+          represents the decimal number of lines from the local  label
+          that the difference occurs and label name is the name of the
+          last preceding block label.  The block label name is  listed
+          as  further  help  in  locating  the difference, since local
+          label names are not always unique.  If the difference occurs
+          at  the  label,  nL is not listed.  If the difference occurs
+          before FILCOM sees a label, the difference is listed as [;At
+          label  + nL] where label is the block label.  The label name
+          for all labels must be in the first ten  characters  of  the
+          line.  Labels refer to file 1, not file 2.
+
+/Q        Instructs FILCOM to print only the status of the  comparison
+          (either ?files are different or No differences encountered).
+          FILCOM does not enumerate the differences between the files.
+          It  stops  reading  the  files  after it discovers the first
+          difference.
+
+/S        Ignores spaces and tabs  in  the  comparison  of  two  ASCII
+          files.   FILCOM  normally  considers  spaces and tabs in the
+          comparison.
+
+/T        Instructs FILCOM to generate  an  output  file  even  if  no
+          differences  are  found.   If  the  /T switch is omitted and
+          there are no differences in the files,  no  output  file  is
+          generated.
+
+/U        Compares your two input files in update  mode.   This  means
+          that  FILCOM  creates  an  output  file, which is the second
+          input file, with change bars in the left margin next to  the
+          lines  that  differ  from  those  in  the  first input file.
+          Deleted lines are indicated by a  change  bar  on  the  next
+          common  line.   /U  is  helpful  when  you are comparing two
+          versions of text.  To obtain a meaningful  comparison,  type
+          the  latest  version of the file as the second input file in
+          the command string.  It is recommended that /nL be used with
+          the /U switch.
+
+The output file in ASCII mode comparison includes a  header  for  each
+input file that contains the following information:
+
+      o  the file number
+
+      o  the file spec
+
+      o  the date and time the input file was created.
+
+
+                                 NOTE
+
+        If you use /U in the FILCOM command string (compare in
+        update mode), this header does not appear.
+
+Each time FILCOM finds differences between two ASCII input  files,  it
+outputs a number corresponding to a page number in the first file, and
+the differences.  At the end of the list of differences,  the  program
+prints  a  common line between the two files.  The program then prints
+four asterisks, a number corresponding to the second input  file,  and
+the differences.  Then FILCOM repeats the set of differences until all
+the differences between  the  two  files  are  found.   A  row  of  14
+asterisks (*) marks the end of a difference.
+
+
+Comparing Binary Files
+
+FILCOM automatically determines that a file is  binary,  depending  on
+the file type.
+
+Sharable and nonsharable save files represent the location of data  in
+memory.  In FILCOM, expanding the files before comparing them means to
+compare the data as it would appear if  the  files  were  loaded  into
+memory.   Comparing  the files without expanding them means to compare
+each word in the files regardless of the usual meaning of  the  files'
+control words.
+
+You can list a binary file with FILCOM.  To do this, simply  omit  the
+comma and the second input file spec in the command string.
+
+FILCOM contains the following switches that you  use  in  the  command
+string  to  compare  binary  files.  Switches control what part of the
+binary file you see.
+
+/E        Forces FILCOM to consider both input files as sharable  save
+          files  regardless of the file types given.  Normally, FILCOM
+          selects its comparison according to the file  types  of  the
+          files.
+
+/H        Prints the FILCOM help text.
+
+/nL       Compares a binary file starting at word "n".  The number "n"
+          is an octal number.  Refer to /nU, below.
+
+/Q        Instructs FILCOM to print only the status of the comparison.
+          It  does  not list the actual differences, and causes FILCOM
+          to stop reading the  files  after  it  discovers  the  first
+          difference.
+
+/nU       Compares a binary file up through word "n".  The  value  "n"
+          is  an  octal number as in /nL.  If you combine /nU with /nL
+          in the command string, the input  files  are  compared  only
+          within these limits.
+
+/T        Instructs FILCOM to generate  an  output  file  even  if  no
+          differences are found.  If the /T switch is not used, FILCOM
+          produce no differences listing if there are  no  differences
+          in the files.
+
+/W        Compares two binary files that have nonstandard file  types.
+          The  files are not expanded before FILCOM compares them.  /W
+          compares the files' internal control words  in  addition  to
+          data, reading the files one word at a time.
+
+/X        Instructs FILCOM to expand  nonsharable  save  files  before
+          comparing  them in binary mode.  The program ignores control
+          words and compares only the code in the files.
+
+All FILCOM binary switches apply when you dump a  file.   Expanding  a
+file  shows  how  it  would  appear in memory.  Dumping a file without
+expanding it shows the file's internal format.
+
+The output file of a binary mode comparison contains the  same  header
+as  output  files  for  ASCII  comparisons.   However,  the comparison
+differs because it is done word by word.  If the left  halves  of  the
+two  words  being  compared  are  the same, FILCOM prints the absolute
+difference between  the  two  words.   Otherwise,  FILCOM  prints  the
+logical exclusive OR (XOR).
+
+
+FILCOM SWITCHES
+
+The FILCOM switches are listed alphabetically below.
+
+______________________________________________________________________
+
+  Switch            Comparison        Description
+______________________________________________________________________
+
+   /A               ASCII             Compares files in ASCII mode
+
+   /B               ASCII             Considers blank lines  in  the
+                                      comparison
+
+   /C               ASCII             Ignores comments  and  spacing
+                                      in MACRO source files
+
+   /E               Binary            Considers   both   files    as
+                                      sharable save files
+
+   /H               ASCII&            Prints the FILCOM help text
+                    Binary
+
+   /nL              ASCII&            Defines  the  number  of lines
+                    Binary            that  end  a  match  in  ASCII
+                                      comparisons;   determines  the
+                                      lower limit  where  a  partial
+                                      comparison  begins  in  binary
+                                      comparisons
+
+   /nU              Binary            Determines  the  upper   limit
+                                      where    a    partial   binary
+                                      comparison stops
+
+   /O               ASCII             Includes  a  label  name   and
+                                      offset   in   the  differences
+                                      listing
+
+   /Q               ASCII&            Prints  only the status of the
+                    Binary            comparison; does not enumerate
+                                      the differences
+
+   /S               ASCII             Ignores spacing  and  tabs  in
+                                      the comparison
+
+   /T               ASCII&            Produces an output  file  even
+                    Binary            if no differences are found
+
+   /U               ASCII             Compares the files  in  update
+                                      mode  and  inserts change bars
+                                      next to the differences
+
+   /W               Binary            Compares  binary  files   with
+                                      nonstandard     file    types,
+                                      ignoring  control  words   (if
+                                      any)
+
+   /X               Binary            Expands nonsharable save files
+                                      before comparing them
+______________________________________________________________________
+
+
+FILCOM Messages
+
+Some of the messages printed by FILCOM  contain  information  that  is
+dependent  on the exact command string, switch, or file you specified.
+The key to these message variables follows:
+
+      [device]   A device name.
+
+      [file]     A file spec.
+
+      [n]        A designator for the first or second input file.
+
+      [reason]   The reason for a file access failure.
+
+
+                 See  the  TOPS-20  User  Utilities  Manual  for  more
+                 detailed information about FILCOM messages.
+

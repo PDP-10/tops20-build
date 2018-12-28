@@ -1,0 +1,57 @@
+
+BREAK command
+
+The BREAK command breaks the communication link made between terminals
+with the TALK command.
+
+
+Format
+
+     @BREAK (LINKS WITH) argument
+
+     where:
+
+     argument     is a user name or line number.
+
+                  Default - all communication links
+
+
+Restrictions
+
+     Does Not End Advice
+
+     The BREAK command, given at either of two terminals joined by the
+     ADVISE command, does not end advice.  To end an ADVISE link, type
+     CTRL/E.
+
+
+Related Commands
+
+     TALK
+
+          For establishing communication links with another terminal.
+
+     REFUSE LINKS
+
+          For  preventing  future  communication   links   with   your
+          terminal.
+
+
+Examples
+
+     1.  Use the BREAK command to end  a  TALK  session  with  another
+         user.
+
+         @BREAK
+
+     2.  Use the TALK command to speak to another user, then use BREAK
+         to end the conversation.
+
+         @TALK PORADA
+         LINK FROM LATTA, TTY 41
+         @!HI.  CAN YOU TELL ME WHERE THE PROJECT ESTIMATES ARE
+         STORED?
+         @!SURE:  THEY'RE ON TAPE LS2.0 IN THE LIBRARY.
+         @!THANKS.  BYE
+         @BREAK
+

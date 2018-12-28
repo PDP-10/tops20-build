@@ -1,0 +1,556 @@
+
+SYSTAT command
+
+The SYSTAT command displays information about the jobs on the system.
+
+
+Format**
+
+     @SYSTAT [NODE node name],
+     @@subcommand
+
+     where:
+
+     NODE node name is an optional keyword and argument that  is  used
+                    to   display  information  about  the  jobs  on  a
+                    specified node in  the  TOPS-20  cluster.   If  an
+                    asterisk  is  specified  as  the  node  name,  the
+                    command displays information on all nodes  in  the
+                    TOPS-20 cluster.
+
+     @@subcommand   means that, after a comma, you  can  give  one  or
+                    more subcommands on successive lines
+
+
+Summary of SYSTAT Subcommands (defaults are indicated by an asterisk)
+
+
+     ALL
+     CLASS
+     CONNECT-TIME
+     CONTROLLING
+     DIRECTORY
+     HEADER  *
+     JOB job number n
+     LIMIT
+     LINE octal line number, or DETACHED
+     LPT
+     NO subcommand name, or OPERATOR, or .
+     NODE
+     ORIGIN  *
+     OUTPUT file specification
+     PROGRAM  *
+     STATE
+     SYSTEM
+     TIME
+     USER user name
+     WHAT  *
+     WHERE  *
+     WHO  *
+
+
+** For information on the in-line subcommand format, see  the  "Hints"
+section below.
+
+
+                          SYSTAT Subcommands
+
+
+     ALL                  gives all available SYSTAT information
+
+     CLASS                prints the scheduler class in which each job
+                          is  running;  the  share  of  total CPU time
+                          allotted to the job, expressed as a  decimal
+                          fraction; and the fraction of total CPU time
+                          actually used by the job.   A  job's  actual
+                          use may be larger than its allotted share if
+                          some jobs in its class are inactive; it  can
+                          be   larger   still  if  other  classes  are
+                          inactive and this  unused  fraction  of  CPU
+                          time is being allocated among active jobs.
+
+     CONNECT-TIME         prints how long each user has been connected
+                          to the system.
+
+     CONTROLLING          prints, in the column headed CJB, the number
+                          of  the controlling job (if any), that is, a
+                          job  owning  a  PTY  (pseudo-terminal)  that
+                          controls  the job being described; when used
+                          in a SYSTAT command requesting  descriptions
+                          of  particular  jobs, this subcommand causes
+                          jobs  controlled  by  these   jobs   to   be
+                          described also.
+
+     DIRECTORY            requests the name of the directory to  which
+                          each  job  is  connected,  if  not the job's
+                          log-in directory.
+
+     HEADER               calls for a headline identifying the columns
+                          of information printed
+                               Default (unless  you   are   requesting
+                                       information    about   specific
+                                       users, jobs, or lines only;  in
+                                       such  cases  the  default is NO
+                                       HEADER.)
+
+     JOB n                restricts  output  to  description  of   job
+                          number n; can be used more than once.
+
+     LIMIT                prints any time limit set for each job  with
+                          the  SET  TIME  LIMIT  command.   Print  the
+                          amount of CPU time used  by  your  job  with
+                          CTRL/T or INFORMATION PROGRAM-STATUS.
+
+     LINE octal line number or DETACHED
+                          restricts output to description of  the  job
+                          attached  to  the  given  line number, or to
+                          descriptions of all detached  jobs;  can  be
+                          used more than once.
+
+     LPT                  sends output to the line printer instead  of
+                          to your terminal.
+
+          ---
+          | . (period)
+          | CLASS
+          | CONNECT-TIME
+          | CONTROLLING
+          | DIRECTORY
+          | HEADER
+          | LIMIT
+          | NODE          eliminates   the   indicated   category   of
+          | OPERATOR      information,  when  used  with  one  of  the
+          | ORIGIN        keywords shown (. refers to your own job)
+     NO   | STATE
+          | SYSTEM
+          | TIME
+          | WHAT
+          | WHERE
+          | WHO
+          ---
+
+     NODE                 displays information about the jobs  on  the
+                          specified node.
+
+     ORIGIN               displays the job's originating system,  that
+                          is, the system from which the user connected
+                          to this system.
+                               Default
+
+     OUTPUT filespec      sends the output information to the file you
+                          specify, instead of to your terminal.
+                               Default filespec - SYSTAT.lsT
+
+     PROGRAM program name restricts SYSTAT output to  descriptions  of
+                          jobs  using the program (or TOPS-20 command)
+                          specified.  The argument you supply must  be
+                          of six or fewer characters.
+
+     STATE                prints the current state of  each  job,  for
+                          example  RUN  (running),  or TI (waiting for
+                          terminal input)
+
+     SYSTEM [NODE node name]
+                          begins output with  system-wide  information
+                          (the first two lines of regular output).  If
+                          SYSTEM is the only subcommand given,  SYSTAT
+                          output  is  restricted  to  this.  NODE node
+                          name is an  optional  keyword  and  argument
+                          that  displays  information on the specified
+                          node(s) in  the  TOPS-20  cluster.   If  you
+                          specify   an  asterisk  as  the  node  name,
+                          information on  all  nodes  in  the  TOPS-20
+                          cluster appears.
+                               Default (unless  you  give  subcommands
+                                       requesting   information  about
+                                       specific users, jobs, or  lines
+                                       only; in such cases the default
+                                       is NO SYSTEM.)
+
+     TIME                 prints the accumulated  runtime  (CPU  time)
+                          for each job
+
+     USER user name       restricts output  to  descriptions  of  jobs
+                          logged  in under the given user name; can be
+                          used more than once.
+
+     WHAT                 prints the name of the program that each job
+                          is   running;  given  explicitly  only  with
+                          subcommand NO, to restrict SYSTAT output.
+                               Default
+
+     WHERE                prints the line number associated with  each
+                          job;  given  explicitly only with subcommand
+                          NO, to restrict SYSTAT output.
+                               Default
+
+     WHO                  prints the user name under which each job is
+                          logged   in;   given  explicitly  only  with
+                          subcommand NO, to restrict SYSTAT output.
+                               Default
+
+
+Output
+
+     Sample of SYSTAT Output
+
+          The SYSTAT command displays  on  your  terminal  columns  of
+          information  about  all  the jobs on the system.  Below is a
+          sample of the output you would  receive  in  response  to  a
+          SYSTAT  command  that  eliminates  the two rightmost columns
+          (User and <Directory>):
+
+          @SYSTAT ALL NO WHO NO DIRECTORY NO CONNECT TIME
+           Tue 14-Aug-79   15:48:37   Up 1:12:59
+           45+11 Jobs   Load av (class 0)   3.70   3.54   3.71
+
+           Job  CJB Line  Program State    Time    Cls  Shr   Use
+             5        25   TV      RUN    0:01:02   0  0.01   0.03
+             7         6   TV      TI     0:00:35   0  0.01   0.02
+            13   35  217   EXEC    RUN    0:01:02   1  0.15   0.00
+            .    .    .      .      .        .      .    .      .
+            .    .    .      .      .        .      .    .      .
+            .    .    .      .      .        .      .    .      .
+
+          First  you  see  the  current  date  and  time  (in  24-hour
+          notation:   the  sample  above was obtained 37 seconds after
+          3:48 P.M.), and the length of  time  since  the  system  was
+          started (here, just over 1 hour).
+
+          The second line displays the number of user  jobs  (45)  and
+          operator  jobs  (11)  currently  running.   The  next  three
+          numbers are the "load averages" for the system:   these  are
+          weighted averages of the number of runnable processes on the
+          system over the last minute,  5  minutes,  and  15  minutes,
+          respectively.   (If  class  scheduling is enabled, the three
+          load averages are the average number of jobs having at least
+          one  runnable  process, and apply to the class in which your
+          job is running.)  If you are about to start a job  requiring
+          5  minutes  of CPU time, and the load average remains stable
+          over the period in question, for example, becomes 4.54 (3.54
+          + your job = 4.54), then you can count on your job's getting
+          about  1/4.54  of  your  class's  share  of   the   system's
+          attention.   If  your  class  is  assigned  one third of the
+          system's CPU time  and  you  do  not  receive  any  windfall
+          (unclaimed  CPU time), your job will be finished in a little
+          over one hour.
+
+          After this comes the line of headings labeling  each  column
+          of  data  that  follows.   All  but  the  User,  Origin  and
+          <Directory> columns of  information  appear  in  the  sample
+          above,  describing  all jobs (rows).  The unmodified command
+          SYSTAT displays the Job,  Line,  Program,  User  and  Origin
+          columns.   The  Origin column displays the job's originating
+          host followed in parentheses by the network  terminal  type.
+          For  example,  AURORA (CTM) means that the user logged in to
+          node AURORA and  then  used  the  CTERM-SERVER  protocol  to
+          connect his terminal to this system.  The definitions of the
+          network terminal types are:
+
+               CTM       CTERM-SERVER protocol terminal
+               LAT       Local Access Terminal
+               NRT       Network Remote Terminal
+               TCP       Internet TCP/IP Terminal
+
+          By  using  appropriate  subcommands  you  can   select   the
+          categories  of  information,  as  well as the specific jobs.
+          (The Class (Cls) and Share (Shr) categories appear  only  if
+          class  scheduling  is enabled.)  User jobs, both timesharing
+          and batch, are listed  first  (in  ascending  order  by  job
+          number),  and  then, after a blank line, operator jobs.  The
+          number of the job attached to your own terminal appears with
+          an asterisk (*) next to it in the Job column.
+
+     Sending Output Elsewhere
+
+          By giving  the  OUTPUT  subcommand  you  can  direct  SYSTAT
+          information  to  a  file  instead  of to your terminal.  The
+          subcommand LPT sends the information to the printer  instead
+          of to your terminal.
+
+
+Characteristics
+
+     Log-in Not Necessary
+
+          You do not have to be logged in to give the SYSTAT  command.
+          However,  the  system manager can disable the SYSTAT command
+          for users not logged in.
+
+
+Hints
+
+     Giving Subcommands as Arguments on the Command Line
+
+          To simplify  your  typing,  SYSTAT  accepts  subcommands  as
+          arguments  given on the same line as the command, subject to
+          these rules:
+
+               There will be  no  @@  prompt:   simply  type  a  space
+               between  successive  subcommands and between subcommand
+               names and arguments.
+
+               To get information  about  one  or  more  specific  job
+               numbers, give the numbers only; do not type JOB.
+
+               To get information about  one  or  more  specific  user
+               names,  give  the names only; do not type USER.  But if
+               the user name is by coincidence the same  as  a  SYSTAT
+               command  argument,  you must use the subcommand mode to
+               request information about his job.
+
+               To get information about one or  more  specific  log-in
+               directories,  give  the directory names.  (For specific
+               connected directories, specify the directory names (and
+               structures,  if  not  the  public structure) along with
+               either the ALL or DIRECTORY subcommand.)
+
+               To get information about your own (attached) job  only,
+               give a period (.) as argument.
+
+               To get information about all other jobs logged in under
+               your  user  name,  give  your  user  name  and NO .  as
+               arguments.
+
+               The system will not accept  the  OUTPUT  subcommand  in
+               this format; use the subcommand mode instead.
+
+
+Special Cases
+
+     OPERATOR as a User Name
+
+          You can request or refuse information about operator jobs by
+          treating  OPERATOR as a user name.  The system accepts these
+          commands:
+
+          --------------
+
+               @SYSTAT OPERATOR
+
+          and
+
+               @SYSTAT,
+               @@USER OPERATOR
+
+          as well as the special commands
+
+               @SYSTAT NO OPERATOR
+
+          and
+
+               @SYSTAT,
+               @@NO OPERATOR
+
+
+Related Commands
+
+     INFORMATION     for  finding  out  other  information  about  the
+                     system
+
+
+Examples
+
+     1.  Find out the status of all jobs on the system.  (Your current
+         (attached) job is marked with an asterisk (*).)
+
+         @SYSTAT
+
+          Thu 17-May-90 12:27:44  Up 9:32:11
+          12+8 Jobs   Load av   0.33   0.27   0.20
+
+          Job  Line Program  User              Origin
+          135   DET  DTRSRV  Not logged in
+          136   DET  RMSFAL  Not logged in
+          137   DET  RMSFAL  Not logged in
+          138   DET  RMSFAL  Not logged in
+          139   DET  RMSFAL  Not logged in
+          142   434  MS      BRAITHWAITE       LAT70:24008_70(LAT)
+          143   435  MS      WONG              LAT462:24083_462(LAT)
+          144   437  MS      EKLUND            LAT75:24052_75(LAT)
+          145   DET  EXEC    UVA
+          146   436  MS      JMCGREAL          LAT1:LAT1_17(LAT)
+          147   440  EMACS   MONTEIRO          LAT1:LAT1_27(LAT)
+          148   441  EXEC    JBREWER           LAT73:24064_73(LAT)
+          149   314  EXEC    GSCOTT            klipa.tops20.dec.com(TCP)
+          150   442  EXEC    LOMARTIRE         LAT1:24087_1_1(LAT)
+          151   443  EXEC    GSCOTT            LAT1:24086_1(LAT)
+          152   243  NFTP    GSCOTT
+          153*  445  SYSTAT  ANDERSON          LAT423:24081_1_423(LAT)
+
+          129   232  PTYCON  OPERATOR
+          130   233  GALAXY  OPERATOR
+          131   234  NEBULA  OPERATOR
+          132   235  UNIVER  OPERATOR
+          133   236  EXEC    OPERATOR
+          134   237  MX      OPERATOR
+          140   240  DTR     OPERATOR
+          141   241  DIU     OPERATOR
+
+     2.  Find out the status of all jobs on the NODE VENUS.
+
+         @SYSTAT NODE VENUS
+          Thu 13-Aug-87 13:08:12
+          VENUS  Up   0:10:33 17+6 Jobs   Load av   0.11   0.13   0.12
+
+          Job  Line Program  Node    User              Origin
+          231   DET  DTRSRV  VENUS   Not logged in
+          232   DET  RMSFAL  VENUS   Not logged in
+          233   DET  RMSFAL  VENUS   Not logged in
+          234   434  EXEC    VENUS   LOMARTIRE          LAT1(LAT)
+          235   435  EXEC    VENUS   WADDINGTON         LAT96(LAT)
+          236   436  OPR     VENUS   GAGNE              LAT1(LAT)
+          237   437  EXEC    VENUS   GSCOTT             LAT1(LAT)
+          238   440  NFT     VENUS   WADDINGTON         LAT1(LAT)
+          239   441  EXEC    VENUS   BROOKS             LAT95(LAT)
+          240   442  EXEC    VENUS   PUCHRIK            LAT96(LAT)
+          241   447  EMACS   VENUS   JROSSELL           LAT98(LAT)
+          242   443  EXEC    VENUS   PRATT              LAT97(LAT)
+          243   444  SYSTAT  VENUS   RASPUZZI           LAT1(LAT)
+          244   445  EXEC    VENUS   EVANS              LAT96(LAT)
+          245   446  MS      VENUS   DBROWN             LAT97(LAT)
+          246   450  EXEC    VENUS   PERKINS            LAT87(LAT)
+          247   451  EXEC    VENUS   EMORRILL           LAT63(LAT)
+          248   452  EXEC    VENUS   DUSSEAULT          LAT1(LAT)
+          249   453  EXEC    VENUS   WORLEY             LAT97(LAT)
+          250   454  EXEC    VENUS   JROSSELL           LAT1(LAT)
+
+          225   232  GALAXY  VENUS   OPERATOR
+          226   233  PTYCON  VENUS   OPERATOR
+          227   234  DIU     VENUS   OPERATOR
+          228   235  MAILS   VENUS   OPERATOR
+          229   236  WATCH   VENUS   OPERATOR
+          230   237  EXEC    VENUS   OPERATOR
+
+     3.  Determine how much CPU time has been charged to the  jobs  of
+         two users on the system.
+
+         @SYSTAT,
+         @@TIME
+         @@USER KONEN
+         @@USER ALUSIC
+         @@
+           27    66    EXEC    0:00:01    ALUSIC
+           43    11    EXEC    0:00:02    KONEN
+
+     4.  Repeat Example 2 by giving the subcommands  as  arguments  on
+         the same line.
+
+         @SYSTAT TIME KONEN ALUSIC
+           27    66    EXEC    0:00:01    ALUSIC
+           43    11    EXEC    0:00:02    KONEN
+
+     5.  Find out who is using line 11.
+
+         @SYSTAT LINE 11
+           43    11    EXEC    KONEN
+
+     6.  Ask for information about jobs 5 and 45.
+
+         @SYSTAT 5 45
+            5    56    MACRO   D.SCHEIFLER
+           45    205   PTYCON  OPERATOR
+
+     7.  Set a time limit of 4 seconds for your attached job, then ask
+         for  complete  information,  including headings, for the job.
+         (The period (.) specifies  your  attached  job.)   The  value
+         reported  under  the Limit heading is actually the sum of the
+         time limit you set (4 seconds) and the  amount  of  CPU  time
+         already  used  at  the  time of your SET command (2 seconds).
+         This CPU time is reported as 2 seconds under the Time heading
+         because you gave the SYSTAT command immediately after SET.
+
+         @SET TIME-LIMIT 4
+         @SYSTAT ALL HEADER .
+           Job   CJB  Line   Program  State  Time    Cls   Shr   Use
+         Limit   User, <Directory>  Origin
+           14*  51   207    EXEC     RUN    0:00:02   0  0.02  0.02
+         0:00:06 LATTA, MISC:<LATTA>
+
+     8.  Ask for system-wide SYSTAT information only.
+
+         @SYSTAT SYSTEM
+          Fri 1-Mar-84 12:35:44  Up 33:43:36
+          18+15 Jobs   Load av (class 0)   5.19   3.36   2.92
+
+         Ask for system-wide SYSTAT information for nodes  GIDNEY  and
+         CLOYD.
+
+         @SYSTAT SYSTEM NODE GIDNEY NODE CLOYD
+          Thu 13-Aug-87 13:02:00
+          GIDNEY Up 223:12:12 17+6 Jobs  Load av  0.36  0.27  0.14
+          CLOYD  Up  26:34:31  6+8 Jobs  Load av  1.33  1.21  0.99
+
+         Now ask for system-wide SYSTAT information for all  nodes  in
+         the cluster.
+
+         @SYSTAT SYSTEM NODE *
+          Thu 13-Aug-87 13:02:00
+          GIDNEY Up 223:12:12 17+6 Jobs  Load av  0.3   0.27   0.14
+          VENUS  Up   0:10:33 11+5 Jobs  Load av 10.36 10.27  10.14
+          CLOYD  Up  26:34:31 6+8  Jobs  Load av  1.33  1.21   0.99
+          RONCO  Up  12:13:14 2+5  Jobs  Load av  5.01  4.95   4.99
+
+     9.  Find out only which programs are in use.
+
+         @SYSTAT NO WHO NO WHERE NO SYSTEM
+          Job       Program
+          Job Program
+            135   DTRSRV
+            136   RMSFAL
+            137   RMSFAL
+            138   RMSFAL
+            139   RMSFAL
+            142   MS      LAT70:2400870(LAT)
+            143   MS      LAT462:24083462(LAT)
+            144   MS      LAT75:2405275(LAT)
+            145   EXEC
+            146   MS      LAT1:LAT117(LAT)
+            147   EMACS   LAT1:LAT127(LAT)
+            148   EXEC    LAT73:2406473(LAT)
+            149   EXEC    klipa.tops20.dec.com(TCP)
+            150   EXEC    LAT1:2408711(LAT)
+            151   EXEC    LAT1:240861(LAT)
+            153*  SYSTAT  LAT423:240811423(LAT)
+            129   PTYCON
+            130   GALAXY
+            131   NEBULA
+            132   UNIVER
+            133   EXEC
+            134   MX
+            140   DTR
+            141   DIU
+
+    10.  Ask for a list of jobs controlled by job 51.  (Your  attached
+         job, marked with an asterisk (*), happens to be one of these;
+         job 51 itself is the other.)
+
+         @SYSTAT 51 CONTROLLING
+           14*  51  207  EXEC    LATTA
+           51        41  NEWRUN  LATTA
+
+    11.  Do a SYSTAT command that displays the  amount  of  time  each
+         user has been connected to the system.
+
+         @SYSTAT,
+         @@CONNECT-TIME
+         @@NO OPERATOR
+         @@
+         Tue 13-Sep-88 13:05:54  Up 303:54:45
+         10+7 Jobs   Load av   0.08   0.10   0.09
+
+         Job  Line Program Connected  User              Origin
+           80   434  MS       3:15:04  BRAITHWAITE       LAT70:24008_70(LAT)
+           81   435  EXEC     0:32:30  BARR              LAT1:LAT1_17(LAT)
+           82   314  MS     118:07:35  GSCOTT            klipa.tops20.dec.com(TCP)
+           83   315  EXEC   117:38:41  GSCOTT            klipa.tops20.dec.com(TCP)
+           84   440  EXEC   117:26:00  WONG              LAT462:24083_462(LAT)
+           85   437  SORT     2:03:23  FONG              LAT64:24062_2_64(LAT)
+           86   441  EXEC    22:50:16  JROSSELL          LAT462:24085_A_462(LAT)
+           87   444  MS       1:59:40  EKLUND            LAT75:24052_75(LAT)
+           88   443  EXEC    22:31:22  JROSSELL          SCROOM:TWA94(LAT)
+           89   436  EMACS    1:44:53  FONG              MATRIX:TWA14(LAT)
+           90   442  MS       1:28:19  BHAMILTON         GNOME:TWA48(LAT)
+           91   445  EXEC     1:18:12  JBREWER           LAT73:24064_73(LAT)
+           92*  446  SYSTAT   0:01:22  ANDERSON          LAT423:24081_1_423(LAT)
+

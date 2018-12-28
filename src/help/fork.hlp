@@ -1,0 +1,146 @@
+
+FORK command
+
+The FORK command makes the specified  fork  your  current  fork.   The
+current fork is the fork to which TOPS-20 commands are applied.
+
+
+Format
+
+     @FORK (IS) fork
+
+     where:
+
+     fork is one of the following:  Fork name
+                                    Fork number
+                                         Default - the fork  with  the
+                                                   highest fork number
+
+
+Characteristics
+
+     Default Fork
+
+          If you do not specify a fork name or number  with  the  FORK
+          command,  the fork with the highest fork number (usually the
+          last fork created) becomes your current fork, and  the  fork
+          name is printed in brackets, [FORK-NAME].
+
+     Fork Name and Number
+
+          Forks are named after  the  program  they  contain  and  are
+          numbered   in   the   order   that  they  are  created.   In
+          multiforking class commands, the fork name  and  number  are
+          interchangeable.
+
+
+Hints
+
+     More Information
+
+          The FORK command is one of  the  TOPS-20  multiforking-class
+          commands.   For more information about multiforking, see the
+          section Running Multiple  Programs  in  the  TOPS-20  User's
+          Guide.
+
+
+Special Cases
+
+     Fork 0
+
+          If you are a user with enabled WHEEL privileges you can give
+          the  command, FORK 0.  This references the command processor
+          (EXEC) itself.
+
+
+Related Commands
+
+     INFORMATION MEMORY-USAGE       for  examining   memory   of   the
+                                    current process
+
+     INFORMATION FORK-STATUS        for finding  out  the  number  and
+                                    status of each fork in your job
+
+     INFORMATION PROGRAM-STATUS     for finding what  fork  attributes
+                                    have been set with the SET PROGRAM
+                                    command and the number and  status
+                                    of each fork in your job
+
+     CONTINUE, FREEZE,              other multiforking-class
+     KEEP, RESET, SET NAME,         commands
+     SET PROGRAM, and UNKEEP
+
+
+Examples
+
+     1.  Make the first fork you created your current fork.
+
+         @FORK 1
+
+     2.  Display the fork status, and make the last fork  you  created
+         your  current fork.  Then, redisplay the fork status to check
+         the result.  (In  the  FORK-STATUS  display,  an  arrow  (=>)
+         indicates the current fork).
+
+         @INFORMATION FORK-STATUS
+          => EDIT (1): Kept, HALT at 6254, 0:00:12.8
+             DUMPER (2): Kept, HALT at 6065, 0:00:30.1
+             HOST (3): Kept, HALT at 67543, 0:00:09.3
+         @FORK
+         @INFORMATION FORK-STATUS
+             EDIT (1): Kept, HALT at 6254, 0:00:12.8
+             DUMPER (2): Kept, HALT at 6065, 0:00:30.1
+          => HOST (3): Kept, HALT at 67543, 0:00:09.3
+
+     3.  Make the FORK named DUMPER your current  fork;  then  display
+         the fork status.
+
+         @FORK DUMPER
+         @INFORMATION FORK-STATUS
+             EDIT (1): Kept, HALT at 6254, 0:00:12.8
+          => DUMPER (2): Kept, HALT at 6065, 0:00:30.1
+             HOST (3): Kept, HALT at 67543, 0:00:09.3
+
+     4.  Find out which forks exist in your job.  Look at  memory  for
+         the first fork, then examine a particular location.  Make the
+         second inferior fork current, and do the same thing there.
+
+         @INFORMATION FORK-STATUS
+          => QUILL (1): Kept, HALT at 50340, 0:00:04.5
+                Fork 2: HALT at 21010, 0:00:00.4
+         @INFORMATION MEMORY-USAGE
+
+         124. pages, Entry vector loc 4570 len 3
+
+           Section 0     R, W, E,  Private
+         0-5      Private   R, W, E
+         6-55     RANDOM:<QUILL>TECPUR.EXE.1120  1-50    R, E
+         56-77    Private   R, W, E
+         116-123  Private   R, W, E
+         620-637  RANDOM:<QUILL>ABBRE.:EJ.614  0-17   R, E
+         640-643  RANDOM:<QUILL>TYPE.:EJ.27  0-3   R, E
+         644-645  RANDOM:<QUILL>INIT.:EJ.17  0-1   R, E
+         646-661  RANDOM:<QUILL>LSTSQ.:EJ.424  0-13   R, E
+         662-663  RANDOM:<QUILL>SYSTEM.:EJ.1  0-1   R, E
+         @EXAMINE 6400
+         6400/ 200040,,4636
+         @FORK 2
+         @INFORMATION MEMORY-USAGE
+
+         95. pages, Entry vector loc 15710 len 3
+
+           Section 0     R, W, E,  Private
+         0-11     Private   R, W, E
+         13-15    Private   R, W, E
+         16-110   RANDOM:<TOOLS>DEFFNA.3  3-75   R, CW, E
+         117      Private   R, W, E
+         166      Private   R, W, E
+         170      Private   R, W, E
+         172      Private   R, W, E
+         174      Private   R, W, E
+         224      Private   R, W, E
+         226      Private   R, W, E
+         231-250  Private   R, W, E
+         @EXAMINE 2600
+         2600/ 0
+

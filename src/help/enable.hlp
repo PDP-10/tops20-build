@@ -1,0 +1,114 @@
+
+ENABLE command
+
+The ENABLE command enables any special capabilities you may have.
+
+
+Format
+
+     @ENABLE (CAPABILITIES)
+     $
+
+
+Characteristics
+
+     Dollar Sign Prompt
+
+          The ENABLE command causes the system to print a dollar  sign
+          prompt ($), indicating enabled capabilities, in place of the
+          standard at sign prompt (@).   The  dollar  sign  prompt  is
+          printed  after  ENABLE even if you have not been granted any
+          capabilities.
+
+     Capabilities of Log-In Directory Only
+
+          The ENABLE command activates only  those  capabilities  that
+          have  been  granted  to  the owner of your log-in directory.
+          You do not receive any capabilities as a result  of  CONNECT
+          or ACCESS commands or group memberships.
+
+
+Hints
+
+     Displaying Capabilities
+
+          Capabilities are defined by your login directory but  are  a
+          characteristic  of  your  job  and  can  be  enabled  in any
+          directory to which you connect.  To list your  capabilities,
+          give  the  INFORMATION  DIRECTORY  command  for  your  login
+          directory.
+
+     More Information
+
+          Capabilities are assigned with the BUILD command.   See  the
+          BUILD   command   subcommands   in  this  manual  for  brief
+          descriptions of special capabilities.
+
+
+Special Cases
+
+     Dollar Sign Prompt in Batch Jobs
+
+          Because a dollar sign placed in the location  of  a  TOPS-20
+          prompt  could  be  confused with a batch command, the system
+          precedes the enabled prompt with a space for batch jobs.
+
+     Capabilities Changed While Logged In
+
+          Capabilities are given to your job when you log in.  If your
+          capabilities  are  changed while you are logged-in, you must
+          log out and log in again for the change to take effect.
+
+
+Warning
+
+     Disabling Capabilities Promptly
+
+          Because your commands are much more  powerful  if  you  have
+          capabilities enabled, you should disable them as soon as you
+          have finished using them.  Otherwise you or a  program  that
+          you run could accidentally damage the system.
+
+
+Related Commands
+
+     DISABLE                       for  suspending  any   capabilities
+                                   that  the  system manager has given
+                                   you
+
+     INFORMATION DIRECTORY (for    for finding out which capabilities,
+     the login directory)          have been granted to you.
+
+
+Examples
+
+     1.  Enable your capabilities.
+
+         @ENABLE
+         $
+
+     2.  Try to assign a tape drive to your job before taking  it  off
+         line  for  repairs.   But  it  is already assigned to another
+         user, whose terminal is set to  refuse  links.   Enable  your
+         capabilities  and  ask  him to deassign the tape drive.  Then
+         disable capabilities.
+
+         @ASSIGN MTA2:
+         ?MTA2: Already assigned to job 29
+         @SYSTAT 29
+           29      53   EXEC    R.SCHNEIDER
+         @TALK R.SCHNEIDER
+         ?Refused, send mail to the user instead
+         @ENABLE
+         $TALK R.SCHNEIDER
+
+         LINK FROM F.DOMINO, TTY 221
+         $;ROBIN - PLEASE DEASSIGN MTA2:.  IT MUST BE TAKEN OFF LINE
+         $;FOR MAINTENANCE.  USE MTA3: INSTEAD.  THANKS.
+         @;OKAY, SURE.
+         @DEASSIGN MTA2:
+         @
+         $BREAK
+         $DISABLE
+         @
+

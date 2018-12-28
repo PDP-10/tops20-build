@@ -1,0 +1,74 @@
+
+RESET command
+
+The RESET command clears memory of the specified forks.
+
+
+Format
+
+     @RESET (FORK) argument
+
+     where:
+
+     argument is one of the following:  Fork name
+                                        Fork number
+                                        * for all forks
+                                        . (period)  for  the  current
+                                          fork
+
+                                        Default - all unkept forks
+
+
+Characteristics
+
+     Action of RESET
+
+          In addition to clearing memory for the specified forks,  the
+          RESET  command closes all files, mapped and unmapped, opened
+          by the specified forks and their inferior forks.  RESET also
+          simultaneously  terminates  the  specified  fork's  inferior
+          forks.
+
+
+Effect on Memory
+
+     The RESET command clears the specified forks from memory.
+
+
+Related Commands
+
+     INFORMATION FILE-STATUS      for  determining  which  files   are
+                                  currently open
+
+     INFORMATION MEMORY-USAGE     for determining contents of memory
+
+     CONTINUE, FORK, FREEZE       other multiforking-class commands
+     INFORMATION, FORK-STATUS,
+     INFORMATION PROGRAM-STATUS,
+     KEEP, RESET, SET NAME,
+     SET PROGRAM, and UNKEEP
+
+
+Examples
+
+     1.  Give the RESET command to clear all unkept forks from memory.
+
+         @RESET
+
+     2.  Clear all forks, including kept forks, from memory.
+
+         @RESET *
+
+     3.  Display the fork status with INFORMATION FORK-STATUS.   Then,
+         clear the SORTER fork from memory.  Redisplay the fork status
+         to check the result.
+
+         @INFORMATION FORK-STATUS
+             EDT (1): Kept, ^C from IO wait at 413773, 0:00:00.0
+          => PASCAL (2): Kept, Background, Running at 324004, 0:00:00.8
+             SORTER (3): HALT at 400370, 0:00:00.6
+         @RESET 3
+         @INFORMATION FORK-STATUS
+             EDT (1): Kept, ^C from IO wait at 413773, 0:00:00.0
+             PASCAL (2): Kept, Background, Running 453004, 0:00:01.3
+

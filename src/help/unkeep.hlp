@@ -1,0 +1,88 @@
+
+UNKEEP command
+
+The UNKEEP command cancels the kept status of a fork.
+
+
+Format
+
+     UNKEEP (FORK) fork
+
+     where:
+
+     fork is one of the following:  Fork name
+                                    Fork number
+                                         Default - the current fork
+
+
+Characteristics
+
+     Unkept Forks
+
+          An unkept fork is a fork that is cleared  from  memory  when
+          another  program  is  loaded  or  when  the RESET command is
+          given.  Forks are normally unkept unless kept with the  KEEP
+          or SET PROGRAM KEEP commands.
+
+     Inferior Forks
+
+          The UNKEEP command simultaneously cancels the kept status of
+          a superior fork and its inferior forks.
+
+
+Hints
+
+     More Information
+
+          The UNKEEP command is one of the TOPS-20  multiforking-class
+          commands.   For more information about multiforking, see the
+          section named  Running  Multiple  Programs  in  the  TOPS-20
+          User's Guide.
+
+
+Effect on Memory
+
+     The UNKEEP command does not immediately affect memory.  It  does,
+     however,  allow  a  fork  in  memory  to  be cleared when another
+     program is loaded or the RESET command is given.
+
+
+Related Commands
+
+     INFORMATION FORK-STATUS        for displaying the fork status
+
+     KEEP                           for changing an unkept fork  to  a
+                                    kept fork
+
+     RESET                          for clearing forks from memory
+
+     CONTINUE, FORK, FREEZE,        other         multiforking-related
+     KEEP, INFORMATION FORK-STATUS, commands
+     SET NAME, and SET PROGRAM
+
+
+Examples
+
+     1.  Give the INFORMATION FORK-STATUS command to display the  fork
+         status.   Then,  give  the  UNKEEP command to cancel the kept
+         status of the current fork and redisplay the fork status.
+
+         @INFORMATION FORK-STATUS
+          => EDIT (1): Kept, HALT at 6254, 0:00:00.6
+             FILCOM (2): Kept, ^C from IO wait at 700272, 0:00:00.2
+         @UNKEEP
+         @INFORMATION FORK-STATUS
+          => EDIT (1): HALT at 6254, 0:00:00.6
+             FILCOM (2): Kept, ^C from IO wait at 700272, 0:00:00.2
+
+     2.  Display the fork status, and UNKEEP a noncurrent fork.  Then,
+         verify the new fork status.
+
+         @INFORMATION FORK-STATUS
+          => EDIT (1): HALT at 6254, 0:00:00.6
+             FILCOM (2): Kept, ^C from IO wait at 700272, 0:00:00.2
+         @UNKEEP FILCOM
+         @INFORMATION FORK-STATUS
+          => EDIT (1): HALT at 6254, 0:00:00.6
+             FILCOM (2): ^C from IO wait at 700272, 0:00:00.2
+

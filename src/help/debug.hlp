@@ -1,0 +1,473 @@
+
+DEBUG command
+
+The DEBUG  command  loads  your  program  into  memory  along  with  a
+debugging program, compiling the source file first if necessary.  Then
+it starts the debugging program.
+
+
+Format
+
+     @DEBUG (FROM) /switch(es) source/switch(es)  object,...
+
+     where:
+
+     switches       are  keywords  chosen   from   the   list   below,
+                    indicating  your  choice of DEBUG command options.
+                    They have different  effects  depending  on  their
+                    position  in  the command line:  placed before all
+                    files in the command, they  act  as  defaults  for
+                    all;  otherwise,  they  affect  only  the  nearest
+                    preceding file.
+                         Defaults  are shown in the list of switches
+
+     source         is the file specification of the  source  program.
+                    The filename must be of 6 or fewer characters, and
+                    the file type of 3 or fewer characters; you cannot
+                    use  a  generation  number.   This argument is not
+                    necessary if you supply an object filespec.
+
+     object         is the file specification of the  object  program.
+                    The  filename  must be of six or fewer characters,
+                    and the file type must be .REL; you cannot  use  a
+                    generation number.  This argument is not necessary
+                    if you supply a source filespec.
+                         Default (if  you  give  neither  source   nor
+                                 object  filespecs)  -  last filespecs
+                                 and associated switches you gave in a
+                                 LOAD-class command
+
+       Summary of DEBUG Command Switches (defaults in boldface)
+
+               /10-BLISS
+               /36-BLISS
+               /68-COBOL
+               /74-COBOL
+               /ABORT
+               /ALGOL
+               /BINARY
+               /COBOL
+               /COMPILE
+               /CREF
+               /CROSS-REFERENCE
+               /DDT
+               /DEBUG
+               /FAIL
+               /FLAG-NON-STANDARD
+               /FORTRAN
+               /LANGUAGE-SWITCHES:"/switch(es)"
+               /LIBRARY
+               /LIST
+               /MAC
+               /MACHINE-CODE
+               /MACRO
+               /MAP
+               /NOBINARY
+               /NOCOMPILE
+               /NOCREF
+               /NOCROSS-REFERENCE
+               /NODEBUG
+               /NOFLAG-NON-STANDARD
+               /NOLIBRARY
+               /NOLIST
+               /NOMACHINE-CODE
+               /NOOPTIMIZE
+               /NOSEARCH
+               /NOSTAY
+               /NOSYMBOLS
+               /NOWARNINGS
+               /OPTIMIZE
+               /PASCAL
+               /RELOCATABLE
+               /SAIL
+               /SEARCH
+               /SIMULA
+               /SNOBOL
+               /STAY
+               /SYMBOLS
+               /WARNINGS
+
+
+
+                          DEBUG Command Switches
+
+
+     /10-BLISS        compiles the file using the BLISS-10 compiler.
+                           Default for files of type .B10 and .BLI
+
+     /36-BLISS        compiles the file using the BLISS-36 compiler.
+                           Default for files of type .B36
+
+     /68-COBOL        compiles the file using the COBOL-68 compiler.
+                           Default for files of type .C68
+
+     /74-COBOL        compiles the file using the COBOL-74 compiler.
+                           Default for files of type .C74
+
+     /ABORT           stops a compile if a fatal error is detected and
+                      returns your terminal to TOPS-20 command level.
+
+     /ALGOL           compiles the file using the ALGOL compiler.
+                           Default for files of type .ALG
+
+     /BINARY          allows generation of an object (binary) file for
+                      each source file given.
+                           Default
+
+     /COBOL           compiles the  file  using  the  COBOL  compiler,
+                      either   COBOL-68   or   COBOL-74,   that   your
+                      installation   has   stored    in    the    file
+                      SYS:COBOL.EXE.
+                           Default for files of type .CBL
+
+     /COMPILE         forces compilation of the source file even if  a
+                      current  object  file  already exists.  Use this
+                      switch along with a /LIST  or  /CREF  switch  to
+                      obtain  listings  when  you  have current object
+                      files.
+
+     /CREF            same as /CROSS-REFERENCE.
+
+     /CROSS-REFERENCE
+                      creates  a   file   containing   cross-reference
+                      information  for each compilation.  The filename
+                      is that of the object file;  the  file  type  is
+                      .CRF.   Use the CREF command to obtain a listing
+                      of the file.   (For  COBOL  files,  this  switch
+                      automatically    produces    a   cross-reference
+                      listing.)  See the TOPS-20 User Utilities  Guide
+                      for more information about the CREF program.
+
+     /DDT             loads the DDT debugging program along with  your
+                      object file.
+
+     /DEBUG           produces an  object  file  containing  debugging
+                      information  beyond  what  is  usually  inserted
+                      during compilation.  (For FORTRAN programs only,
+                      and  only  if  you  have not given the /OPTIMIZE
+                      switch).
+
+     /FAIL            compiles the file using the FAIL compiler.
+                           Default for files of type .FAI
+
+     /FLAG-NON-STANDARD
+                      indicates nonstandard syntax in file.
+
+     /FORTRAN         compiles the file using the FORTRAN compiler.
+                           Default in the absence of a standard source
+                                   file type and a language switch
+                           Default for files of type .FOR
+
+     /LANGUAGE-SWITCHES:"/switch(es)"
+                      passes the specified switches  to  the  compiler
+                      that  will  process  the  file(s)  to which this
+                      switch applies.  You must include  the  switches
+                      in double quotation marks ("  ").
+
+     /LIBRARY         same as /SEARCH.
+
+     /LIST            prints a line printer listing of the program  in
+                      ASCII  format;  the  name of this listing is the
+                      filename of the object file.  The  /CREF  switch
+                      overrides /LIST when they both apply to the same
+                      file.
+
+     /MAC             same as /MACRO.
+
+     /MACHINE-CODE    produces a file containing the generated machine
+                      code.   The filename is that of the object file;
+                      the  file  type  is  .LST.    For   high   level
+                      languages.
+                           Default
+
+     /MACRO           assembles the files using the MACRO assembler.
+                           Default for files of type .MAC
+
+     /MAP             produces a loader map and stores it in the  file
+                      object.MAP,  where  object  is  the  name of the
+                      module containing the start address; or  (if  no
+                      start address) nnnLNK.MAP, where nnn is your job
+                      number.
+
+     /NOBINARY        prevents generation of an object (binary)  file.
+                      Use  this  switch  along  with /LIST or /CREF to
+                      allow these  switches  to  take  effect  without
+                      producing a new object file.
+
+     /NOCOMPILE       prevents compilation if  the  associated  object
+                      file    is    current;   otherwise   it   forces
+                      compilation.    Cancels    the    /COMPILE    or
+                      /RELOCATABLE switch.
+                           Default
+
+     /NOCREF          same as /NOCROSS-REFERENCE.
+
+     /NOCROSS-REFERENCE
+                      prevents the creation of a cross-reference file.
+                           Default
+
+     /NODEBUG         excludes special debugging information from your
+                      object file.  (For FORTRAN programs only.)
+
+     /NOFLAG-NON-STANDARD
+                      prevents   a   line   printer   listing   of   a
+                      cross-reference file.
+                           Default
+
+     /NOLIBRARY       same as /NOSEARCH.
+
+     /NOLIST          prevents a line printer listing of the program.
+                           Default
+
+     /NOMACHINE-CODE  prevents generation of a file containing machine
+                      code.
+                           Default
+
+     /NOOPTIMIZE      prevents the generation of a globally  optimized
+                      object file (for FORTRAN programs only).
+                           Default
+
+     /NOSEARCH        requires all modules in the object file  library
+                      (the  file  accompanied  by  this  switch in the
+                      command line) to be loaded even if they are  not
+                      called  by  your  program.   Cancels the /SEARCH
+                      switch.
+                           Default
+
+     /NOSTAY          stops  the  compiler  from  being  placed  in  a
+                      background  fork.   Use  when  /STAY is set as a
+                      default for the compiler.
+
+     /NOSYMBOLS       prevents a symbol table from being loaded  along
+                      with the object file.
+
+     /NOWARNINGS      prevents  display  of  warnings   for   nonfatal
+                      errors.
+
+     /OPTIMIZE        calls for generation  of  a  globally  optimized
+                      object  file,  that is, one that runs as quickly
+                      as possible.  (For FORTRAN  programs  only,  and
+                      only if you do not also give the /DEBUG switch).
+
+     /PASCAL          compiles the file using the PASCAL compiler.
+                           Default for files of type .PAS
+
+     /RELOCATABLE     identifies the input  file  as  an  object  file
+                      (regardless   of  its  extension)  and  prevents
+                      compilation of the source file, forcing  use  of
+                      an  existing object file even if the object file
+                      is out of date.
+                           Default for files of type .REL
+
+     /SAIL            compiles the file using the SAIL compiler.
+                           Default for files of type .SAI
+
+     /SEARCH          requires that the object file library (the  file
+                      accompanied  by this switch in the command line)
+                      be searched for modules called by  your  program
+                      or  by a program subroutine.  Only these modules
+                      are loaded, along with modules called  from  the
+                      system libraries, which are always searched.
+
+     /SIMULA          compiles the file using the SIMULA compiler.
+                           Default for files of type .SIM
+
+     /SNOBOL          compiles the file using the SNOBOL compiler.
+                           Default for files of type .SNO
+
+     /STAY            returns your terminal to TOPS-20  command  level
+                      so  that  you  can  perform other work while the
+                      system continues executing  the  DEBUG  command.
+                      You immediately receive the TOPS-20 prompt (@ or
+                      $) and can then  issue  any  user  command.   Be
+                      careful  not  to send incorrect data to programs
+                      expecting  terminal  input.    (Refer   to   the
+                      CONTINUE    command,   Restrictions:    Programs
+                      competing for terminal input.)
+
+                      This switch saves you from having to:   issue  a
+                      ^T  to  make sure the debugger has begun; give a
+                      ^C to halt debugging; and issue a CONTINUE /STAY
+                      command   to  remain  at  command  level  during
+                      debugging.
+
+     /SYMBOLS         loads a symbol table along with the object file;
+                      helpful for debugging a program.
+                           Default
+
+     /WARNINGS        displays warnings for nonfatal errors.
+                           Default
+
+
+Characteristics
+
+     Compiling New Sources Only
+
+          Before debugging programs, the  system  ordinarily  compiles
+          any source (and only those sources) whose write date is more
+          recent than that of the object file of the same  name.   You
+          can  override  this action with the /COMPILE or /RELOCATABLE
+          switch.  Note that the DDT debugging program  is  used  when
+          /RELOCATABLE prevents a new compilation.
+
+     Default Switches Not Passed to Compiler
+
+          Only switches specified in a LOAD-class command  are  passed
+          to  the compiler; default switches are not passed.  Instead,
+          the system assumes that the defaults for  the  compiler  are
+          the same as the defaults for the LOAD-class command.
+
+     Using Standard File Types
+
+          If you specify source files with standard types (.FOR, .MAC,
+          .CBL,  or .ALG) in a DEBUG command, the system automatically
+          calls  the  appropriate   compiler   when   compilation   is
+          necessary.   If  you  specify source files by filename only,
+          the system searches your connected directory  in  the  above
+          order for a file of this name and a standard type.  To debug
+          programs from sources that have nonstandard file types, give
+          a  switch to indicate the proper compiler (/FORTRAN, /MACRO,
+          /COBOL, or /ALGOL).  A switch will take  precedence  over  a
+          standard file type if they indicate different languages.  If
+          no compiler is indicated with either a switch or a  standard
+          file type, the FORTRAN compiler is used.
+
+     Name of Debugging Program Loaded by DEBUG
+
+          Ordinarily  the  DEBUG  command   causes   the   appropriate
+          debugging  program  to  be  loaded  along  with your program
+          (FORDDT with FORTRAN programs.  COBDDT with COBOL  programs,
+          DDT  with MACRO and ALGOL programs).  Use the /DDT switch to
+          specify that DDT be used.
+
+
+Hints
+
+     Commas Between Filespecs
+
+          If you give two or more filespecs  separated  by  commas  as
+          arguments  to  DEBUG, the loaded programs exist in memory at
+          the same time and will act as a single program.  You can use
+          this  feature  to  substitute  one  module for another under
+          varying conditions or for different applications.
+
+     Plus Signs Between Filespecs
+
+          If you give two or more filespecs separated  by  plus  signs
+          (+) as arguments to DEBUG, they are treated as a single file
+          by compilers.  Their  object  module  is  stored  under  any
+          filename  given  as the "object" argument of the command, or
+          (if none) under the last filename in the group and file type
+          .REL.
+
+     Indirect Files as Arguments
+
+          You can store the arguments (source  and  object  filespecs,
+          switches)  of  a  DEBUG  command  in  an  indirect file, and
+          specify them by typing an at sign (@) and its filespec as  a
+          DEBUG command argument.
+
+     Establishing Default Arguments with the SET Command
+
+          You can issue the SET DEFAULT  COMPILE-SWITCHES  command  to
+          set  up  default  global  arguments  to  the  DEBUG command.
+          Insert this SET command in your COMAND.CMD  file  to  change
+          your own defaults permanently.
+
+     Including all FORTRAN Debugging Information
+
+          If you are debugging a  FORTRAN  program  and  you  wish  to
+          examine  line  numbers or DO loops, or use statement tracing
+          or array dimension checking, give the  /DEBUG  and  /COMPILE
+          switches  with  the  DEBUG  command to include the necessary
+          information.
+
+     Running LINK Directly
+
+          The DEBUG command  automatically  runs  LINK,  the  system's
+          loader  program,  but  if you require control of the loading
+          process you can run LINK directly.   See  the  TOPS-20  LINK
+          Reference Manual.
+
+     Wildcards Illegal with DEBUG
+
+          The DEBUG command does not accept wildcard characters (* and
+          %) in a file specification.
+
+
+Effect on Memory
+
+     The DEBUG command clears any unkept forks from memory, loads  the
+     appropriate  compiler if necessary, then loads your program and a
+     compatible debugging program.
+
+
+Related Commands
+
+     COMPILE, LOAD, and EXECUTE     other  LOAD-class   commands   for
+                                    performing related functions
+
+     DDT                            for loading and starting  the  DDT
+                                    debugging program, or for starting
+                                    the  debugging  program  you  have
+                                    already loaded
+
+
+Examples
+
+     1.  Debug a FORTRAN program.
+
+              @DEBUG FORT.FOR
+              FORTRAN: FORT
+              MAIN.
+              LINK:   Loading
+              [LNKDEB FOR DDT Execution]
+              STARTING FORTRAN DDT
+
+              >>
+
+     2.  Debug a FORTRAN program using the /COMPILE  switch  to  force
+         compilation  and  the  /DEBUG  switch  to generate additional
+         debugging information.
+
+              @DEBUG /COMPILE /DEBUG FORT.FOR
+              FORTRAN:FORT
+              MAIN.
+              LINK:    Loading
+              [LNKDEB FORDDT Execution]
+              STARTING FORTRAN DDT
+
+              >>
+
+     3.  Using incompatible switches, try to debug  a  program.   (The
+         system ignores one of them and continues.)
+
+         @DEBUG/COMPILE/OPTIMIZE/DEBUG FORT
+         FORTRAN: FORT
+         %ERROR IS GLOBAL OPTIMIZATION NOT SUPPORTED WITH
+         /DEBUG - /OPT IGNORED
+         MAIN.
+         LINK:   Loading
+         [LNKDEB FORDDT Execution]
+
+         STARTING FORTRAN DDT
+
+         >>
+
+     4.  Get a time-ordered list of TEST1  files  in  your  directory.
+         Debug an old version of it.
+
+         @TDIRECTORY TEST1.*
+                              WRITE
+
+            PS:<LATTA>
+          TEST1.CBL.2         5-Jan-85 13:10:57
+            .LST.1            6-Jan-85 14:22:00
+            .REL.1            6-Dec-84 10:08:17
+
+          Total of 3 files
+         @DEBUG TEST1/RELOCATABLE
+         LINK:   Loading
+         [LNKDEB DDT Execution]
+         DDT
+

@@ -1,0 +1,31 @@
+
+Subcommands
+
+Subcommands  are  a   variety   of   arguments   used   chiefly   with
+DIRECTORY-class  (DIRECTORY,  FDIRECTORY,  TDIRECTORY, and VDIRECTORY)
+commands and with the BUILD command.  If you want to give  subcommands
+to any of the DIRECTORY-class commands, type a comma at the end of the
+command line just before pressing  the  carriage  return.   After  the
+system   prompts   you  with  a  double  at sign  (@@)  you  can  give
+subcommands, one on each line.  If you  give  no  subcommands  to  the
+DIRECTORY command, the ALPHABETICAL and HEADING subcommands will be in
+effect,  giving  an  alphabetical  listing  of  files.   For   a   few
+subcommands,  default  arguments  will  be  in  effect if you give the
+subcommands without supplying any.  You can give  subcommands  in  any
+order,  requesting  or declining special categories of information and
+specifying the format of  its  presentation.   If  you  give  mutually
+exclusive  subcommands  (ALPHABETICAL  and CHRONOLOGICAL, for example)
+the  last-given  subcommand  prevails.   Note  that  the   FDIRECTORY,
+TDIRECTORY,  and  VDIRECTORY  commands are equivalent to the DIRECTORY
+command with certain subcommands automatically included,  and  can  be
+further  modified  with  other  subcommands from DIRECTORY's list.  To
+cancel a DIRECTORY-class command  while  giving  subcommands,  type  a
+CTRL/C.
+
+The BUILD command operates differently from  DIRECTORY-class  commands
+in  putting you automatically into subcommand mode without your typing
+a final  comma  on  the  command  line,  and  in  offering  a  special
+subcommand to cancel the command while you are typing subcommands.
+
+See the individual command help files for  more  detailed  information
+about subcommands.

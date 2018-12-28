@@ -1,0 +1,93 @@
+
+DISCARD command
+
+The DISCARD command gives up the tape copy of specified on-line files.
+
+
+Format
+
+     @DISCARD (TAPE INFORMATION FOR FILES) filespec,...
+
+     where:
+
+     filespec                      is  the  specification  of  a  file
+                                   whose   tape   copy   you  want  to
+                                   discard.
+
+
+Characteristics
+
+     Action of DISCARD
+
+          The DISCARD command causes the tape pointer in the FDB (File
+          Descriptor  Block)  of the specified file to be deleted.  It
+          does not actually destroy the tape copy of  the  file.   The
+          tape  copy  is  destroyed  when  the tape is recycled by the
+          operator.  (See also Hints - Undoing DISCARD, below.)
+
+     Withdrawing Archive Status of Files
+
+          When you give the DISCARD command for  an  on-line  archived
+          file,  you withdraw archive status from the disk copy of the
+          file.  That is, the file  becomes  an  ordinary  disk  file,
+          which you can edit or delete if you wish.
+
+     DISCARD for Non-archived Files
+
+          You can also use the DISCARD command to  give  up  the  tape
+          copy   of   files   that   have   been   migrated   to  tape
+          (automatically, by the system) and then retrieved using  the
+          RETRIEVE command.
+
+
+Hints
+
+     Undoing DISCARD
+
+          You receive a mail message from the operator for every  file
+          whose  tape  copy  you  discard.  The message gives the tape
+          number, saveset number, and file number within  the  saveset
+          of  each  tape  copy.  If you have given the DISCARD command
+          for a file and later wish to use the tape copy, you  may  be
+          able  to  recover  it using this information, as long as the
+          tapes have not yet been recycled.
+
+
+Related Commands
+
+     ARCHIVE                  for requesting  that  a  permanent  tape
+                              copy of specified files be made
+
+     DELETE (with CONTENTS-ONLY subcommand)
+                              for deleting only the disk copy of files
+                              that also have a tape copy
+
+     RETRIEVE                 for requesting that an off-line file  be
+                              restored to disk
+
+
+Examples
+
+     1.  Discard the tape copy of a file.
+
+         @DISCARD TESTER.EXE
+          TESTER.EXE.1 [OK]
+
+     2.  Attempt to alter an archived file.  When you find out it  has
+         archive  status,  discard  its  tape  copy  (this revokes its
+         archive status) and  perform  the  alteration.   Archive  the
+         resulting file and check its status.
+
+         @APPEND FOO.LOG DRCHIVE.TXT
+           FOO.LOG.1
+         ?File has archive status, modification is prohibited:
+         DRCHIVE.TXT.1
+         @DISCARD DRCHIVE.TXT
+           DRCHIVE.TXT.1 [OK]
+         @APPEND FOO.LOG DRCHIVE.TXT
+           FOO.LOG.1 [OK]
+         @ARCHIVE DRCHIVE.TXT
+           DRCHIVE.TXT.1 [Requested]
+         @INFORMATION ARCHIVE-STATUS DRCHIVE.TXT
+           DRCHIVE.TXT.1 Archive requested
+

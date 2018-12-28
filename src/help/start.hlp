@@ -1,0 +1,227 @@
+
+START command
+
+The START command begins execution of the program in the current fork.
+
+
+Format
+
+     @START (PROGRAM) location/switch
+
+     where:
+
+     location       is the octal or symbolic address  where  you  want
+                    the program to start.
+                    Default location - the  normal  starting  address,
+                                       that  is, the first word in the
+                                       program's entry vector
+
+     switch         is  a  keyword,  chosen  from  the   list   below,
+                    indicating your choice of START command options.
+
+
+
+                        START Command Switches
+
+
+/BACKGROUND    keeps your terminal at TOPS-20 command level and starts
+               execution  of the program in a "background" fork.  When
+               the program attempts to do terminal input or output, it
+               halts  and  displays  the  message [FORK-NAME wants the
+               TTY].
+
+/NORMALLY      restores your terminal to command level (if any) within
+               the program
+                    Default
+
+/STAY          keeps your terminal at TOPS-20 command  level.   Output
+               from  the  program  is  sent  to  the  terminal  and is
+               intermixed with whatever output is currently displayed.
+               When the program attempts to read from the terminal, it
+               can randomly intercept input intended for the  EXEC  or
+               another  program.   Therefore,  use  this  switch  with
+               programs that, once started,  do  not  request  further
+               terminal input.
+
+
+Characteristics
+
+     Starting a Noncurrent Fork
+
+          When you START a noncurrent  fork,  the  fork  becomes  your
+          current fork.
+
+
+Hints
+
+     Further Information
+
+          The START command is one of the  TOPS-20  multiforking-class
+          commands.   For more information about multiforking, see the
+          section named  Running  Multiple  Programs  in  the  TOPS-20
+          User's Guide.
+
+          For more information about entry vectors,  see  the  TOPS-20
+          Monitor Calls Reference Manual.
+
+
+Special Cases
+
+     Running COBOL Programs a Second Time
+
+          After running a program (with a RUN or EXECUTE  command,  or
+          with  a GET and START or LOAD and START combination) you can
+          usually run it again using START.   COBOL  programs  are  an
+          exception:  to run them again you must reload them.
+
+
+Restrictions
+
+     Programs Competing for Terminal Input
+
+          If you use START /STAY to run  a  program  in  a  background
+          fork,  either  at  the  current  or  at a lower EXEC command
+          level, (see Hints - Using PUSH to Get a New TOPS-20  Command
+          Level,  above),  the  program  can  request  input  from the
+          terminal while you are giving input to the EXEC  or  another
+          program.   This  input  can  be  randomly intercepted by the
+          background program when it requests terminal input.  Usually
+          though, the EXEC or the current program receives the input.
+
+          When  terminal  input  is  intercepted  by  the   background
+          program, the program usually types input error messages.  To
+          give input to the program, stop the program  by  typing  two
+          CTRL/Cs  or  the  program's  exit  command.   Then,  if  the
+          background program is at a higher EXEC command  level,  give
+          POP  commands  to  return  to  the EXEC level that holds the
+          background program.  (POP terminates the  current  EXEC  and
+          erases  programs in its memory.)  Finally, give the CONTINUE
+          /NORMALLY command; this puts you at program command level so
+          that you can give the requested input.
+
+          Input is intercepted by  the  background  program  randomly.
+          Therefore,  you may have to type extra CTRL/Cs, program exit
+          commands, and POPs.  To reduce confusion about the direction
+          of  terminal  input,  it  is  recommended that you use START
+          /STAY only when you plan to work at the current  EXEC  level
+          while  a  program  runs  in  a  background  fork.  Use START
+          /BACKGROUND when you plan to work at a lower EXEC  level  or
+          at another program command level.
+
+          When  a  program  started  with  START  BACKGROUND  requests
+          terminal  input,  it sends the message, [FORK-NAME wants the
+          TTY].  No input is taken by the background program until you
+          return to program command level with CONTINUE /NORMALLY.
+
+     No I/O Control with Some Programs
+
+          Most programs read and write data to  the  terminal  through
+          standard   input  and  output  designators.   Some  programs
+          however, use different methods  of  communicating  with  the
+          terminal.   Therefore, when you use /BACKGROUND and /STAY to
+          control terminal input and output from  a  background  fork,
+          the  input  and output behavior of programs with nonstandard
+          designators can be unpredictable.
+
+     Execute-only Programs
+
+          Programs that are execute-only can only be started at  their
+          normal starting address.
+
+
+Related Commands
+
+     CONTINUE                 for  resuming  execution  of  a   halted
+                              program in memory
+
+     FORK                     for changing the current fork
+
+     FREEZE                   for halting a program  in  a  background
+                              fork
+
+     GET                      for  placing  executable   programs   in
+                              memory
+
+     INFORMATION FORK-STATUS  for displaying the number and the status
+                              of each fork in your job
+
+     KEEP                     for giving a fork a kept status
+
+     LOAD                     for loading source  or  object  programs
+                              into memory
+
+     REENTER                  for starting the program  in  memory  at
+                              its alternate entry point (if any)
+
+     SAVE                     for saving a loaded program in  an  .EXE
+                              file
+
+     ERUN, RESET,             other multiforking-class   commands  for
+     SET NAME, SET PROGRAM,   performing related functions
+     UNKEEP
+
+
+Examples
+
+     1.  Start the program currently in memory.
+
+         @START
+
+     2.  Put an executable program in memory and start it.   Then  run
+         it again.
+
+         @GET TESTF1.EXE
+         @START
+
+         THIS IS A TEST.
+
+         END OF EXECUTION
+         CPU TIME: 0.04  ELAPSED TIME: 0.23
+         EXIT
+         @START
+
+         THIS IS A TEST.
+
+         END OF EXECUTION
+         CPU TIME: 0.02  ELAPSED TIME: 0.02
+         EXIT
+
+     3.  Begin using the FILCOM program to compare two files.  Give  a
+         CTRL/C  to  halt  FILCOM,  then  a  CTRL/T  to  determine the
+         location where it was stopped.  Give the DDT command, and  do
+         some  work  within  the DDT program; leave DDT with a CTRL/Z,
+         returning to TOPS-20 command level.  Give the  START  command
+         to start FILCOM again, using as argument the address reported
+         by CTRL/T above.
+
+         @FILCOM
+
+         *TTY:=DUMPER.MAC, BACKUP.MAC
+         ^C
+         ^T 14:49:03 FILCOM ^C from Running at 400543  Used 0:00:03.1 -
+         in 0:04.39, Load 2.44 in 0:01:33
+
+         @DDT
+         DDT
+         3/   PAT..+361,,3066
+         4/   56
+         ^Z
+         @START 400543
+
+         No differences encountered
+
+     4.  Place the CLOCK program (not DIGITAL  supported)  in  memory.
+         KEEP  the CLOCK program so that it will remain in memory when
+         you run other programs.  Then, start the CLOCK program in the
+         background.   CLOCK  will  display  the  time every half hour
+         while you run other programs and EXEC commands.
+
+         @GET CLOCK.EXE
+         @KEEP
+         @START CLOCK.EXE /STAY
+         @
+                 .
+                 .
+                 .
+         [11:30 AM]
+

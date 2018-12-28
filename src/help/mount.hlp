@@ -1,0 +1,814 @@
+
+MOUNT command
+
+The MOUNT command requests that a specified file structure or magnetic
+tape set be made available for your job's use.
+
+
+Format
+
+     @MOUNT medium (NAME) dev:  /switch(es)
+
+     where:
+
+     medium                   is one of the following:
+
+                                  STRUCTURE - for    mounting     file
+                                              structures (disk packs)
+
+                                       TAPE - for  mounting   magnetic
+                                              tapes
+
+     dev:                     is either the  structure  identification
+                              (or  alias),  or  the tape setname.  The
+                              colon after the device name is optional.
+
+     /switches                are  keywords,  chosen  from  the   list
+                              below,  indicating  your choice of MOUNT
+                              command options.
+
+
+   Summary of MOUNT Command Switches (defaults marked by asterisk)
+
+
+/CHECK-SETNAME
+
+         200
+         556
+         800
+/DENSITY:1600
+         6250
+         SYSTEM-DEFAULT
+
+            7-TRACK
+/DRIVE-TAPE:9-TRACK
+
+            ANSI
+            BYPASS
+/LABEL-TYPE:EBCDIC
+            TOPS-20
+            UNLABELED
+
+/NEW
+/NOUNLOAD
+/NOWAIT
+/OPERATOR
+/PROTECTION:octal protection code       Default code - 770000  *
+/READ-ONLY                              Default - unless /NEW or
+                                                  /SCRATCH specified
+*
+/REMARK:119-character remark
+/SCRATCH
+       NUMBER number  *
+/START:VOLID volid                      Default number - 1  *
+
+/STRUCTURE-ID:structure identification
+/VOLIDS:list of volids
+/WRITE-ENABLED                          Default - if /NEW or /SCRATCH
+*
+                                                  specified
+
+
+     The switches /NOWAIT and  /REMARK  are  useful  with  either  the
+     STRUCTURE  or  TAPE  medium, while /STRUCTURE-ID is for STRUCTURE
+     only; the other switches are for TAPE only.
+
+
+                          MOUNT Command Switches
+
+
+/CHECK-SETNAME                     ensures that  the  setname  of  the
+                                   mounted  tapes  matches the setname
+                                   you specify as the "dev:"  argument
+                                   to  the MOUNT command; otherwise an
+                                   error  will  be   generated.    For
+                                   labeled tapes only.
+
+         200
+         556
+         800                       specifies the density, in  bits per
+/DENSITY:1600                      inch,  at which the tape set is  to
+         6250                      be read or  written.  Densities 200
+         SYSTEM-DEFAULT            and 556  are  for  unlabeled  tapes
+                                   only.   SYSTEM-DEFAULT,  one of the
+                                   values  shown  (usually  1600),  is
+                                   established   at   system  start-up
+                                   time.
+
+            7-TRACK
+/DRIVE-TYPE:9-TRACK                specifies  the  type  of  drive  on
+                                   which   the   tape  set  is  to  be
+                                   mounted.   Labeled  tapes  must  be
+                                   mounted on 9-track drives.
+
+            ANSI
+            BYPASS
+/LABEL-TYPE:EBCDIC                 tells the system to read and  write
+            TOPS-20                the   tape  set  according  to  the
+            UNLABELED              specified  label  standard:   ANSI;
+                                   EBCDIC  -  IBM  TYPES (IN READ-ONLY
+                                   MODE); TOPS-20 - a superset of ANSI
+                                   used  in TOPS-20 systems; UNLABELED
+                                   - for unlabeled tapes only.  BYPASS
+                                   (for  privileged  users  only) lets
+                                   you  read  and  write   any   tape,
+                                   labeled  or  unlabeled, without any
+                                   label processing.
+
+/NEW                               tells  the  system  that  you   are
+                                   creating  a  new  file  set  on  an
+                                   existing tape set, whose setname is
+                                   then  changed  to  be  the name you
+                                   specify as the  dev:   argument  to
+                                   the  MOUNT  command.   (If the tape
+                                   set  has  more  than  one   volume,
+                                   remember  to  specify  their volids
+                                   using  the  /VOLIDS  or   /OPERATOR
+                                   switch.)   The  /CHECK-SETNAME  and
+                                   /READ-ONLY switches are ignored  if
+                                   present,   and   /WRITE-ENABLED  is
+                                   assumed.  Do not  give  the  /START
+                                   switch if you give /NEW.
+
+/NOUNLOAD                          asks the system  not  to  unload  a
+                                   volume (reel) of tape from its tape
+                                   drive when the drive is released by
+                                   a  volume switch (change of volumes
+                                   required  by  a   read   or   write
+                                   operation)   or  DISMOUNT  command.
+                                   Use  this  switch   to   facilitate
+                                   processing  when  sufficient drives
+                                   are available.
+
+/NOWAIT                            tells the  system  to  return  your
+                                   terminal  to  TOPS-20 command level
+                                   as  soon  as  you  give  the  MOUNT
+                                   command,  and  to send a message to
+                                   your terminal when the request  has
+                                   been  processed.   Otherwise,  your
+                                   terminal waits for the message.
+
+/OPERATOR                          asks the operator to specify to the
+                                   system  the  volids of the tape set
+                                   you wish to mount.  Do not  use  if
+                                   you have given the /VOLIDS switch.
+
+/PROTECTION:code                   specifies    a    6-digit     octal
+                                   protection  code for new volumes of
+                                   tape  written  during  the  current
+                                   mount  request.   The  owner always
+                                   has full access to  his  tapes,  so
+                                   the  first  two  digits  are always
+                                   interpreted  as  "77";  also,  user
+                                   groups and directory groups have no
+                                   effect  on  tape  access,  so   the
+                                   middle   two   digits   are  always
+                                   interpreted  as  "00".   Therefore,
+                                   although    six   digits   can   be
+                                   specified, only the last two digits
+                                   affect the tape's protection code.
+
+                                   (If you specify  only  two  digits,
+                                   these  will be used as the last two
+                                   digits of  the  protection  code.)
+                                   These  two digits should be the sum
+                                   of the values corresponding to  the
+                                   modes  of access you want to allow,
+                                   chosen from the following list:
+                                      40 - read files in the file set
+                                      10 - overwrite or  modify  files
+                                           in the file set
+                                      04 - append files to the end  of
+                                           the file set
+                                   For  tapes  of  label-type  TOPS-20
+                                   only.
+                                        Default code - 770000
+
+/READ-ONLY                         ensures that  all  volumes  in  the
+                                   tape  set  will  be mounted without
+                                   write rings, to prevent  accidental
+                                   erasures.
+                                         Default except when  /NEW  or
+                                                 /SCRATCH is specified
+
+/REMARK:"remark"                   sends the specified remark  to  the
+                                   operator  when  he  is  notified of
+                                   your mount request.   The  text  of
+                                   the  remark  must  be  enclosed  in
+                                   quotation marks (" ") and can be up
+                                   to  three,  80-character lines long
+                                   (including the MOUNT command line).
+                                   Note  that  while the entire remark
+                                   is  displayed  on  the   operator's
+                                   terminal,   only   the  first  line
+                                   appears    in    the    INFORMATION
+                                   MOUNT-REQUESTS display.
+
+                                   For structures, the remark will  be
+                                   sent  only if the structure must be
+                                   put on line or  physically  mounted
+                                   to satisfy your mount request.
+
+/SCRATCH                           same  as  /NEW,  except  that   the
+                                   volumes  in the file set you create
+                                   will be  drawn  from  the  pool  of
+                                   scratch  tapes (tapes not presently
+                                   owned by a particular user), rather
+                                   than from volumes you specify.  Use
+                                   this switch to create  a  new  file
+                                   set  when you are not supplying the
+                                   volumes of tape to be used.
+
+       NUMBER number
+/START:VOLID volid                 tells  the  system   which   volume
+                                   (reel)  of tape to mount first when
+                                   satisfying your request.  (You must
+                                   also   give   the  /VOLIDS  switch,
+                                   specifying the group of volumes you
+                                   will  be  using.)   Use  the NUMBER
+                                   argument to give the order of  this
+                                   volume  within  the  group (e.g., 1
+                                   for first, 2 for second),  or  give
+                                   the  VOLID  argument  to repeat the
+                                   volid explicitly.  You can use this
+                                   switch  to  save  time  and expense
+                                   when you know which volume you will
+                                   be using first.
+                                        Default - NUMBER 1
+
+/STRUCTURE-ID:structure
+              identification       gives the name of the structure  as
+                                   recorded  in the disk(s); used when
+                                   you gave an  alias  different  from
+                                   the   structure  identification  as
+                                   argument   "dev:",   above.     See
+                                   Hints - Using   the   /STRUCTURE-ID
+                                   Switch,  below.    For   privileged
+                                   users only.
+
+/VOLIDS:volid, volid,...           specifies   the   volids    (volume
+                                   identifiers) of the volumes (reels)
+                                   of tape you want to access.   These
+                                   must    be   consecutive   volumes,
+                                   usually of the tape  set  specified
+                                   as the "dev:" argument to the MOUNT
+                                   command.   Although  you  need  not
+                                   specify  every  volume  in the set,
+                                   any volume not specified  will  not
+                                   be  accessible.   Do  not  use this
+                                   switch  if  you  have   given   the
+                                   /OPERATOR    switch.     See   also
+                                   Characteristics - Using the /VOLIDS
+                                   Switch, below.
+
+/WRITE-ENABLED                     ensures that  all  volumes  in  the
+                                   tape set will be mounted with write
+                                   rings.
+                                        Default when /NEW or /SCRATCH
+                                                is specified
+
+
+Characteristics
+
+     Action of MOUNT STRUCTURE Command
+
+          If the Structure Has Already Been Mounted
+
+               If the structure for which you give the  MOUNT  command
+               is  currently mounted, the system simply increases by 1
+               the mount count (the number of users who have given the
+               MOUNT  but not the DISMOUNT command for the structure),
+               and returns your terminal to TOPS-20 command level.   A
+               structure  is not ordinarily dismounted until its mount
+               count is 0.
+
+          If the Structure Has Not Yet Been Mounted
+
+               If the structure for which you give the  MOUNT  command
+               is  not  currently  mounted,  your request stays in the
+               mount request queue until  it  is  acted  upon  by  the
+               operator or until you cancel the request.
+
+     Setnames (File Set Identifiers)
+
+          The setname, or file set identifier of a set  of  tapes,  is
+          part  of  the  label information written into each volume of
+          the set.  It is rewritten every time the  /NEW  or  /SCRATCH
+          switch  is included in a MOUNT command.  The "dev:" argument
+          of the MOUNT command becomes the setname in this  case.   If
+          you add volumes to an existing tape set, the system uses the
+          setname of the old volumes as the setname of the new ones.
+
+          Using the /CHECK-SETNAME Switch
+
+               If you give the MOUNT command to use an  existing  file
+               set  (you  do not specify the /NEW or /SCRATCH switch),
+               you can give the /CHECK-SETNAME switch to be sure  that
+               the  setname  written  on the tapes matches the setname
+               you  specify  as  the  "dev:"  argument  to  the  MOUNT
+               command.   However,  because more than one set of tapes
+               can have the same setname,  the  /CHECK-SETNAME  switch
+               does  not  ensure  that  the  correct  tape set will be
+               mounted.   For  information  about  ensuring  that  the
+               correct  tapes are mounted, see Characteristics - Using
+               the /VOLIDS Switch, below.
+
+     Volids (Volume Identifiers)
+
+          The volid, or  volume  identifier  of  a  volume  (reel)  of
+          labeled  tape, is part of the label information written into
+          each volume of tape.   It  is  written  only  once,  by  the
+          operator  during the tape's initialization procedure, and is
+          not changed during the life of the tape.  (You  should  also
+          affix  a  paper label displaying the volid onto each reel of
+          tape.) You can get a list of volids for previously specified
+          or  newly  written volumes in any mounted tape set by giving
+          the INFORMATION VOLUMES command for that set.
+
+          Using the /VOLIDS Switch
+
+               If you give  the  MOUNT  command  to  use  an  existing
+               multi-volume  tape set (you do not specify the /SCRATCH
+               switch), you can give the volid of each volume you want
+               to  use  as  an  argument  to  the /VOLIDS switch.  The
+               system ensures that the correct volumes  of  a  labeled
+               tape  will  be  mounted for your job as long as you use
+               the /VOLIDS switch to specify them.  (If the  tape  set
+               does  not consist of labeled tapes, the system does not
+               ensure that the correct tapes are mounted.)
+
+               The volids must represent consecutive volumes and  must
+               be specified in the order written (oldest first).  Note
+               that  in  general  you  cannot  rely  on  any  apparent
+               alphanumerical  order  when  specifying  the volids but
+               must maintain your own list of the volids in each  tape
+               set.  (See Hints - Keeping Track of Volids, below.) You
+               need not specify every volid in the tape set,  but any
+               volume not specified will not be accessible through the
+               current  MOUNT  command.   See  also  Characteristics -
+               Using   the   /OPERATOR  Switch,  and  Special  Cases -
+               Single-volume Tape Sets, below.
+
+          Using the /OPERATOR Switch
+
+               You can use the /OPERATOR switch instead of the /VOLIDS
+               switch  when  asking the system to mount a multi-volume
+               set of tapes.  The /OPERATOR switch sends a message  to
+               the  operator  asking  him to specify the volid of each
+               volume  himself.   You  must  be  sure  to  supply  the
+               operator  with  a  list  of  the volids you want him to
+               specify before giving a MOUNT command that contains the
+               /OPERATOR switch.
+
+
+Hints
+
+     Checking Whether Operator is Present
+
+          You can give the INFORMATION SYSTEM-STATUS command  to  find
+          out  whether  the  operator is in attendance and can process
+          your  mount  request.   Even  if  the  operator  is  not  in
+          attendance,  your request remains valid until he returns and
+          deals with it in some way.
+
+     Using the /STRUCTURE-ID Switch
+
+          The /STRUCTURE-ID  switch  (available  only  to  users  with
+          enabled  WHEEL  or  OPERATOR capabilities) gives the name of
+          the structure as recorded in the disk(s)  of  the  structure
+          itself,  where  it is used by the system for identification.
+          Be sure that the structure identification  is  also  written
+          with  a  felt-tip  marker  on the upper surface of each disk
+          pack, and on a gummed label on the pack cover.
+
+          Unless you give this switch, the system mounts the structure
+          with  its  structure identification as alias.  (The alias is
+          the name you use  when  specifying  the  structure  in  file
+          specifications  and  commands; the INFORMATION STRUCTURE and
+          INFORMATION AVAILABLE DEVICES commands  list  structures  by
+          alias  only.)   The  /STRUCTURE-ID  switch allows an enabled
+          WHEEL  or  OPERATOR  to  mount  a  structure  under  a  name
+          different from the one recorded in the structure.
+
+          Use this switch for mounting  a  structure  whose  structure
+          identification  is  the  same  as  the  alias of a currently
+          mounted structure.  In such cases give the  MOUNT  STRUCTURE
+          command  with  any  unique alias as the "dev:" argument, and
+          specify the structure identification with the  /STRUCTURE-ID
+          switch.   In  subsequent  file  specifications  and commands
+          referring to the structure, use the alias only.
+
+     Dummy "dev:" Arguments for Mounting Tapes
+
+          If you  want  to  use  different  tape  sets  on  successive
+          runnings  of  a  single program, you can refer to those tape
+          sets as a logical name in the program, and use this  logical
+          name  as  the  "dev:"  argument  of  your MOUNT command when
+          mounting tapes.  As long as you also specify  the  volid  of
+          each  volume  of  tape  with  the /VOLIDS switch (or use the
+          /OPERATOR switch to ask the operator to do so), you need not
+          give  the  actual  setname  of  the  tape  set as the "dev:"
+          argument to the MOUNT command.   The  system  considers  the
+          "dev:"  argument  you supply to be a logical name defined as
+          the mounted tape set.  Therefore, your  program  can  access
+          the tape set using this logical name.
+
+     Keeping Track of Volids
+
+          Unless your site has a tape cataloging  facility,  you  must
+          keep  your  own  record  of  the volids in each of your tape
+          sets.  After creating a file set on a new tape set, i.e, one
+          not previously owned by you (by giving the MOUNT command and
+          including  the  /SCRATCH  switch),  you  should   give   the
+          INFORMATION  VOLUMES  command  for the set before giving the
+          DISMOUNT command.  The system will  respond  by  printing  a
+          list  at  your  terminal of the volids of all volumes in the
+          tape set.  Similarly, if you mount an old tape set and  then
+          perform   write  operations,  you  should  give  INFORMATION
+          VOLUMES before giving DISMOUNT to learn the  volids  of  any
+          volumes  added  to  the  set.  Keep an ordered list of these
+          volids in  a  disk  file  in  your  directory,  for  use  in
+          subsequent MOUNT commands when you give the /VOLIDS switch.
+
+
+Special Cases
+
+     Single-volume Tape Sets
+
+          If the tape set you want  to  mount  consists  of  a  single
+          volume  of  tape, you need not give the /VOLIDS or /OPERATOR
+          switch to specify its volid.  You can give the volid as  the
+          "dev:" argument to the MOUNT command.
+
+     Structures Unavailable for Mounting
+
+          If the operator has  given  the  OPR  program  command,  SET
+          STRUCTURE  UNAVAILABLE for a specified structure, the system
+          sends an error  message  including  the  phrase,  "Structure
+          unavailable  for  mounting"  in response to subsequent MOUNT
+          commands for the structure.
+
+
+Restrictions
+
+     Using SET TAPE Commands
+
+          The TOPS-20 SET TAPE DENSITY and SET  TAPE  PARITY  commands
+          are  applicable  to  unlabeled  tapes  only  (but  see  also
+          Warnings - /DENSITY Switch Has Limited Effect for  Unlabeled
+          Tapes,   below).    The   SET   TAPE  FORMAT  and  SET  TAPE
+          RECORD-LENGTH commands are applicable to  both  labeled  and
+          unlabeled  tapes,  but  to  labeled  tapes  only if they are
+          mounted using the  /LABEL-TYPE:ANSI  or  /LABEL-TYPE:TOPS-20
+          switch.   In addition, the files that you read from or write
+          to such a labeled tape must be in 36-bit  format,  and  they
+          must  not  have  the  ;FORMAT  attribute  as  part  of their
+          specification.
+
+
+Warnings
+
+     POP Command Cancels Unsatisfied Mount Requests
+
+          If you have given a PUSH command to obtain a  new  level  of
+          TOPS-20 and then give a MOUNT command within that new level,
+          a subsequent POP command will  cancel  your  mount  request.
+          However,  if the specified structure or tape set has already
+          been mounted,  it  will  remain  mounted  despite  your  POP
+          command.
+
+     /DENSITY Switch Has Limited Effect for Unlabeled Tapes
+
+          The /DENSITY switch, when given in a MOUNT  command  for  an
+          unlabeled  tape,  ensures  only  that  your tape set will be
+          mounted on a drive that supports the specified density.   It
+          does not ensure that the tape set will be read or written at
+          this density.  To specify the  density  at  which  unlabeled
+          tapes  are to be read and written, give the SET TAPE DENSITY
+          command.
+
+
+Effect on Terminal
+
+     The MOUNT command with the /NOWAIT switch, leaves  your  terminal
+     at  TOPS-20  command  level.   If  you have not given the /NOWAIT
+     switch, your terminal waits until the system has  processed  your
+     request, or to return to TOPS-20 command level.  This CTRL/C does
+     not cancel your request.
+
+
+Related Commands
+
+     CANCEL                             for withdrawing mount requests
+                                        before they are processed
+
+     DISMOUNT                           for  giving  up  access  to  a
+                                        particular  tape drive or disk
+                                        drive
+
+     INFORMATION AVAILABLE DEVICES      for finding out just the names
+                                        of  structures  available  for
+                                        mounting  (these  are   listed
+                                        after  DSK  and PS, and before
+                                        the line printers (LPT,  LPT0,
+                                        etc.))
+
+     INFORMATION MOUNT-REQUESTS         for  finding  out  information
+                                        about  pending  mount requests
+                                        for structures and tape  sets,
+                                        and  about  currently  mounted
+                                        tape sets
+
+     INFORMATION STRUCTURE              for  finding  out  information
+                                        about     currently    mounted
+                                        structures
+
+     INFORMATION VOLUMES                for finding out the volids  of
+                                        all mounted volumes (including
+                                        newly created  volumes)  of  a
+                                        tape set
+
+     SET TAPE commands                  for   establishing    job-wide
+                                        defaults   for  tape  density,
+                                        format,  parity,  and   record
+                                        length
+
+
+Examples
+
+     1.  Mount a structure (it is already physically mounted).
+
+         @MOUNT STRUCTURE SNARK:
+         Structure SNARK: mounted
+
+     2.  Mount a structure that is not yet physically mounted.   After
+         completing  the  command,  give  CTRL/Cs to return to TOPS-20
+         command level.
+
+         @MOUNT STRUCTURE PYBL:
+         [Mount Request PYBL Queued, Request-ID 205]
+         [MOUNT request remaining in queue]
+         ^C
+
+     3.  Mount a structure, then give CTRL/Cs  to  return  to  TOPS-20
+         command level and cancel the mount request.
+
+         @MOUNT STRUCTURE PYBL:
+         [Mount Request PYBL Queued, Request-ID 136]
+         [MOUNT request remaining in queue]
+         ^C
+         @CANCEL MOUNT 136
+         [1 mount request canceled]
+
+     4.  Find out what structures are available  for  mounting  (these
+         are  listed  after  DSK and PS and before the line printers),
+         and mount one of these.
+
+         @INFORMATION AVAILABLE DEVICES
+         Devices available to this job:
+          DSK, PS, LANG, TYM, MISC, SNARK, REL4, LPT, LPT0
+          LPT1, CDR, CDP, PCDP0, FE0, FE4-15, PTY7-10
+          PTY23-61, NUL, PLT, PLT0, DCN, SRV
+         Devices assigned to/opened by this job: TTY220
+         @MOUNT STRUCTURE REL4: /NOWAIT
+         Structure REL4: mounted
+
+     5.  Ask that a new tape set  be  created  for  you  from  scratch
+         tapes,  and  copy  some  files to it.  Before dismounting the
+         tape set, find out the volids of the tape  volumes  you  were
+         assigned.
+
+         @MOUNT TAPE LAT: /SCRATCH/LABEL-TYPE:TOPS-20
+         [Mount Request LAT Queued, Request-ID 104
+         [Tape set LAT, volume LAT mounted]
+         [LAT: defined as MT3:]
+         @COPY DN20A-11*.SYS LAT:
+          DN20A-11A.SYS.1 => MT3:DN20A-11A.SYS.131071 [OK]
+          DN20A-11B.SYS.1 => MT3:DN20A-11B.SYS.131071 [OK]
+          DN20A-11C.SYS.1 => MT3:DN20A-11C.SYS.131071 [OK]
+         @INFORMATION VOLUMES LAT:
+         Volumes of tape set LAT: 01P02,00L16
+         @DISMOUNT TAPE LAT:
+         [Tape dismounted, logical name LAT: deleted]
+
+     6.  Find out if any tape drives can be used  without  giving  the
+         MOUNT  command  (any  such  drives will be of the form MTAn).
+         Assign one of these and use the PLEASE  program  to  ask  the
+         operator  to  mount your (unlabeled) tape on this drive.  Set
+         the necessary tape parameters, position the tape, and copy  a
+         file  from  tape  to  the  line  printer.   Then  give up the
+         resources you have been using.
+
+         @INFORMATION AVAILABLE DEVICES
+         Devices available to this job:
+          DSK, PS, LANG, TYM, MISC, SNARK, REL4, MTA5, LPT, LPT0, LPT1
+          CDR, CDP, PCDP0, FE0, FE4-15, PTY23-61, NUL, PLT
+          PLT0, DCN, SRV
+         Devices assigned to/opened by this job: TTY220
+         @ASSIGN MTA5:
+         @PLEASE
+         Enter text, terminate with CTRL/Z to wait for response,
+         or ESCape to send message and exit
+         PLEASE MOUNT MY TAPE NAMED UNLBLD IN READ-ONLY MODE ON MTA5:,
+         WHICH I HAVE ASSIGNED TO MY JOB.  MTA5: IS A 7-TRACK
+         DRIVE THAT SUPPORTS TAPE DENSITIES OF 800 BPI, CORRECT?
+         [PLSOPN Operator at GIDNEY has been notified at 14:34:26]
+         @SET TAPE DENSITY 800
+         @SET TAPE RECORD-LENGTH 128
+         @REWIND MTA5:
+         @SKIP MTA5: 4 FILES
+         @COPY MTA5: LPT:
+          MTA5: => LPT: [OK]
+         @UNLOAD MTA5:
+         @DEASSIGN MTA5:
+
+     7.  Perform the same task using the same volume of tape as in the
+         previous  example  by using the MOUNT command.  Note that you
+         still cannot specify a particular tape file by name when  the
+         tape is an unlabeled tape.
+
+         @MOUNT TAPE UNLBLD: /LABEL-TYPE:UNLABELED/DENSITY:800/DR -
+         I'VE-TYPE:7-TRACK
+         [Mount Request UNLBLD Queued, Request-ID 128]
+         [Tape set UNLBLD, volume UNLBLD mounted]
+         [UNLBLD: defined as MT3:]
+         @INFORMATION MOUNT-REQUESTS/USER
+
+         Tape/Disk Mount Queue:
+         Volume    Status  Type   Write   Req Name  Req#  Job#  User
+         -------  -------  ----  -------  --------  ----  ----  -----
+         UNLBLD     MTA4  Tape   Locked   UNLBLD    128    55   LATTA
+         There is 1 Request in the Queue
+         @REWIND UNLBLD:
+         @SKIP UNLBLD: 4 FILES
+         @COPY UNLBLD: LPT:
+          MT3:..4 => LPT: [OK]
+         @DISMOUNT TAPE UNLBLD:
+         [Tape dismounted, logical name UNLBLD: deleted]
+
+     8.  Mount a labeled tape containing the  same  files  as  in  the
+         previous  two examples, and perform the same task.  Note that
+         you need not specify tape parameters in this  MOUNT  command,
+         as this information is present in the tape labels and is read
+         automatically.  Also, the system  ensures  that  the  correct
+         volume  of  tape  is used.  Finally, you can specify the tape
+         file by name when using labeled tapes.
+
+         @MOUNT TAPE LBLD: /LABEL-TYPE:ANSI/VOLIDS:00115
+         [Mount Request LBLD Queued, Request-ID 133]
+         [Tape set LBLD, volume 00115 mounted]
+         [LBLD: defined as MT3:]
+         @INFORMATION MOUNT-REQUESTS/USER
+
+         Tape/Disk Mount Queue:
+         Volume    Status  Type   Write   Req Name  Req#  Job#  User
+         -------  -------  ----  -------  --------  ----  ----  -----
+         00115     MTA0    Tape   Locked  LBLD       133    55  LATTA
+         There is 1 Request in the Queue
+         @REWIND LBLD:
+         @COPY LBLD:COMPR.BRN LPT:
+          MT3:COMPR.BRN.13107 => LPT:COMPR [OK]
+         @DISMOUNT TAPE LBLD:
+         [Tape dismounted, logical name LBLD: deleted]
+
+     9.  Mount a two-volume tape set (using  the  NOUNLOAD  switch  to
+         simplify  volume  changes)  and  overwrite any existing files
+         with new files.  Then rewind  the  tape  set.   Give  various
+         INFORMATION  commands  as you proceed, to verify logical name
+         and device assignments and to determine whether  new  volumes
+         have been written.
+
+         @MOUNT TAPE LAT: /WRITE-ENABLED/NOUNLOAD/NOWAIT/VOL-
+         IDS:DBL01, DBL02
+         [Mount Request LAT Queued, Request-ID 19]
+         [Tape set LAT, volume DBL01 mounted]
+         [LAT: defined as MT0:]
+         @INFORMATION MOUNT-REQUESTS /USER
+
+         Tape/Disk Mount Queue:
+         Volume    Status   Type   Write   Req Name  Req#  Job#  User
+         -------  --------  ----  -------  --------  ----  ----  -----
+         DBL01    MTA1      Tape  Enabled  LAT         19     7  LATTA
+         There is 1 Request in the Queue
+         @INFORMATION AVAILABLE DEVICES
+         Devices available to this job:
+          DSK, PS, LANG, SNARK, NTWORK, REL4, MISC, PACKAG, MTA5
+          MT0, LPT, LPT0, LPT1, CDP, PCDP0, FE0, FE2-15, PTY13-61
+          NUL, PLT, PLT0, DCN, SRV
+         Devices assigned to/opened by this job: MT0, TTY217
+         @INFORMATION LOGICAL-NAMES JOB
+         LAT: => MT0:
+         SYS: => DSK:,SYS:
+         @REWIND LAT: /ENTIRE-VOLUME-SET
+         @COPY HLP:*.HLP LAT:
+          PS:<HELP>ACCT20.HLP.1 => MT0:ACCT20.HLP.131071 [OK]
+          PS:<HELP>ACCTPR.HLP.1 => MT0:ACCTPR.HLP.131071 [OK]
+              .
+              .
+              .
+          PS:<HELP>WAIT.HLP.2 => MT0:WAIT.HLP.131071 [OK]
+          PS:<HELP>WATCH.HLP.6 => MT0:WATCH.HLP.131071 [OK]
+         @INFORMATION MOUNT-REQUESTS /USER
+
+         Tape/Disk Mount Queue:
+         Volume    Status   Type   Write   Req Name  Req#  Job#  User
+         -------  --------  ----  -------  --------  ----  ----  -----
+         DBL02    MTA3      Tape  Enabled  LAT         19     7  LATTA
+         There is 1 Request in the Queue
+
+         @INFORMATION VOLUMES LAT:
+         Volumes of tape set LAT: DBL01,DBL02
+         @REWIND LAT: /ENTIRE-VOLUME-SET
+         @INFORMATION MOUNT-REQUESTS /USER
+
+         Tape/Disk Mount Queue:
+         Volume    Status   Type   Write   Req Name  Req#  Job#  User
+         -------  --------  ----  -------  --------  ----  ----  -----
+         DBL01    MTA1      Tape  Enabled  LAT         19     7  LATTA
+         There is 1 Request in the Queue
+
+    10.  (For privileged users only.)  Enable  your  capabilities  and
+         call  the  OPR  program,  then  give the PUSH command to OPR.
+         (This action puts you at TOPS-20 command  level,  but  allows
+         you  also  to  see  the  OPR  messages caused by your TOPS-20
+         commands.)  Repeat  the  write  operations  of  the  previous
+         example,  then  dismount  the  tape set and exit from the OPR
+         program.  Notice that, because of  the  /NOUNLOAD  switch  in
+         your  original  MOUNT  command, both volumes of your tape set
+         remain mounted on their drives.  Therefore, you can mount the
+         tapes again without operator assistance.
+
+         @ENABLE
+         $OPR
+         OPR>PUSH
+
+          TOPS-20 Command processor 7(7)
+         @REWIND LAT: /ENTIRE-VOLUME-SET
+         @COPY HLP:*.* LAT:
+          PS:<HELP>ACCT20.HLP.1 => MT0:ACCT20.HLP.131071 [OK]
+          PS:<HELP>ACCTPR.HLP.1 => MT0:ACCTPR.HLP.131071 [OK]
+              .
+              .
+              .
+          PS:<HELP>CHKPNT.HLP.1 => MT0:CHKPNT.HLP.131071
+         15:11:55          --Tape Drive Released By User--
+                         MTA1: Volume DBL01 Remaining mounted on drive
+
+         15:11:57          --MTA3: Given to Request 19--
+                          Volume DBL02 now in use by
+                          User LATTA, Job 7, Terminal 217
+          [OK]
+          PS:<HELP>COBDDT.HLP.6 => MT0:COBDDT.HLP.131071 [OK]
+              .
+              .
+              .
+          PS:<HELP>WAIT.HLP.2 => MT0:WAIT.HLP.131071 [OK]
+          PS:<HELP>WATCH.HLP.6 => MT0:WATCH.HLP.131071 [OK]
+         @INFORMATION VOLUMES LAT:
+         Volumes of tape set LAT: DBL01,DBL02
+         @INFORMATION MOUNT-REQUESTS /USER
+
+         Tape/Disk Mount Queue:
+         Volume    Status   Type   Write   Req Name  Req#  Job#  User
+         -------  --------  ----  -------  --------  ----  ----  -----
+         DBL02    MTA3      Tape  Enabled  LAT         19     7  LATTA
+         There is 1 Request in the Queue
+
+         @REWIND LAT: /ENTIRE-VOLUME-SET
+
+         15:14:51          --Tape Drive Released By User--
+                         MTA3: Volume DBL02 Remaining mounted on drive
+
+         15:14:51          --MTA1: Given To Request 19--
+                          Volume DBL01 now in use by
+                          User LATTA, Job 7, Terminal 217
+
+         @DISMOUNT TAPE LAT:
+         [Tape dismounted, logical name LAT: deleted]
+         15:15:21          --Tape Drive Released By User--
+                         MTA1: Volume DBL01 Remaining mounted on drive
+         @POP
+         OPR>EXIT
+         $DISABLE
+
+    11.  Mount the same tape set as in the previous examples, but  ask
+         the  operator  to specify the volids.  Use the PLEASE program
+         to help you.
+
+         @MOUNT TAPE LAT: /WRITE-ENABLED/NOUNLOAD/NOWAIT/OPERATOR
+         [Mount Request LAT Queued, Request-ID 197]
+         @PLEASE
+         Enter text, terminate with CTRL/Z to wait for response,
+         or ESCape to send message and exit
+         PLEASE ENTER THE VOLIDS OF MY TAPE SET LAT: FOR
+         REQUEST 197.  THEY ARE RECORDED IN YOUR TAPE
+         LIBRARY CATALOG.  THANKS.
+         [PLSOPN Operator at GIDNEY has been notified at 14:34:26]
+         @INFORMATION MOUNT-REQUESTS /USER
+
+         Tape/Disk Mount Queue:
+         Volume    Status   Type   Write   Req Name  Req#  Job#  User
+         -------  --------  ----  -------  --------  ----  ----  -----
+         DBL01    Waiting   Tape  Enabled  LAT        197    65  LATTA
+         There is 1 Request in the Queue
+

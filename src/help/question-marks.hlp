@@ -1,0 +1,39 @@
+
+Question Marks
+
+Whenever you type a question mark (?)  instead  of  (or  even  in  the
+middle  of) a TOPS-20 command or command argument, the system responds
+with instructions  or  a  list  of  possible  completions.   By  using
+question  marks  and  recognition  when  you  are unsure of the proper
+command or argument, you can have the  system  help  you  during  your
+terminal session.
+
+For TOPS-20 Version 7, new functionality has been added  to  make  the
+question  mark  feature  more  useful.   More possible completions and
+choices are now listed.  In addition to possible command names  listed
+in  response  to  a  question  mark, the system also displays possible
+filenames from the system (SYS:) directory.  For example:
+
+     @L ? Command, one of the following
+        LOAD    LOGOUT
+         or system program name
+        LOGIN
+        LOGOUT
+
+Where the LOGIN and LOGOUT that appear after "or system program  name"
+are files from the system directory that start with L.
+
+The functionality of the question mark feature has been  expanded  for
+file  specifications  also.   Question mark lists possible file names,
+extenstions (including nulls), and file version numbers.  For example:
+
+     @DIRECTORY E? FILE NAME
+        EXTRA
+        EXTUSR
+        EMACS
+     @DIRECTORY EMACS.? FILE NAME
+        INIT
+        VARS
+     @DIRECTORY EMACS.INIT.? FILE NAME
+       1
+       2

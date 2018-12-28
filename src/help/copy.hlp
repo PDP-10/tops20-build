@@ -1,0 +1,346 @@
+
+COPY command
+
+The COPY command creates a copy of a file.
+
+
+Format
+
+     @COPY (FROM) source filespec (TO) destination filespec,
+     @@subcommand
+
+     where:
+
+     source filespec          is the  specification  of  the  file  or
+                              device whose contents you want to copy.
+
+     destination filespec     is the  specification  of  the  file  or
+                              device in which you want to store a copy
+                              of the file.
+                                   Default - same as  source  filespec
+                                             but   in  your  connected
+                                             directory,  if  necessary
+                                             using   the  next  higher
+                                             generation number
+
+     @@subcommand             means that after a final comma  you  can
+                              specify  the  mode  and  format  of  the
+                              transfer  with  one  of  the   following
+                              subcommands:
+
+
+                           COPY Subcommands
+
+                (when used with the paper tape reader
+                 or paper tape punch - PTR: or PTP:)
+
+     ASCII               specifies  that  the  file  being  copied  is
+                         written in ASCII mode, with 36-bit words each
+                         consisting of five 7-bit bytes and  a  parity
+                         bit;  the  parity  bit  means that the eighth
+                         hole of the paper tape is never punched.
+
+     BINARY              specifies  that  the  file  being  copied  is
+                         composed  of 36-bit words, each consisting of
+                         six 6-bit bytes with the seventh hole of  the
+                         paper  tape  set  always  to 0 and the eighth
+                         hole set  always  to  1;  causes  a  checksum
+                         calculation.
+
+     BYTE n              specifies  that  the   byte   size   of   the
+                         destination  file  is  to  be  n (any decimal
+                         number).   If  you  do  not  give  the   BYTE
+                         subcommand,  the  destination  file will have
+                         the same byte size as the source  file.   See
+                         also   Hints - Viewing  Display  Screen  Data
+                         below.
+
+     IMAGE               specifies  that  the  file  being  copied  is
+                         composed  of 36-bit words, each consisting of
+                         one 8-bit byte; the 28 most significant  bits
+                         are set to 0 on input and are lost on output.
+
+     IMAGE BINARY        same as  BINARY,  but  lacking  the  checksum
+                         calculation.
+
+
+                           COPY Subcommands
+
+             (when used with devices other than the paper
+                   tape reader or paper tape punch)
+
+     ASCII               specifies  that  the  file  being  copied  is
+                         written in ASCII mode, with 36-bit words each
+                         consisting of five 7-bit bytes and  a  parity
+                         bit;  the  parity  bit  means  that the least
+                         significant bit is set to 0 on input  and  is
+                         lost on output.
+
+     BINARY              calls for a direct transfer of data in 36-bit
+                         bytes.
+
+     BYTE n              specifies  that  the   byte   size   of   the
+                         destination  file  is  to  be  n (any decimal
+                         number).   If  you  do  not  give  the   BYTE
+                         subcommand,  the  destination  file will have
+                         the same byte size as the source  file.   See
+                         also  Hints - Viewing  Display  Screen  Data,
+                         below.
+
+     IMAGE               same as BINARY.
+
+     IMAGE BINARY        same as BINARY.
+
+               ---
+               | ALWAYS
+     SUPERSEDE | NEVER   sets   the   condition   under   which   COPY
+               | NEWER   overwrites the destination file of  the  same
+               | OLDER   name.
+               ---
+
+               ALWAYS    allows the source file to be  copied  to  the
+                         destination file.
+                              Default for COPY command
+
+               NEVER     does not copy the  file  if  the  destination
+                         file already exists.
+
+               OLDER     allows the source file to be  copied  to  the
+                         destination file if
+
+                          o  no  version  of  the   destination   file
+                             exists, or
+
+                          o  the generation number  is  less  than  or
+                             equal  to the generation number specified
+                             in the destination file  and  the  file's
+                             write date is older than the source file.
+
+               NEWER     same as OLDER except allows the copy  if  the
+                         file's  write date is "newer" than the source
+                         file.
+
+
+Output
+
+     As each file is copied, the system prints the  specifications  of
+     the  source  and  destination files and the word [OK].  The delay
+     before you see this [OK] indicates how long it took to  copy  the
+     file.    If   you   use   recognition  on  the  destination  file
+     specification, the system prints, !New Generation!,  !New  File!,
+     or  !Superseding!, to indicate the status of disk files, or !OK!,
+     if the file is copied to a non-disk device.
+
+
+Characteristics
+
+     Optional Subcommands With Paper Tape
+
+          Each subcommand, when used  to  copy  information  from  the
+          paper  tape  reader  (PTR:),  specifies an interpretation of
+          eight-bit bytes, represented as eight-hole  lines  on  paper
+          tape.   When  used  with  the  paper tape punch (PTP:), each
+          subcommand  specifies  a  mapping  of  information  to   the
+          eight-bit bytes of paper tape.
+
+     Optional Subcommands With Other Devices
+
+          Each subcommand can be used under particular conditions, for
+          example,  when  transferring  files  over network facilities
+          (using  DCN:   and  SRV:),  to  specify  the  byte  size  of
+          information  being  copied.   In  general,  you can use COPY
+          command subcommands whenever you need to  specify  the  byte
+          size of information being copied.
+
+
+Hints
+
+     RENAME Faster Than COPY for Transferring Files
+
+          For moving a set of files from one directory to  another  on
+          the  same structure, the RENAME command is a faster and more
+          efficient means than COPY.   This  is  because  RENAME  only
+          changes  the  file  specifications;  it  does  not  copy the
+          contents of the files.   Also,  a  file  transfer  with  the
+          RENAME  command  leaves  only  one  set  of  files,  while a
+          transfer  with  the  COPY  command  leaves  two  sets:   the
+          original  copies  and  the destination copies.  The original
+          copies are often unnecessary and must be deleted.
+
+     Using Devices as Source and/or Destination Filespecs
+
+          By specifying a device  as  the  source  and/or  destination
+          filespec,   you   can  use  the  COPY  command  to  transfer
+          information between card-  or  paper-tape-handling  devices,
+          magnetic  tape  drives,  line  printers, terminals, or other
+          output devices.  However, the PLOT, PRINT,  PUNCH  and  TYPE
+          commands,  and  appropriate utility programs (such as DUMPER
+          and EDIT), offer more flexibility for most applications.
+
+          Copying To or From TTY:
+
+               You can simulate the action of the CREATE  command  for
+               creating  files  by  copying from device TTY:  to a new
+               filespec, ending your input with a CTRL/Z; use  CTRL/U,
+               CTRL/R,  CTRL/W, and the DELETE key to edit the current
+               line of terminal input.  You can simulate the action of
+               the  TYPE  command for displaying files by copying from
+               an existing filespec to device TTY:.
+
+          Viewing Display Screen Data
+
+               If you specify TTY:  as the  destination  filespec  and
+               then  give  the  BYTE  8  subcommand, characters in the
+               source file will be sent literally  to  your  terminal.
+               Do  this  to  examine  special display screen data (for
+               8-bit ASCII files only).
+
+          Erasing the Contents of a File While Keeping the Filespec
+
+               You can erase the contents of a file  by  copying  from
+               device  NUL:   to  the file.  NUL:  is a receptacle for
+               unwanted program output and a supplier of null input.
+
+          Spooled Output Action
+
+               If you send information to  output  devices  using  the
+               COPY  command,  your  request is processed according to
+               the  status  of  the  SPOOLED-OUTPUT-ACTION  parameter,
+               which   you  set  with  the  SET  SPOOLED-OUTPUT-ACTION
+               command.
+
+          Using Wildcards in Source and/or Destination Filespecs
+
+               You can use wildcard characters (*  and  %)  in  source
+               and/or  destination  filespecs  to copy many files at a
+               time.  Default values  will  be  assumed  for  filespec
+               fields  you  do  not  specify.   Note  that  if you use
+               wildcard characters to copy more than one  source  file
+               into a single destination file on disk, the contents of
+               each source file will appear in a different  generation
+               of  the  destination  file; the highest generation will
+               contain a copy of the last source file only.   Use  the
+               APPEND  command  to  put  the contents of several files
+               into a single file.
+
+          Specifying a New Account or Protection Number
+
+               The COPY  command  lets  you  specify  the  new  file's
+               protection  number,  and  the  account to which storage
+               fees for it will  be  charged.   Follow  the  new  file
+               specification  with  a  semicolon  (;) and the letter P
+               before giving a new 6-digit protection number, and with
+               a  semicolon  and  the  letter  A  before  giving a new
+               account (which must be valid for your user  name).   If
+               you  do  not specify an account for a new file, it will
+               take as a default the account you  gave  in  your  most
+               recent   LOGIN   or   SET  ACCOUNT  command.   However,
+               non-default protection numbers will be  maintained  for
+               higher   generations  of  existing  files,  unless  you
+               specify otherwise in the COPY command that creates that
+               higher generation.
+
+
+Restrictions
+
+     Copying Archived Files
+
+          You can make a copy of an archived file by specifying it  as
+          the  first  (or  source)  argument  in  a  COPY command, and
+          specifying a file of different name or type as  destination.
+          You  can edit the new file, because it does not have archive
+          status although it has the same  contents  as  the  original
+          file.   However,  you  cannot  give  the specification of an
+          archived file as the second (or destination) argument  of  a
+          COPY command, as this would replace the file's contents.  If
+          you attempt to do so, whatever source  argument  you  supply
+          will  be  copied  into  the  next  higher  generation of the
+          archived file, leaving the archived file  intact.   And,  if
+          you   include  the  generation  number  when  specifying  an
+          archived file as the second argument of a COPY command,  the
+          command will fail.
+
+
+Warning
+
+     Destroying the Previous Contents of Files
+
+          If you give a destination file specification that includes a
+          generation  number, the source file will be copied into that
+          file, replacing any previous contents if that generation  of
+          the   file   already   exists.   Those  contents  cannot  be
+          recovered.  But see Restrictions - Copying  Archived  Files,
+          above.
+
+
+Related Commands
+
+     APPEND                        for adding information to a file or
+                                   putting  the contents of many files
+                                   into a single file
+
+     RENAME                        for changing only the specification
+                                   of a file
+
+     SET SPOOLED-OUTPUT-ACTION     for changing  the  setting  of  the
+                                   SPOOLED-OUTPUT-ACTION    parameter,
+                                   which determines when files  copied
+                                   to output devices are processed
+
+     DIRECTORY with the TIMES      for displaying the  date  and  time
+     WRITE subcommand and VD       that the file was written
+
+
+Examples
+
+     1.  Make an extra copy of a file in your connected directory.
+
+         @COPY FORT.TXT BACKUP.TXT
+          FORT.TXT.1 => BACKUP.TXT.3 [OK]
+
+     2.  Copy  a  file  from  your  directory  into   another   user's
+         directory,  allowing  the destination file to be labeled with
+         default file specification (the source file specification).
+
+         @ACCESS <SARTINI>
+         Password:___
+         @COPY TEST1.CBL <SARTINI>
+          TEST1.CBL.2 => <SARTINI>TEST1.CBL.2 [OK]
+         @END-ACCESS <SARTINI>
+
+     3.  Use a wildcard character to  copy  several  files  from  your
+         directory on another structure to magnetic tape.
+
+         @ACCESS SNARK:
+         @COPY SNARK:NA*.TST MT2:
+          SNARK:NACCESS.TST.2 => MT2:NACCESS.TST [OK]
+          SNARK:NADVISE.TST.2 => MT2:NADVISE.TST [OK]
+          SNARK:NAPPEND.TST.2 => MT2:NAPPEND.TST [OK]
+          SNARK:NASSIGN.TST.2 => MT2:NASSIGN.TST [OK]
+          SNARK:NATTACH.TST.2 => MT2:NATTACH.TST [OK]
+         @END-ACCESS SNARK:
+
+     4.  Use the COPY command to create a short text file.
+
+         @COPY TTY: NEW-FILE.TXT
+          TTY: => NEW-FILE.TXT.2
+
+         THIS FILE WAS CREATED USING THE COPY COMMAND.
+         ^Z
+         @
+         @TYPE NEW-FILE.TXT
+         THIS FILE WAS CREATED USING THE COPY COMMAND.
+
+     5.  Copy  a  file  from  your  directory  into   another   user's
+         directory.  Give the SUPERSEDE NEVER subcommand to cancel the
+         COPY command if the other user already  has  a  copy  of  the
+         file.
+
+         @ACCESS <STEVENS>
+         Password:___
+         @COPY STATS.TXT <STEVENS>,
+         @@SUPERSEDE NEVER
+         @@
+          STATS.TXT.1 => <STEVENS>STATS.TXT.3
+         %Not superseding current file
+

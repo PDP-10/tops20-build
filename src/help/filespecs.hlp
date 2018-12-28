@@ -1,0 +1,84 @@
+
+File Specifications
+
+Information and programs for TOPS-20 are usually  stored  in  uniquely
+labeled  files.  Therefore, file specifications or "filespecs" are the
+most common variety  of  argument  to  a  command.   A  complete  file
+specification is of the form:
+
+     dev:<dir>name.typ.gen;att;...;att
+
+where:
+
+     dev:   is a device (usually a file structure)
+
+     <dir>  is a directory name (enclosed in angle < > or  square  [ ]
+            brackets)
+
+     name   is a filename
+
+     .typ   is a file type
+
+     .gen   is a generation number
+
+     ;att   is a file attribute
+
+You need file attributes in only a few situations and can usually  let
+dev:,  <dir>,  and .gen take default values, so you can give most file
+specifications in the shortened form, name.typ, without being unclear.
+(Default  values  are those that are defined by the state of your job.
+For more information see the DEFAULTS help file.) In a few  cases,  an
+entire file specification is assumed if you do not supply one when you
+give the command (for the CREATE and EDIT commands, for  example,  and
+for LOAD-class commands - COMPILE, LOAD, EXECUTE, and DEBUG).
+
+Whenever you omit the dev: field of the filespec, the  system  assumes
+you  mean  your  connected  structure  (DSK:).   This  is  the  public
+structure (usually named PS:), which all users must log in to,  unless
+you  connect  to a directory on another structure by using the CONNECT
+command.  Give the INFORMATION STRUCTURE command if you are unsure  of
+the name for your connected structure.
+
+Whenever you omit the <dir> field of the filespec, the system  assumes
+you  mean  your  connected directory.  Unless you have given a CONNECT
+command, this is your "log-in" directory, the directory on the  public
+structure  that  you  must  log  in  to  and  which usually has a name
+composed of your surname, or surname and initials, enclosed  in  angle
+or square brackets.  You can change your connected directory by giving
+a CONNECT command.  Use the DIRECTORY command to see the name of  your
+connected directory.
+
+When you omit the .gen field  of  the  filespec,  the  system  usually
+assumes you mean the highest generation (largest generation number) of
+the  file.   (A  few  commands,  for  example,  DELETE,  RENAME,   and
+DIRECTORY,  act  on  all  generations  of  a file unless you specify a
+particular generation.)  When you create and edit text files,  compile
+and  debug programs, or do anything else to produce another generation
+of a file, the system automatically works with  the  highest  existing
+generation and labels the changed file with the next higher generation
+number.  Therefore when you omit the generation number in  a  filespec
+given  as  argument to a TOPS-20 command, you are assured of using the
+most recent version of the  file.   Although  you  can  override  this
+default  action  by  specifying  particular  generations  of input and
+output files, it is simplest and most  straightforward  to  allow  the
+defaults to prevail.
+
+Specification  of  file  attributes  is  optional.   You  can   assign
+attributes  in  order to have a file automatically marked for deletion
+when you log out; to associate a file with a  valid  account;  and  so
+forth.  Appendix C lists the available file attributes.
+
+Pressing the ESC key instead of typing a filespec field  will  usually
+cause  any  default  for  the  remaining  fields to be printed on your
+terminal.
+
+There are two characters (called "wildcard" characters) that  you  can
+include  in  any field of a filespec to include all files matching the
+rest of the filespec.  An asterisk (*)  fills  in  for  zero  or  more
+characters  of a field, while a percent sign (%) fills in for a single
+character only.  (However, only the complete field "DSK*:" is  allowed
+as  wildcard  for the device field, and only the complete field "*" is
+allowed as wildcard for the generation field.)   Therefore  you  could
+give the command DIRECTORY *.CBL to find out what source files written
+in COBOL are in your connected directory, or the command  DELETE  *.Q*
+to remove the EDIT program's backup files from your directory.

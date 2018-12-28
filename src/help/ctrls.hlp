@@ -1,0 +1,7 @@
+
+CTRL/S
+
+Pauses scrolling of terminal output until  CTRL/Q  is  typed.   Input,
+though  not displayed, is accepted into the input buffer and processed
+after a CTRL/Q.  Use the TERMINAL  PAUSE  (ON)  CHARACTER  command  to
+define alternate pause and continue characters.

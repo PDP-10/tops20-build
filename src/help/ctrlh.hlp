@@ -1,0 +1,6 @@
+
+CTRL/H
+
+Reprints a command line up to  the  field  that  is  in  error.   Type
+immediately after the input error message.  Duplicates the function of
+the BACKSPACE key.

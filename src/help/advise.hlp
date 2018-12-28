@@ -1,0 +1,214 @@
+
+ADVISE command
+
+Links your terminal with another user's terminal so that you can  give
+commands  to  that user's job.  The advisee can still give commands to
+his job.
+
+
+Format
+
+     @ADVISE (USER) argument
+
+     where:
+
+     argument            is either a user name or terminal line
+                         number.
+
+
+Characteristics
+
+     Input to Other Job
+
+     For as long as the ADVISE command is in effect, the commands  you
+     give affect the advisee's job instead of your own.
+
+     Ending Advice
+
+     To end an advising link that you have formed  between  terminals,
+     you  must  type  CTRL/E.   This  CTRL/E  is  not echoed on either
+     terminal.
+
+     Refused Advice
+
+     Ordinarily, you cannot advise a job unless its terminal is set to
+     receive   advice.    However,  if  you  have  WHEEL  or  OPERATOR
+     capabilities enabled, you can ADVISE any job, providing the  user
+     has not given the TERMINAL INHIBIT command.
+
+     Special ADVISE Commands
+
+     Once you are advising another job, you can give special  commands
+     to  send  comments  or  control  characters,  or  to  relink to a
+     terminal that has broken links with yours.  These commands are:
+
+          CTRL/E         End an ADVISE link
+
+          CTRL/~ +       Restart an ADVISE link after a BREAK command
+                         is typed at the advised terminal.
+
+          CTRL/~ (       Start a comment (or use the REMARK command).
+
+          CTRL/~ )       End a comment (or use the REMARK command).
+
+          CTRL/~ ?       Display the list of ADVISE control
+                         characters.
+
+          CTRL/~<CHAR>   Send CTRL/CHAR.
+
+                         Note that the tilde character  (~)  can  have
+                         different   meanings  with  various  terminal
+                         models.  Consult your terminal's  manual  for
+                         the character equivalent to 36 octal in ASCII
+                         code.
+
+
+Special Cases
+
+     Advisee Has More Than One Job
+
+     If more than one job  is  logged  in  under  the  user  name  you
+     specify,  the  system  gives  you  a list of that user's terminal
+     numbers and associated programs to choose from, then prints  TTY:
+     to  prompt  your  response.   Type your choice of terminal number
+     after the prompt.
+
+     Advising a Pseudoterminal (PTY:)
+
+     If you try to advise a PTY: the system informs you  of  this  and
+     asks you to confirm with a carriage return.
+
+
+Restrictions
+
+     Compatible Terminals
+
+     Unless the terminals involved in an advising link have compatible
+     characteristics  (such  as terminal width, ability to handle tabs
+     and  lowercase  letters),  some  information  can  be   lost   or
+     overprinted.   To  avoid  this problem, the user of the faster or
+     more   capable   terminal   should    adjust    his    terminal's
+     characteristics, if possible before the ADVISE command is given.
+
+     Detached Jobs
+
+     You cannot advise detached jobs.
+
+
+Warning
+
+     Talking Between a VT100 and a VT52
+
+     If links between VT100 and VT52 terminals are  established  using
+     an  ADVISE  (or  TALK)  command, the VT52 may function improperly
+     during or after the linked interval (for  example,  by  requiring
+     frequent  CTRL/Q  commands  to  print  multiple lines of output).
+     Turning the terminal off and then  on  again  (after  the  linked
+     interval) will correct this problem.
+
+
+Effect on Terminal
+
+     The  ADVISE  command  leaves  your  terminal  at  the   advisee's
+     terminal's command level, controlling his job.
+
+
+Related Commands
+
+     RECEIVE ADVICE
+
+          For allowing other users to advise you.
+
+     REFUSE ADVICE
+
+          For preventing other users from advising you.
+
+     REMARK
+
+          For sending comments only.
+
+     TALK
+
+          For linking terminals so that your commands affect only your
+          own job.
+
+     TERMINAL INHIBIT
+
+          For refusing all types of terminal communication including
+          advice, links, system messages, user messages, and notices
+          of new mail.
+
+
+Examples
+
+     1.  Advise a user, then immediately type CTRL/E to end advice.
+
+         @ADVISE D.CROWLEY
+          Escape character is <CTRL>E, type <CTRL>^? for help
+          D.CROWLEY JOB 51 EXEC
+
+         LINK FROM LATTA, TTY 226
+          [Advising]
+
+         ^E  !Not displayed on terminal
+          [Advice terminated]
+
+     2.  Advise a user's job and access a directory for him.
+
+         @ADVISE BONSAVAGE
+          Escape character is <CTRL>E, type <CTRL>^? for help
+          BONSAVAGE JOB 48 EXEC
+
+         LINK FROM LATTA, TTY 226
+          [Advising]
+         !I'LL ACCESS THE DIRECTORY FOR YOU, THEN YOU CAN USE IT.
+         @ACCESS <SARTINI>
+         Password:
+         @!OKAY, NOW YOU CAN USE IT.
+         @!Thank you.
+         ^E
+          [Advice terminated]
+
+     3.  Advise another user, demonstrating  how  to  use  the  FILCOM
+         program.
+
+         @ADVISE D.CROWLEY
+          Escape character is <CTRL>E, type <CTRL>^? for help
+          D.CROWLEY JOB 51 EXEC
+
+         LINK FROM LATTA, TTY 226
+          [Advising]
+         !HERE'S HOW TO COMPARE FILES USING THE FILCOM PROGRAM.
+         @FILCOM
+
+         *=VERCBL.TXT, BAKVER.TXT/A
+
+         No differences encountered
+
+         *^C
+         @!SEE?  THE SWITCH AT THE END (/A) MEANS TO COMPARE THEM IN
+         ASCII
+         @!MODE. DON'T FORGET THE CTRL/C WHEN YOU'RE DONE.
+         @!THANKS.
+         ^E
+          [Advice terminated]
+
+     4.  Advise a user who is logged in at  more  than  one  terminal.
+         Choose one of them.
+
+         @ADVISE LATTA
+          TTY25, EXEC
+          TTY41, EXEC
+          TTY27, EXEC
+         TTY: 27
+          Escape character is <CTRL>E, type <CTRL>^? for help
+          LATTA Job 22 EXEC
+
+         LINK FROM D.CROWLEY, TTY 225
+          [Advising]
+              .
+              .
+              .
+         ^E
+          [Advice terminated]
+

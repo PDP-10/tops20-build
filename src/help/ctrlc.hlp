@@ -1,0 +1,11 @@
+
+CTRL/C
+
+Cancels a command when typed during command entry.
+
+Cancels command execution when typed twice during  command  execution.
+(The first ^C does not echo.)
+
+Halts a program and returns to TOPS-20 command level.  Generally, type
+two  CTRL/Cs  to  halt a program that is executing; type one CTRL/C to
+stop a program that is waiting for input.

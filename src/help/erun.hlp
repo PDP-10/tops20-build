@@ -1,0 +1,91 @@
+
+ERUN command
+
+The ERUN command runs a system program without disturbing the  program
+already in memory by placing the program in an ephemeral fork.
+
+
+Format
+
+     @ERUN (PROGRAM) filespec
+
+     where:
+
+     filespec       is the file specification of a system program.
+                         Default dev:<directory> - SYS:
+
+                         Default .typ - .EXE
+
+
+Characteristics
+
+     Characteristics of an Ephemeral Fork
+
+          The ERUN command runs a program in  an  ephemeral  fork.   A
+          program  that  runs  in  an ephemeral fork acts like an EXEC
+          command (excluding those EXEC commands that run programs  or
+          otherwise affect memory).  Ephemeral forks and EXEC commands
+          share these characteristics:
+
+           o  They do not affect programs in memory.  For example,  if
+              you  exit a program and issue a SYSTAT command, or run a
+              program in an ephemeral fork, neither  the  command  nor
+              the ephemeral fork will disturb the program in memory.
+
+              A program that runs ephemerally is always  placed  in  a
+              new fork.
+
+           o  They  disappear  when  interrupted  or  when  processing
+              completes.   For  example,  if  you  stop execution of a
+              SYSTAT command or an ephemeral fork with CTRL/C, neither
+              the command nor the ephemeral fork can be continued.
+
+              Whenever you stop or exit an ephemeral fork, the fork is
+              automatically reset (cleared from memory).
+
+          Good candidates for ephemeral forks are  programs  that  may
+          have short execution times and simply display information in
+          a manner similar to the INFORMATION and SYSTAT commands.
+
+
+Related Commands
+
+     INFORMATION LOGICAL-NAMES     for  examining  the  definition  of
+                                   SYS:
+
+     R                             for  running  executable   programs
+                                   stored on SYS:
+
+     RUN                           for   running    executable    user
+                                   programs
+
+     SET FILE EPHEMERAL            for  giving  a  file  a   permanent
+                                   ephemeral attribute
+
+     SET PROGRAM EPHEMERAL         for  running  a   program   in   an
+                                   ephemeral fork
+
+
+
+Examples
+
+     1.  Display the status of the fork in memory with the INFORMATION
+         FORK-STATUS  command.   Then,  run  a program in an ephemeral
+         fork in order to preserve the state  of  your  job's  memory.
+         Redisplay the fork status and note that the ephemeral program
+         has been reset and has not replaced the original fork.
+
+              @INFORMATION FORK-STATUS
+               => EMACS (1): HALT AT 50340, 0:00:03.6
+              @ERUN TERMSTAT
+              TERMSTAT>SHOW FREE TERMINALS
+
+              Lab  Terminals in use  Free terminals
+              ---  ----------------  --------------
+              A          17               0
+              B          12               4
+
+              TERMSTAT>EXIT
+              @INFORMATION FORK-STATUS
+               => EMACS (1): HALT at 50340, 0:00:03.6
+

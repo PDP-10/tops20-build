@@ -1,0 +1,7 @@
+
+CTRL/F
+
+Provides recognition input for file specifications and  command  names
+and  arguments.   Similar  to the ESCAPE key, except that it completes
+only one field at a time with file  specifications  and  it  does  not
+supply guidewords with commands.

@@ -1,0 +1,93 @@
+
+POP command
+
+The POP command terminates the current level of  TOPS-20  and  returns
+you to its superior process.
+
+
+Format
+
+     @POP (COMMAND LEVEL)
+
+
+Characteristics
+
+     POP the Opposite of PUSH
+
+          You can do one and only one POP command for  every  previous
+          PUSH  command.   Giving  too many POP commands will cause an
+          error message to be printed on your terminal.
+
+     Job Parameters Affected by POP
+
+          As soon as you complete a valid POP command at some level of
+          TOPS-20,  you  give  up the copy of memory for that level of
+          TOPS-20 and any program  you  were  running.   Any  defaults
+          established  at  that  level  (such as default filespecs for
+          LOAD-class and EDIT-class commands,  defaults  specified  by
+          SET DEFAULT commands) are cancelled as well.  If POP returns
+          you to a higher  level  of  TOPS-20,  all  these  parameters
+          revert to any values established at that higher level.
+
+
+Special Cases
+
+     Returning to Other Programs With POP
+
+          The POP command usually returns you to the level of  TOPS-20
+          from  which  you  gave  a  previous PUSH command.  But a few
+          system programs such as PTYCON and OPR, also  allow  you  to
+          give  PUSH  to  get  a new level of TOPS-20.  Giving the POP
+          command to  this  level  of  TOPS-20  returns  you  to  that
+          program.
+
+
+Effect on Memory and Terminal
+
+     The POP command clears memory, terminates the  current  level  of
+     TOPS-20 and returns your terminal to the previous TOPS-20 command
+     level (but see Special Cases, above).  Memory  for  the  previous
+     TOPS-20 command level is not affected by this action.
+
+
+Related Commands
+
+     CONTINUE              for resuming  execution  of  a  program  in
+                           memory
+
+     INFORMATION SUPERIORS for information on the number of forks that
+                           are superior to the current EXEC level
+
+     PUSH                  for obtaining a new level of TOPS-20
+
+
+Examples
+
+     1.  Give the POP command to return  to  a  higher  level  of  the
+         TOPS-20 command processor (EXEC).
+
+         @POP
+
+     2.  Run a program and halt it with CTRL/Cs.  Give a CONTINUE STAY
+         command  to  resume  its execution, and then the PUSH command
+         for a new level of TOPS-20.   Run  another  program  at  this
+         lower  level, then use the POP command to return to the first
+         level; in this case you return  before  receiving  the  final
+         message of the first program.
+
+         @RUN DMN
+
+         ^C
+         @CONTINUE /STAY
+         @PUSH
+
+          TOPS-20 Command processor 7(7)
+         @RUN TESTF1
+
+         THIS IS A TEST.
+
+         CPU time: 0.03  Elapsed time: 0:72
+         EXIT
+         @POP
+         EXIT
+

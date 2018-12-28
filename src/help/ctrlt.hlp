@@ -1,0 +1,9 @@
+
+CTRL/T
+
+Displays a line of information that includes:
+                  the time
+                  the name and status of the current fork
+                  the amount of CPU time used
+                  the time elapsed since login
+                  the system's load average

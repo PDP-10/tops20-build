@@ -1,0 +1,392 @@
+
+CONTINUE command
+
+The CONTINUE command continues execution of a fork that was halted.
+
+
+Format
+
+     @CONTINUE (FORK) argument /switch
+
+     where:
+
+     argument       is the fork name or fork number.
+                         Default - the current fork
+
+     /switch        is  a  keyword,  chosen  from  the   list   below,
+                    indicating   your   choice   of  CONTINUE  command
+                    options.
+
+
+                      CONTINUE Command Switches
+
+
+     /BACKGROUND    keeps your terminal at TOPS-20 command  level  and
+                    continues   execution   of   the   program   in  a
+                    "background" fork.  When the program  attempts  to
+                    do terminal input or output, it halts and displays
+                    the message [FORK-NAME wants the TTY].
+
+     /NORMALLY      restores your terminal to command level  (if  any)
+                    within the program.
+                         Default
+
+     /STAY          keeps your terminal at TOPS-20 command  level  and
+                    continues   execution   of   the   program   in  a
+                    "background" fork.  Output  from  the  program  is
+                    sent  to  the  terminal  and  is  intermixed  with
+                    whatever output is currently displayed.  When  the
+                    program attempts to read from the terminal, it can
+                    randomly intercept input intended for the EXEC  or
+                    another  program.  Therefore, use this switch with
+                    programs  that,  once  started,  do  not   request
+                    further terminal input.
+
+
+Characteristics
+
+     Continuing a Noncurrent Fork
+
+          When you  continue  a  noncurrent  fork,  by  including  the
+          fork-name argument in a CONTINUE command, the specified fork
+          becomes your current fork.
+
+
+Hints
+
+     Stopping a Background Program
+
+          To stop a background program, give the FREEZE command.
+
+     Providing Input to a Background Program
+
+          A background program, continued with  CONTINUE  /BACKGROUND,
+          sends  the  message  [FORK-NAME wants the TTY] when it wants
+          input.  A background program, continued with CONTINUE /STAY,
+          prints  the  program  prompt,  for  example PASCAL>, when it
+          wants input.  To (provide input to a program that is running
+          in  a  background fork, return to program command level with
+          CONTINUE /NORMALLY.  (Some programs require you to  type  an
+          extra RETURN after CONTINUE /NORMALLY to display the program
+          prompt).  Then,  type  the  required  program  input.   (See
+          below, Restrictions, Programs Competing for Terminal Input.)
+
+     Monitoring your Program
+
+          CONTINUE /STAY and CONTINUE  /BACKGROUND,  by  keeping  your
+          terminal  at  TOPS-20  command  level  (EXEC),  let  you use
+          TOPS-20 commands to monitor the  progress  of  your  program
+          while  it  is  running.   Use  the  INFORMATION  FORK-STATUS
+          command to display the CPU time used and the  kept  and  RUN
+          status  of  each  fork  belonging to the current EXEC level.
+          More commands for monitoring your programs are listed  below
+          in Related Commands.
+
+     Running Multiple Programs Simultaneously
+
+          To simultaneously run multiple programs in background  forks
+          or use commands that affect memory, use one or a combination
+          of the  following  methods  after  placing  a  fork  in  the
+          background with CONTINUE /STAY or CONTINUE /BACKGROUND:
+
+          PUSHing to an Inferior EXEC Level
+
+               Type the PUSH command to create an inferior EXEC  level
+               and  a  fresh copy of memory (address space).  Then run
+               another program and return to EXEC command  level  with
+               CONTINUE   /STAY  or  CONTINUE  /BACKGROUND.   The  new
+               program does not affect the  background  program  since
+               both  programs are at a different EXEC level.  However,
+               see Restrictions below.  PUSH  to  a  new  EXEC  before
+               running each new program.
+
+          KEEPing the Fork
+
+               Type the KEEP command to give  the  background  fork  a
+               "kept" status.  (A kept fork is not cleared from memory
+               when another program  is  loaded.)   Then  run  another
+               program  and return to EXEC command level with CONTINUE
+               /STAY or CONTINUE /BACKGROUND.   KEEP  each  background
+               fork  before running another program.  Check the status
+               of your forks with INFORMATION FORK-STATUS.
+
+     Continuing Forks Using the Fork Name
+
+          You can continue a fork by typing the fork  name  as  if  it
+          were  the  CONTINUE  command.   To  function as the CONTINUE
+          command, the fork must be "kept" with the KEEP  or  the  SET
+          PROGRAM  KEEP  command.   For more information, refer to the
+          descriptions of these commands.
+
+     More Information
+
+          The   CONTINUE   command   is    one    of    the    TOPS-20
+          multiforking-class  commands.   For  more  information about
+          multiforking, see the section on Running  Multiple  Programs
+          in the TOPS-20 User's Guide.
+
+
+Restrictions
+
+     Similar Programs Competing for Files
+
+          If you have two  similar  programs  running  simultaneously,
+          they  may try to access the same files at the same time (for
+          example, temporary files labeled  by  job  number,  used  by
+          compilers).   This  may  cause  unpredictable  situations to
+          develop.  To avoid the possibility, run different  kinds  of
+          programs.
+
+     Programs Competing for Terminal Input
+
+          If you use CONTINUE /STAY to run a program in  a  background
+          fork,  the program can request input from the terminal while
+          you are giving input to the EXEC or another  program.   This
+          input  can be randomly intercepted by the background program
+          when it requests terminal input.  Usually though,  the  EXEC
+          or the current program receives the input.
+
+          When  terminal  input  is  intercepted  by  the   background
+          program, the program will usually type input error messages.
+          To give input to the program, stop the program by typing two
+          CTRL/Cs  or  the  program's  exit  command.   Then,  if  the
+          background program is at a higher EXEC command  level,  give
+          POP  commands  to  return  to  the EXEC level that holds the
+          background program.  (POP terminates the  current  EXEC  and
+          erases  programs  in its memory.) Finally, give the CONTINUE
+          /NORMALLY command; this puts you at program command level so
+          that you can give the requested input.
+
+          Remember, input is intercepted  by  the  background  program
+          randomly.   Therefore,  you  may have to type extra CTRL/Cs,
+          program exit commands, and POPs.  To reduce confusion  about
+          the  direction of terminal input, it is recommended that you
+          use CONTINUE /STAY only when you plan to work at the current
+          EXEC  level  while a program runs in a background fork.  You
+          should also CONTINUE /STAY programs that simply end  without
+          requesting  terminal  input.   Use CONTINUE /BACKGROUND when
+          you plan to work at a lower EXEC level or at another program
+          command level.
+
+          When a program started with  CONTINUE  /BACKGROUND  requests
+          terminal  input,  it sends the message, [FORK-NAME wants the
+          TTY].  No input is taken by the background program until you
+          return  to  program  command  level with CONTINUE /NORMALLY.
+          You  should  CONTINUE /BACKGROUND  programs   that   request
+          terminal input.
+
+     Maintaining Access to Directories
+
+          While a fork is running in the background,  use  caution  in
+          using the CONNECT, ACCESS and END-ACCESS commands.  Changing
+          your  directory  access  could  leave  the  fork  unable  to
+          reference certain files.
+
+     No I/O Control with Some Programs
+
+          Most programs read and write data to  the  terminal  through
+          standard   input  and  output  designators.   Some  programs
+          however, use different methods  of  communicating  with  the
+          terminal.   Therefore, when you use /BACKGROUND and /STAY to
+          control terminal input and output from  a  background  fork,
+          the  input  and output behavior of programs with nonstandard
+          designators can be unpredictable.
+
+     Continued Programs Do Not Prompt for input
+
+          When you continue a  program,  the  program  continues  from
+          exactly  where  it  was  interrupted.   If  the  program was
+          waiting for input, it  will  simply  continue  to  wait  for
+          input;  it  won't prompt you again.  For example, assume you
+          are running the DECmail/MS program and you press  CTRL/C  at
+          the MS> prompt.  Next, you CONTINUE MS.  The cursor moves to
+          the next line but no MS> prompt appears.  This is because MS
+          has  continued  to  do  the last thing it was doing when you
+          interrrupted it with CTRL/C - waiting for a command  at  the
+          MS>  prompt.   MS does not know that its prompt is no longer
+          displayed before the cursor.
+
+          So,  when  you  continue  a  program  and  nothing  happens,
+          consider  what you were doing when you CTRL/C'd the program.
+          If you were at the MS> prompt, type an MS command or,  press
+          RETURN  again to redisplay the MS> prompt.  If you had typed
+          a portion of and MS command, press CTRL/R to  redisplay  the
+          command.   If  you  had  typed  a portion of a mail message,
+          press CTRL/K to redisplay the message.
+
+
+Effect on Memory and Terminal
+
+     The CONTINUE /NORMALLY command resumes processing the program  in
+     memory,  and  leaves  your  terminal at program command level (if
+     any).  The  CONTINUE  /BACKGROUND  and  CONTINUE  /STAY  commands
+     resume  processing the program in memory, but leave your terminal
+     at TOPS-20 command level.
+
+
+Related Commands
+
+     DETACH CONTINUE                for disengaging your  current  job
+                                    from  your terminal and continuing
+                                    the  program  that  the   job   is
+                                    running
+
+     FORK                           for changing the current fork
+
+     FREEZE                         for  halting  a   program   in   a
+                                    background fork
+
+     INFORMATION FILE-STATUS        for monitoring files being written
+                                    by your program
+
+     INFORMATION FORK-STATUS        for displaying the number and  the
+                                    status of each fork in your job
+
+     INFORMATION MEMORY-USAGE       for monitoring your program's  use
+                                    of memory
+
+     INFORMATION PROGRAM-STATUS     for monitoring your program's  use
+                                    of CPU time
+
+     KEEP                           for giving a fork a kept status
+
+     PUSH                           for  obtaining  a  lower   TOPS-20
+                                    command level (and a fresh copy of
+                                    memory)
+
+     REENTER                        for starting your current  program
+                                    at  its  alternate entry point (if
+                                    any)
+
+     START                          for starting your current  program
+                                    at the beginning
+
+     RESET, SET NAME,               other multiforking-class commands
+     SET PROGRAM, UNKEEP            for performing related functions
+
+
+Examples
+
+     1.  Display the fork  status  with  the  INFORMATION  FORK-STATUS
+         command.   Notice  that the arrow points to the current fork.
+         Then, give the CONTINUE command to continue  the  program  in
+         the current, halted fork.
+
+         @INFORMATION FORK-STATUS
+            EDIT (1): Kept, HALT at 6253, 0:02:54.4
+         => DUMPER (2): HALT at 700304, 0:01:19.3
+         @CONTINUE
+         DUMPER>
+
+     2.  Run the DSR program and then halt it by typing  two  CTRL/Cs.
+         Give  the  CONTINUE  /BACKGROUND command to continue DSR in a
+         background fork and return to EXEC command level.  Then, give
+         the KEEP command so that you can load another program without
+         clearing the running, background, DSR fork.  Check the status
+         of DSR with the INFORMATION FORK-STATUS command.
+
+         @RUN DSR
+         DSR>TEST.RNO
+         ^C
+         @CONTINUE /BACKGROUND
+         @KEEP
+         [Keeping DSR]
+         @INFORMATION FORK-STATUS
+         => DSR (1): Kept, Background, Running at 413160, 0:00:00.8
+
+         Now begin editing a file with the EDIT program.  During  your
+         editing  session  the system notifies you that the background
+         fork wants input.  To return to DSR command level, first exit
+         the  edit  program.   Then  check  the  fork  status with the
+         INFORMATION FORK-STATUS command.  Notice that  DSR  is  in  a
+         terminal  I/O  wait  state  and  that EDIT is now the current
+         fork.  Since the fork you want to continue is not the current
+         fork,  you  must  specify  the  fork  name  with the CONTINUE
+         command.  Now type CONTINUE DSR.
+
+         @EDIT COMAND.CMD
+         Edit: COMAND.CMD.2
+         *P
+         00100   SET DEFAULT PRINT /NOHEADER /NOTIFY:YES
+         00200   SET PROGRAM MS KEEP START
+         00300   SET PROGRAM HOST KEEP CONTINUE
+         00400   SET DEFAULT COMPILE-SWTICHES PAS /NOFLAG-NON-STANDARD
+         00500   INFO MAIL
+         00600   TAKE
+         *I350
+         00350   SET PROGRAM DUMPER KEEP CONTINUE
+         DSR>[DSR: wants the TTY]
+         *E
+
+         [COMAND.CMD.3]
+         @INFORMATION FORK-STATUS
+         => EDIT (1): Kept, HALT at 6253, 0:00:51.4
+            DSR (1): Kept, Background, TTY I/O wait at 4404426,
+         0:00:00.8
+         @CONTINUE DSR
+
+         DSR>
+
+     3.  Begin editing a long file, giving the  F  (find)  command  to
+         EDIT.   Give  a  CTRL/C  and  then the M command to return to
+         TOPS-20 command level.  Give the CONTINUE /STAY  command  and
+         then  INFORMATION  FILE-STATUS commands to check the progress
+         of EDIT as it searches through the file.   (Notice  that  the
+         byte  position  shown  in  response to successive INFORMATION
+         FILE-STATUS  commands  grows  larger.)   Finally,  give   the
+         CONTINUE  command to return to EDIT so you can give more EDIT
+         program commands.
+
+         @EDIT DOC-PLAN.MEM
+         Edit: DOC-PLAN.MEM.1
+         *FABCD$
+         Yes? (Type H for help): M
+         @CONTINUE /STAY
+         @INFORMATION FILE-STATUS
+          Connected to PS:<LATTA>,  JFNS:
+          4   <LOADTEST>EDIT.EXE.4        Read, Execute
+          3   EDIT-BUFFER.OUT.100046      Read, Write, 0.(7)
+          2   DOC-PLAN.MEM.1      Read, 43520.(7)
+          1   <SYSTEM>EXEC.EXE.153        Read, Execute
+
+          Device assigned to/opened by this job: TTY222
+
+         @INFORMATION FILE-STATUS 2
+          2   DOC-PLAN.MEM.1      Read, 112640.(7)
+         @INFORMATION FILE-STATUS 2
+          2   DOC-PLAN.MEM.1      Read, 130560.(7)
+         @CONTINUE
+
+         *
+
+     4.  Start compiling a long file.  After  compilation  has  begun,
+         type  two  CTRL/Cs  to stop the compilation and return to the
+         EXEC command level.  Use the CONTINUE /STAY command to resume
+         compilation, and then PUSH to a new EXEC command level.  Edit
+         a text file at this  lower  level,  then  give  the  POP  and
+         CONTINUE  commands  to return to the compilation in progress.
+         The compiler finishes, in this case, after you have done so.
+
+         @COMPILE DUMPER.MAC
+         MACRO:  DUMPER
+         ^C
+         @CONTINUE /STAY
+         @PUSH
+
+          TOPS-20 Command processor 7(55)
+         @EDIT PROFIL.TXT
+         Edit: PROFIL.TXT.2
+         *SAPRIL$JUNE$^:*
+         00100   JUNE 19, 1987
+         00500   JUNE 12
+         00750   JUNE 5
+         00900   JUNE 18
+         01400   JUNE 21
+         *E
+
+         [PROFIL.TXT.3}
+         @POP
+         @CONTINUE
+
+         EXIT
+

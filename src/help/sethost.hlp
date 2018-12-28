@@ -1,0 +1,286 @@
+
+SET HOST command
+
+The SET HOST command connects your terminal to another system.
+
+
+Format 1
+
+@SET HOST node-name::  /switch
+
+
+Format 2
+
+(Omitting the node name on the command line allows you  to  define  an
+interrupt sequence)
+
+@SET HOST /switch
+Two character interrupt sequence (^\,<RET>): interrupt-sequence
+Node name: node-name::
+
+     where:
+
+     node-name::         is the name of the remote host that you  want
+                         to connect your terminal to.  Two colons (::)
+                         following the node name are optional.
+
+     /switch             is  an  optional  keyword  that  selects  the
+                         service  used  to  connect your terminal to a
+                         remote node.
+                              Default - /CTERM
+
+     interrupt-sequence  is the characters that switch control of  the
+                         terminal  back  to  the  local host.  You are
+                         prompted for an interrupt  sequence  only  if
+                         you give the /CTERM switch.
+                              Default - CTRL\,<RET>
+
+                                 NOTE
+
+        This command description assumes you are connecting to
+        another  TOPS-20 system.  For information on accessing
+        other operating systems, see  the  DIGITAL  Networking
+        Pocket  Guide.   This command description also assumes
+        that you are establishing a connection with the  CTERM
+        program.
+
+
+                      SET HOST Command Switches
+
+     /CTERM         connects your  terminal  to  the  remote  node  by
+                    running  the  CTERM  communications program.  Both
+                    processors must be running DECnet Phase 4 software
+                    (available  under  a  separate  license).  The SET
+                    HOST command runs the CTERM communications program
+                    by  default.   If the remote node does not support
+                    the  CTERM  protocol,  SET   HOST   attempts   the
+                    connection  again.  In the second attempt however,
+                    SET HOST runs the communications  program  defined
+                    by   the   logical   name   NRT: (Network   Remote
+                    Terminal).
+                         Default
+
+     /NRT           runs the communications service program defined by
+                    the  logical  name NRT: (Network Remote Terminal).
+                    NRT: can be a system or job  logical  name.   When
+                    both exist, the job definition takes precedence.
+
+
+Characteristics
+
+     Logging into the Remote Node
+
+          Once your terminal is connected  to  the  remote  node,  the
+          system  responds  by identifying itself and prompting you to
+          log in.  You can then log in to the system.
+
+     Path of Terminal Input and Output
+
+          The SET HOST command passes terminal input through the local
+          host to the remote host.  Output from the remote host passes
+          through the local host to your terminal.
+
+     Making a Series of Host Connections
+
+          Once you have logged in to a remote node, you can give  EXEC
+          commands  and  run  programs just as you would on your local
+          node.  You can then establish a connection to another remote
+          node.   For  example,  if your local host is AURORA, you can
+          give the command SET HOST BOSTON  to  connect  to  the  node
+          BOSTON;  after logging in to BOSTON, you can use the command
+          SET HOST DENVER to connect to node DENVER.
+
+     Returning to Your Local Host
+
+          To return  your  terminal  to  your  local  host,  type  the
+          interrupt  sequence  to  temporarily break the connection to
+          the remote host.  Note that the  connection  to  the  remote
+          host  remains intact until you reset the CTERM program.  You
+          can reconnect your terminal to the remote host by giving the
+          CONTINUE command.
+
+          When you log out of  the  remote  host,  the  connection  is
+          broken and you are returned to your local host.
+
+          If  you  have  established  a  series  of  connections,  the
+          interrupt  character  defined in your first SET HOST command
+          returns you to your local host.   For  example,  your  local
+          host  is  AURORA  and you SET HOST to BOSTON, specifying the
+          CTRL\<RET> interrupt sequence to  return  to  AURORA.   Then
+          from  BOSTON  you  connect to DENVER.  Typing the CTRL\<RET>
+          interrupt to DENVER returns you to AURORA, not BOSTON.
+
+     Specifying the Interrupt Sequence
+
+           o  The interrupt sequence  can  be  a  combination  of  two
+              characters  or control characters.  For example, KL ^KL,
+              K^L, and ^K^L are valid interrupt sequences.
+
+           o  If you specify only one interrupt character, the  second
+              character  is ^J.  For example if you specify only ^N as
+              the interrupt sequence, the actual interrupt sequence is
+              ^N^J.   If  you  type  only F, the interrupt sequence is
+              F^J.
+
+           o  Each  interrupt  character  must  be   different.    For
+              example, ^K^K is invalid, while ^KK is a valid interrupt
+              sequence.
+
+           o  Do not  type  a  comma  or  a  space  between  interrupt
+              characters  as  it  will  be  interpreted  as the second
+              character in the sequence.
+
+           o  The RETURN key can only be used in the default interrupt
+              sequence, ^\<RET>.
+
+           o  The interrupt sequence cannot contain predefined TOPS-20
+              control  characters.   For  example,  if  you attempt to
+              specify an interrupt sequence as ^T^I, the ^T will print
+              the  run  status  and  the ^I will print a tab.  See the
+              help files for the control characters.
+
+     Controlling Scrolling on a Remote Host
+
+          On your local host, <CTRL/S> and <CTRL/Q>  are  the  default
+          control   characters  that  pause  and  continue  scrolling.
+          Typing <CTRL/Q> continues scrolling whether scrolling paused
+          because  you  typed  <CTRL/S>  or  the  output  paused on an
+          end-of-page.
+
+          However, CTERM does not pass these characters to the  remote
+          host.   When  using  <CTRL/S>  and <CTRL/Q>, it is the local
+          host that actually controls scrolling.  Therefore if  output
+          from  the remote host has paused on an end-of-page, <CTRL/Q>
+          will not  continue  scrolling.   Other  pause  and  continue
+          characters  are  passed  to  the  remote  host.  You can use
+          <CTRL/A> to both pause and resume scrolling or you  can  use
+          the  TERMINAL  PAUSE command to assign any two characters of
+          your choosing to control scrolling.  For consistency, it  is
+          recommended  that  you  define  the  same pause and continue
+          characters on your local and remote node.
+
+
+Hints
+
+     Listing Available Nodes
+
+          Use the INFORMATION DECNET command to display the  names  of
+          DECnet nodes accessible to your node.
+
+
+Effect on Terminal
+
+     The SET HOST command connects your terminal to the remote system.
+     After  the remote system's herald message is printed, you can log
+     in.
+
+
+Related Commands
+
+     CONTINUE            for resuming a  connection  that  was  broken
+                         with an escape sequence.
+
+     INFORMATION DECNET  for displaying the names of  nodes  reachable
+                         from your node.
+
+     INFORMATION JOB-STATUS
+                         for displaying the name of the host node  and
+                         other information about your job.
+
+     INFORMATION LOGICAL-NAMES NRT:
+                         for displaying the name of the communications
+                         program run by /NRT.
+
+     SYSTAT              for displaying (in  the  ORIGIN  column)  the
+                         name  of  the  local  system  (the system you
+                         connected to before connecting to the current
+                         remote system).
+
+
+Examples
+
+     1.  Connect your terminal to a remote TOPS-20 node  named  AURORA
+         and then login.
+
+@SET HOST AURORA
+
+[Attempting a connection, connect OK, ]
+[Remote host is a TOPS-20 system]
+[TYPE ^\,<RET> to return to node ROMAX]
+
+ AURORA - Claims Tracking System, TOPS-20 Monitor 7(21002)
+@LOGIN RSMITH
+ Job 4 on TTY315 15-Nov-87 09:35:03, Last Login 15-Nov-87 08:18:48
+
+     2.  Give the INFORMATION DECNET  command  to  find  out  if  node
+         BOSTON  is  reachable from your host node.  Then give the SET
+         HOST command without typing the  node  name  on  the  command
+         line.  Omitting the node name causes the system to prompt you
+         for an interrupt sequence.  After typing your  own  interrupt
+         sequence,  the  system prompts you for the name of the remote
+         node.
+
+         @INFORMATION DECNET BOSTON
+          Node BOSTON is reachable
+         @SET HOST
+         Two character interrupt sequence (^\,<RET>): ^ED
+         Node name: BOSTON
+
+         [Attempting a connection, connect OK, ]
+         [Remote host is a TOPS-20 system]
+         [TYPE ^E,D to return to node AURORA]
+
+          BOSTON, AI Engineering Center, TOPS-20 Monitor 7(21002)
+         @
+
+     3.  Connect to a remote node named TEAL.  After  logging  in  and
+         doing  some work on TEAL, type the ^\<RET> interrupt sequence
+         to return to your local host.
+
+@SET HOST TEAL
+
+[Attempting a connection, connect OK, ]
+[Remote host is a TOPS-20 system]
+[TYPE ^\,<RET> to return to node FLYWAY]
+
+ TEAL - Migratory Bird Banding, TOPS-20 Monitor 7(21002)
+@LOGIN LOWELL
+ Job 4 on TTY315 15-Nov-87 09:35:03, Last Login 15-Nov-87 08:18:48
+    .
+    .
+^\<RET> (Interrupt sequence not displayed on terminal)
+[Connection interrupted, back at node FLYWAY,
+Type CONTINUE to resume connection]
+
+         After working on node FLYWAY, type the  CONTINUE  command  to
+         reconnect   your  terminal  to  node  TEAL.   Then  give  the
+         INFORMATION  JOB-STATUS  command  to  verify  that  you   are
+         connected to TEAL.
+
+         @CONTINUE
+
+         @INFORMATION JOB-STATUS
+          Host TEAL
+          Job 17, TTY4, User LOWELL, REPORTS:<LOWELL>
+          Account 341
+
+     4.  Attempt a connection using the  CTERM  program.   The  system
+         attempts  the  connection and finds that the remote node does
+         not support CTERM.  It then attempts another connection using
+         the program defined by NRT:
+
+         @SET HOST ROMAX
+
+         [Attempting a connection,
+         Connect failed -
+
+          Host did not accept CTERM connection, trying NRT:
+
+
+         [Attempting a connection, connect OK]
+         [Remote host is a TOPS-20 system]
+         [TYPE ^P to return to node AURORA]
+
+          ROMAX - Acme's Timesharing System, TOPS-20 Monitor 7(21002)
+         @
+

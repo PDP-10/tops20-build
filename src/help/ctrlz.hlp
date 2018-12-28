@@ -1,0 +1,6 @@
+
+CTRL/Z
+
+Signals an end-of-file for data entered from the terminal.  Use when:
+                  COPYing from your terminal (device TTY:) to a file.
+                  Sending a message with one of the mail programs.

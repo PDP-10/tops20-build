@@ -1,0 +1,720 @@
+
+BUILD command
+
+The BUILD command creates, modifies, or deletes a  subdirectory  to  a
+directory to which you have write access.
+
+
+Format
+
+     @BUILD (DIRECTORY NAME) str:<directory> @@subcommand
+
+     where
+
+     str:                is the name of the (mounted) structure
+                         containing the directory you are building.
+
+     directory           is the name of the directory you are
+                         building.  The directory name can contain 39
+                         or fewer alphanumeric characters, including
+                         the following special characters:  _
+                         (underscore), - (hyphen), and $ (dollar
+                         sign).  The name must be enclosed in angle
+                         brackets <> or square brackets [].
+
+     @@subcommand        indicates that you automatically enter
+                         subcommand mode after completing the BUILD
+                         command line.
+
+
+BUILD Subcommands
+
+
+     ABORT
+
+          Cancels all work done  during  current  BUILD  command.   If
+          directory  was  new,  it  does not exist; if old, it remains
+          unchanged.
+
+     ABSOLUTE-INTERNET-SOCKETS
+
+          Allows the directory owner to  establish  INTERNET  Protocol
+          network  connections  using  32-bit absolute socket numbers;
+          users with Wheel or Operator capabilities can  also  perform
+          this function.  For use only with systems that are connected
+          to  a  TCP/IP   network.    Requires   WHEEL   or   OPERATOR
+          capabilities.
+
+     ACCOUNT-DEFAULT account
+
+          Causes the specified account to be charged  for  a  terminal
+          session whenever the user does not include an account in his
+          LOGIN command.
+
+     ARCHIVE-ONLINE-EXPIRED-FILES
+
+          Causes on-line files that have  expired  to  be  marked  for
+          archiving.
+
+     CONFIDENTIAL
+
+          Grants the directory owner confidential  information  access
+          capabilities,    allowing   him   to   obtain   confidential
+          information within the system through certain monitor calls.
+
+          See the TOPS-20 Monitor Calls Reference Manual for details.
+
+          Requires WHEEL or OPERATOR capabilities.
+
+     DECNET-ACCESS
+
+          Allows the  directory  owner  to  establish  DECNET  network
+          connections.   This  subcommand  works  in  conjunction with
+          pre-established system manager controls.
+
+          Requires WHEEL or OPERATOR capabilities.
+
+     DEFAULT-FILE-PROTECTION octal protection code
+
+          Assigns this number as default for the  protection  code  of
+          each file subsequently placed in the directory.
+
+          The protection code is constructed (by  addition)  from  the
+          octal values shown below:
+
+          77   full access to the file
+          40   read the file
+          20   write and delete the file
+          10   execute the program contained in the file
+          04   append to the file
+          02   list  the  files  specification  using  DIRECTORY-class
+               commands
+          00   no access to the file
+
+                Default code - 777700
+
+          See the TOPS-20 User's  Guide  for  more  information  about
+          protection codes.
+
+     DIRECTORY-GROUP group number
+
+          Places the directory in a group, thereby allowing  users  in
+          the  same  group  access  to  it according to the middle two
+          digits of the protection code, and access to  files  in  the
+          directory  according to the middle two digits of each file's
+          protection code.  You can assign up to  40  directory  group
+          numbers  to  each  directory,  with  values  ranging  from 1
+          through 262143 (2**18 - 1).
+
+          See the TOPS-20 System Manager's Guide for a  discussion  of
+          groups.
+
+     DISABLE
+
+          Suspends  any  special  capabilities  that  you   may   have
+          activated  with  the ENABLE subcommand or the ENABLE TOPS-20
+          command.
+
+     ENABLE
+
+          Allows you to activate any privileged capabilities that  the
+          system  manager  has  given you and that you may need during
+          the BUILD session.
+
+     ENQ-DEQ
+
+          Grants the directory owner the  ability  to  perform  global
+          Enqueue and Dequeue functions.
+
+          For  more  information,  see  the  TOPS-20   Monitor   Calls
+          Reference Manual.
+
+          Requires WHEEL or OPERATOR capabilities.
+
+     EXPIRATION-OF-PASSWORD n
+
+          Sets the password expiration date for  the  directory.   You
+          can  specify  the date and time to expire the password.  The
+          user can log in again once after the password expires and is
+          prompted for a new password.
+
+     EXPIRE
+
+          Sets the password expiration date to -1,  which  means  that
+          the  user cannot login to the account because the account is
+          expired.
+
+     FILES-ONLY
+
+          Declares the directory to be a files-only directory; one not
+          associated with a user.  Some restrictions may apply.
+
+     GENERATIONS n
+
+          Specifies a default for the number of successive generations
+          of  files to be retained in the directory.  This number must
+          be from 0 to 15, with 0 meaning an infinite number.
+
+          Default n - 1
+
+     IPCF
+
+          Allows the directory owner to execute  all  privileged  IPCF
+          functions.
+
+          IPCF functions are discussed in the  TOPS-20  Monitor  Calls
+          Reference Manual.
+
+          Requires WHEEL or OPERATOR capabilities.
+
+     INTERNET-ACCESS
+
+          Allows the directory owner to  establish  INTERNET  Protocol
+          network  connections.   This subcommand works in conjunction
+          with pre-established system manager controls.
+
+          Requires WHEEL or OPERATOR capabilities.
+
+     INTERNET-WIZARD
+
+          Allows the directory owner to use special queues for sending
+          and   receiving   information  using  the  INTERNET  Network
+          Protocol.  For use only with systems that are connected to a
+          TCP/IP network.
+
+          Requires WHEEL or OPERATOR capabilities.
+
+     KILL
+
+          Eliminates the directory and any files it contains from  the
+          system;  you  must  confirm  this  subcommand  with an extra
+          RETURN.
+
+     LIST  NAME-ONLY, FAST (default), or VERBOSE
+
+          Provides a  listing at your terminal of parameter values set
+          for the directory by TOPS-20 commands, BUILD subcommands, or
+          by  default.   The  FAST   listing   always   includes   the
+          subdirectory's  name,  working and permanent storage limits,
+          and, if  they  have  been  set,  directory  number,  account
+          default,  maximum  number  of subdirectories allowed to this
+          directory,  the  date  and  time  of  last   log-in,   group
+          memberships,  and  user  group  numbers  assignable  by this
+          directory.  The VERBOSE listing adds the other  values  that
+          can  be  assigned  by  BUILD  subcommands,  while  NAME-ONLY
+          restricts output to the directory name.
+
+     MAINTENANCE
+
+          Allows  the  directory  owner  to  execute  certain   system
+          maintenance functions or monitor calls.
+
+          See the TOPS-20 Monitor Calls Reference Manual.
+
+          Requires WHEEL or OPERATOR capabilities.
+
+     MAXIMUM-SUBDIRECTORIES n
+
+          Allows the  owner  of  this  directory  to  build  up  to  n
+          subdirectories  of  his  own,  and subtracts an equal number
+          from the value of this parameter for the superior directory.
+
+     NOT
+
+          Withdraws the specified subcommand.  May be  used  with  the
+          following:
+
+           ---
+           | ABSOLUTE-INTERNET-SOCKETS
+           | ARCHIVE-ONLINE-EXPIRED-FILES
+           | CONFIDENTIAL
+           | DECNET-ACCESS
+           | DIRECTORY-GROUP group number
+           | ENQ-DEQ
+           | EXPIRATION-OF-PASSWORD
+           | FILES-ONLY
+     NOT   | IPCF             withdraws the specified subcommand
+           | INTERNET-ACCESS
+           | INTERNET-WIZARD
+           | KILL
+           | MAINTENANCE
+           | TOPS10-PROJECT-PROGRAMMER-NUMBER
+           | OPERATOR
+           | REPEAT-LOGIN-MESSAGES
+           | SECURE
+           | SEMI-OPERATOR
+           | SUBDIRECTORY-USER-GROUP group number
+           | USER-OF-GROUP group number
+           | WHEEL
+           ---
+
+     NUMBER octal directory number
+
+          Assigns a specific  directory  number  to  a  new  directory
+          (note:  usually the default is adequate).  Directory numbers
+          1 through 17 must never be assigned by users,  as  they  are
+          reserved for system use.
+
+          Default directory number - assigned by system
+
+     OFFLINE-EXPIRATION-DEFAULT date or +n
+
+          Establishes the tape expiration date for files that  are  to
+          go  off  line  because  of  migration  or archiving.  If you
+          specify "+n", the expiration date will be n  days  from  the
+          date the files are moved off line.
+
+          The default date cannot exceed the  system  maximum.   Check
+          the  system  maximum  with  the  command INFORMATION (ABOUT)
+          SYSTEM-STATUS.
+
+     ONLINE-EXPIRATION-DEFAULT date or +n
+
+          Establishes the disk expiration date for files that  are  to
+          be  created  in  the  directory.   If  you specify "+n", the
+          expiration date will be n days from the creation date.
+
+     OPERATOR
+
+          Grants Operator capabilities to the owner of the directory.
+
+          For more information about Operator  capabilities,  see  the
+          TOPS-20 Operator's Guide.
+
+          Requires WHEEL or OPERATOR capabilities.
+
+     PASSWORD 1- to 39-character word
+
+          Assigns a password, consisting  of  alphanumeric  characters
+          and  hyphens  (-),  to  the  directory.  You can include any
+          special characters (except @ ; !  and ?) in  a  password  by
+          typing CTRL/V before each special character.  Unlike special
+          characters in file specifications, CTRL/V is  required  only
+          when creating the password, not when using it.
+
+     PERMANENT  PAGES or INFINITY
+
+          Allocates permanent disk storage capacity (in pages) to  the
+          directory,  and subtracts an equal number from the permanent
+          disk storage capacity of the superior  directory.   INFINITY
+          allows users with WHEEL or OPERATOR capabilities to allocate
+          an  unlimited  number  of  pages  to  the  directory.    The
+          permanent  disk  storage of the superior directory must also
+          be INFINITY.  The number  of  pages  that  can  be  used  is
+          limited to the number of free pages on the structure.
+
+          The  INFINITY  argument  is  intended  for  special   system
+          directories; it is not intended for general users.
+
+          Default pages - 250
+
+     PRESERVE
+
+          Preserves the values of the superior directory's  PERMANENT,
+          WORKING  and  MAXIMUM-SUBDIRECTORIES  parameters.   PRESERVE
+          stops the  PERMANENT,  WORKING,  and  MAXIMUM-SUBDIRECTORIES
+          subcommands  from  subtracting the values from the quotas in
+          the superior directory.
+
+          Requires WHEEL or OPERATOR capabilities.
+
+     PROTECTION octal protection code
+
+          Assigns  the  given  directory  protection   code   to   the
+          directory.  The protection code is constructed (by addition)
+          from the octal values shown below:
+
+          77   full access to the directory
+          40   access to files in the directory  (including  expunging
+               individual  files), consistent with the file protection
+               of the files
+          10   connect to the directory  without  giving  a  password,
+               undelete  files,  expunge  the  entire  directory,  and
+               change times, dates,  and  accounting  information  for
+               files.   All  other  access  is  governed  by  the file
+               protection of each file.
+          04   create files in the directory
+          00   no access to the directory
+
+               Default code - 777700
+
+          See the TOPS-20 User's  Guide  for  more  information  about
+          protection codes.
+
+     PUSH
+
+          Creates an EXEC level inferior to the  one  from  which  you
+          issued  the  BUILD  command and leaves your terminal at this
+          new level.  You can then issue TOPS-20  commands  to  create
+          conditions  or  obtain  information that you may need during
+          the BUILD session.  Give the POP command to return to BUILD.
+          See Example 6.
+
+          This subcommand refers to the EXEC defined  by  the  logical
+          name  DEFAULT-EXEC:.   You  can  use  the  DEFINE command to
+          define the job logical name, DEFAULT-EXEC:, with the name of
+          the EXEC you want to create each time you PUSH.
+
+     REPEAT-LOGIN-MESSAGES
+
+          Causes all system messages (mail sent by privileged users to
+          all users, contained in the file, PS:<SYSTEM>MAIL.TXT) to be
+          printed on the user's terminal each time he logs in to  this
+          directory.   If  this  subcommand  is  not given, only those
+          system messages created since the last time he logged in are
+          printed.
+
+     SECURE
+
+          Sets any new files created in the specified directory secure
+          by  default.   When a file is secure, the Access Control Job
+          checks to see if the user has access to that file before the
+          user can read, write, append, rename, delete, set secure, or
+          set unsecure that file.
+
+     SEMI-OPERATOR
+
+          Creates or modifies directories to include the SEMI-OPERATOR
+          privileges,  which  allows unprivileged users to run OPR and
+          execute certain OPR commands.  These commands  are  strictly
+          for accessing information and controlling certain devices.
+
+          See the TOPS-20 Operator's Command Language Manual for  more
+          information on SEMI-OPERATOR.
+
+          Requires WHEEL or OPERATOR privileges.
+
+     SUBDIRECTORY-USER-GROUP group number
+
+          Allows propagation of any or all of the group numbers  in  a
+          directory's  user  group  list to the subdirectories of that
+          directory.   Issuing  this  subcommand  is  the  first  step
+          required  in  establishing  subdirectory  group rights.  You
+          complete the process by issuing the USER-OF-GROUP subcommand
+          for each subdirectory.  You can assign up to 40 subdirectory
+          user group numbers to each directory,  with  values  ranging
+          from 1 to 262143 (2**18 - 1).
+
+     TOPS10-PROJECT-PROGRAMMER-NUMBER project number,programmer number
+
+          Allows TOPS-10 programs that  require  a  project-programmer
+          number  (PPN)  to  create  subjobs  to  be  compatible  with
+          TOPS-20.  The project number is an octal number in the range
+          10-377777.   The  programmer  number  is  a  six-digit octal
+          number.  Separate the project  number  from  the  programmer
+          number with a comma, for example 17,76.
+
+     USER-OF-GROUP number
+
+          Assigns the directory owner to the  given  group.   You  can
+          assign up to 40 group numbers to each directory, with values
+          ranging from 1 to 262143 (2**18 - 1).
+
+          See the TOPS-20 System Manager's Guide for a  discussion  of
+          groups.
+
+     WHEEL
+
+          Grants WHEEL capabilities to the  owner  of  the  directory,
+          allowing   him  to  perform  all  the  privileged  functions
+          available on the system.
+
+          See the TOPS-20 Operator's Guide for more information  about
+          WHEEL.
+
+          Requires WHEEL or OPERATOR capabilities.
+
+     WORKING  pages or INFINITY
+
+          Allocates working disk storage capacity (in  pages)  to  the
+          directory,  and  subtracts  an equal number from the working
+          disk storage  capacity  of  the  superior  directory.   This
+          working space is temporary and is allocated to the directory
+          only while the user is logged in.  Ordinarily,  working  and
+          permanent storage limits are equal.
+
+          INFINITY allows users with WHEEL or OPERATOR capabilities to
+          allocate an unlimited number of pages to the directory.  The
+          working disk storage of the superior directory must also  be
+          INFINITY.   The  number of pages that can be used is limited
+          to the number of free pages on the structure.
+
+          The  INFINITY  argument  is  intended  for  special   system
+          directories; it is not intended for general users.
+
+          Default pages - 250
+
+
+Characteristics
+
+     BUILD and ^ECREATE
+
+     The BUILD command  is  identical  in  format  to  the  privileged
+     ^ECREATE  command.   If  you  use  BUILD  with  WHEEL or OPERATOR
+     capabilities enabled, it has the same power as ^ECREATE,  namely,
+     to  create directories and modify the parameters of any directory
+     on the system.  Without these capabilities, you can use BUILD  to
+     modify  a  more  restricted set of directories:  you can modify a
+     directory if you have write access to  the  immediately  superior
+     directory.   The  LOGIN, CONNECT, or ACCESS command obtains write
+     access to the superior directory;  or,  if  you  have  sufficient
+     group  rights  to  the  superior  directory, you can use BUILD to
+     modify its subdirectories.
+
+     More Information
+
+     For a description of using ^ECREATE to  create  directories,  see
+     the TOPS-20 Operator's Command Language Reference Manual.
+
+     Quotas Subtracted from the Superior Directory's Allotments
+
+     Working and permanent disk storage page limits, and  the  maximum
+     number of subdirectories allowed to a subdirectory are subtracted
+     from the quotas allocated to the immediately superior  directory.
+     This  subtraction  occurs  at  the  time  of their allotment to a
+     subdirectory.   If  the  superior  directory's   quota   is   not
+     sufficient,  the BUILD command will fail.  (Note that if you have
+     enabled  WHEEL  or  OPERATOR  capabilities,  you  can  stop   the
+     subtraction  of  quotas  from  the  superior  directory  with the
+     PRESERVE subcommand.)
+
+     To increase the  superior  directory's  quota  or  any  of  these
+     quantities  you  must  either  kill some of its subdirectories or
+     reduce their allotments of the quantity.   Or  you  can  ask  the
+     system   manager  to  increase  the  allotment  of  the  superior
+     directory.   Remember  that  unless  you  specify   working   and
+     permanent  page  limits,  they will assume a default value of 250
+     pages.  The BUILD command will fail in this case if there are not
+     at least 250 pages free in the immediately superior directory.
+
+     Assigning Infinite Quotas
+
+     If you have WHEEL  or  OPERATOR  capabilities  enabled,  you  can
+     assign  the  maximum  storage limit of 34359738367 (2**35-1) to a
+     directory.  This will appear in the response  to  an  INFORMATION
+     DIRECTORY  command  as  +INF, denoting infinite storage capacity.
+     If you then use the BUILD command to construct subdirectories  to
+     this  directory,  any  disk  storage  capacity assigned, even the
+     maximum, will not be subtracted from the superior directory.  You
+     can  use  this  feature  to assign infinite storage capacity to a
+     number of users sharing a private structure.   Then  these  users
+     may  use  storage  space on the structure without limit until the
+     disk pack fills up.
+
+
+Hints
+
+     Keeping Track of Subdirectories
+
+     Subdirectories  appear  as  files  of  type  .DIRECTORY  in   the
+     immediately  superior  directory,  so  the  DIRECTORY *.DIRECTORY
+     command for the superior directory  will  indicate  any  existing
+     subdirectories.   To  suppress the listing of these files you can
+     use the SET FILE PROTECTION command to give them a protection  of
+     000000, but then you must specify the files completely (including
+     generation number) to access them in the future.
+
+     If there are  two  or  more  levels  of  subdirectories  below  a
+     superior  directory, you can do something else to allow a listing
+     of them:  put each subdirectory into a group of which  the  owner
+     of  the  highest-level  superior directory is a member.  Then, if
+     you obtain the group rights of this owner (by using the LOGIN  or
+     ACCESS  command  if  the  superior  directory  is  on  the public
+     structure,  or  ACCESS  if  it  is  on  another  structure),  the
+     INFORMATION  DIRECTORY  <directory.*>  command with the NAME-ONLY
+     subcommand will produce a  listing  of  subdirectories  at  every
+     level  beneath  the  superior  directory.   For  this  feature to
+     operate  properly  the  group  field   of   each   subdirectory's
+     protection code must be at least 40.
+
+     Modifying Subdirectories Easily
+
+     By  following  the  above   procedure,   that   is,   by   making
+     subdirectories  at  every  level  members  of groups of which the
+     owner of the highest-level superior directory is also  a  member,
+     you  make  the  modification of these subdirectories much easier.
+     You can use the BUILD command to modify these  subdirectories  or
+     read and write to them, as long as you have the group memberships
+     of this owner.  You  need  not  connect  to  each  subdirectory's
+     immediate superior to make modifications.
+
+
+Restrictions
+
+     Giving Capabilities to Subdirectory Owners
+
+     To   give   capabilities   (WHEEL,    OPERATOR,    SEMI-OPERATOR,
+     ABSOLUTE-INTERNET-SOCKETS,     INTERNET-WIZARD,     CONFIDENTIAL,
+     ENQ-DEQ, IPCF, or MAINTENANCE) to a subdirectory owner, you  must
+     have these capabilities yourself, and they must be enabled at the
+     time of the BUILD command.  WHEEL and OPERATOR capabilities allow
+     you  to  assign  any  capabilities.   The  INFORMATION  DIRECTORY
+     command for your log-in directory tells  you  which  capabilities
+     you have, if any.
+
+     Modifying Other Directories
+
+     Unless you have WHEEL or OPERATOR capabilities enabled,  you  can
+     use  the  BUILD  command  to  modify the parameters of only those
+     directories subordinate to a directory to which  you  have  write
+     access.   If  your  installation  allows  it, you can use the SET
+     DIRECTORY command to change some parameters of these directories.
+
+     Files-only Directories
+
+     By giving the FILES-ONLY subcommand  you  make  the  directory  a
+     files-only  directory.   A files-only directory is not associated
+     with a user and so should not be given capabilities or user group
+     memberships.    Although   a   files-only   directory   can  have
+     subdirectories, none of these  can  be  a  user  directory.   You
+     cannot  give  the  ACCESS  or  LOGIN  command  for  a  files-only
+     directory.
+
+     Killing Directories
+
+     You cannot kill a directory that has  subdirectories;  first  you
+     must  kill  those  subdirectories  one  by one.  (When you kill a
+     directory, the files it contains are deleted and expunged.) Also,
+     you  cannot  kill  a  directory  if  you  are  logged  into it or
+     connected to it, or there are open files on it.
+
+     Restricted Use of BUILD Command
+
+     Your system manager may make the BUILD and SET DIRECTORY commands
+     available   only   to   users  with  enabled  Wheel  or  Operator
+     capabilities.
+
+
+Related Commands
+
+     INFORMATION DIRECTORY
+
+          For examining the parameters established for a directory.
+
+     INFORMATION DISK-USAGE
+
+          For determining how much of  a  directory's  disk  space  is
+          already assigned to files.
+
+     SET DIRECTORY
+
+          For changing certain directory parameters.
+Examples
+
+     The examples shows how a  user  with  a  directory  named  <CHEM>
+     builds subdirectories.
+
+     1.  Build directories for two  of  your  students  or  employees,
+         assigning disk space and passwords and placing them in one of
+         your directory groups; check their parameters.
+
+              @BUILD <CHEM.ALLEN>
+              [New]
+              @@WORKING 50
+              @@PERMANENT 50
+              @@PASSWORD 619JIM
+              @@DIRECTORY-GROUP 2391
+              @@LIST
+               NAME <CHEM.ALLEN>
+               Working disk storage page limit 50
+               Permanent disk storage page limit 50
+               Account default for LOGIN - none set
+               Directory groups 2391
+
+              @@
+              @BUILD <CHEM.BLAKE>
+              [New]
+              @@WORKING 50
+              @@PERMANENT 50
+              @@PASSWORD 127BIL
+              @@DIRECTORY-GROUP 2391
+              @@LIST
+               Name <CHEM.BLAKE>
+               Working disk storage page limit 50
+               Permanent disk storage page limit 50
+               Account default for LOGIN - none set
+               Directory groups 2391
+
+              @@
+
+     2.  Modify  Blake's  directory  to  allow  him  to   create   two
+         subdirectories.
+
+              @BUILD <CHEM.BLAKE>
+              [Old]
+              @@MAXIMUM-SUBDIRECTORIES 2
+              @@
+
+     3.  Build a files-only directory to store examination questions.
+
+              @BUILD <CHEM.TESTS>
+              [New]
+              @@FILES-ONLY
+              @@WORKING 10
+              @@PERMANENT 10
+              @@PASSWORD MINERVA
+              @@DIRECTORY-GROUP 2391
+              @@
+
+     4.  Build a files-only directory as a library directory for  your
+         subdirectory  owners.  Place the directory and these users in
+         the same group.
+
+              @BUILD <CHEM.LAB-NOTES>
+              [New]
+              @@FILES-ONLY
+              @@WORKING 25
+              @@PERMANENT 25
+              @@PROTECTION 774000
+              @@DEFAULT-FILE-PROTECTION 775200
+              @@DIRECTORY-GROUP 2392
+              @@
+              @BUILD <CHEM.ALLEN>
+              [Old]
+              @@USER-GROUP 2392
+              @@
+              @BUILD <CHEM.BLAKE>
+              [Old]
+              @@USER-GROUP 2392
+              @@
+
+     5.  User Blake quits.  Delete his directory.
+
+              @BUILD <CHEM.BLAKE>
+              [Old]
+              @@KILL
+              [Confirm]
+              @@
+
+     6.  Modify a subdirectory so that the subdirectory's  owner  will
+         have 350 disk pages available.
+
+              @BUILD <TUCKER.TEST>
+              [Old]
+              @@PERMANENT 350
+              @@
+              ?Request exceeds superior directory permanent quota.
+              Please fix incorrect subcommands.
+
+         The action above produced an error message.  To  correct  the
+         error,  PUSH  out  of  the  BUILD  session  to learn what the
+         superior directory's permanent quota is.
+
+              @@PUSH
+
+               TOPS-20 Command processor 7(70)
+              @INFORMATION DISK-USAGE
+               PS:<TUCKER>
+               70 Pages assigned
+               261 Working pages, 261 Permanent pages allowed
+               7546 Pages free on PS:, 144454 pages used.
+
+         Then return to the BUILD session,  and  specify  a  permanent
+         quota that is less than the superior directory's quota of 261
+         disk pages.
+
+              @POP
+              [Continuing BUILD of directory PS:<TUCKER.TEST>]
+              @@PERMANENT 170
+              @@
+

@@ -1,0 +1,813 @@
+
+The MAKLIB Program
+
+The MAKLIB program organizes  and  manipulates  files  of  relocatable
+object  (REL) modules.  These REL modules are the output from a source
+language translator,  such  as  the  FORTRAN  compiler  or  the  MACRO
+assembler.
+
+At load time, the modules are linked together to build  an  executable
+program.   The MACRO assembler processes two source files and produces
+two corresponding  .REL  files.   The  LINK  program  then  loads  the
+resulting  object  modules  from  these  .REL  files  and  produces an
+executable program.
+
+Multiple modules can be concatenated  into  a  single  file  called  a
+library.   A  file  containing  a  single  module can also be called a
+library.
+
+MAKLIB performs four functions on library files.   Each  function  has
+switches  that  cause  the  MAKLIB program to do a specific task.  The
+four functions are:
+
+Obtaining Information about Libraries
+
+     These switches cause MAKLIB to give information about the  status
+     and contents of the library.
+
+Manipulating Libraries
+
+     These switches cause MAKLIB to create new libraries by  combining
+     modules.  Other switches cause MAKLIB to add, delete, extract, or
+     replace modules.
+
+Modifying Libraries
+
+     These switches cause MAKLIB to create new libraries from existing
+     libraries,  either  by adding an index or removing local symbols.
+     By modifying libraries you can reduce the  amount  of  processing
+     time required by the LINK program.
+
+Editing Libraries
+
+     These switches cause MAKLIB to edit (or patch) modules within the
+     library.   You  selectively change the object code in a module by
+     supplying MAKLIB with the required MACRO assembly  language  code
+     changes.
+
+For more information on the contents  of  .REL  files  and  REL  Block
+types,   refer  to  the  TOPS-20  LINK  Reference  Manual.   For  more
+information on MACRO assembly language, refer  to  the  TOPS-20  MACRO
+ASSEMBLER Reference Manual.
+
+
+Running MAKLIB
+
+To run MAKLIB, type MAKLIB after the TOPS-20 prompt @  and  press  the
+RETURN key.  The program prompts you with an asterisk:
+
+      ___________
+     @MAKLIB<RET>
+     *
+
+After this prompt, enter a command string.  MAKLIB takes  commands  in
+the following format:
+
+     Destination file spec=Source file spec1/Switches,Source file
+     spec2/Switches... Source file specn/Switches
+
+where:
+
+     Destination file spec is the output file  that  MAKLIB  produces.
+     It  can  be  either  a text file or a library, depending upon the
+     function you perform.
+
+If you do not specify a Destination filename, MAKLIB uses the name  of
+the file in Source file spec1.  If you omit the Destination file type,
+the default depends on the function you perform.
+
+     Source file spec1 is  the  master  library.   This  file spec  is
+     always required in a MAKLIB command string.
+
+You must specify a filename in Source file spec1.   The  default  file
+type is always .REL.
+
+     Source file spec2 ...Source file specn are the transaction files.
+     These  are additional input files required to perform some MAKLIB
+     functions.  A function  usually  requires  only  one  transaction
+     file.
+
+You include switches in the  command  string  to  instruct  MAKLIB  to
+perform  a  specific  function.   You  specify  switches in one of the
+following formats:
+
+     /Switch
+     /Switch:argument
+     /Switch:(arg1,arg2...argn)
+
+You can perform only one action with a  switch  in  a  single  command
+string,  but MAKLIB allows up to 100 switch arguments for each command
+string.
+
+You can use MAKLIB switches in abbreviated form as long as they remain
+unique.   However,  arguments to switches are usually module names and
+hence cannot  be  abbreviated.   Parentheses  are  optional  when  you
+specify  only  one  argument,  but are required to enclose two or more
+switch arguments.
+
+You can use an indirect file in a MAKLIB command string  to  reference
+another  file.   The  indirect  file can contain a complete or partial
+MAKLIB command string (filenames and switches).  For more  information
+on using indirect files, refer to the TOPS-20 User's Guide.
+
+If you always want to use specific switches when you run  MAKLIB,  you
+can  put these switches in a SWITCH.INI file.  For more information on
+creating a SWITCH.INI file, refer to the TOPS-20 User's Guide.
+
+MAKLIB allows you to type a string of commands on one or  more  lines.
+If  the  command string takes more than one line, type a hyphen (-) at
+the end of the first  line,  and  press  RETURN.   Then,  when  MAKLIB
+prompts  with a pound sign (#), continue to type the command string on
+the next line.  You can also use multi-line commands  in  an  indirect
+file.
+
+To exit from MAKLIB and return to TOPS-20 command level,  type  either
+/EXIT or CTRL/Z after the asterisk prompt.
+
+
+Running MAKLIB to Obtain Information About Libraries
+
+MAKLIB contains four switches that allow you to obtain information  on
+the status and contents of the master library (first input file).  The
+four switches are:  /LIST, /POINTS, /TRACE, and /LOAD.
+
+     Command String Requirements -
+
+     Files:              A master  library  and  an  output  file  are
+                         required  in  the  command string for each of
+                         the  four  switches.   None  of  the  command
+                         strings require a transaction file.
+
+     Default file type:  Output file type - .LST
+                         Master library type - .REL
+
+     Arguments:          (Modules affected by the switch) - None
+
+The output file (.LST) is a text file  that  can  be  written  to  any
+output device that supports text files, such as TTY: or LPT:.  See the
+switch /POINTS for more information about this option.
+
+/LIST - LIST Switch
+
+     This switch lists the names of the modules that are contained  in
+     the  master library.  In addition to the names, MAKLIB also lists
+     the two data values from the END block (REL Block type 5) of  the
+     module.   If the module is a two-segment program, the first value
+     is  the  high-segment  break,  and  the  second  value   is   the
+     low-segment  break.   If the module is a one-segment program, the
+     first value is the program break, and the  second  value  is  the
+     absolute  break.  If the second value is zero, it is not printed.
+     When MAKLIB finishes the task you request, it  prompts  you  with
+     another asterisk.  Then you can enter another command string.
+
+/POINTS - POINTS Switch
+
+     This switch lists all entry  points  in  the  specified  library.
+     Entry points are usually subroutine starting addresses.  They are
+     used by the LINK program to determine if a global request can  be
+     satisfied by loading a module from a library.
+
+/TRACE - TRACE Switch
+
+     This switch lists all the edits you have made to a library.  This
+     information  is  contained  in  the TRACE blocks in the specified
+     library.  MAKLIB creates these TRACE blocks (REL Block type 1060)
+     when  you  use  /FIX  to edit a module in the library.  The TRACE
+     blocks contain information about the edits  you  insert  and  the
+     changes  you make to the library.  /TRACE allows you to determine
+     the exact binary patching status of the library.
+
+/LOAD - LOAD Switch
+
+     This  switch  shows  additional  loading  instructions  that  are
+     embedded  within  the  library  in either REQUEST (REL Block type
+     17), REQUIRE (REL Block type 16), or ASCII text blocks.
+
+
+     Running MAKLIB to Manipulate Libraries
+
+     For handling and creating libraries, MAKLIB includes six switches
+     that  allow you to work with individual modules within libraries.
+     The six  switches  are:   /MASTER,  /APPEND,  /DELETE,  /EXTRACT,
+     /INSERT, and /REPLACE.
+
+     Command String Requirements -
+
+     Files:              A master library (first input  file)  and  an
+                         output  file  are  required  in  the  command
+                         string for  each  of  the  six  switches.   A
+                         transaction   file   is  required  with  some
+                         switches.
+
+     Default file type:  .REL for all files
+
+     Arguments:          All switches accept arguments.   /APPEND  and
+                         /INSERT  are  two switches that do not always
+                         require  arguments.   For  more  information,
+                         refer   to   the  discussions  of  these  two
+                         switches in this section.
+
+/MASTER - MASTER Switch
+
+     This switch identifies modules within  the  master  library  that
+     correspond  to those in the transaction file being used to effect
+     the update.  /MASTER takes at least one  argument,  and  requires
+     that  another  switch be given in the same command string.  It is
+     the  only  switch  within  this  function  that  causes  no  real
+     manipulation  of a library.  It is mentioned here because some of
+     the switches used to  manipulate  libraries  require  /MASTER  in
+     their respective command strings.
+
+     You include /MASTER in the command strings for only two switches,
+     /INSERT and /REPLACE.  These switches are discussed later in this
+     section.
+
+/APPEND - APPEND Switch
+
+     This switch adds new modules to the end of an  existing  library.
+     The  output file is the master library plus the appended modules.
+     MAKLIB reads these appended modules from  the  transaction  file.
+     You  specify  them  as arguments to the switch.  You must specify
+     modules as arguments in the same physical order as they occur  in
+     the transaction file.
+
+     Note:  When you do not specify an argument to /APPEND, the entire
+     transaction file is appended to the master library.
+
+/DELETE - DELETE Switch
+
+     This switch removes one or more modules from an existing library.
+     The   output  file  is  the  master  library  minus  the  deleted
+     module(s).  All modules, except those specified as  arguments  to
+     /DELETE,  are  read  from  the  master  library and copied to the
+     output file.  No transaction file is required.
+
+Note:  You must specify modules as  arguments  in  the  same  physical
+order as they occur in the master library.
+
+/EXTRACT - EXTRACT Switch
+
+     This switch produces an output file that is a subset  of  modules
+     in  the  master library.  You specify the modules as arguments to
+     the switch.  No transaction file is required.
+
+Note:  You must specify the modules as arguments in the same  physical
+order as they occur in the master library.
+
+
+/INSERT - INSERT Switch
+
+     This switch inserts new modules into a master  library.   /MASTER
+     is  required in the command string.  The output file is formed as
+     follows:  MAKLIB copies the master library to the output file  up
+     to  but  not  including the module named as the first argument to
+     /MASTER.  Next, MAKLIB copies  the  module  named  as  the  first
+     argument to /INSERT from the transaction file to the output file.
+     The process repeats until the argument list specified to  /MASTER
+     and  /INSERT  is  exhausted.   At  this  point, MAKLIB copies the
+     remaining modules in the  master  library  to  the  output  file.
+     There  must  be  one  argument  to  /MASTER for every argument to
+     /INSERT.
+
+Note:  You must specify the module names in  the  argument  lists  for
+/MASTER  and  /INSERT  in the same physical order as they occur in the
+master library and the transaction file, respectively.   When  you  do
+not  specify  an  argument  to /INSERT, the entire transaction file is
+inserted before the module you specify to /MASTER.   You  must  always
+specify an argument to /MASTER.
+
+     You may insert more than one module in front of  a  module  in  a
+     master  library.   However,  the  master library module name must
+     appear repeatedly in the argument list to /MASTER.  This produces
+     a  one-to-one  correspondence  between  the  module in the master
+     library and the modules you wish to insert.  In  this  case,  you
+     must  list the argument names for both /MASTER and /INSERT in the
+     same physical order that they appear as  modules  in  the  master
+     library and transaction file, respectively.
+
+/REPLACE - REPLACE Switch
+
+     This switch replaces modules in the  master  library  with  those
+     specified  in  the  transaction file.  /MASTER is required in the
+     command string so that the program can identify  the  modules  in
+     the  master  library  that  are  to be replaced by those named as
+     arguments to /REPLACE.  There must be a one-to-one correspondence
+     between the number of arguments to /MASTER and /REPLACE.
+
+     The output file  is  the  entire  master  library,  with  modules
+     replaced  by  those  read from the transaction file (and named as
+     arguments to the switch).
+
+Note:  You must specify the names in both argument lists (/MASTER  and
+/REPLACE)  in the same physical order as they appear as modules in the
+master library and transaction file, respectively.
+
+
+Running MAKLIB to Modify Libraries
+
+The two switches within this function  facilitate  the  processing  of
+requests  by  the  LINK  program when it loads modules from libraries.
+The two switches are:  /INDEX and /NOLOCALS.
+
+     Command String Requirements -
+
+     Files:              A master library (first input  file)  and  an
+                         output  file  are  required  in  the  command
+                         string for both switches.  Transaction  files
+                         are  not  allowed.  Both switches appear with
+                         the master library in the command string.
+
+     Default file type:  .REL for both  the  master  library  and  the
+                         output file for both switch command strings.
+
+     Arguments:          None
+
+/INDEX - INDEX Switch
+
+     This switch produces an output file, which is  identical  to  the
+     master  library,  except  with  INDEX  blocks (REL Block type 14)
+     inserted in the file.  Normally, programs make external  requests
+     to library subroutines they need, and LINK must search completely
+     through the library to decide which modules to  load  to  satisfy
+     the  requests.   INDEX  blocks  list  the  entry  point names and
+     corresponding modules, allowing LINK to quickly  determine  which
+     modules  to  load.   LINK  searches more efficiently, and loading
+     time is shorter because the amount of I/O is reduced.
+
+/NOLOCALS - NOLOCALS Switch
+
+     This switch produces an output file which is the  master  library
+     with  all  local symbols deleted from the file SYMBOL blocks (REL
+     Block type 2).  Local symbols are useful for debugging  purposes,
+     and   also   when   modules   are   edited  with  MAKLIB.   In  a
+     production-mode  library,  local  symbols  are  usually  deleted,
+     because  they  serve no purpose.  This reduces the amount of mass
+     storage space the library occupies.  In addition, loading time is
+     faster  because the amount of I/O is reduced.  Global symbols are
+     not deleted because they are used in the linking of modules.
+
+     In the following example you create a new library, L2,  from  L1.
+     The  new  library has an index but no local symbols.  You can use
+     /INDEX and /NOLOCALS together in the command string.
+
+           ___________
+          @MAKLIB<RET>
+           _________________________
+          *L2=L1/NOLOCALS/INDEX<RET>
+          *
+
+
+Running MAKLIB to Edit Libraries
+
+MAKLIB provides a mechanism for you to patch (or edit) the code  of  a
+relocatable  object module.  This patching facility allows you to make
+program changes directly to a library.  Although MAKLIB  provides  the
+facility  for  editing  a  program without having to change the source
+code, good programming practice requires that the same edits  also  be
+made at the source level.
+
+To edit a library in this way, you  must  first  create  a  text  file
+called  a  .FIX  file.  This .FIX file contains one or more edits that
+you want to insert in the library.  Each edit has a unique  identifier
+and  consists  of  a sequence of control pseudo-ops and MACRO assembly
+language code.  The control pseudo-ops tell MAKLIB where  and  how  to
+make  the  changes.   Any  new code is supplied as a sequence of MACRO
+assembly  language  statements.   Each  edit  begins  with  an   .EDIT
+pseudo-op and ends with an .ENDE pseudo-op.
+
+When MAKLIB processes the .FIX file, it creates a new library with any
+new edits inserted.  Although each edit is now a permanent part of the
+library, you can use MAKLIB to deactivate  an  edit.   This  operation
+effectively removes any code changes inserted by the edit.  Therefore,
+edits in the library can be either active or inactive.
+
+MAKLIB maintains edit history information on the library by generating
+TRACE  blocks  (REL  Block type 1060) for each edit you insert.  TRACE
+blocks are part of the module.   Therefore,  when  you  use  /REPLACE,
+/EXTRACT, or /DELETE, the TRACE blocks move with the module.
+
+Note:  MAKLIB does not handle PSECTS.
+
+
+Pseudo-ops for .FIX files
+
+     .EDIT xxxxxx - This pseudo-op is an identifying name for the edit
+     you  insert  in the specified module.  The edit name (xxxxxx) can
+     be up to six (6) SIXBIT characters and is  stored  in  the  TRACE
+     block  for  any  module affected by the edit.  .EDIT is the first
+     pseudo-op for each edit.
+
+     .DATE dd-mmm-yy - This pseudo-op gives the date that the edit was
+     made.  The day (dd) and year (yy) entries are numeric.  The month
+     entry (mmm) is alphabetic.  .DATE is an optional  pseudo-op.   If
+     you  supply  this  information,  it  is  stored in the edit TRACE
+     block.
+
+     .NAME xxx - This pseudo-op gives the three initials (xxx) of  the
+     person  who  wrote the edit.  .NAME is an optional pseudo-op.  If
+     you supply these initials, they are stored in the TRACE block for
+     the edit.
+
+     .MODULE xxxxxx - This pseudo-op gives the name  (xxxxxx)  of  the
+     module  that  you  wish  to  edit.   It  is the module name as it
+     appears in the library, up to six Radix-50 characters.  Once  you
+     give  a name, that module is loaded.  Editing continues with this
+     module unless a new .MODULE pseudo-op is given.  You do not  have
+     to  edit modules in the same order that they reside in the master
+     library (first input file).  However, each module  may  be  named
+     only once within an edit.
+
+     .ASSOCIATED   +edit1,-edit2,+edit3,+edit4..... - This   pseudo-op
+     gives information on which other related edits must be present in
+     the specified module.  The edit names here are the same as  those
+     designated under the .EDIT pseudo-op.  The "+" indicates that the
+     edit is required.  The "-" indicates an edit that conflicts  with
+     the   current   edit;   you   cannot   have   both  edits  active
+     simultaneously.  You receive notification if the specified module
+     does  not  contain  the  correct combination of associated edits.
+     The  default  is  "+"  if  no  sign  precedes  the   edit   name.
+     Information  you  supply  with  the  .ASSOCIATED  pseudo-op  must
+     precede any information supplied in the .FIX file by the .INSERT,
+     .REMOVE, or .REINSERT pseudo-ops.
+
+     .VERSION nnnxx(nnnnnn)-g - This pseudo-op allows you  to  specify
+     the  version  number  of  the  edit.   The version is in standard
+     TOPS-20 version format.  The nnn  designates  the  major  version
+     number,  which  consists  of  three octal digits maximum.  The xx
+     designates the minor  version,  which  consists  of  two  letters
+     maximum.   The (nnnnnn) designates the edit number, and can be up
+     to six octal digits.  The g designates the  code  for  the  group
+     that  last  edited the module, and it is one octal digit maximum.
+     All fields are optional.
+
+     .ALTER location,<new value>,<original  value>  -  This  pseudo-op
+     changes the contents of a specific location.  All code is written
+     in angle brackets, <   >.  The original value  at  the  specified
+     location  is  replaced  by  a  new  value.   The  first argument,
+     location, is where you wish to place the  new  value.   Once  you
+     enter  the  new  value,  it  is  evaluated  and  placed  into the
+     specified location.  You can specify a third argument,  <original
+     value>,  to  check whether the actual original value differs from
+     the expected original value.  If it does,  MAKLIB  gives  you  an
+     error message and the location is not altered.
+
+     .INSERT  location,keyword:n,<original  value>  -  This  pseudo-op
+     allows  you  to  add  code to a module.  You precede the new code
+     with a .INSERT pseudo-op and terminate the sequence with a  .ENDI
+     pseudo-op.   MAKLIB  assembles the code and adds it to the module
+     in the output file.
+
+     The .INSERT pseudo-op takes three arguments.  The first gives the
+     location  at which you want the new code executed.  This argument
+     can be a  numeric  or  symbolic  expression.   This  location  is
+     assumed  to  be  relocatable, and may be in either the low or the
+     high segment.  The second argument is a  keyword  that  specifies
+     how  the  code  is  to  be located with respect to this location.
+     This keyword is one of the following:
+
+     BEFORE       -  Insert the new  instructions  so  that  they  are
+                     executed  before the instruction at the specified
+                     location.
+
+     AFTER        -  Insert the new  instructions  so  that  they  are
+                     executed  after  the instruction at the specified
+                     location.
+
+     REPLACE      -  Delete one instruction from the existing code for
+                     each one included in the edit, beginning with the
+                     instruction at the location of the  edit.   Then,
+                     insert  the  new  instructions  so  that they are
+                     executed in place of the deleted code.
+
+     REPLACE:n    -  Delete n instructions  from  the  existing  code,
+                     starting   with   the  instruction  at  the  edit
+                     address.  Then, insert the  new  instructions  so
+                     that  they  are  executed in place of the deleted
+                     code.   This   applies   no   matter   how   many
+                     instructions  you insert.  The argument may be an
+                     expression,  and  is  evaluated  in  the  current
+                     radix.
+
+     You can specify a third  argument,  <original  value>,  to  check
+     whether  an  actual  original  value  differs  from  the expected
+     original value.  If it does, MAKLIB gives you  an  error  message
+     and  the  editing  does  not take place.  This argument gives the
+     line of code at the location specified  by  the  first  argument.
+     The code is written in angle brackets, and is evaluated.  It must
+     exactly match the code at the specified location.  If the code at
+     the location is a literal, you must give only the first word.
+
+     MAKLIB always inserts the new code at  the  end  of  the  current
+     segment.    It   replaces  the  referenced  instruction  with  an
+     unconditional jump to the new code.
+
+     Because MAKLIB  does  not  physically  insert  the  code  at  the
+     location you specify, you need to consider a restriction when you
+     use this facility.
+
+     MAKLIB constructs a patch that  has  the  effect  of  a  skipping
+     instruction,  and assumes that it follows an instruction that can
+     potentially skip, at most, one instruction.  If the intent of the
+     patch  does not fit these assumptions, it may not work correctly.
+     Further, for  REPLACE  functions,  MAKLIB  assumes  that  program
+     control  can  only  pass  to the first instruction of the deleted
+     code.
+
+     For example consider the following code segment,
+
+                  JRST    FOO
+          BAR:    JFCL
+                  JFCL
+          FOO:    JFCL
+                  JFCL
+                  JFCL
+
+     and a MAKLIB patch to it:
+
+          .INSERT BAR,REPLACE:4<JFCL>
+                  JFCL
+          .ENDI
+
+     Note that the JRST FOO instruction at BAR-1 still causes the  old
+     code to be executed in spite of the patch.
+
+     As another example, consider the following:
+
+          LABEL:  OPENF%        ;A JSYS MONITOR CALL
+                    ERJMP ERROR
+                  JFCL
+
+     A patch using .INSERT cannot specify any combination of BEFORE or
+     AFTER  with  location  LABEL or LABEL+1.  To do so would separate
+     the JSYS and the ERJMP instructions, which must be consecutive to
+     operate properly.
+
+     .REMOVE edit1,edit2,edit3.... - This  pseudo-op  deactivates  the
+     specified   edits   from   the  selected  module.   The  original
+     instructions displaced by the jumps to the  edit  area  for  each
+     .INSERT  are  returned  to that location.  No changes are made to
+     the symbol table.  The  arguments  are  the  edits  you  wish  to
+     remove.
+
+     .REINSERT  edit1,edit2,edit3... - This  pseudo-op  activates  any
+     edits you previously removed with the .REMOVE pseudo-op.
+
+     .ENDI - This  pseudo-op  marks  the  ending  point  of  the  code
+     following the last .INSERT pseudo-op.
+
+     .ENDE - This pseudo-op marks the ending  point  of  the  complete
+     edit.   It also instructs MAKLIB to check for undefined labels or
+     other invalid entries within the edit.
+
+The MAKLIB program has a one-pass assembler.  Because of this, forward
+references to labels and expressions are restricted to simple addition
+and subtraction on the halfword  boundary.   References  to  undefined
+labels or symbols are valid where references to external symbols would
+be valid in MACRO (with no polish fix-ups).  Literals are  treated  as
+forward  references, because the actual location of the literal is not
+known until the .INSERT pseudo-op ends.  Defining a label inside of  a
+literal  is not valid.  Finally, the value you place in the right-hand
+side of an assignment must not be forward or external.
+
+It is not required that assignments be  inside  .INSERT  in  the  .FIX
+file.   It is required, however, that the .EDIT and .MODULE pseudo-ops
+precede any assignments, because  these  define  new  symbols  in  the
+symbol  table.   MAKLIB  does  not  allow  redefinitions  of  existing
+symbols, because it is impossible to backtrack references to a  symbol
+in  the  relocatable  binary file.  So, any label or symbol you create
+with /FIX must be new to the program.
+
+To simplify editing and to keep the  appearance  of  binary  edits  as
+close  as  possible  to the source level, the following pseudo-ops are
+implemented in the MAKLIB .FIX file assembler and operate as  they  do
+in MACRO:
+
+          ASCII            ASCIZ           BLOCK
+          BYTE             COMMENT         DEC
+          EXP              IOWD            OCT
+          POINT            PURGE           RADIX
+          RADIX50          REMARK          SIXBIT
+          SQUOZE           SUBTTL          TITLE
+          XWD
+
+                                 NOTE
+
+        The pseudo-ops BYTE, DEC, OCT, and EXP are limited  to
+        a maximum generation of one word of data.
+
+All MACRO operators and qualifiers are available  except  ^F.   MAKLIB
+also  supports  the following MACRO pseudo-ops for writing conditional
+code:
+
+          IFN              IFG             IFDEF
+          IFE              IFLE            IFNDEF
+          IFL              IFGE
+
+You may follow symbols with ## (double pound sign)  to  indicate  that
+they  are  EXTERNAL  quantities.  However, if the symbol is defined as
+EXTERNAL (already in the symbol table), you do not have to use ##.  It
+is not necessary to follow undefined symbol names with # (single pound
+sign), since it is assumed that any  undefined  symbol  is  a  forward
+reference.   If  a symbol name is already assigned and followed by the
+#, you receive an error message.  You may define  labels  as  internal
+(available  to  other  programs)  if  they are followed by ::  (double
+colon).  Entry  points  may  not  be  defined.   The  full  facilities
+available  in  MACRO  for combinations of DDT suppression and internal
+declaration are available for both labels and assignments.
+
+Command String Requirements -
+
+     Files:              A master library (first input  file)  and  an
+                         output  file  are  required  in  the  command
+                         string.   The  .FIX  file  is  the   required
+                         transaction file.
+
+     Default file type:  .REL for both the output file and the  master
+                         library.   The  default  for  the transaction
+                         file is .FIX.
+
+     Arguments:          None.
+
+The editing command string accepts two switches.  They  are  /FIX  and
+/WHO.
+
+/FIX - FIX Switch
+
+     This switch makes changes to the actual code and symbol table  of
+     a module.  It appears with the transaction (.FIX) file spec.
+
+/WHO:xxx - WHO Switch
+
+     This switch is optional and you use it only with /FIX.   You  can
+     enter  it  in either the master library or the transaction (.FIX)
+     file spec.  The argument to /WHO can be up  to  three  characters
+     (xxx).  These are usually the initials of the person using MAKLIB
+     at  the  time  the  edit  is  installed.   If  you  include  this
+     information,  it  appears in the TRACE block of all new edits (in
+     the last affected field and in the last installed field).  If any
+     of  these  edits  change  the status of an existing edit (such as
+     .REMOVE or .REINSERT), this information is entered  in  the  last
+     affected  field  of the TRACE block of the affected edit.  If you
+     use /WHO without /FIX, MAKLIB ignores it in the command string.
+
+In order to edit a library with a .FIX file, you can use the following
+command  string.   In  this example, you use the .FIX file FIX1.FIX to
+edit the library OLDLIB.REL, and create an updated library NEWLIB.REL.
+
+      ___________
+     @MAKLIB<RET>
+      ___________________________________
+     *NEWLIB=OLDLIB,FIX1/FIX/WHO:SFA<RET>
+     *
+
+The following are sample .FIX files.  This first  example  illustrates
+the  use  of  the  .INSERT and .VERSION pseudo-ops.  One module in the
+library is modified.
+
+
+     .EDIT 341
+     .NAME HAS
+     .MODULE GLOB..
+     .VERSION 4C(341)
+     .INSERT START,AFTER,<RESET>
+     MOVE       P,[IOWD PDLEN,PDLIST]
+     .ENDI
+     .INSERT    LOOP+3,BEFORE,<JRST LOOP>
+             PUSHJ      P,NEXTCR
+     .ENDI
+     .ENDE
+
+
+The following edit illustrates the use of .ALTER pseudo-op  to  change
+the  value  of a table entry.  Location RAD50+46 is changed from a "."
+to a "$".  In addition, this edit uses the  .ASSOCIATED  pseudo-op  to
+specify that this edit also requires edit 343 to the module TABLES.
+
+
+     .EDIT 344
+     .NAME HAS
+     .MODULE TABLES
+     .ASSOCIATED 343
+     .ALTER RAD50+46,<"$">,<".">
+     .ENDE
+
+
+This edit uses the .REMOVE pseudo-op to deactivate  edit  345  in  the
+module  FSORT.   As  a  result  of  this  operation, any code that was
+changed by edit 345 will be restored to its previous state.
+
+
+     .EDIT 346
+     .NAME HAS
+     .MODULE FSORT
+     .REMOVE 345
+     .ENDE
+
+
+MAKLIB Switch Options
+
+______________________________________________________________________
+
+  Switch            Function
+______________________________________________________________________
+
+  /APPEND           Adds new modules  to  the  end  of  an  existing
+                    library.
+
+  /DELETE           Removes one or modules from an existing library.
+
+  /EXIT             Terminates MAKLIB and  returns  you  to  TOPS-20
+                    command level.
+
+  /EXTRACT          Produces an output file  that  is  a  subset  of
+                    modules in the master library.
+
+  /FIX              Makes changes to  the  actual  code  and  symbol
+                    table of a module.
+
+  /INDEX            Produces an output file identical to the  master
+                    library except with INDEX blocks inserted in the
+                    file.
+
+  /INSERT           Inserts new modules into the master library.
+
+  /LIST             Lists  the  names  of  the  modules   that   are
+                    contained in the master library.
+
+  /LOAD             Shows additional loading instructions  that  are
+                    embedded  within  the library in either REQUEST,
+                    REQUIRE, or ASCII text blocks.
+
+  /MASTER           Identifies files within the master library  that
+                    correspond  to  those  in  the  transaction file
+                    being used to effect the update.
+
+  /NOLOCALS         Produces an output  file  which  is  the  master
+                    library  with all local symbols deleted from the
+                    file symbol blocks.
+
+  /POINTS           Lists all entry points in the specified library.
+
+  /REPLACE          Replaces modules  in  the  master  library  with
+                    those specified in the transaction file.
+
+  /TRACE            Lists all the edits made to a library.
+
+  /WHO              Specifies  the  initials  of  the  person  using
+                    MAKLIB when an edit is installed.
+______________________________________________________________________
+
+
+MAKLIB Messages
+
+The MAKLIB program issues two types of  messages:   fatal  errors  and
+warning  messages.   Fatal  errors are preceded by a question mark (?)
+and cause the current command to be  aborted.   Warning  messages  are
+preceded  by  a percent sign (%) and indicate that the command will be
+completed, but the operation  may  not  have  been  performed  as  you
+intended.
+
+All messages are typed on  your  terminal.   They  begin  with  a  six
+character code that identifies the error.  This is followed by a short
+description of the problem.
+
+MAKLIB uses the command scanner routines SCAN and WILD.  The following
+list of messages contains the most common messages that these routines
+produce.  These messages begin with SCN or WLD.
+
+Some of the messages contain information  that  is  dependent  on  the
+exact command string, switch, or file you wish to process.  The key to
+these message variables follows:
+
+          [edit]         The name of a specific edit.
+
+          [file]         A file spec.
+
+          [label]        The name of the label which caused the error.
+
+          [location]     The location where the  error  was  detected.
+                         This   is  expressed  as  either  a  symbolic
+                         address or as a line number in the .FIX file.
+
+          [module]       The name of a specific module.
+
+          [pseudo-op]    A specific pseudo-op.
+
+          [statement]    A specific statement related  to  or  causing
+                         the error.
+
+          [status]       A specific numeric file status code.
+
+          [switch]       A specific MAKLIB command switch.
+
+          [symbol]       A  symbol.   (Refer  to  the  TOPS-20   MACRO
+                         ASSEMBLER   Reference  Manual  for  an  exact
+                         definition.)
+
+          [type]         A REL Block type.
+
+          [value]        A specific value.
+
+See the TOPS-20 User Utilities Manual for  more  detailed  information
+about specific MAKLIB messages.
+

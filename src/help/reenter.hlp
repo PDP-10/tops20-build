@@ -1,0 +1,62 @@
+
+REENTER command
+
+The REENTER command starts the current fork  at  its  alternate  entry
+point.
+
+
+Format
+
+     @REENTER (PROGRAM)
+
+
+Characteristics
+
+     Using REENTER
+
+          The REENTER command  starts  your  program  at  the  address
+          specified  by the second word in the program's entry vector.
+          For most programs this address is contained in location 124.
+          Usually  the REENTER and START commands start the program at
+          the same point, but another re-entry point can  be  provided
+          to  avoid initialization procedures, perform error recovery,
+          or to use the program in a different way.
+
+
+Hints
+
+     Further Information
+
+          For more information about entry vectors,  see  the  TOPS-20
+          Monitor Calls Reference Manual.
+
+
+Related Commands
+
+     GET       for placing an executable program in memory
+
+     LOAD      for loading a source or object program into memory
+
+     START     for entering a program at its normal entry point
+
+
+Examples
+
+     1.  Give the REENTER command for your current program.
+
+         @REENTER
+
+     2.  Begin running a program, then give a CTRL/C to leave  it  and
+         obtain  a  file.   Resume  execution  of  the  program at the
+         alternate entry point.
+
+         @R DUMPER
+         DUMPER>^C
+         @ACCESS PS:<P.SPECCINI>
+         Password:___
+         @COPY PS:<P.SPECCINI>USR.FIL
+          PS:<P.SPECCINI>USR.FIL.1 => USR.FIL.1 [OK]
+         @END-ACCESS PS:<P.SPECCINI>
+         @REENTER
+         DUMPER>
+

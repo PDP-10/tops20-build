@@ -1,0 +1,6 @@
+
+CTRL/L
+
+Advances the paper on a hard-copy terminal to  the  top  of  the  next
+page.   To  stop  the  ^L from printing, give the TERMINAL NO INDICATE
+command.

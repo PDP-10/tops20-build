@@ -1,0 +1,40 @@
+
+Abbreviation
+
+By abbreviating  commands  and  command  arguments,  you  can  further
+increase  the  speed with which you give instructions to TOPS-20.  The
+smallest unique abbreviation for a command or argument will stand  for
+the  entire  word; if there is a default choice for further arguments,
+the system  will  assume  you  want  this  too.   (You  can  determine
+sufficient   abbreviations  by  using  the  ESC  key:   any  correctly
+recognized abbreviation will stand for the  word.)  For  example,  the
+abbreviated  command  FD stands for the FDIRECTORY command; I L stands
+for INFORMATION LOGICAL-NAMES JOB.
+
+There are a few cases  where  non-unique  abbreviations  stand  for  a
+frequently  used  command.   For  example, DIS is the abbreviation for
+DISABLE  even  though  two  other  commands  begin  with  the  letters
+DIS - DISCARD and DISMOUNT.
+
+            Special Abbreviation              Command
+
+            C                                 CONTINUE
+
+            D                                 DEPOSIT
+
+            DIS                               DISABLE
+
+            E                                 EXAMINE
+
+            EX                                EXECUTE
+
+            INFORMATION F                     INFORMATION FILE-STATUS
+
+            LOG (When not logged in)          LOGIN
+
+            LOG (When logged in)              LOGOUT
+
+You cannot use abbreviation (or recognition)  in  a  few  cases.   The
+names of devices (including file structures), and jobnames (given, for
+example, as arguments to the MODIFY or CANCEL command) must  be  typed
+in full; and of course passwords cannot be abbreviated or recognized.

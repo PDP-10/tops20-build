@@ -1,0 +1,114 @@
+
+SKIP command
+
+The SKIP command moves a magnetic tape set forward  over  a  specified
+number of files or records, or to the logical end of the tape set.
+
+
+Format
+
+     @SKIP (DEVICE) dev:  n units
+
+     where:
+
+     dev:      is the name of the tape set or magnetic tape drive that
+               you want to move forward.
+
+     n         is the number of files or records over which  you  want
+               to skip.  The colon after the device name is optional.
+
+     units     is either FILES or RECORDS, where records are  sections
+               of  a  file; or LEOT, to skip to the logical end of the
+               tape set, which is the  next  point  on  the  tape  set
+               having two adjacent EOF (end-of-file) marks.
+                    Default units - FILES
+
+
+Restrictions
+
+     SKIP With Open Files
+
+          If you have given a CTRL/C to exit from a program  that  has
+          opened  a  file in a magnetic tape set and you then give the
+          SKIP command for that tape set, the system will first ask if
+          you  want  to close the associated file.  You must do so for
+          SKIP to succeed, but you will probably be unable to continue
+          the  program  from  that  point because the file will now be
+          closed.
+
+     RECORDS Argument Used for Unlabeled Tapes Only
+
+          You cannot use the RECORDS argument to the SKIP command when
+          using  a labeled tape, because read and write operations for
+          labeled tapes always move the tape to  the  beginning  of  a
+          file.
+
+
+Warning
+
+     Skipping Past LEOT (Unlabeled Tapes Only)
+
+          If you specify too large a value for n in the  SKIP  command
+          line,  you can move past the logical end of tape (LEOT).  In
+          this case, the operator may have to  intervene  before  your
+          tape  control  commands will have effect again.  You must be
+          sure how many files you have in the tape set if you use SKIP
+          n  rather  than  SKIP  LEOT.  This problem can occur for any
+          tapes mounted on drives of the form MTAn:, or for  unlabeled
+          tapes mounted on drives of the form MTn:.
+
+
+Related Commands
+
+     BACKSPACE for moving a magnetic tape backward a specified  number
+               of files or records
+
+     REWIND    for returning a magnetic tape to its load point
+
+     UNLOAD    for rewinding  a  magnetic  tape  completely  onto  the
+               source  reel  (only  for tapes mounted on drives having
+               device names of the form MTAn:)
+
+
+Examples
+
+     1.  Skip over the next 2 files on the magnetic tape you are using
+         (mounted on magnetic tape drive MT0:  in this case).
+
+         @SKIP MT0: 2 FILES
+
+     2.  Skip over the next two records on an unlabeled tape.
+
+         @SKIP MTA0: 2 RECORDS
+
+     3.  Use the MOUNT command to ask the operator to mount your  tape
+         in  write-enabled  mode,  then  copy 3 files to the tape from
+         your directory on structure SNARK:.  Use the  REWIND  command
+         to  go  back  to  the beginning, and the SKIP command to skip
+         over the first file.  Use the COPY command to have  the  next
+         file  (FIL-2)  printed  on  your terminal, then give the SKIP
+         command again to skip to the logical  end-of-tape.   You  are
+         skipping only one file, FIL-3, in this case.
+
+         @MOUNT TAPE DAY:/WRITE-ENABLED
+         [Mount Request DAY Queued, Request-ID 187]
+         [Tape set DAY, Volume DAY mounted]
+         [DAY: defined as MT0:]
+         @REWIND DAY:
+         @MOUNT STRUCTURE SNARK:
+         Structure SNARK: mounted
+         @ACCESS SNARK:
+         @COPY SNARK:FIL-1.TAP DAY:
+          SNARK:FIL-1.TAP.1 => MT0:FIL-1 [OK]
+         @COPY SNARK:FIL-2.TAP DAY:
+          SNARK:FIL-2.TAP.1 => MT0:FIL-2 [OK]
+         @COPY SNARK:FIL-3.TAP DAY:
+          SNARK:FIL-3.TAP.1 => MT0:FIL-3 [OK]
+         @REWIND DAY:
+         @SKIP DAY: 1
+         @COPY DAY: TTY:
+          T0: => TTY:
+
+         !THIS IS THE SECOND FILE.!
+         @SKIP DAY:LEOT
+

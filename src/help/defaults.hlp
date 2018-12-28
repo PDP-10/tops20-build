@@ -1,0 +1,45 @@
+
+Defaults
+
+The concept of "defaults," or command arguments assumed  when  you  do
+not  specify  a  choice,  is  important for understanding TOPS-20.  To
+speed processing of commands and  to  help  inexperienced  users,  the
+system  uses  defaults when necessary for completing commands that you
+give.  By taking advantage of this defaulting action, you can make the
+system work faster and more efficiently for you.
+
+There  are  different  kinds  of  default.    When   you   give   file
+specifications  as  arguments  to,  say, the PRINT command, the system
+assumes that you are referring to the highest (most recent) generation
+of  these  files  in your connected structure and connected directory.
+By specifying a different structure, directory, or generation you  can
+override  this  default,  but  only  if  you  already  have  the right
+(established by user membership in a group, perhaps,  or  by  a  prior
+ACCESS command) to do so.
+
+When you give the INFORMATION BATCH-REQUESTS command  without  further
+arguments,  you  are  presented  with a listing of all requests in the
+batch input queue.  The /USER switch allows you to limit this  display
+to  the  jobs  of  the  user  named.   If  you give the switch without
+supplying a user name, your own user name is used  as  default.   (But
+the  /USER  switch  to  the  related  SUBMIT  command  has meaning for
+privileged users only, who can use it to run batch  jobs  under  other
+user  names; for non-privileged users this switch effectively defaults
+to your own user name.)  Only a few command arguments behave like  the
+/USER switch.  The /TIME switch to the SUBMIT command is worth noting:
+by not giving the switch, you set a time limit of 5 minutes; by giving
+the  switch  without specifying a time limit, you are setting a 1-hour
+limit; and you can set  any  other  time  limit  by  supplying  it  as
+argument to the switch.
+
+Note that none of the three switches to INFORMATION BATCH-REQUESTS and
+INFORMATION  OUTPUT-REQUESTS  (/ALL,  /FAST,  and  /USER) is used as a
+default:  each calls for a listing that differs in some respects  from
+that  yielded  by  the  unmodified  command.  However, the INFORMATION
+LOGICAL-NAMES command, which allows keywords ALL, JOB, and SYSTEM, has
+JOB  as default for these.  The list of arguments associated with each
+command makes these choices clear.
+
+To discover what default  argument  (if  any)  is  established  for  a
+switch,  subcommand,  or  other argument, press the ESC key instead of
+giving the argument:  the default will be printed on your terminal.
