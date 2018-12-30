@@ -14,83 +14,86 @@
 
 
 
-            †                     TOPS-20
-                   †        User Utilities Guide
+                                  TOPS-20
+                            User Utilities Guide
 
 
-|              †         Electronically Distributed
-
-
-
-             This manual dÂscribes utility  programs  available
-             to  both privilege‰ and nonprivileged ısers of the
-             TOPS-20 operating systeÌ.
+|                        Electronically Distributed
 
 
 
-             Operating System:    TOPS-20 (KS/KL Model A)  V¥.1
-                                  TOPS-20 (KL†Model B)     V6.1
+             This manual describes utility  programs  available
+             to  both privileged and nonprivileged users of the
+             TOPS-20 operating system.
 
-             Software:      †                MAIL   Version   6
-             †                               RDMAIL Version   6ç
-                                             FIL√OM Version  22
-   †                   †                     CREF   Version 53B
+
+
+             Operating System:    TOPS-20 (KS/KL Model A)  V4.1
+                                  TOPS-20 (KL Model B)     V6.1
+
+             Software:                       MAIL   Version   6
+                                             RDMAIL Version   6
+                                             FILCOM Version  22
+                                             CREF   Version 53B
                                              MAKLIB Version  2B
-   †                                         DUMPER VÂrsion   5
-        †                                    PLEASE VersioÓ   5
+                                             DUMPER Version   5
+                                             PLEASE Version   5
 
 
 
 
 
 
-ä
 
 
-   digital equipment corporation           †       maynard, massachusetts
+
+
+   digital equipment corporation                   maynard, massachusetts
 
 
 
-|  TOPS-20 Update Tape No. 04, Œovember 1990
+|  TOPS-20 Update Tape No. 04, November 1990
 
    First Printing, January 1980
-†  Updated, January 1982
-   Updated, December 198≤
+   Updated, January 1982
+   Updated, December 1982
    Updated, September 1985
-|  Updated, NovembeÚ 1990
+|  Updated, November 1990
 
 
 
-   The information in this document Ès subject to change  without  notice
-   and  shoıld  not  be  construed  as  a commitment by Digit·l Equipment
-   Corporation.  Digital Equipment Corporation assumes nÔ  responsibility
-   for any errors that may appe·r in this document.
+   The information in this document is subject to change  without  notice
+   and  should  not  be  construed  as  a commitment by Digital Equipment
+   Corporation.  Digital Equipment Corporation assumes no  responsibility
+   for any errors that may appear in this document.
 
-   The software described Èn this document is furnished under  a  license
- † and  may  only  be used or copied in accordance ˜ith the terms of such
+   The software described in this document is furnished under  a  license
+   and  may  only  be used or copied in accordance with the terms of such
    license.
 
-   No respoÓsibility is assumed†for the use or reli·bility of software on
-   equipment that is not sıpplied by DIGITAL or its affiliated companies.
-ä
-
-|  Copyright C 1980, 1982, 1985, 1990 Digital†Equipment Corporation
-
-   All Rights Reserved.ä
+   No responsibility is assumed for the use or reliability of software on
+   equipment that is not supplied by DIGITAL or its affiliated companies.
 
 
-   The following are trademarks of Digital ≈quipment Corporation:
 
-   CI             DECtapÂ     LA50             SITGO-10
-   DDCMP         †DECUS       LN01             TOPS-10
-   DEC     †      DECwriter   LN03             TOPS-20
-   DE√mail        DELNI       MASSBUS          TOPS-20AŒ
-   DECnet         DELUA       PDP              ’NIBUS
-   DECnet-VAÿ     HSC         PDP-11/24        UETP
-   DECserver      HSC-50     †PrintServer      VAX
-   DECserver 100  KA10     †  PrintServer 40   VAX/VMS
-   DECserver 200  KI †        Q-bus            VT50
-   DECsystem-10   ÀL10        ReGIS
+|  Copyright C 1980, 1982, 1985, 1990 Digital Equipment Corporation
+
+   All Rights Reserved.
+
+
+
+   The following are trademarks of Digital Equipment Corporation:
+
+   CI             DECtape     LA50             SITGO-10
+   DDCMP          DECUS       LN01             TOPS-10
+   DEC            DECwriter   LN03             TOPS-20
+   DECmail        DELNI       MASSBUS          TOPS-20AN
+   DECnet         DELUA       PDP              UNIBUS
+   DECnet-VAX     HSC         PDP-11/24        UETP
+   DECserver      HSC-50      PrintServer      VAX
+   DECserver 100  KA10        PrintServer 40   VAX/VMS
+   DECserver 200  KI          Q-bus            VT50
+   DECsystem-10   KL10        ReGIS
    DECSYSTEM-20   KS10        RSX              d i g i t a l
 
 

@@ -13,78 +13,83 @@
 
 
 
-    †                             TOPS-20            †                     TOPS-20
-                   †    Operator's Command Language                 †      Operator's Command Language
-                              RefeÚence Manual                              Referen„e Manual
+                                  TOPS-20                                  TOPS-20
+                        Operator's Command Language                        Operator's Command Language
+                              Reference Manual                              Reference Manual
 
 
-|                         Electroni„ Distribution
-
-
-
+|                         Electronic Distribution
 
 
 
-                                 July 1990ç|                  †             July 1π90
+
+
+
+                                 July 1990|                                July 1990
 
 
                   This  manual  describes   all   operator
-                  comÌands that use the Operator Interface
-           †      Command Language (OPR), LCP,  Privileged
- †                Commands, and PTYCON commands.
-ä                  Change bars in margins indicate†material
-                  that has been added oÚ changed since the
-                  previous   release   of   this † manual.
-                  Bullets  indicate that material has beenä                  dÂleted.
+                  commands that use the Operator Interface
+                  Command Language (OPR), LCP,  Privileged
+                  Commands, and PTYCON commands.
 
-                  This manual supersedeÛ the manual of theä|                 same name and order number, AA-»600C-TM.
+                  Change bars in margins indicate material
+                  that has been added or changed since the
+                  previous   release   of   this   manual.
+                  Bullets  indicate that material has been
+                  deleted.
+
+                  This manual supersedes the manual of the
+|                 same name and order number, AA-H600C-TM.
 
 
-                  OPERATING SYSTEM:ç                  OPERATING SYSTEM:  TOPS-20 (KL Õodel B) Version 7.0
+                  OPERATING SYSTEM:                  OPERATING SYSTEM:  TOPS-20 (KL Model B) Version 7.0
 
-                  SOFTWARE∫                  SOFTWARE:  GALAXY Version 6
-ä
+                  SOFTWARE:                  SOFTWARE:  GALAXY Version 6
+
+
 
                   digital equipment corporation
-                  maynard, massachusÂtts
+                  maynard, massachusetts
 
 
 
-   FirsÙ Printing, January ±980
-   Updated, ApÚil 1982
+   First Printing, January 1980
+   Updated, April 1982
    Updated, December 1982
-   Revised, SÂptember 1985
+   Revised, September 1985
    Revised, June, 1988
-|  Software†Update Tape 3, July†1990
+|  Software Update Tape 3, July 1990
 
 
 
-   The information in this document is subject to change †without  notice
-   and  should  not  be  construÂd  as  a commitment by Digital Equipment
-   Corporation.  Digital Eqıipment Corporation assumes no  responsibility
-  †for any errors that may appear in this document.ä
-   The software described in this document is fırnished under  a  license
-   and  may  only  be ısed or copied in accordance with the terms of sucË
+   The information in this document is subject to change  without  notice
+   and  should  not  be  construed  as  a commitment by Digital Equipment
+   Corporation.  Digital Equipment Corporation assumes no  responsibility
+   for any errors that may appear in this document.
+
+   The software described in this document is furnished under  a  license
+   and  may  only  be used or copied in accordance with the terms of such
    license.
 
-   No responsibility is assumed Êor the use or reliability of software on
-   equiment that is not supplied by Digital Equipment Corporation or its
-  †affiliated companies.
+   No responsibility is assumed for the use or reliability of software on
+   equipment that is not supplied by Digital Equipment Corporation or its
+   affiliated companies.
 
 
-   Copyright  C 1980, †1982,   1985,   1988,   1990   Digital   EquipmenÙ
+   Copyright  C 1980,  1982,   1985,   1988,   1990   Digital   Equipment
    Corporation.
 
    All Rights Reserved.
-   –rinted in U.S.A.
+   Printed in U.S.A.
 
 
 
-   The Reader's Comments Êorm on the last page of this document  requests
-†  the   user's   crÈtical  evaluation  Ùo  assist  in  preparing  future
-   documentatioÓ.
+   The Reader's Comments form on the last page of this document  requests
+   the   user's   critical  evaluation  to  assist  in  preparing  future
+   documentation.
 
-   The following are trademarks of Digital EÒuipment Corporation:
+   The following are trademarks of Digital Equipment Corporation:
 
    CI             DECtape     LA50             SITGO-10
    DDCMP          DECUS       LN01             TOPS-10

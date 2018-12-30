@@ -5,7 +5,7 @@
 
 
 
-ç
+
 
 
 
@@ -14,78 +14,82 @@
 
 
                                   TOPS-20
-           †             Commands Reference Manual
+                         Commands Reference Manual
 
 
 
-|  †                      Electronic Distribution
-| †
+|                         Electronic Distribution
 |  
-|                                July 1990ç
+|  
+|                                July 1990
 
-                  This  manual  describes  all†  operating
-      †           system   commands   available   to   tËe
-                  nonprivileged user of TOPS-2∞.  For easy
-                  reference,  the coÌmand descriptions aÚe
+                  This  manual  describes  all   operating
+                  system   commands   available   to   the
+                  nonprivileged user of TOPS-20.  For easy
+                  reference,  the command descriptions are
                   arranged alphabetically.
 
-                  This manual supersedes†the manual of the
-¸                 saÌe name and order number, AA-FP65B-TM.
+                  This manual supersedes the manual of the
+|                 same name and order number, AA-FP65B-TM.
 
-        †         Change  bars  in  the  margins  indicateç
-                  material  that has been added Ôr changed
-                  since  the  previous† release  of   this
+                  Change  bars  in  the  margins  indicate
+                  material  that has been added or changed
+                  since  the  previous  release  of   this
                   manual.
-ä
-
-             OPERATING SYSTEM: TOPS-20 (KL Mo‰el B) Version 7.0
-ç
-             SOFTWARE: TOPS-20 EXEC Version 7.0ä
 
 
-             ‰igital equipment corporation
+
+             OPERATING SYSTEM: TOPS-20 (KL Model B) Version 7.0
+
+             SOFTWARE: TOPS-20 EXEC Version 7.0
+
+
+
+             digital equipment corporation
              maynard, massachusetts
-ä
+
+
 
    First Printing, September 1985
    Revised, June, 1988
-|  SofÙware Update Tape 2, July 1990
+|  Software Update Tape 2, July 1990
 
 
 
-   The inforÌation in this document is subject to change  withÔut  notice
-   and  should  not  be  construed  aÛ  a commitment by Digital Equipment
-   CorporatiÔn.  Digital Equipment Corporation assumes no  resonsibility
-   for ·ny errors that may ·ppear in this document.
+   The information in this document is subject to change  without  notice
+   and  should  not  be  construed  as  a commitment by Digital Equipment
+   Corporation.  Digital Equipment Corporation assumes no  responsibility
+   for any errors that may appear in this document.
 
    The software described in this document is furnished under  a  license
-   and †may  only  be used or copied in accordance with tËe terms of such
+   and  may  only  be used or copied in accordance with the terms of such
    license.
 
-   No responsibility is assumed for tËe use or reliabilit˘ of software on
-   equipment that is not supplie‰ by Digital Equipment Corporation or its
-   affiÏiated companies.
-ä
-   Copyright  C 1985, 1988, 1990 Digital EquipmÂnt Corporation.
+   No responsibility is assumed for the use or reliability of software on
+   equipment that is not supplied by Digital Equipment Corporation or its
+   affiliated companies.
+
+
+   Copyright  C 1985, 1988, 1990 Digital Equipment Corporation.
 
    All Rights Reserved.
-   PrÈnted in U.S.A.
+   Printed in U.S.A.
 
 
 
-   The following are tradem·rks of Digital Equipment Corporation:
+   The following are trademarks of Digital Equipment Corporation:
 
-   CI   †         DECtape     LA50             SITGO-10
- † DDCMP          DECUS       LN01             TOPS≠10
-   DEC            DECwriter   LN03           † TOPS-20
-   DECmail        DELNI       MASSBUS  †       TOPS-20AN
- † DECnet         DELUA       PDP              UNIB’S
-   DECnet-VAX     HSC         PDP-11/24       †UETP
-   DECserver      HSC-50      PrintServer  †   VAX
-   DECserver 100  KA10        PrintServer†40   VAX/VMS
-   DECserver 200  KI          Q-bus†           VT50
+   CI             DECtape     LA50             SITGO-10
+   DDCMP          DECUS       LN01             TOPS-10
+   DEC            DECwriter   LN03             TOPS-20
+   DECmail        DELNI       MASSBUS          TOPS-20AN
+   DECnet         DELUA       PDP              UNIBUS
+   DECnet-VAX     HSC         PDP-11/24        UETP
+   DECserver      HSC-50      PrintServer      VAX
+   DECserver 100  KA10        PrintServer 40   VAX/VMS
+   DECserver 200  KI          Q-bus            VT50
    DECsystem-10   KL10        ReGIS
-   DECSYSTEM-20   KS10        RSX  †           d i g i t a l
+   DECSYSTEM-20   KS10        RSX              d i g i t a l
 
 
 

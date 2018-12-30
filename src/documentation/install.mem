@@ -1,79 +1,81 @@
 
 
-ç
-                             TOPS-20 KL Model B†                            TOPS-20 KL Model B
-ä                             Installation Guide †                   †       Installation†Guide
+
+                             TOPS-20 KL Model B                             TOPS-20 KL Model B
+
+                             Installation Guide                             Installation Guide
 
 
-|                         Electronic DÈstribution
+|                         Electronic Distribution
 
 
 
-|                              † April 1990
+|                                April 1990
 
 
-                  This manual deÛcribes the procedures for
-                  inst·lling  TOPS-20 VersÈon 7.0 on a new
-                  system and upd·ting TOPS-20 software  on
-                  an e¯isting KL10 Model B system.
+                  This manual describes the procedures for
+                  installing  TOPS-20 Version 7.0 on a new
+                  system and updating TOPS-20 software  on
+                  an existing KL10 Model B system.
 
-                  √hange  bars  in  the  margins  indicate
-        †         material  that has been added or changedç
-                  since  the  previous  release †of   this
+                  Change  bars  in  the  margins  indicate
+                  material  that has been added or changed
+                  since  the  previous  release  of   this
                   manual.
 
-         †        This manual†supersedes the manual of the
-|                 s·me name and order number, AA-M229C-TM.
-         †        Please read it in its entirety.
+                  This manual supersedes the manual of the
+|                 same name and order number, AA-M229C-TM.
+                  Please read it in its entirety.
 
 
 
-  †               OPER¡TING SYSTEM:  TOPS-20 Version 7.0
+                  OPERATING SYSTEM:  TOPS-20 Version 7.0
 
                   SOFTWARE:  RSX-20F Version 16-00
-†                   †        KLINIT VersÈon 16-00
-                             Microcode ÷ersion 442
+                             KLINIT Version 16-00
+                             Microcode Version 442
 
 
 
-                  digital equipÌent corporation
-                  maynard, massa„husetts
+                  digital equipment corporation
+                  maynard, massachusetts
 
 
 
-                                 †             First Printing, April 1982
-        †                                          Updated¨ December 1982
-                                                  RevÈsed, September 1985
-                                                †      Revised, June†1988
-|                                      Soft˜are Update Tape 2, April 1990
+                                               First Printing, April 1982
+                                                   Updated, December 1982
+                                                  Revised, September 1985
+                                                       Revised, June 1988
+|                                      Software Update Tape 2, April 1990
 
 
 
-   The information in this documÂnt is subject to change  without  notice
-   and †should  not  be  construed  as  a commitment by DÈgital Equipment
-   Corporation.  Digital EquipmeÓt Corporation assumes no  responsibility
-   for ·ny errors that may appear in this document.
+   The information in this document is subject to change  without  notice
+   and  should  not  be  construed  as  a commitment by Digital Equipment
+   Corporation.  Digital Equipment Corporation assumes no  responsibility
+   for any errors that may appear in this document.
 
-  †The software descri‚ed in this document†is furnished under  a  license
-   and  may  only† be used or copied Èn accordance with tËe terms of such
-  †license.
+   The software described in this document is furnished under  a  license
+   and  may  only  be used or copied in accordance with the terms of such
+   license.
 
-   No responsibility is assumed for tËe use or reliability of software on
-   equipment†that is not supplied by Digital Equipment Corporation or its
-   affiÏiated companies.
+   No responsibility is assumed for the use or reliability of software on
+   equipment that is not supplied by Digital Equipment Corporation or its
+   affiliated companies.
 
 
-|  Copyright  C 1982, 1985,†1988, 1990, Digital Equipment Corporation.
+|  Copyright  C 1982, 1985, 1988, 1990, Digital Equipment Corporation.
 
-   All Rights Reserved.ç
+   All Rights Reserved.
    Printed in U.S.A.
 
 
 
-   The Reader's CommÂnts form on the last page of this document  requeÛts
-   the   user's   critical  evaluation  to  aÛsist  in  preparing  future
+   The Reader's Comments form on the last page of this document  requests
+   the   user's   critical  evaluation  to  assist  in  preparing  future
    documentation.
-ä   The following are trademarks of Digital Equipment Corporation:
+
+   The following are trademarks of Digital Equipment Corporation:
 
    CI             DECtape     LA50             SITGO-10
    DDCMP          DECUS       LN01             TOPS-10
