@@ -33,6 +33,7 @@
 # SUCH DAMAGE.
 
 import os
+import re
 import sys
 
 import tops20
@@ -137,6 +138,11 @@ def build():
     kl.expect('IDDT 9.1')
     kl.send('\032')
 
+    # what version of midas are we building
+    ver = max(
+        int(name.split('.')[-1])
+        for name in os.listdir('../src/midas')
+        if re.match(r'[^.]+\.[^.]+\.\d+', name))
     kl.build('<src.midas>')
     kl.cl('connect <src.midas>')
     kl.cl('del *.*.*')
@@ -144,17 +150,16 @@ def build():
     kl.cl('del *.exe')
     kl.cl('midas cvtunv')
     kl.cl('dsk:cvtunv')
-    kl.cl('midas midas')
+    kl.cl('midas temp_midas')
     kl.cl('iddt')
     kl.expect('IDDT 9.1')
-    kl.line(';ymidas.exe')
+    kl.line(';ytemp.exe')
     kl.send('purify\033g')
     kl.expect('IDDT')
-    kl.line(';umidas.exe')
+    kl.line(';umidas.exe.%d' % ver)
     kl.send('\032')
-    # should purify but our exec doesn't know how to do that
-    # see the top of MIDAS.MID
-    kl.cl('copy *.exe <third>')
+    kl.cl('copy cvtunv.exe <third>')
+    kl.cl('copy midas.exe.%d <third>midas.exe.%d' % (ver, ver))
 
     kl.build('<info>')
     kl.cl('del <info>*.*.*')
