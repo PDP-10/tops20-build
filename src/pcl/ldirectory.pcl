@@ -1,0 +1,86 @@
+command ldirectory;
+begin
+ external string procedure spaces, extract;
+ string devs, dirs, names, dev, dir, name, odev, odir;
+ integer devw, dirw, namw, prdev, prdir, off, fudge, width, cols, colw, col;
+ guide "of file";
+ parse filelist (default_nam "*", default_ext "*", default_gen *);
+ odev = $file_dev($parse);
+ odir = $file_dir($parse);
+ prdev = 0;
+ prdir = 0;
+ devw = 0;
+ dirw = 0;
+ namw = 0;
+ devs = "";
+ dirs = "";
+ names = "";
+ do begin
+  dev = $file_dev($parse);
+  dir = $file_dir($parse);
+  name = $filen;
+  off=$search(name, ">");
+  if off > 0 then name=name[off + 1:*];
+  if dev <> odev then prdev = 1;
+  if dir <> odir then prdir = 1;
+  if $length(dev) > devw then devw = $length(dev);
+  if $length(dir) > dirw then dirw = $length(dir);
+  if $length(name) > namw then namw = $length(name);
+  devs = devs + dev + ">";
+  dirs = dirs + dir + ">";
+  names = names + name + ">";
+  !display dev + " " + dir + " " + name;
+ end while $nextfile <> 0;
+
+ width = namw + 1;
+ if prdev <> 0 then width = width + devw + 1; ! :
+ if prdir <> 0 then width = width + dirw + 2; ! < >
+
+ cols = $termwidth / width;
+ if cols < 1 then cols = 1;
+ colw = $termwidth / cols;
+
+ col = 1;
+ do begin
+  dev = extract(devs);
+  dir = extract(dirs);
+  name = extract(names);
+  if prdir <> 0 then name = "<" + dir + ">" + name;
+  if prdev <> 0 then name = dev + ":" + name;
+  display noreturn name;
+  if col < cols then begin
+   display noreturn spaces(colw - $length(name));
+   col = col + 1;
+  end else begin
+   display "";
+   col = 1;
+  end;
+ end while names <> "";
+ if col <> 1 then display "";
+end;
+
+synonym l ldirectory;
+
+string procedure extract (string collection);
+begin
+ integer off;
+ string ret;
+ off = $search(collection, ">");
+ ret = collection[1:off - 1];
+ collection = collection[off + 1:*];
+ return ret;
+end
+
+string procedure spaces (integer count);
+begin
+ integer i;
+ string s;
+
+ s = "";
+ i = count;
+ do begin
+  s = s + " ";
+  i = i - 1;
+ end while i > 0;
+ return s;
+end;

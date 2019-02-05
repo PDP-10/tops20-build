@@ -1,0 +1,13 @@
+command mitsetup;
+begin
+ $PromptReg = "@";
+ $PromptSub = "@@";
+ $PromptEnb = "!";
+ $PromptEnbSub = "!!";
+end;
+
+synonym kjob logout;
+
+command kkjob; docommand "logout /fast";
+
+command pwd; display $connecteddirectory;

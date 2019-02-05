@@ -53,6 +53,12 @@ def build():
     kl.boot()
     kl.login()
     kl.sync()
+
+    # make sure the current versions are injected into the phase1 tape
+    kl.cl('connect <system>')
+    kl.restore_interchange('../config/config.tap')
+
+    kl.sync()
     kl.build('<src>', maximum_subdirectories=262143)
 
     kl.build('<src.monitor>')
@@ -182,9 +188,17 @@ def build():
     kl.assert_exists('nemacs.exe', 'emacs.log')
     kl.cl('rename nemacs.exe emacs.exe')
 
-    # make clean by any other name
-    kl.cl('del <src.*>*.exe')
-    kl.cl('del <src.*>*.rel')
+    kl.build('<pcl>')
+    kl.cl('connect <pcl>')
+    kl.cl('del *.*.*')
+    kl.restore_interchange('../src/pcl.tap')
+
+    kl.cl('connect <operator>')
+    kl.restore_interchange('../src/operator.tap')
+
+    # nuke the source code for now, it's just making the
+    # tape bigger
+    kl.cl('del <src.*>*.*.*')
 
     kl.shutdown()
 

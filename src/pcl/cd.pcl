@@ -1,0 +1,29 @@
+COMMAND CD;
+BEGIN
+STRING DEV, DIR, STMP;
+INTEGER L;
+GUIDE "to";
+STMP = "PS:<"+$USERNAME+">";
+PARSE(
+  DIRECTORY(HELP "directory", DEFAULT STMP):DIR = $ATOM;
+  INPUTFILE(HELP "file"):DIR = $FILEL
+  );
+PARSE EOL;
+L = $SEARCH(DIR,">");
+IF L <> 0 THEN DIR = DIR[1:L];
+DOCOMMAND "CONNECT "+DIR;
+IF DIR <> $CONNECTEDDIRECTORY THEN BEGIN
+    DISPLAY "?"+$LASTERROR;
+    ABORT "Failed to CONNECT "+DIR;
+  END;
+DIR = $CONNECTEDDIRECTORY;
+L = $SEARCH(DIR,":");
+DEV = DIR[1:L-1] + ":";
+DIR = DIR[L+2:$LENGTH(DIR)-L-2];
+L = $LENGTH($USERNAME);
+IF $USERNAME = DIR[1:L] THEN DIR = "~"+DIR[L+1:*];
+$PromptReg = "[" + $hostname + "] " + DEV + "<" + DIR + ">@ ";
+$PromptSub = "@@_";
+$PromptEnb = "[" + $hostname + "] " + DEV + "<" + DIR + ">! ";
+$PromptEnbSub = "!!_";
+END;

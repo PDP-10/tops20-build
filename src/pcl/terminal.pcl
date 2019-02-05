@@ -1,0 +1,169 @@
+COMMAND TTYPE;
+
+BEGIN
+EXTERNAL STRING PROCEDURE GET_TERM_TYPE;
+STRING TYPE;
+
+PARSE(TEXT(HELP "Explicit terminal type"):BEGIN
+          TYPE = $ATOM;
+          PARSE EOL;
+        END;
+      EOL(HELP "Carriage return to query terminal"):TYPE = $NUL);
+DISPLAY "[" + GET_TERM_TYPE(1, TYPE) + "]";
+!DOCOMMAND "TERMINAL NO BACKSPACE-DELETE";
+DOCOMMAND "TERMINAL PAUSE CHARACTER CONTROL ""S"" CONTROL ""Q""";
+DOCOMMAND "TERMINAL PAUSE COMMAND";
+
+      DOCOMMAND "TERMINAL PAUSE END";
+END    
+
+COMMAND TCS;
+BEGIN
+EXTERNAL STRING PROCEDURE TCS_SR;
+STRING STR, RESP, ESC;
+ESC=$CVITC(27);
+PARSE(QUOTEDSTRING:BEGIN
+          STR=$ATOM;
+          PARSE EOL;
+        END;
+      TEXT:BEGIN
+          STR=$ATOM;
+          PARSE EOL;
+        END;
+
+	      EOL:STR=$NUL);
+IF STR = $NUL THEN BEGIN
+    RESP = TCS_SR(ESC + "c");
+    DISPLAY "[Reset]";
+  END
+ELSE BEGIN
+    RESP = TCS_SR(ESC + STR);
+    DISPLAY "Query = " + $QUOTE + "$" + STR;
+    IF RESP = $NUL THEN DISPLAY "No response"
+  END;
+IF RESP[1:1] = ESC THEN RESP = "$" + RESP[2:*];
+IF RESP <> $NUL THEN DISPLAY "Response = " + $QUOTE + RESP;
+END
+
+STRING PROCEDURE GET_TERM_TYPE(INTEGER QUERY; STRING NEWTYPE);
+BEGIN
+EXTERNAL STRING PROCEDURE TCS_SR;
+STRING RESP, TYPE, ESC, LTYPE, BTYPE;
+INTEGER L, I, W;
+IF NEWTYPE <> $NUL THEN TYPE = NEWTYPE
+
+  ELSE BEGIN
+    IF QUERY = 0 THEN BEGIN
+        DOCOMMAND "INFORMATION LOGICAL TERMTYPE:" TO TYPE;
+        IF TYPE[1:1] <> "%" THEN BEGIN
+            L = $SEARCHRAISED(TYPE, "TERMTYPE: => ");
+            IF L <> 0 THEN BEGIN
+                TYPE = TYPE[L+13:*];
+                L = $SEARCH(TYPE, $CRLF);
+                IF L <> 0 THEN TYPE = TYPE[1:L-1];
+                RETURN TYPE;
+              END;
+          END;
+      END;
+    TYPE = "SYSTEM-DEFAULT";
+    BTYPE = "";
+    DISPLAY "[Querying terminal type]";
+    ESC=$CVITC(27);
+    RESP = TCS_SR(ESC + "[c");
+    IF RESP[1:10] = ESC + "[?62;1;2;" THEN BEGIN
+        IF RESP[$LENGTH(RESP):1] = "c" THEN BEGIN
+            BTYPE = "VT100";
+            TYPE = "VT100.XTERM";
+          END
+
+	        END
+
+		    ELSE IF RESP[1:10] = ESC + "[?63;1;2;" THEN BEGIN
+        IF RESP[$LENGTH(RESP):1] = "c" THEN BEGIN
+            BTYPE = "VT100";
+            TYPE = "VT100.XTERM";
+          END
+      END
+    ELSE IF RESP[1:10] = ESC + "[?62;1;6c" THEN BEGIN
+        BTYPE = "VT100";                                                                                                                                                                    
+        TYPE = "VT100.XTERM";
+      END
+    ELSE IF RESP = ESC + "[?1;2c" THEN BEGIN
+        BTYPE = "VT100";
+        RESP = TCS_SR(ESC + " " + ESC + "[x");
+        IF RESP = ESC + "[2;1;1;112;112;1;0x" THEN TYPE = BTYPE + ".XTERM"
+        ELSE IF RESP = "60" + $CR THEN TYPE = BTYPE + ".WY-75"
+
+	        ELSE TYPE = BTYPE;
+      END
+    ELSE IF RESP[1:3] = ESC + "[?" THEN BEGIN
+        IF RESP[$LENGTH(RESP):1] = "c" THEN BEGIN
+            BTYPE = "VT100";
+
+	                TYPE = BTYPE;
+          END
+
+	        END;
+    IF BTYPE = "VT100" THEN BEGIN
+        DOCOMMAND "TERMINAL VT100";
+        RESP = TCS_SR(ESC + "7" + ESC + "[999;999H" + ESC + "[6n" + ESC + "8");
+        L = $SEARCH(RESP, ";");
+        IF L <> 0 THEN BEGIN
+            W = $INTEGER(RESP[L+1:$LENGTH(RESP)-L-1]);
+            IF W > 79 THEN
+              IF RESP[1:2] = ESC + "[" THEN
+                IF RESP[$LENGTH(RESP):1] = "R" THEN BEGIN
+                    DOCOMMAND "TERMINAL LENGTH " + RESP[3:L-3];
+
+		                        DOCOMMAND "TERMINAL WIDTH " + $STRING(W);
+                  END;
+          END;
+
+	        END
+
+		    ELSE DOCOMMAND "TERMINAL SYSTEM-DEFAULT";
+  END;
+
+DOCOMMAND "DEFINE TERMTYPE: " + TYPE;
+IF TYPE = "VT100.XTERM" THEN LTYPE = "xterm"
+ELSE BEGIN
+  L = $LENGTH(TYPE);
+  I = 1;
+  LTYPE = $NUL;
+  WHILE I <= L DO BEGIN
+      IF TYPE[I:1] = "." THEN I = L
+      ELSE BEGIN
+          IF $CVCTI(TYPE[I:1]) >= $CVCTI("A") THEN
+            IF $CVCTI(TYPE[I:1]) <= $CVCTI("Z") THEN
+              LTYPE = LTYPE + "" + $CVITC($CVCTI(TYPE[I:1])+32)
+            ELSE LTYPE = LTYPE + TYPE[I:1]
+          ELSE LTYPE = LTYPE + TYPE[I:1]
+        END;
+      I = I + 1;
+    END;
+  END;
+DOCOMMAND "DEFINE CENV-TERM: " + LTYPE;
+RETURN TYPE;
+END
+
+STRING PROCEDURE TCS_SR(STRING STR);
+BEGIN
+
+  STRING RESP, CHR;
+INTEGER NCHARS;
+DISPLAY BINARY STR;
+RESP = $READBINARY(1,$CVITC(10),2000);
+IF RESP <> $NUL THEN
+  DO BEGIN
+      CHR=$READBINARY(1,$CVITC(10));
+      RESP = RESP + CHR;
+      IF $CVCTI(CHR) >= $CVCTI("A") THEN
+        IF $CVCTI(CHR) <= $CVCTI("Z") THEN CHR = $NUL;
+      IF $CVCTI(CHR) >= $CVCTI("a") THEN
+        IF $CVCTI(CHR) <= $CVCTI("z") THEN CHR = $NUL;
+      IF $CVCTI(CHR) < $CVCTI(" ") THEN CHR = $NUL;
+    END WHILE CHR <> $NUL;
+NCHARS = $Typeahead_Count;
+IF NCHARS > 0 THEN CHR = $READBINARY(NCHARS, $CVITC(0));
+RETURN RESP;
+END;

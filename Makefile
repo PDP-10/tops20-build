@@ -107,7 +107,7 @@ clean-phase1:
 
 clean:: clean-phase1
 
-phase1/phase1.tap: phase1 pexpect-venv/bin/python3 tapes/bootstrap.tap bin/kn10-kl phase1.py src/monitor.tap src/exec.tap src/midas.tap src/iddt.tap
+phase1/phase1.tap: phase1 pexpect-venv/bin/python3 tapes/bootstrap.tap bin/kn10-kl config/config.tap phase1.py src/monitor.tap src/exec.tap src/midas.tap src/iddt.tap src/pcl.tap src/operator.tap
 	(cd phase1; script -c '../pexpect-venv/bin/python3 ../phase1.py' phase1.out)
 
 tools/back10/back10: tools/back10/back10.c tools/back10/back10.h
@@ -116,7 +116,7 @@ tools/back10/back10: tools/back10/back10.c tools/back10/back10.h
 clean::
 	make -C tools/back10 clean
 
-CONFIG_SRC := 7-config.cmd 7-ptycon.ato
+CONFIG_SRC := 7-config.cmd 7-ptycon.ato 7-sysjob.run
 CONFIG_DEP := $(addprefix config/,$(CONFIG_SRC))
 
 config/config.tap: $(CONFIG_DEP) tools/back10/back10
@@ -164,5 +164,17 @@ src/iddt.tap: $(wildcard src/iddt/*.mac) tools/back10/back10
 
 clean::
 	$(RM) src/iddt.tap
+
+src/operator.tap: $(wildcard src/operator/*.cmd) tools/back10/back10
+	(cd src/operator; ../../tools/back10/back10 -c -f ../operator.tap -i $(notdir $(wildcard src/operator/*.cmd)))
+
+clean::
+	$(RM) src/operator.tap
+
+src/pcl.tap: $(wildcard src/pcl/*.cmd) tools/back10/back10
+	(cd src/pcl; ../../tools/back10/back10 -c -f ../pcl.tap -i $(notdir $(wildcard src/pcl/*.pcl)))
+
+clean::
+	$(RM) src/pcl.tap
 
 .PHONEY: dec-7.0-tapes clean clean-phase0 clean-phase1

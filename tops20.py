@@ -40,14 +40,46 @@ import sys
 DISKFILE = 'RH20.RP07.1'
 BOOTSTRAP = '../tapes/bootstrap.tap'
 
+KLH10_INI = '''
+; Sample KLH10.INI for initial installation
+
+; Define basic device config - one DTE, one disk, one tape.
+; Use two RH20s because TOPS-10 doesn't like mixing disk and tape on
+; the same controller (TOPS-20 is fine).
+
+devdef dte0 200   dte	master
+devdef rh0  540   rh20
+devdef rh1  544   rh20
+devdef dsk0 rh0.0 rp	type=rp07 format=dbd9 dppath=../bin/dprpxx
+devdef mta0 rh1.0 tm03	type=tu45 dppath=../bin/dptm03
+
+; Need KLNI to avoid LAPRBF BUGCHKs - use valid address if known
+;
+devdef ni0 564 ni20 ipaddr=10.0.0.51 dppath=../bin/dpni20
+'''
+
+
 _output = open(sys.stdout.fileno(), mode='w', encoding='utf8', buffering=1)
 
 
 class KLH10:
     def __init__(self):
-        self.ex =  pexpect.spawn('../bin/kn10-kl ../klt20.ini', encoding='iso8859-1')
+        with open('klh10.ini', 'w') as fp:
+            fp.write(KLH10_INI)
+        self.ex =  pexpect.spawn('../bin/kn10-kl klh10.ini', encoding='iso8859-1')
+        print(repr(self.ex.logfile_read))
+
+        self.logfile_read_save = self.ex.logfile_read
         self.ex.logfile_read = _output
         self.expect('ipaddr=')
+
+    def interact(self):
+        (self.logfile_read_save, self.ex.logfile_read) = (
+            self.ex.logfile_read, self.logfile_read_save)
+        self.ex.interact()
+        (self.logfile_read_save, self.ex.logfile_read) = (
+            self.ex.logfile_read, self.logfile_read_save)
+        self.line('')
 
     def send(self, *args, **kw):
         return self.ex.send(*args, **kw)
@@ -91,8 +123,8 @@ class KLH10:
         self.cl('unload', 'DUMPER>')
         self.cl('exit', 'DUMPER>')
 
-    def install(self, structure='PS'):
-        self.install_boot(structure)
+    def install(self, structure='PS', tape=BOOTSTRAP):
+        self.install_boot(structure, tape)
         self.cl('run mta0:')
         self.cl('files', 'DUMPER>')
         self.cl('tape mta0:', 'DUMPER>')
@@ -144,7 +176,7 @@ class KLH10:
 
     def login(self):
         self.line('')
-        self.cl('login operator dec-20', '@')
+        self.cl('login /fast operator dec-20', '@')
         self.termsetup()
 
     def shutdown(self):
