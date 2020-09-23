@@ -17,7 +17,7 @@ This is not necessary, but if you're feeling like keeping me honest,
 with
 
 ```
-make phase0/stamp
+make phase0/phase0.tap
 ```
 
 (network access required to retrieve the DEC tape images) but that

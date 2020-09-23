@@ -32,7 +32,7 @@ dec-7.0-tapes: tapes/dec
 		bunzip2 tapes/dec/$${tapefunction}.tap.bz2 ;\
 	done
 
-tapes/dev/install.tap: dec-7.0-tapes
+tapes/dec/install.tap: dec-7.0-tapes
 
 tapes/dec:
 	mkdir -p tapes/dec
